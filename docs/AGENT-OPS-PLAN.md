@@ -28,10 +28,11 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 17 | BUILDER-POLISH-01 | Builder polish and hardcoded English |
 | 18 | USAGE-DATA-01 | Run duration never saved; admin quota views |
 | 20 | DESIGN-GAPS-01, DESIGN-GAPS-01B, DESIGN-GAPS-01C | Title weight, auth cards, Heroicons and chip text (01 and 01B done 2026-11-10; dark-mode brand contrast is DESIGN-CONTRAST-01); CJK and mono fonts (01C, needs Keith's font-source choice) |
-| 21 | OFFICE-SCENE-01 | Isometric 16-bit office in our own art: one fixed room, characters walk (decoration only; status from the server); takes over OFFICE-03 and OFFICE-04; waits for the art kit, Keith's open points, the drawing-layer approval and GOV-PRD-SYNC-01 |
+| 21 | OFFICE-SCENE-01 | Isometric 16-bit office in our own art, bright daytime: one fixed room with 12 desks and a side list, 32x16 tiles and 32 px characters, agents type only during a real run and wander when idle (decoration only; status from the server; reduced motion off), click, tap and keyboard controls; takes over OFFICE-03 and OFFICE-04; decisions recorded 2026-11-12; waits for Keith's hand-drawn art kit, the drawing-layer approval and GOV-PRD-SYNC-01 |
 | 22 | OFFICE-BUILD-01, OFFICE-SHOP-01 | Later: users build their own office (editor, saved layout, routes around furniture); then selling unique pieces once payments are on and art licences are confirmed |
+| 23 | OFFICE-PLAYER-01, OFFICE-VOICE-01 | Later: a character the user walks (after the fixed office ships); push-to-talk voice to an agent in en, zh-TW and zh-CN (waits for Keith's provider, cost and audio-storage decision; recommended: audio never stored). Registered 2026-11-12 |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
-| 25 | GOV-PRD-SYNC-01 | PRD office note (now including the 2026-11-10 office decisions and the walking line at PRD.md:482) and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
+| 25 | GOV-PRD-SYNC-01 | PRD office note (now including the 2026-11-10 office decisions, the 2026-11-12 controls and voice decisions, and the walking line at PRD.md:483) and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
 | 26 | CM-HISTORY-LINK-01, STAGING-DEPLOY-CMSEC-01, CM-DEPS-01, BROWSER-SMOKE-01 | Checkpoint history copies following symlinks (CM-HISTORY-LINK-01 done 2026-11-10), the exec helper hardening (CM-EXEC-01), then the deploy of the container-manager security fixes (STAGING-DEPLOY-CMSEC-01 done 2026-11-10, staging runs f423859; Keith checkpoint smoke CHECKPOINT-LIVE-01; CM-GIT-HOST-01 done 2026-11-10; CM-SYMLINK-01 done 2026-11-10, not deployed; CM-PATH-01 done 2026-11-10, not deployed), the unused package and stale script (CM-DEPS-01), and browser smoke's empty preview registry (BROWSER-SMOKE-01) (CODE-TIDY-01 done 2026-11-10) (CM-CLEANUP-01 and CM-CLEANUP-01B done 2026-11-10; DRIFT-FIX-01, STAGING-DEPLOY-CMAUTH-01 and CM-PREFIX-01 done 2026-11-10; staging runs 2052c36; CM-PREFIX-01 deploys with STAGING-DEPLOY-WF-01) (CM-AUTH-01 done 2026-11-10) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
@@ -76,7 +77,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 46 | ACCESS-READY-01 | Charge Agent runs, real per-user limit, per-feature write switch |
+| 46 | ACCESS-READY-01 | Charge Agent runs, real per-user limit, per-feature write switch; privacy conditions added 2026-11-12 (data inventory, Keith's principles, delete and export with retention, policy and terms with a lawyer, staff access with an audit log, a public privacy page): not registered, Keith decides which and whether to start with the inventory |
 | 47 | SIGNUP-ALLOWLIST-01 | Sign-up allowlist (READY, parked) |
 | 48 | ACCESS-01E | Credits per model; models per plan |
 | 49 | ACCESS-01G | Admin settings store with audit |

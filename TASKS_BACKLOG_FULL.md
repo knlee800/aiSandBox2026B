@@ -84325,6 +84325,8 @@ nature=IMPLEMENTATION
 **Added 2026-11-05 (ACCESS-01A):** (9) HTTP CORS in services/api-gateway/src/main.ts allows any origin (origin: true); restrict it to APP_BASE_URL before a second user. **Superseded 2026-11-06** by ACCESS-CORS-01 (acceptance criteria 2 to 4).
 **D3, 2026-11-06 (Keith):** OpenAI and xAI Agent runs are withheld from anyone other than Keith. No OpenAI or xAI key is added on staging while a second person has access, until ACCESS-01J (stateless continuation, plan S10 option A) is COMPLETE AND LOCKED. This replaces the disclosure recommended in docs/ACCESS-READY-01-PLAN.md; no disclosure text is built. On 2026-11-06 staging has no OpenAI or xAI key (OpenAI is the template placeholder, xAI is empty), so no code change is needed now. With D3 recorded, the second-user checklist in the plan is complete; inviting a person stays Keith's decision.
 
+**Also (added 2026-11-12, privacy conditions for the first outside user; Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md):** Keith raised privacy of the whole app as sensitive. Recommended order, not approved and not registered until Keith says which: (10) a read-only data inventory (what is stored, where, who can read it, what leaves our servers); (11) Keith's privacy principles in his own words; (12) user delete and export, plus retention periods (backups and snapshots included); (13) a privacy policy and terms in en, zh-TW and zh-CN, drafted from the inventory and reviewed by a lawyer; (14) a staff-access rule with an audit log for user content; (15) a public privacy-at-a-glance page with the list of outside processors (today the five AI providers in provider-model.catalogue.ts). Code today (limited search, rechecked 2026-11-12): chat_messages stores message text per conversation; the usage ledger stores no prompt or response content; no privacy or terms page; no account deletion or data export. These hold before anyone but Keith uses the platform.
+
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
@@ -85677,6 +85679,8 @@ nature=GOVERNANCE
 **Also (added 2026-11-11 by the USER-TEAMS-01B LOCK):** PRD.md wording for the Chief of Staff front door (deployed to staging 537ebfb, Keith's live check FRONTDOOR-LIVE-01 passed: moves from APPROVED FUTURE to GATED; this was due at the FRONTDOOR-LIVE-01 lock and missed there) and for user teams (USER-TEAMS-01, -01B, -01C built, not deployed: stays APPROVED FUTURE until USER-TEAMS-LIVE-01). ARCHITECTURE.md 13.1 already carries both rows.
 **Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** PRD.md wording for approval settings per workflow and for Chief of Staff drafts moves at USER-TEAMS-LIVE-01 (plan section 7 pattern).
 **Also (added 2026-11-11 by the USER-TEAMS-LIVE-01 LOCK):** user teams, approval settings per workflow and Chief of Staff drafts are deployed on staging 7ac9084 and passed Keith's live check USER-TEAMS-LIVE-01: PRD.md moves them from APPROVED FUTURE to GATED, with the front door. ARCHITECTURE.md 13.1 rows set to STAGING by that LOCK.
+**Also (added 2026-11-12, Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md):** add to the office decisions, in Keith's words: controls are click or tap and keyboard from the first release, and a user-walked character comes later (OFFICE-PLAYER-01); voice is a future feature, push to talk only, speech-to-text in en, zh-TW and zh-CN, text input always available (OFFICE-VOICE-01; provider, cost and audio storage still Keith's decision). The walking line is PRD.md line 483 today (earlier records say 482); OFFICE-SCENE-01 still waits for it. PRD.md is not edited until this task runs.
+
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COLLAB-GATE-TESTS-01
@@ -87935,7 +87939,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: the art kit is ready (Keith prepares it outside the repository), the provisional points below are decided, GOV-PRD-SYNC-01 has reclassified the walking line in PRD.md (line 482 today says walking-town / moving-character simulation is not current or next), and Keith approves the drawing-layer dependency. Keith decides.
+**Start condition:** NOT_READY. Ready when: the art kit is ready (Keith draws the final pieces outside the repository; the provisional points were decided on 2026-11-12, see Decided below), GOV-PRD-SYNC-01 has reclassified the walking line in PRD.md (line 482 today says walking-town / moving-character simulation is not current or next), and Keith approves the drawing-layer dependency. Keith decides.
 **Depends on:** OFFICE-01, GOV-PRD-SYNC-01.
 **Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/office/, frontend/package.json and the lockfile for the drawing layer, art assets in the frontend, the three message files).
 **Mutexes / resources:** set at admission (expected FRONTEND, PACKAGE, I18N).
@@ -87945,7 +87949,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** set at admission.
 **saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** The office becomes an isometric scene in a 16-bit style, in our own art: the reference picture is mood only and no outside assets are used. The art is a mix of AI exploration and hand-redrawn final pieces, with a provenance note per piece. The first release is one fixed room, and the characters walk around it. Walking is decoration only: each agent's status still comes from server data, as the office shows it today. A drawing layer is a new dependency, so admission takes the PACKAGE mutex and needs Keith's approval of the package. Reduced motion is honoured (carried from OFFICE-04). This replaces the "no walking, no engine, no canvas" lines in docs/RPG-OFFICE-01-PLAN.md (line 12 and the Rendering paragraph), which is historical and not edited. **Re-scoped into this task:** OFFICE-03 (per-agent figures, user agents pick a look, an appearance column, and the advisors-lead desk getting its own name and figure) and OFFICE-04 (typing and idle loops from the status, reduced motion). **Provisional, still open with Keith:** how the characters move; how many desks the room holds; piece size and palette; who draws the first kit.
+**Scope:** The office becomes an isometric scene in a 16-bit style, in our own art: the reference picture is mood only and no outside assets are used. The art is a mix of AI exploration and hand-redrawn final pieces, with a provenance note per piece. The first release is one fixed room, and the characters walk around it. Walking is decoration only: each agent's status still comes from server data, as the office shows it today. A drawing layer is a new dependency, so admission takes the PACKAGE mutex and needs Keith's approval of the package. Reduced motion is honoured (carried from OFFICE-04). This replaces the "no walking, no engine, no canvas" lines in docs/RPG-OFFICE-01-PLAN.md (line 12 and the Rendering paragraph), which is historical and not edited. **Re-scoped into this task:** OFFICE-03 (per-agent figures, user agents pick a look, an appearance column, and the advisors-lead desk getting its own name and figure) and OFFICE-04 (typing and idle loops from the status, reduced motion). **Decided (Keith, 2026-11-10 to 2026-11-12, review window; recorded 2026-11-12 in docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md):** isometric 16-bit in a bright daytime mood, our own art; one fixed room with 12 desks (4 system agents, 8 user agents), extra agents in a side list that opens the same panel as a desk; floor tiles 32x16 px and characters about 32 px tall shown enlarged, with one desk also tested at 64x32 before the kit is committed; a working agent sits and types at its desk only while a real run is going, idle agents wander and come back, movement is decoration only (status from the server) and reduced motion turns wandering off; controls are click or tap and keyboard from the first release (a user-walked character is OFFICE-PLAYER-01, later); Keith draws every final piece himself, AI makes concepts only, palette v1 (32 colours) approved, starter kit in C:\Users\knlee\office-art (palette, templates, README, ai-log.csv, pieces.csv), provenance logged for every piece. **Offered, not decided:** an optional checker for PNG size, palette and transparency (Keith asks for it, or it is dropped at this task's stage-start).
 
 ### OFFICE-BUILD-01 — Users build their own office
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87994,6 +87998,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Selling unique pieces: a piece catalog; per-user ownership that records the purchase event id; a purchase route; a server check that a user only places pieces they own; and refund handling. Stripe is not active today, and user_entitlements cannot hold item ownership, so ownership needs its own storage.
+
+### OFFICE-PLAYER-01 — A character the user walks around the office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-PLAYER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 from the office controls and voice discussion (Keith, 2026-11-10 to 2026-11-12, review window) — not admitted.
+**Task ID:** OFFICE-PLAYER-01
+**Title:** A character the user walks around the office
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: the fixed office (OFFICE-SCENE-01) has shipped. Keith decides.
+**Depends on:** OFFICE-SCENE-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/office/, art assets in the frontend, the three message files).
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10 to 2026-11-12, review window).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the office controls decision (Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md): click or tap and keyboard stay the always-available controls; later the user can walk a character of their own (arrow keys, a thumb stick on phones, collision with furniture, walking up to an agent to talk to it). Walking stays decoration; agent status still comes from the server. The player character's art waits until the agent characters are done (Keith draws it). Reduced motion respected.
+
+### OFFICE-VOICE-01 — Push-to-talk voice to an agent in the office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-VOICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 from the office controls and voice discussion (Keith, 2026-11-10 to 2026-11-12, review window) — not admitted.
+**Task ID:** OFFICE-VOICE-01
+**Title:** Push-to-talk voice to an agent in the office
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides the speech provider, the cost per minute and what audio is stored (recommended default: audio never stored). Keith decides.
+**Depends on:** OFFICE-SCENE-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/office/ and the chat input, a gateway speech route or provider client, configuration for the provider key, the three message files).
+**Mutexes / resources:** set at admission (expected FRONTEND, GATEWAY, I18N; ENV and PROVIDER-LIVE for the provider check).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10 to 2026-11-12, review window).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Decided (Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md): push to talk only, the user holds a button or key while speaking to the selected or nearby agent and the microphone listens only while it is held; microphone permission asked only when voice is first used; speech-to-text for en, zh-TW and zh-CN; spoken replies optional and later; text input always available. Recommended, not decided: audio never stored and a clear notice before first use; hands-free listening is a possible later addition. Nothing for voice exists in the code or in PRD.md today (control-plane check 2026-11-12). Evidence class provisional: LOCAL-TESTS, with a provider-live check set at the stage-start.
 
 ### OFFICE-05 — Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
