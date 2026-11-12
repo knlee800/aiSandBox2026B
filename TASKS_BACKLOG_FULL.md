@@ -88758,7 +88758,7 @@ taskId=PAGE-STATUS-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. The hardcoded English status and error messages and fallbacks in page.tsx moved to a new pageStatus namespace (99 keys) in en, zh-TW and zh-CN through getPageStatusMessages(locale), with a fill helper for placeholders; no behaviour change; 3 key and source tests; sonnet subagent, fast-forwarded as cfc862a; control-plane rerun: frontend 1675 of 1675, tsc and build 0. Not deployed; it goes out with STAGING-DEPLOY-SNAP-05. The worktree and branch stay until Keith removes the worker's four untracked scratch files. Checkpoint: docs/PAGE-STATUS-I18N-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (PAGE-CHAT-I18N-01) / 1 superseded (internal error text that can surface, into PAGE-CHAT-I18N-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
 **Task ID:** PAGE-STATUS-I18N-01
 **Title:** Translate the older hardcoded status messages on the workspace page
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88775,6 +88775,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-NOTICE-01 worker: page.tsx still sets hardcoded English status messages (for example Project opened. and Workspace snapshot restored.), which predate the multilingual-first rule. List them, move each to en, zh-TW and zh-CN keys through the existing hook with real translations, tests on the keys; no behaviour change.
+
+### PAGE-CHAT-I18N-01 — Translate the remaining English chat lines and visible error text on the workspace page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PAGE-CHAT-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PAGE-STATUS-I18N-01 LOCK — not admitted.
+**Task ID:** PAGE-CHAT-I18N-01
+**Title:** Translate the remaining English chat lines and visible error text on the workspace page
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** PAGE-STATUS-I18N-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), the three message files and tests.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the PAGE-STATUS-I18N-01 worker: page.tsx still appends English auth-module assistant chat lines (about 9, for example Auth module installation failed: ...) and has throw new Error(...) literals; list the ones that can reach the screen and move them to en, zh-TW and zh-CN keys with real translations and key tests; internal-only text stays.
 
 ### SNAPSHOT-NOTICE-02 — Clear the not-restored files notice when the user switches session
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
