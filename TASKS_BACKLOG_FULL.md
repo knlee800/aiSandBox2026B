@@ -84392,7 +84392,7 @@ taskId=PREVIEW-ORIGIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-ORIGIN-01-STAGE-START.md, ab078f5); waiting for Keith's approval.
 **Task ID:** PREVIEW-ORIGIN-01
 **Title:** Generated-app previews run on the platform origin: isolate them
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
