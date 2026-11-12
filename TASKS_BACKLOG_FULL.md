@@ -88882,13 +88882,13 @@ taskId=STAGING-DEPLOY-SNAP-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-05
 **Title:** Deploy the session-scoped notice (and any later snapshot follow-ups) and Keith checks it
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for PAGE-STATUS-I18N-01 and SNAPSHOT-LABEL-01 to deploy them together).
+**Start condition:** READY (SNAPSHOT-NOTICE-02, PAGE-STATUS-I18N-01 and SNAPSHOT-LABEL-01 LOCKED; Keith approved 2026-11-12). Was: NOT_READY. Ready when: Keith approves the deploy (it may wait for PAGE-STATUS-I18N-01 and SNAPSHOT-LABEL-01 to deploy them together).
 **Depends on:** SNAPSHOT-NOTICE-02.
 **Primary write scope:** records; host state (deploy).
 **Mutexes / resources:** STAGING, ENV.
