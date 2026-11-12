@@ -88734,22 +88734,22 @@ taskId=SNAPSHOT-NOTICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-NOTICE-01
 **Title:** Tell the user which files were not restored
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-BINARY-01.
-**Primary write scope:** PROVISIONAL: the gateway project open response (failed file paths) and the workspace page notice; the three message files.
-**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Primary write scope:** set 2026-11-12: services/api-gateway/src/projects/projects.service.ts, services/api-gateway/src/projects/projects.service.spec.ts, services/api-gateway/src/projects/projects.controller.ts, services/api-gateway/src/projects/projects.controller.spec.ts, services/api-gateway/src/sessions/session.controller.ts, services/api-gateway/src/sessions/session.controller.spec.ts, frontend/lib/open-project-in-fresh-session.ts, frontend/lib/open-project-in-fresh-session.test.ts, frontend/components/workspace/workspace-projects.logic.ts, frontend/components/workspace/workspace-projects.logic.test.ts, frontend/components/workspace/workspace-snapshots.logic.ts, frontend/components/workspace/workspace-snapshots.logic.test.ts, frontend/components/workspace/workspace-shell.tsx, frontend/components/workspace/workspace-shell.test.tsx, frontend/app/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json (frontend/app/ is listed as a directory for frontend/app/[locale]/app/page.tsx and its tests only).
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-BINARY-01 LOCK: restoreSnapshot now returns failedPaths and the reopen succeeds without them, but the user is not told. Return the failed paths from the project open (and the manual restore) and show a short translated notice naming them, in en, zh-TW and zh-CN.
 
 ### ARCHIVE-BINARY-01 — Binary-safe zip export and import
