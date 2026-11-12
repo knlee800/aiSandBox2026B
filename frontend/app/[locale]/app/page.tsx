@@ -180,6 +180,7 @@ import {
   resolveFrontendProviderModelPayload,
   resolveFrontendProviderModelSelection,
 } from '@/lib/ai/provider-model.catalogue';
+import { isNetworkFailure } from '@/lib/network-error';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
@@ -294,11 +295,6 @@ function translateAuthGenerationError(
     path: error.subject ?? '',
     reason: translateAuthReason(messages, error.subject ?? '', error.subject ?? ''),
   });
-}
-
-// A failed fetch rejects with a TypeError whose text is the browser's own English.
-function isNetworkFailure(error: unknown): boolean {
-  return error instanceof TypeError;
 }
 
 type WorkspaceChatMessageKind = 'ai' | 'system';
@@ -2040,7 +2036,7 @@ export default function AppPage() {
       } catch (fetchError) {
         const detail = fetchError instanceof Error ? fetchError.message : String(fetchError);
         console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_FETCH]', detail);
-        setSessionError(`[FETCH] ${detail}`);
+        setSessionError(isNetworkFailure(fetchError) ? pageStatusMessages.networkError : `[FETCH] ${detail}`);
         setSessions([]);
         setSelectedSessionId(null);
         setIsLoadingSessions(false);
@@ -2082,7 +2078,7 @@ export default function AppPage() {
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_UNEXPECTED]', detail);
-      setSessionError(`[UNEXPECTED] ${detail}`);
+      setSessionError(isNetworkFailure(error) ? pageStatusMessages.networkError : `[UNEXPECTED] ${detail}`);
       setSessions([]);
       setSelectedSessionId(null);
       setIsLoadingSessions(false);
@@ -2162,8 +2158,10 @@ export default function AppPage() {
       setSelectedProjectVisibility('private');
       setProjectListState('error');
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.workspacesLoadFailed,
       );
     }
@@ -2305,8 +2303,10 @@ export default function AppPage() {
       setSelectedSnapshotId(null);
       setSnapshotListState('error');
       setSnapshotActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectHistoryLoadFailed,
       );
     }
@@ -2353,8 +2353,10 @@ export default function AppPage() {
       setSelectedProjectId(null);
       setProjectListState('error');
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectsLoadFailed,
       );
     }
@@ -2438,8 +2440,10 @@ export default function AppPage() {
       setWorkspaceCreateNameInput('');
     } catch (error) {
       setWorkspaceActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.workspaceCreateFailed,
       );
     } finally {
@@ -2481,8 +2485,10 @@ export default function AppPage() {
       applyLoadedWorkspaces(loadedWorkspaces, normalizedWorkspaceId);
     } catch (error) {
       setWorkspaceActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.workspaceRenameFailed,
       );
     } finally {
@@ -2527,8 +2533,10 @@ export default function AppPage() {
       applyLoadedWorkspaces(loadedWorkspaces, null);
     } catch (error) {
       setWorkspaceActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.workspaceDeleteFailed,
       );
     } finally {
@@ -2592,8 +2600,10 @@ export default function AppPage() {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectMoveFailed,
       );
     }
@@ -2664,8 +2674,10 @@ export default function AppPage() {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectCreateFailed,
       );
       return false;
@@ -2794,8 +2806,10 @@ export default function AppPage() {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectOpenFailed,
       );
     } finally {
@@ -2852,8 +2866,10 @@ export default function AppPage() {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectOpenFailed,
       );
     } finally {
@@ -2917,8 +2933,10 @@ export default function AppPage() {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectOpenFailed,
       );
     } finally {
@@ -2986,8 +3004,10 @@ export default function AppPage() {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectVisibilityUpdateFailed,
       );
     }
@@ -3024,8 +3044,10 @@ export default function AppPage() {
       setSelectedPublicProjectId(null);
       setPublicProjectListState('error');
       setPublicProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.publicProjectsLoadFailed,
       );
     }
@@ -3056,8 +3078,10 @@ export default function AppPage() {
       setPublicProjectActionState('error');
       setPublicProjectActionMessage(null);
       setPublicProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.publicProjectLoadFailed,
       );
     }
@@ -3090,8 +3114,10 @@ export default function AppPage() {
       setPublicProjectActionState('error');
       setPublicProjectActionMessage(null);
       setPublicProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectForkFailed,
       );
     }
@@ -3125,8 +3151,10 @@ export default function AppPage() {
       setPublicProjectActionState('error');
       setPublicProjectActionMessage(null);
       setPublicProjectActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.projectForkFailed,
       );
     }
@@ -3204,8 +3232,10 @@ export default function AppPage() {
       }
       setCheckpointCreateState('create-error');
       setCheckpointCreateError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : workspaceMessages.savePointCreateFailed,
       );
     }
@@ -3243,8 +3273,10 @@ export default function AppPage() {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
       setSnapshotActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.snapshotSaveFailed,
       );
     }
@@ -3289,8 +3321,10 @@ export default function AppPage() {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
       setSnapshotActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.snapshotRestoreFailed,
       );
     }
@@ -3329,8 +3363,10 @@ export default function AppPage() {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
       setSnapshotActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.archiveExportFailed,
       );
     }
@@ -3365,8 +3401,10 @@ export default function AppPage() {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
       setSnapshotActionError(
-        error instanceof Error && error.message.trim()
-          ? error.message
+        isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : error instanceof Error && error.message.trim()
+            ? error.message
           : pageStatusMessages.archiveImportFailed,
       );
     }
@@ -4481,7 +4519,9 @@ export default function AppPage() {
       const detail = error instanceof Error ? error.message : String(error);
       const failureMessage = toChatAssistantFailureMessage({
         rawMessage: detail,
-        fallbackMessage: pageStatusMessages.chatStatusCheckFailed,
+        fallbackMessage: isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : pageStatusMessages.chatStatusCheckFailed,
         copies: quotaRateLimitCopies,
       });
       setChatRequestState('failed');
@@ -5204,7 +5244,9 @@ export default function AppPage() {
       const detail = error instanceof Error ? error.message : String(error);
       const failureMessage = toChatAssistantFailureMessage({
         rawMessage: detail,
-        fallbackMessage: pageStatusMessages.chatExecutionFailed,
+        fallbackMessage: isNetworkFailure(error)
+          ? pageStatusMessages.networkError
+          : pageStatusMessages.chatExecutionFailed,
         copies: quotaRateLimitCopies,
       });
       setChatRequestState('failed');
@@ -5357,7 +5399,9 @@ export default function AppPage() {
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       appendAssistantMessage(
-        fill(pageStatusMessages.authInstallCheckpointFailed, { detail }),
+        fill(pageStatusMessages.authInstallCheckpointFailed, {
+          detail: isNetworkFailure(error) ? pageStatusMessages.networkError : detail,
+        }),
       );
       return;
     }
@@ -5386,7 +5430,9 @@ export default function AppPage() {
         return;
       }
       const detail = error instanceof Error ? error.message : String(error);
-      appendAssistantMessage(fill(pageStatusMessages.authGenerationFailed, { detail }));
+      appendAssistantMessage(fill(pageStatusMessages.authGenerationFailed, {
+        detail: isNetworkFailure(error) ? pageStatusMessages.networkError : detail,
+      }));
       return;
     }
 

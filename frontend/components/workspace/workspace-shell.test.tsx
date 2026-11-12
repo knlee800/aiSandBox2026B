@@ -11116,7 +11116,37 @@ describe('auth module reasons, generation errors and network fallback are transl
       pageSource,
       /setSessionActionError\(isNetworkFailure\(error\) \? pageStatusMessages\.networkError : detail\)/,
     );
-    assert.match(pageSource, /error instanceof TypeError/);
+    assert.match(pageSource, /import \{ isNetworkFailure \} from '@\/lib\/network-error'/);
+    assert.doesNotMatch(pageSource, /error instanceof TypeError/);
+  });
+
+  test('NETWORK-ERROR-I18N-01: every request-failure catch block shows the translated network error', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    // The generic "message or translated fallback" blocks (workspace, project, snapshot,
+    // checkpoint and similar loads and actions).
+    const messageOrFallback = pageSource.match(
+      /isNetworkFailure\(error\)\s*\? pageStatusMessages\.networkError\s*: error instanceof Error && error\.message\.trim\(\)/g,
+    );
+    assert.ok(messageOrFallback && messageOrFallback.length >= 20, 'message-or-fallback catch blocks');
+    assert.doesNotMatch(pageSource, /\n\s+error instanceof Error && error\.message\.trim\(\)\n\s+\? error\.message\n/);
+    assert.match(pageSource, /isNetworkFailure\(fetchError\) \? pageStatusMessages\.networkError/);
+    assert.match(pageSource, /isNetworkFailure\(error\) \? pageStatusMessages\.networkError : `\[UNEXPECTED\]/);
+    assert.match(
+      pageSource,
+      /fallbackMessage: isNetworkFailure\(error\)\s*\? pageStatusMessages\.networkError\s*: pageStatusMessages\.chatStatusCheckFailed/,
+    );
+    assert.match(
+      pageSource,
+      /fallbackMessage: isNetworkFailure\(error\)\s*\? pageStatusMessages\.networkError\s*: pageStatusMessages\.chatExecutionFailed/,
+    );
+    assert.match(
+      pageSource,
+      /authInstallCheckpointFailed, \{\s*detail: isNetworkFailure\(error\) \? pageStatusMessages\.networkError : detail/,
+    );
+    assert.match(
+      pageSource,
+      /authGenerationFailed, \{\s*detail: isNetworkFailure\(error\) \? pageStatusMessages\.networkError : detail/,
+    );
   });
 });
 
