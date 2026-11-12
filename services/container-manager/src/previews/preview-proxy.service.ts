@@ -45,6 +45,18 @@ export class PreviewProxyService {
   }
 
   /**
+   * BROWSER-SMOKE-02: the app root of a running static HTML preview, which
+   * browser smoke serves from the container workspace when no port is
+   * registered.
+   *
+   * @param sessionId - The session ID
+   * @returns The registered app root, or null
+   */
+  getStaticRoot(sessionId: string): string | null {
+    return this.previewService.getStaticRoot(sessionId);
+  }
+
+  /**
    * Get container IP address from Docker
    *
    * @param sessionId - The session ID

@@ -1,5 +1,11 @@
 import 'reflect-metadata';
-import { INestApplicationContext, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  GoneException,
+  INestApplicationContext,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import axios from 'axios';
 import { PreviewProxyService } from './preview-proxy.service';
@@ -40,10 +46,17 @@ jest.mock('../docker/docker-runtime.service', () => {
   return { ...actual, DockerRuntimeService };
 });
 
+// BROWSER-SMOKE-02: the session-ended hook keeps its listeners, so the module
+// test can end a session the way SessionsService does.
+const sessionEndedListeners: Array<(sessionId: string) => void> = [];
+
 jest.mock('../sessions/sessions.service', () => {
   class SessionsService {
     assertSessionUsable() {
       return undefined;
+    }
+    onSessionEnded(listener: (sessionId: string) => void) {
+      sessionEndedListeners.push(listener);
     }
   }
   return { SessionsService };
@@ -109,6 +122,111 @@ describe('PreviewProxyService getProxyTarget', () => {
     await expect(proxy.getProxyTarget('session-1')).rejects.toBeInstanceOf(
       InternalServerErrorException,
     );
+  });
+});
+
+describe('BROWSER-SMOKE-02: static preview roots in the registry', () => {
+  const sessionsService = { assertSessionUsable: jest.fn() };
+  const dockerRuntimeService = { findContainerBySessionId: jest.fn() };
+  let registry: PreviewPortRegistry;
+  let proxy: PreviewProxyService;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    dockerRuntimeService.findContainerBySessionId.mockResolvedValue(runningContainer());
+    registry = new PreviewPortRegistry(sessionsService as any, dockerRuntimeService as any);
+    proxy = new PreviewProxyService(registry, dockerRuntimeService as any);
+  });
+
+  it('registers, reads and clears a static root', async () => {
+    expect(registry.getStaticRoot('session-1')).toBeNull();
+
+    await expect(registry.registerStaticPreview('session-1', '/workspace/site')).resolves.toEqual({
+      sessionId: 'session-1',
+      appRoot: '/workspace/site',
+      registered: true,
+    });
+
+    expect(registry.getStaticRoot('session-1')).toBe('/workspace/site');
+    expect(proxy.getStaticRoot('session-1')).toBe('/workspace/site');
+    expect(registry.getStaticRoot('session-2')).toBeNull();
+
+    registry.unregisterStaticPreview('session-1');
+    expect(registry.getStaticRoot('session-1')).toBeNull();
+  });
+
+  it('accepts /workspace itself and drops a trailing slash', async () => {
+    await registry.registerStaticPreview('session-1', '/workspace');
+    expect(registry.getStaticRoot('session-1')).toBe('/workspace');
+
+    await registry.registerStaticPreview('session-2', '/workspace/a/b/');
+    expect(registry.getStaticRoot('session-2')).toBe('/workspace/a/b');
+  });
+
+  it.each([
+    ['/etc'],
+    ['/'],
+    [''],
+    ['workspace'],
+    ['workspace/site'],
+    ['/workspacex'],
+    ['/workspace-other/site'],
+    ['/workspace/..'],
+    ['/workspace/../etc'],
+    ['/workspace/site/../../etc'],
+    ['/workspace/./site'],
+    ['/workspace//site'],
+    ['/workspace/si\\te'],
+    ['/workspace/site\0'],
+  ])('refuses the app root %j with 400 and registers nothing', async (appRoot) => {
+    const attempt = registry.registerStaticPreview('session-1', appRoot);
+
+    await expect(attempt).rejects.toBeInstanceOf(BadRequestException);
+    expect(registry.getStaticRoot('session-1')).toBeNull();
+    expect(dockerRuntimeService.findContainerBySessionId).not.toHaveBeenCalled();
+  });
+
+  it('refuses a non-string app root', async () => {
+    await expect(registry.registerStaticPreview('session-1', undefined as any)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('keeps the session check and the running-container check', async () => {
+    sessionsService.assertSessionUsable.mockImplementationOnce(() => {
+      throw new GoneException('Session session-1 has been terminated');
+    });
+    await expect(registry.registerStaticPreview('session-1', '/workspace')).rejects.toBeInstanceOf(
+      GoneException,
+    );
+
+    dockerRuntimeService.findContainerBySessionId.mockResolvedValue({
+      inspect: async () => ({ State: { Running: false } }),
+    });
+    await expect(registry.registerStaticPreview('session-1', '/workspace')).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
+    expect(registry.getStaticRoot('session-1')).toBeNull();
+  });
+
+  it('unregisterPreviewPort clears both the port and the static root', async () => {
+    await registry.registerPreviewPort('session-1', 3001);
+    await registry.registerStaticPreview('session-1', '/workspace');
+
+    registry.unregisterPreviewPort('session-1');
+
+    expect(registry.getRegisteredPort('session-1')).toBeNull();
+    expect(registry.getStaticRoot('session-1')).toBeNull();
+  });
+
+  it('unregisterStaticPreview leaves a registered port in place', async () => {
+    await registry.registerPreviewPort('session-1', 3001);
+    await registry.registerStaticPreview('session-1', '/workspace');
+
+    registry.unregisterStaticPreview('session-1');
+
+    expect(registry.getRegisteredPort('session-1')).toBe(3001);
+    expect(registry.getStaticRoot('session-1')).toBeNull();
   });
 });
 
@@ -198,6 +316,52 @@ describe('BROWSER-SMOKE-01 module wiring: PreviewModule with SessionsModule', ()
     expect(afterStop.success).toBe(false);
     expect(afterStop.error).toBe(
       'Preview target not available: No preview port registered for session session-wired',
+    );
+  });
+
+  it('BROWSER-SMOKE-02: the preview service subscribes once to session ends on init', () => {
+    expect(sessionEndedListeners).toHaveLength(1);
+  });
+
+  it('BROWSER-SMOKE-02: lets browser smoke reach a static preview from its app root, and not after its session ends', async () => {
+    const previewService = ctx.get(PreviewService);
+    const registry = ctx.get(PreviewPortRegistry);
+    const browserSmoke = ctx.get(BrowserSmokeService);
+    jest.spyOn(ctx.get(PreviewStrategyResolver), 'resolve').mockResolvedValue({
+      type: 'static-html',
+      framework: 'Static HTML',
+      command: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
+      appRoot: '/workspace/site',
+      servingMode: 'direct-read',
+    } as any);
+    dockerStub.execInContainerBySessionId.mockResolvedValue({
+      exitCode: 0,
+      stdout: JSON.stringify({ success: true, url: 'x', pageTitle: 'Site', durationMs: 5 }),
+      stderr: '',
+    });
+
+    const started = await previewService.startPreview('session-static-wired');
+    expect(started.status).toBe('running');
+    expect(registry.getStaticRoot('session-static-wired')).toBe('/workspace/site');
+
+    const smoke = await browserSmoke.run({ sessionId: 'session-static-wired', url: '/about.html' });
+    expect(smoke.success).toBe(true);
+    expect(dockerStub.execInContainerBySessionId).toHaveBeenCalledTimes(1);
+    const env = dockerStub.execInContainerBySessionId.mock.calls[0][3];
+    expect(env.SMOKE_URL).toBe('http://static-preview.invalid/about.html');
+    expect(env.SMOKE_STATIC_ROOT).toBe('/workspace/site');
+
+    // The session ends: SessionsService tells its listeners.
+    for (const listener of sessionEndedListeners) {
+      listener('session-static-wired');
+    }
+
+    expect(previewService.getPreviewStatus('session-static-wired')).toBeNull();
+    expect(registry.getStaticRoot('session-static-wired')).toBeNull();
+    const afterEnd = await browserSmoke.run({ sessionId: 'session-static-wired' });
+    expect(afterEnd.success).toBe(false);
+    expect(afterEnd.error).toBe(
+      'Preview target not available: No preview port registered for session session-static-wired',
     );
   });
 });

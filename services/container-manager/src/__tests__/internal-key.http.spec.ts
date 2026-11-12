@@ -134,6 +134,9 @@ function methodsFor(route: Route): string[] {
  * routes (list, read, write, delete, mkdir, search), which followed symlinks.
  * CM-GIT-HOST-01 removed POST /api/sessions (create), POST /api/git/:sessionId/init
  * and GET /api/git/:sessionId/history: uncalled, and they ran git on the host.
+ * BROWSER-SMOKE-02 removed POST /api/internal/sessions/:id/previews (the
+ * internal preview port register route): uncalled, as the preview service
+ * fills the registry itself.
  */
 const EXPECTED_INVENTORY = [
   'POST /api/sessions/:id/start',
@@ -151,7 +154,6 @@ const EXPECTED_INVENTORY = [
   'GET /api/internal/sessions/:id/dirs',
   'GET /api/internal/sessions/:id/stat',
   'POST /api/internal/sessions/:id/browser-smoke',
-  'POST /api/internal/sessions/:id/previews',
   'POST /api/git/:sessionId/commit',
   'POST /api/git/:sessionId/revert',
   'GET /api/git/:sessionId/checkpoints',
@@ -200,13 +202,13 @@ describe('container-manager route inventory (CM-AUTH-01)', () => {
     expect(providers).toContainEqual({ provide: APP_GUARD, useClass: InternalServiceAuthGuard });
   });
 
-  it('serves exactly the expected 49 routes (48 guarded + GET /api/health)', () => {
+  it('serves exactly the expected 48 routes (47 guarded + GET /api/health)', () => {
     const actual = routes.map(routeKey);
     // One line per route, so the real serving paths (F2) show in the test log.
     console.info(`CM-AUTH-01 route inventory (${actual.length}):\n${actual.join('\n')}`);
     expect(actual.sort()).toEqual([...EXPECTED_INVENTORY].sort());
-    expect(routes).toHaveLength(49);
-    expect(guardedRoutes).toHaveLength(48);
+    expect(routes).toHaveLength(48);
+    expect(guardedRoutes).toHaveLength(47);
   });
 
   it('marks exactly one handler exempt: HealthController.getHealth', () => {
@@ -354,8 +356,8 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     }
   });
 
-  it('mounts every AppModule controller (13) with mocked services', () => {
-    expect(controllers).toHaveLength(13);
+  it('mounts every AppModule controller (12) with mocked services', () => {
+    expect(controllers).toHaveLength(12);
     expect(mocks.size).toBeGreaterThan(0);
   });
 
@@ -404,15 +406,15 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
           await send(method, concretePath(route.path), internalKey);
         }
       }
-      // Two handlers validate their input before calling a service; send one
-      // valid request to each.
+      // One handler validates its input before calling a service; send it a
+      // valid request (BROWSER-SMOKE-02 removed the other, the preview port
+      // register route).
       const validSamples: Record<string, [string, string, unknown]> = {
         InternalCheckpointHistoryController: [
           'POST',
           '/api/internal/checkpoint-history/11111111-1111-4111-8111-111111111111/save',
           { projectId: '22222222-2222-4222-8222-222222222222' },
         ],
-        InternalPreviewsController: ['POST', '/api/internal/sessions/p1/previews', { port: 3000 }],
       };
       const sample = validSamples[controller.name];
       if (sample) {
@@ -489,6 +491,28 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     expect(allCalls()).toBe(0);
   });
 
+  it.each([
+    ['POST', '/api/internal/sessions/p1/previews', { port: 3000 }],
+    ['POST', '/api/internal/sessions/3f2a8c1e-0b4d-4c5e-9f6a-7b8c9d0e1f2a/previews', { port: 3001 }],
+  ])('BROWSER-SMOKE-02: removed route %s %s is not found even with the key', async (method, path, body) => {
+    const response = await send(method, path, internalKey, body);
+    expect(isRouteNotFound(response)).toBe(true);
+    expect(allCalls()).toBe(0);
+  });
+
+  it('BROWSER-SMOKE-02: the removed preview register route answers 404 without the key too', async () => {
+    // The global guard runs only for a matched route, so an unmatched path is
+    // Express's 404 with or without the key.
+    const response = await send('POST', '/api/internal/sessions/p1/previews', undefined, { port: 3000 });
+    expect(isRouteNotFound(response)).toBe(true);
+    expect(allCalls()).toBe(0);
+  });
+
+  it('BROWSER-SMOKE-02: no remaining route registers a preview port', () => {
+    expect(routes.filter((route) => /\/previews$/.test(route.path))).toEqual([]);
+    expect(controllers.map((controller) => controller.name)).not.toContain('InternalPreviewsController');
+  });
+
   it('CM-GIT-HOST-01: no remaining route is a git init or history route, or a bare session create', () => {
     const keys = routes.map(routeKey);
     expect(keys.filter((key) => /^POST \/api\/sessions$/.test(key))).toEqual([]);
@@ -538,11 +562,11 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
       });
     }
 
-    it('covers every remaining route with a session id parameter (28)', () => {
+    it('covers every remaining route with a session id parameter (27)', () => {
       expect(sessionRoutes.map(routeKey).sort()).toEqual(
         EXPECTED_INVENTORY.filter((key) => SESSION_PARAM.test(key)).sort(),
       );
-      expect(sessionRoutes).toHaveLength(28);
+      expect(sessionRoutes).toHaveLength(27);
     });
 
     describe.each(sessionRoutes.map((route) => [routeKey(route), route] as const))('%s', (_name, route) => {

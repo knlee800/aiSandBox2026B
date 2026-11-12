@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { SessionsService } from '../sessions/sessions.service';
 import { DockerRuntimeService } from '../docker/docker-runtime.service';
 import { PreviewStrategyResolver } from './preview-strategy.resolver';
@@ -44,7 +44,7 @@ const STANDARD_CONTENT_TYPES: Record<string, string> = {
 };
 
 @Injectable()
-export class PreviewService {
+export class PreviewService implements OnModuleInit {
   private activePreviews: Map<string, PreviewProcess> = new Map();
   private portPool: Set<number> = new Set();
   private readonly PORT_RANGE_START = 3001;
@@ -64,6 +64,32 @@ export class PreviewService {
     for (let port = this.PORT_RANGE_START; port <= this.PORT_RANGE_END; port++) {
       this.portPool.add(port);
     }
+  }
+
+  /**
+   * BROWSER-SMOKE-02: drop a session's preview when the session ends.
+   * SessionsService cannot inject this service (PreviewModule imports
+   * SessionsModule), so this service subscribes to its session-ended hook.
+   */
+  onModuleInit(): void {
+    this.sessionsService.onSessionEnded((sessionId) => this.handleSessionEnded(sessionId));
+  }
+
+  /**
+   * BROWSER-SMOKE-02: a session ended or its container was removed. Drop its
+   * preview entry, return the port to the pool and clear its browser-smoke
+   * target. Nothing is run in the container, which is gone or going. A
+   * session with no preview is left alone.
+   */
+  handleSessionEnded(sessionId: string): void {
+    const preview = this.activePreviews.get(sessionId);
+    if (!preview) {
+      return;
+    }
+
+    this.activePreviews.delete(sessionId);
+    this.releasePort(preview.port);
+    this.previewPortRegistry.unregisterPreviewPort(sessionId);
   }
 
   /**
@@ -112,14 +138,16 @@ export class PreviewService {
     console.log(`Final command: ${finalCommand}`);
 
     if (strategy.type === 'static-html') {
-      this.activePreviews.set(sessionId, {
+      const staticPreview: PreviewProcess = {
         port,
         status: 'running',
         command: detectedCommand,
         framework,
         appRoot: strategy.appRoot,
         startedAt: new Date(),
-      });
+      };
+      this.activePreviews.set(sessionId, staticPreview);
+      await this.registerStaticSmokeTarget(sessionId, staticPreview);
 
       return {
         port,
@@ -369,6 +397,47 @@ export class PreviewService {
       !(current && current.status === 'running' && current.port === preview.port)
     ) {
       this.previewPortRegistry.unregisterPreviewPort(sessionId);
+    }
+  }
+
+  /**
+   * BROWSER-SMOKE-02: record a running static HTML preview's app root in the
+   * registry browser smoke reads, so it can serve the preview's files from
+   * the container workspace (nothing listens on a static preview's port).
+   * A failed registration is logged and does not fail the preview.
+   */
+  private async registerStaticSmokeTarget(
+    sessionId: string,
+    preview: PreviewProcess,
+  ): Promise<void> {
+    const appRoot = preview.appRoot || '/workspace';
+    let registeredRoot: string;
+    try {
+      registeredRoot = (await this.previewPortRegistry.registerStaticPreview(sessionId, appRoot))
+        .appRoot;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `Browser smoke static target not registered for session ${sessionId} at ${appRoot}: ${message}`,
+      );
+      return;
+    }
+
+    // A stop during the registration must not leave the old root behind.
+    // Only the static root is cleared: a port registered meanwhile belongs
+    // to another preview.
+    const current = this.activePreviews.get(sessionId);
+    if (
+      current !== preview &&
+      this.previewPortRegistry.getStaticRoot(sessionId) === registeredRoot &&
+      !(
+        current &&
+        current.status === 'running' &&
+        current.framework === 'Static HTML' &&
+        (current.appRoot || '/workspace') === appRoot
+      )
+    ) {
+      this.previewPortRegistry.unregisterStaticPreview(sessionId);
     }
   }
 

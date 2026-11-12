@@ -1606,3 +1606,325 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
     });
   });
 });
+
+describe('SessionsService session-ended listeners (BROWSER-SMOKE-02)', () => {
+  const idleTimeoutMs = 30 * 60 * 1000;
+  const maxLifetimeMs = 60 * 60 * 1000;
+
+  let service: SessionsService;
+  let mockStopRun: jest.Mock<any>;
+  let mockDeleteRun: jest.Mock<any>;
+  let mockTerminateRun: jest.Mock<any>;
+  let mockLifetimeSessionGet: jest.Mock<any>;
+  let mockFindContainerBySessionId: jest.Mock<any>;
+  let mockStopContainer: jest.Mock<any>;
+  let mockRemoveContainer: jest.Mock<any>;
+  let mockGetSessionContainerState: jest.Mock<any>;
+  let mockExecInContainerBySessionId: jest.Mock<any>;
+  let mockNotifySessionStopped: jest.Mock<any>;
+  let consoleErrorSpy: ReturnType<typeof jest.spyOn>;
+  let consoleWarnSpy: ReturnType<typeof jest.spyOn>;
+
+  function tracking(): { lastActivity: Map<string, number> } {
+    return service as unknown as { lastActivity: Map<string, number> };
+  }
+
+  async function flush(): Promise<void> {
+    for (let i = 0; i < 3; i++) {
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockStopRun = jest.fn<any>().mockReturnValue({ changes: 1 });
+    mockDeleteRun = jest.fn<any>().mockReturnValue({ changes: 1 });
+    mockTerminateRun = jest.fn<any>().mockReturnValue({ changes: 1 });
+    mockLifetimeSessionGet = jest.fn<any>().mockReturnValue({
+      created_at: new Date().toISOString(),
+      terminated_at: null,
+      user_id: 'user-1',
+    });
+    mockStopContainer = jest.fn<any>().mockResolvedValue(undefined);
+    mockRemoveContainer = jest.fn<any>().mockResolvedValue(undefined);
+    mockFindContainerBySessionId = jest.fn<any>().mockResolvedValue({
+      id: 'container-1',
+      inspect: jest.fn<any>().mockResolvedValue({ State: { Running: true } }),
+    });
+    mockGetSessionContainerState = jest.fn<any>().mockResolvedValue('running');
+    mockExecInContainerBySessionId = jest.fn<any>().mockResolvedValue({
+      exitCode: 0,
+      stdout: 'ok',
+      stderr: '',
+    });
+    mockNotifySessionStopped = jest.fn<any>().mockResolvedValue(undefined);
+
+    mockPrepare.mockImplementation((sql: string) => {
+      const statement = (overrides: Record<string, unknown>) => ({
+        get: jest.fn(),
+        run: jest.fn(),
+        all: jest.fn().mockReturnValue([]),
+        ...overrides,
+      });
+      if (sql.includes("SET status = 'stopped'")) {
+        return statement({ run: mockStopRun });
+      }
+      if (sql.includes('DELETE FROM sessions WHERE id = ?')) {
+        return statement({ run: mockDeleteRun });
+      }
+      if (sql.includes('SELECT terminated_at, termination_reason FROM sessions WHERE id = ?')) {
+        return statement({
+          get: jest.fn().mockReturnValue({ terminated_at: null, termination_reason: null }),
+        });
+      }
+      if (sql.includes('SELECT created_at, terminated_at, user_id FROM sessions WHERE id = ?')) {
+        return statement({ get: mockLifetimeSessionGet });
+      }
+      if (sql.includes('SET terminated_at') && sql.includes('terminated_at IS NULL')) {
+        return statement({ run: mockTerminateRun });
+      }
+      if (sql.includes('SELECT user_id FROM sessions WHERE id = ?')) {
+        return statement({ get: jest.fn().mockReturnValue({ user_id: 'user-1' }) });
+      }
+      return statement({});
+    });
+
+    service = new SessionsService(
+      {
+        notifySessionStarted: jest.fn<any>(),
+        notifySessionStopped: mockNotifySessionStopped,
+      } as any,
+      {
+        execInContainerBySessionId: mockExecInContainerBySessionId,
+        getSessionContainerState: mockGetSessionContainerState,
+        findContainerBySessionId: mockFindContainerBySessionId,
+        stopContainer: mockStopContainer,
+        removeContainer: mockRemoveContainer,
+      } as any,
+      {
+        sessionMaxLifetimeMs: maxLifetimeMs,
+        sessionIdleTimeoutMs: idleTimeoutMs,
+        maxConcurrentExecsPerSession: 3,
+      } as any,
+      { logTerminationEvent: jest.fn<any>() } as any,
+    );
+
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(async () => {
+    await flush();
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('calls every listener once on stopSession, after the container is removed', async () => {
+    const order: string[] = [];
+    mockRemoveContainer.mockImplementation(async () => {
+      order.push('removed');
+    });
+    const first = jest.fn((sessionId: string) => {
+      order.push(`first:${sessionId}`);
+    });
+    const second = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(first);
+    service.onSessionEnded(second);
+
+    const result = await service.stopSession('sess-stop');
+
+    expect(result).toEqual({ message: 'Session stopped successfully' });
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(first).toHaveBeenCalledWith('sess-stop');
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledWith('sess-stop');
+    expect(order).toEqual(['removed', 'first:sess-stop']);
+    expect(mockNotifySessionStopped).toHaveBeenCalledWith('sess-stop');
+  });
+
+  it('calls the listeners on stopSession even when the container removal fails', async () => {
+    mockFindContainerBySessionId.mockRejectedValue(new Error('no such container'));
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+
+    await expect(service.stopSession('sess-stop')).resolves.toEqual({
+      message: 'Session stopped successfully',
+    });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-stop');
+  });
+
+  it('does not call the listeners when stopSession finds no session', async () => {
+    mockStopRun.mockReturnValue({ changes: 0 });
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+
+    await expect(service.stopSession('sess-none')).rejects.toThrow('Session not found');
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('calls the listeners once on deleteSession', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+
+    const result = await service.deleteSession('sess-delete');
+
+    expect(result).toEqual({ message: 'Session deleted successfully' });
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-delete');
+    expect(mockDeleteRun).toHaveBeenCalledWith('sess-delete');
+    expect(mockRemoveContainer).toHaveBeenCalledWith('container-1');
+  });
+
+  it('calls the listeners once when removeSessionContainer removes the container, and not when it fails', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+
+    await service.removeSessionContainer('sess-remove');
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-remove');
+
+    mockFindContainerBySessionId.mockRejectedValue(new Error('no such container'));
+    await expect(service.removeSessionContainer('sess-remove-2')).rejects.toThrow(
+      'no such container',
+    );
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls the listeners when terminateIfContainerLost ends the session, keeping the 410', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+    mockExecInContainerBySessionId.mockRejectedValue(new Error('exec failed'));
+    mockGetSessionContainerState.mockResolvedValue('missing');
+
+    await expect(service.execInContainer('sess-lost', ['echo', 'hi'])).rejects.toThrow(
+      'Session sess-lost has been terminated (reason: container_lost)',
+    );
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-lost');
+    expect(mockTerminateRun).toHaveBeenCalledWith('container_lost', 'sess-lost');
+  });
+
+  it('does not call the listeners when a failed operation finds the container running', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+    mockExecInContainerBySessionId.mockRejectedValue(new Error('exec failed'));
+    mockGetSessionContainerState.mockResolvedValue('running');
+
+    await expect(service.execInContainer('sess-ok', ['echo', 'hi'])).rejects.toThrow('exec failed');
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('calls the listeners when the idle timeout ends the session, keeping the 410', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+    tracking().lastActivity.set('sess-idle', Date.now() - idleTimeoutMs - 1000);
+
+    await expect(service.execInContainer('sess-idle', ['echo', 'hi'])).rejects.toThrow(
+      'Session sess-idle expired due to inactivity (reason: idle_timeout)',
+    );
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-idle');
+    expect(mockExecInContainerBySessionId).not.toHaveBeenCalled();
+  });
+
+  it('calls the listeners when the max lifetime ends the session, keeping the 410', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+    mockLifetimeSessionGet.mockReturnValue({
+      created_at: new Date(Date.now() - maxLifetimeMs - 60_000).toISOString(),
+      terminated_at: null,
+      user_id: 'user-1',
+    });
+
+    await expect(service.execInContainer('sess-old', ['echo', 'hi'])).rejects.toThrow(
+      'Session sess-old expired due to max lifetime exceeded (reason: max_lifetime)',
+    );
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-old');
+  });
+
+  it('does not call the listeners again from the scheduled container cleanup', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+    tracking().lastActivity.set('sess-idle', Date.now() - idleTimeoutMs - 1000);
+
+    await expect(service.execInContainer('sess-idle', ['echo', 'hi'])).rejects.toThrow(
+      'idle_timeout',
+    );
+    await flush();
+
+    expect(mockRemoveContainer).toHaveBeenCalledWith('container-1');
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('a throwing listener does not break stopSession, and later listeners still run', async () => {
+    const throwing = jest.fn(() => {
+      throw new Error('listener boom');
+    });
+    const after = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(throwing);
+    service.onSessionEnded(after);
+
+    await expect(service.stopSession('sess-stop')).resolves.toEqual({
+      message: 'Session stopped successfully',
+    });
+
+    expect(throwing).toHaveBeenCalledWith('sess-stop');
+    expect(after).toHaveBeenCalledWith('sess-stop');
+    expect(
+      consoleErrorSpy.mock.calls.some((call) =>
+        String(call[0]).includes('Session-ended listener failed for session sess-stop'),
+      ),
+    ).toBe(true);
+  });
+
+  it('a rejecting or never-settling listener does not block or fail deleteSession', async () => {
+    const rejecting = jest.fn(() => Promise.reject(new Error('async boom')));
+    const pending = jest.fn(() => new Promise<void>(() => undefined));
+    service.onSessionEnded(rejecting);
+    service.onSessionEnded(pending);
+
+    await expect(service.deleteSession('sess-delete')).resolves.toEqual({
+      message: 'Session deleted successfully',
+    });
+    await flush();
+
+    expect(rejecting).toHaveBeenCalledWith('sess-delete');
+    expect(pending).toHaveBeenCalledWith('sess-delete');
+    expect(
+      consoleErrorSpy.mock.calls.some(
+        (call) =>
+          String(call[0]).includes('Session-ended listener failed for session sess-delete') &&
+          String(call[1]).includes('async boom'),
+      ),
+    ).toBe(true);
+  });
+
+  it('a throwing listener does not change the container-lost 410', async () => {
+    service.onSessionEnded(() => {
+      throw new Error('listener boom');
+    });
+    mockExecInContainerBySessionId.mockRejectedValue(new Error('exec failed'));
+    mockGetSessionContainerState.mockResolvedValue('missing');
+
+    let caught: unknown;
+    try {
+      await service.execInContainer('sess-lost', ['echo', 'hi']);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(GoneException);
+    expect((caught as GoneException).message).toBe(
+      'Session sess-lost has been terminated (reason: container_lost)',
+    );
+  });
+});

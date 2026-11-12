@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DockerRuntimeService } from '../docker/docker-runtime.service';
 import { PreviewProxyService } from '../previews/preview-proxy.service';
 
@@ -28,10 +28,77 @@ const MAX_NETWORK_ENTRY_CHARS = 300;
 const MAX_VISIBLE_TEXT_CHARS = 2000;
 const MAX_RESULT_JSON_BYTES = 32_768;
 
+/**
+ * BROWSER-SMOKE-02: a static HTML preview has nothing listening. Browser
+ * smoke opens this origin instead and Playwright answers its requests from
+ * the preview's app root. `.invalid` is reserved (RFC 2606) and never
+ * resolves, so nothing outside the route can answer for it.
+ */
+export const STATIC_PREVIEW_ORIGIN = 'http://static-preview.invalid';
+
+/**
+ * BROWSER-SMOKE-02: the in-container path check for static mode, embedded
+ * verbatim in SMOKE_SCRIPT and evaluated as-is by the unit tests.
+ *
+ * resolveStaticFile(pathLib, fs, root, pathname) decodes the URL pathname,
+ * resolves it under root, and answers:
+ * - { status: 400 } for a pathname that does not decode or holds a NUL;
+ * - { status: 403 } for anything outside root, lexically or through a
+ *   symlink (resolved === root or starts with root + sep);
+ * - { status: 404 } for a missing file, or a directory with no index.html;
+ * - { status: 200, filePath } otherwise (a directory serves its index.html).
+ *
+ * The script is piped through `echo` in sh, which may expand backslash
+ * escapes, so this source (like the whole script) holds no backslash.
+ */
+export const STATIC_FILE_RESOLVER_SOURCE = `
+function resolveStaticFile(pathLib, fs, root, pathname) {
+  var decoded;
+  try {
+    decoded = decodeURIComponent(pathname || '/');
+  } catch (e) {
+    return { status: 400 };
+  }
+  if (decoded.indexOf(String.fromCharCode(0)) !== -1) return { status: 400 };
+  var base = pathLib.resolve(root);
+  var resolved = pathLib.resolve(base, '.' + pathLib.sep + decoded);
+  if (resolved !== base && resolved.indexOf(base + pathLib.sep) !== 0) return { status: 403 };
+  var stat;
+  try {
+    stat = fs.statSync(resolved);
+  } catch (e) {
+    return { status: 404 };
+  }
+  if (stat.isDirectory()) {
+    resolved = pathLib.join(resolved, 'index.html');
+    try {
+      stat = fs.statSync(resolved);
+    } catch (e) {
+      return { status: 404 };
+    }
+  }
+  if (!stat.isFile()) return { status: 404 };
+  var realBase;
+  var realFile;
+  try {
+    realBase = fs.realpathSync(base);
+    realFile = fs.realpathSync(resolved);
+  } catch (e) {
+    return { status: 404 };
+  }
+  if (realFile !== realBase && realFile.indexOf(realBase + pathLib.sep) !== 0) return { status: 403 };
+  return { status: 200, filePath: realFile };
+}
+`.trim();
+
 const SMOKE_SCRIPT = `
 const { chromium } = require('/opt/browser-smoke/node_modules/playwright');
 const url = process.env.SMOKE_URL;
 const timeoutMs = parseInt(process.env.SMOKE_TIMEOUT_MS || '30000', 10);
+const staticRoot = process.env.SMOKE_STATIC_ROOT || '';
+const STATIC_ORIGIN = '${STATIC_PREVIEW_ORIGIN}';
+const STATIC_STATUS_TEXT = { 400: 'Bad request', 403: 'Forbidden', 404: 'Not found' };
+${STATIC_FILE_RESOLVER_SOURCE}
 (async () => {
   let browser;
   const startMs = Date.now();
@@ -50,6 +117,22 @@ const timeoutMs = parseInt(process.env.SMOKE_TIMEOUT_MS || '30000', 10);
     page.on('requestfailed', req => {
       networkErrors.push(req.url() + ' ' + (req.failure()?.errorText || 'failed'));
     });
+    if (staticRoot) {
+      const pathLib = require('path').posix;
+      const fs = require('fs');
+      await page.route((u) => u.origin === STATIC_ORIGIN, async (route) => {
+        try {
+          const target = resolveStaticFile(pathLib, fs, staticRoot, new URL(route.request().url()).pathname);
+          if (target.filePath) {
+            await route.fulfill({ path: target.filePath });
+          } else {
+            await route.fulfill({ status: target.status, contentType: 'text/plain', body: STATIC_STATUS_TEXT[target.status] || 'Error' });
+          }
+        } catch (err) {
+          await route.fulfill({ status: 500, contentType: 'text/plain', body: 'Error' }).catch(() => {});
+        }
+      });
+    }
     await page.goto(url, { timeout: timeoutMs, waitUntil: 'domcontentloaded' });
     const title = await page.title();
     const text = await page.evaluate(() => (document.body && document.body.innerText) ? document.body.innerText.slice(0, 2500) : '');
@@ -77,17 +160,35 @@ export class BrowserSmokeService {
 
     const relativeUrl = this.validateAndNormalizeUrl(request.url);
 
+    // A registered port wins. BROWSER-SMOKE-02: with no port, a running
+    // static HTML preview is served from its app root (static mode).
     let baseTarget: string;
+    let staticRoot: string | null = null;
     try {
       baseTarget = await this.previewProxyService.getProxyTarget(sessionId);
     } catch (err) {
-      return this.failureResult(
-        relativeUrl,
-        `Preview target not available: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      if (err instanceof NotFoundException) {
+        staticRoot = this.previewProxyService.getStaticRoot(sessionId);
+      }
+      if (!staticRoot) {
+        return this.failureResult(
+          relativeUrl,
+          `Preview target not available: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+      baseTarget = STATIC_PREVIEW_ORIGIN;
     }
 
     const fullUrl = baseTarget + relativeUrl;
+
+    const env: Record<string, string> = {
+      SMOKE_SCRIPT: SMOKE_SCRIPT,
+      SMOKE_URL: fullUrl,
+      SMOKE_TIMEOUT_MS: String(Math.max(1000, timeoutMs - 10_000)),
+    };
+    if (staticRoot) {
+      env.SMOKE_STATIC_ROOT = staticRoot;
+    }
 
     let execResult: { exitCode: number; stdout: string; stderr: string };
     try {
@@ -95,11 +196,7 @@ export class BrowserSmokeService {
         sessionId,
         ['sh', '-c', 'echo "$SMOKE_SCRIPT" | node'],
         '/workspace',
-        {
-          SMOKE_SCRIPT: SMOKE_SCRIPT,
-          SMOKE_URL: fullUrl,
-          SMOKE_TIMEOUT_MS: String(Math.max(1000, timeoutMs - 10_000)),
-        },
+        env,
         timeoutMs + 5_000,
       );
     } catch (err) {

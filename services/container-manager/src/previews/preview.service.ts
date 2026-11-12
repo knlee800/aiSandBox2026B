@@ -3,6 +3,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import * as path from 'path';
 import { SessionsService } from '../sessions/sessions.service';
 import { DockerRuntimeService } from '../docker/docker-runtime.service';
 
@@ -15,11 +16,17 @@ import { DockerRuntimeService } from '../docker/docker-runtime.service';
  *
  * BROWSER-SMOKE-01: filled by preview/PreviewService when a preview server
  * is running and cleared when it stops; exported by SessionsModule.
+ * BROWSER-SMOKE-02: also holds the app root of a running static HTML
+ * preview, which has no server listening, so browser smoke can serve its
+ * files from the container workspace instead.
  */
 @Injectable()
 export class PreviewService {
   // In-memory store: sessionId -> port
   private portRegistry: Map<string, number> = new Map();
+
+  // BROWSER-SMOKE-02: in-memory store: sessionId -> static preview app root
+  private staticRoots: Map<string, string> = new Map();
 
   constructor(
     private sessionsService: SessionsService,
@@ -82,12 +89,101 @@ export class PreviewService {
   }
 
   /**
-   * Unregister a preview port for a session
+   * BROWSER-SMOKE-02: register the app root of a running static HTML preview
+   * for a session container.
+   *
+   * Validations, as for a port:
+   * - Session must not be terminated (410 if terminated)
+   * - The app root must be /workspace or a path under /workspace, with no
+   *   '.' or '..' segment
+   * - Container must be running
+   *
+   * @param sessionId - The session ID
+   * @param appRoot - The preview's app root inside the container
+   * @returns Registration confirmation
+   * @throws GoneException if session is terminated
+   * @throws BadRequestException if the app root is outside /workspace
+   * @throws InternalServerErrorException if container validation fails
+   */
+  async registerStaticPreview(
+    sessionId: string,
+    appRoot: string,
+  ): Promise<{ sessionId: string; appRoot: string; registered: true }> {
+    this.sessionsService.assertSessionUsable(sessionId);
+
+    const root = this.normalizeStaticRoot(appRoot);
+
+    await this.validateSessionContainer(sessionId);
+
+    this.staticRoots.set(sessionId, root);
+
+    return {
+      sessionId,
+      appRoot: root,
+      registered: true,
+    };
+  }
+
+  /**
+   * BROWSER-SMOKE-02: get the registered static preview app root
+   *
+   * @param sessionId - The session ID
+   * @returns The app root, or null if none is registered
+   */
+  getStaticRoot(sessionId: string): string | null {
+    return this.staticRoots.get(sessionId) ?? null;
+  }
+
+  /**
+   * BROWSER-SMOKE-02: clear only the static preview app root, leaving any
+   * registered port (used when a static preview stops during registration).
+   *
+   * @param sessionId - The session ID
+   */
+  unregisterStaticPreview(sessionId: string): void {
+    this.staticRoots.delete(sessionId);
+  }
+
+  /**
+   * Unregister a session's browser-smoke target: the preview port and
+   * (BROWSER-SMOKE-02) the static preview app root.
    *
    * @param sessionId - The session ID
    */
   unregisterPreviewPort(sessionId: string): void {
     this.portRegistry.delete(sessionId);
+    this.staticRoots.delete(sessionId);
+  }
+
+  /**
+   * BROWSER-SMOKE-02: the app root must be /workspace or a path under it,
+   * written plainly: absolute, no '.' or '..' segment, no empty segment, no
+   * backslash and no NUL. A trailing slash is dropped.
+   */
+  private normalizeStaticRoot(appRoot: unknown): string {
+    const invalid = () =>
+      new BadRequestException('Static preview root must be /workspace or a path under /workspace');
+
+    if (typeof appRoot !== 'string') {
+      throw invalid();
+    }
+    const trimmed = appRoot.length > 1 ? appRoot.replace(/\/+$/, '') : appRoot;
+    if (trimmed.includes('\0') || trimmed.includes('\\')) {
+      throw invalid();
+    }
+    const segments = trimmed.split('/');
+    if (
+      segments[0] !== '' ||
+      segments[1] !== 'workspace' ||
+      segments.slice(1).some((segment) => segment === '' || segment === '.' || segment === '..')
+    ) {
+      throw invalid();
+    }
+    // Belt and braces: the plain path is its own normal form.
+    if (path.posix.normalize(trimmed) !== trimmed) {
+      throw invalid();
+    }
+    return trimmed;
   }
 
   /**

@@ -20,6 +20,9 @@ import { GovernanceConfig } from '../config/governance.config';
 import { GovernanceEventsService } from '../governance/governance-events.service';
 import { isPathInside, isSinglePathSegment } from '../files/path-containment';
 
+/** BROWSER-SMOKE-02: called with the id of a session that has ended. */
+export type SessionEndedListener = (sessionId: string) => void | Promise<void>;
+
 @Injectable()
 export class SessionsService {
   private db: Database.Database;
@@ -43,6 +46,14 @@ export class SessionsService {
    * idle/lifetime expiration detections.
    */
   private scheduledContainerCleanups: Set<string> = new Set();
+
+  /**
+   * BROWSER-SMOKE-02: listeners told when a session ends or its container is
+   * removed (stop, delete, container removal, container lost, idle timeout,
+   * max lifetime). PreviewModule's PreviewService subscribes here, because
+   * this service cannot inject it (PreviewModule imports SessionsModule).
+   */
+  private sessionEndedListeners: Array<SessionEndedListener> = [];
 
   constructor(
     private apiGatewayClient: ApiGatewayHttpClient,
@@ -146,7 +157,7 @@ export class SessionsService {
     // OPS-01-02: Reuse existing physical cleanup path for normal stop flow.
     // Keep stop semantics resilient by treating runtime cleanup as best-effort.
     try {
-      await this.removeSessionContainer(sessionId);
+      await this.removeContainerForSession(sessionId);
     } catch (error) {
       console.error(
         `Failed to remove container for session ${sessionId} during stop:`,
@@ -167,6 +178,9 @@ export class SessionsService {
     this.lastActivity.delete(sessionId);
     this.activeExecs.delete(sessionId);
 
+    // BROWSER-SMOKE-02: best-effort, never blocks or fails the stop.
+    this.notifySessionEnded(sessionId);
+
     return { message: 'Session stopped successfully' };
   }
 
@@ -178,7 +192,7 @@ export class SessionsService {
     // Task 40B-1: Remove container BEFORE deleting session data
     // Best-effort container cleanup (log errors but continue with deletion)
     try {
-      await this.removeSessionContainer(sessionId);
+      await this.removeContainerForSession(sessionId);
     } catch (error) {
       console.error(
         `Failed to remove container for session ${sessionId} during deletion:`,
@@ -216,6 +230,9 @@ export class SessionsService {
     // Task 8.3A & 8.3B: Clean up all governance tracking
     this.lastActivity.delete(sessionId);
     this.activeExecs.delete(sessionId);
+
+    // BROWSER-SMOKE-02: best-effort, never blocks or fails the delete.
+    this.notifySessionEnded(sessionId);
 
     return { message: 'Session deleted successfully' };
   }
@@ -304,10 +321,53 @@ export class SessionsService {
    * 2. Stop container if running
    * 3. Remove container
    *
+   * BROWSER-SMOKE-02: once the container is removed, the session-ended
+   * listeners are told (best-effort).
+   *
    * @param sessionId - Session UUID
    * @throws Error if container not found or removal fails
    */
   async removeSessionContainer(sessionId: string): Promise<void> {
+    await this.removeContainerForSession(sessionId);
+    this.notifySessionEnded(sessionId);
+  }
+
+  /**
+   * BROWSER-SMOKE-02: register a listener called when a session ends or its
+   * container is removed. Listeners are called best-effort: an error (thrown
+   * or rejected) is logged, and none blocks or fails the session operation.
+   * A listener may be called more than once for the same session.
+   */
+  onSessionEnded(listener: SessionEndedListener): void {
+    this.sessionEndedListeners.push(listener);
+  }
+
+  /** BROWSER-SMOKE-02: call every session-ended listener, best-effort. */
+  private notifySessionEnded(sessionId: string): void {
+    for (const listener of this.sessionEndedListeners) {
+      try {
+        const result = listener(sessionId);
+        if (result && typeof (result as Promise<void>).catch === 'function') {
+          (result as Promise<void>).catch((error: unknown) => {
+            this.logSessionEndedListenerError(sessionId, error);
+          });
+        }
+      } catch (error) {
+        this.logSessionEndedListenerError(sessionId, error);
+      }
+    }
+  }
+
+  private logSessionEndedListenerError(sessionId: string, error: unknown): void {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Session-ended listener failed for session ${sessionId}:`, message);
+  }
+
+  /**
+   * The container removal behind removeSessionContainer, without the
+   * session-ended listeners (stop and delete tell them once themselves).
+   */
+  private async removeContainerForSession(sessionId: string): Promise<void> {
     // Find container by session ID (fail-fast if not found)
     const container = await this.dockerRuntimeService.findContainerBySessionId(
       sessionId,
@@ -348,7 +408,7 @@ export class SessionsService {
     this.scheduledContainerCleanups.add(sessionId);
 
     setImmediate(() => {
-      void this.removeSessionContainer(sessionId)
+      void this.removeContainerForSession(sessionId)
         .catch((error: unknown) => {
           const message =
             error instanceof Error ? error.message : String(error);
@@ -438,6 +498,9 @@ export class SessionsService {
 
     this.lastActivity.delete(sessionId);
     this.activeExecs.delete(sessionId);
+
+    // BROWSER-SMOKE-02: best-effort, never changes the 410 below.
+    this.notifySessionEnded(sessionId);
 
     throw new GoneException(
       `Session ${sessionId} has been terminated (reason: container_lost)`,
@@ -996,6 +1059,9 @@ export class SessionsService {
       this.lastActivity.delete(sessionId);
       this.activeExecs.delete(sessionId);
 
+      // BROWSER-SMOKE-02: best-effort, never changes the 410 below.
+      this.notifySessionEnded(sessionId);
+
       // Reject request
       throw new GoneException(
         `Session ${sessionId} expired due to max lifetime exceeded (reason: max_lifetime)`,
@@ -1066,6 +1132,9 @@ export class SessionsService {
       // Clean up all in-memory tracking (must happen even if container cleanup fails)
       this.lastActivity.delete(sessionId);
       this.activeExecs.delete(sessionId);
+
+      // BROWSER-SMOKE-02: best-effort, never changes the 410 below.
+      this.notifySessionEnded(sessionId);
 
       // Reject request
       throw new GoneException(

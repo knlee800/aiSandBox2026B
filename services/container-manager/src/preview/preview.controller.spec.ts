@@ -38,7 +38,8 @@ describe('PreviewController static preview over HTTP (CM-BINARY-01)', () => {
   const dockerRuntimeService = {
     readFileBufferFromContainer: jest.fn<Promise<Buffer>, [string, string]>(),
   };
-  const sessionsService = { assertSessionUsable: jest.fn() };
+  // BROWSER-SMOKE-02: PreviewService subscribes to session ends on init.
+  const sessionsService = { assertSessionUsable: jest.fn(), onSessionEnded: jest.fn() };
   const previewStrategyResolver = {
     resolve: jest.fn(async () => ({
       type: 'static-html',
@@ -66,6 +67,14 @@ describe('PreviewController static preview over HTTP (CM-BINARY-01)', () => {
             registerPreviewPort: jest.fn(),
             unregisterPreviewPort: jest.fn(),
             getRegisteredPort: jest.fn(),
+            // BROWSER-SMOKE-02: a static preview registers its app root.
+            registerStaticPreview: jest.fn(async (_sessionId: string, appRoot: string) => ({
+              sessionId: _sessionId,
+              appRoot,
+              registered: true,
+            })),
+            getStaticRoot: jest.fn(() => '/workspace'),
+            unregisterStaticPreview: jest.fn(),
           },
         },
         { provide: APP_GUARD, useClass: InternalServiceAuthGuard },

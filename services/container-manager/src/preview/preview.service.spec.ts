@@ -14,6 +14,14 @@ function mockPortRegistry() {
     registerPreviewPort: jest.fn(),
     unregisterPreviewPort: jest.fn(),
     getRegisteredPort: jest.fn(),
+    // BROWSER-SMOKE-02: a static preview registers its app root.
+    registerStaticPreview: jest.fn(async (sessionId: string, appRoot: string) => ({
+      sessionId,
+      appRoot,
+      registered: true,
+    })),
+    getStaticRoot: jest.fn(() => null),
+    unregisterStaticPreview: jest.fn(),
   };
 }
 
@@ -432,6 +440,8 @@ describe('PreviewService Vite-only node preview', () => {
 
   const sessionsService = {
     assertSessionUsable: jest.fn(),
+    // BROWSER-SMOKE-02: the session-ended hook PreviewService subscribes to.
+    onSessionEnded: jest.fn<(listener: (sessionId: string) => void) => void>(),
   };
 
   const dockerRuntimeService = {
@@ -989,6 +999,152 @@ describe('PreviewService Vite-only node preview', () => {
 
       expect(service.getPreviewStatus('session-vite')).toBeNull();
       expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+    });
+  });
+
+  describe('BROWSER-SMOKE-02: static previews and session end', () => {
+    function mockStaticStrategy(appRoot: string) {
+      previewStrategyResolver.resolve.mockResolvedValue({
+        type: 'static-html',
+        framework: 'Static HTML',
+        command: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
+        appRoot,
+        servingMode: 'direct-read',
+      });
+    }
+
+    /** The listener PreviewService hands to SessionsService.onSessionEnded. */
+    function subscribedListener(): (sessionId: string) => void {
+      service.onModuleInit();
+      expect(sessionsService.onSessionEnded).toHaveBeenCalledTimes(1);
+      return sessionsService.onSessionEnded.mock.calls[0][0];
+    }
+
+    it('registers a static preview app root, not a port', async () => {
+      mockStaticStrategy('/workspace/site');
+
+      const result = await service.startPreview('session-static');
+
+      expect(result.status).toBe('running');
+      expect(portRegistry.getStaticRoot('session-static')).toBe('/workspace/site');
+      expect(portRegistry.getRegisteredPort('session-static')).toBeNull();
+      expect(execMock).not.toHaveBeenCalled();
+    });
+
+    it('clears the static root when the preview is stopped', async () => {
+      mockStaticStrategy('/workspace');
+      await service.startPreview('session-static');
+      expect(portRegistry.getStaticRoot('session-static')).toBe('/workspace');
+
+      await service.stopPreview('session-static');
+
+      expect(portRegistry.getStaticRoot('session-static')).toBeNull();
+    });
+
+    it('keeps the static preview running when registration is refused', async () => {
+      mockStaticStrategy('/workspace');
+      dockerRuntimeService.findContainerBySessionId.mockResolvedValue({
+        inspect: async () => ({ State: { Running: false } }),
+      });
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      const result = await service.startPreview('session-static');
+
+      expect(result.status).toBe('running');
+      expect(service.getPreviewStatus('session-static')?.status).toBe('running');
+      expect(portRegistry.getStaticRoot('session-static')).toBeNull();
+      expect(String(warn.mock.calls[0]?.[0])).toContain(
+        'Browser smoke static target not registered',
+      );
+    });
+
+    it('keeps the preview running but registers nothing for an app root outside /workspace', async () => {
+      mockStaticStrategy('/workspace/../etc');
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      const result = await service.startPreview('session-static');
+
+      expect(result.status).toBe('running');
+      expect(portRegistry.getStaticRoot('session-static')).toBeNull();
+    });
+
+    it('leaves no static root behind when the preview is stopped during registration', async () => {
+      mockStaticStrategy('/workspace');
+      const realRegister = portRegistry.registerStaticPreview.bind(portRegistry);
+      jest
+        .spyOn(portRegistry, 'registerStaticPreview')
+        .mockImplementation(async (sessionId: string, appRoot: string) => {
+          await service.stopPreview(sessionId);
+          return realRegister(sessionId, appRoot);
+        });
+
+      await service.startPreview('session-static');
+
+      expect(service.getPreviewStatus('session-static')).toBeNull();
+      expect(portRegistry.getStaticRoot('session-static')).toBeNull();
+    });
+
+    it('subscribes to session ends on module init', () => {
+      service.onModuleInit();
+
+      expect(sessionsService.onSessionEnded).toHaveBeenCalledTimes(1);
+      expect(typeof sessionsService.onSessionEnded.mock.calls[0][0]).toBe('function');
+    });
+
+    it('on a session end drops the Vite preview, frees its port and unregisters it, without exec', async () => {
+      const onEnded = subscribedListener();
+      mockViteExec({ nodeModulesExists: true });
+      const started = await service.startPreview('session-vite');
+      expect(started.port).toBe(3001);
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(3001);
+      const execCalls = execMock.mock.calls.length;
+
+      onEnded('session-vite');
+
+      expect(service.getPreviewStatus('session-vite')).toBeNull();
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+      expect((service as any).portPool.has(3001)).toBe(true);
+      expect((service as any).portPool.size).toBe(100);
+      expect(execMock.mock.calls.length).toBe(execCalls);
+
+      // The freed port can be taken by a new preview: with every other port
+      // in use, the next preview gets 3001.
+      for (let port = 3002; port <= 3100; port++) {
+        (service as any).portPool.delete(port);
+      }
+      const next = await service.startPreview('session-vite-2');
+      expect(next.port).toBe(3001);
+    });
+
+    it('on a session end drops a static preview and its static root', async () => {
+      const onEnded = subscribedListener();
+      mockStaticStrategy('/workspace');
+      const started = await service.startPreview('session-static');
+      expect(portRegistry.getStaticRoot('session-static')).toBe('/workspace');
+
+      onEnded('session-static');
+
+      expect(service.getPreviewStatus('session-static')).toBeNull();
+      expect(portRegistry.getStaticRoot('session-static')).toBeNull();
+      expect((service as any).portPool.has(started.port)).toBe(true);
+      expect(execMock).not.toHaveBeenCalled();
+    });
+
+    it('treats a session end for a session with no preview as a no-op', async () => {
+      const onEnded = subscribedListener();
+      mockViteExec({ nodeModulesExists: true });
+      await service.startPreview('session-vite');
+      const unregister = jest.spyOn(portRegistry, 'unregisterPreviewPort');
+      const poolSize = (service as any).portPool.size;
+      const execCalls = execMock.mock.calls.length;
+
+      expect(() => onEnded('session-unknown')).not.toThrow();
+
+      expect(unregister).not.toHaveBeenCalled();
+      expect((service as any).portPool.size).toBe(poolSize);
+      expect(execMock.mock.calls.length).toBe(execCalls);
+      expect(service.getPreviewStatus('session-vite')?.status).toBe('running');
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(3001);
     });
   });
 });
