@@ -84738,7 +84738,7 @@ taskId=STAGING-DEPLOY-PICKER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the PREVIEW-PICKER-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 9555d3c to aa0b32a with runs off (rc 0, 2026-11-12T14:11:15Z): no migration (hash 9cfde25f), configuration unchanged at the baselines e0767286 and 205770cf, all units active; picker checks passed (the preview-host bridge and another reserved path 403 without the preview cookie; the platform-host bridge path 401 without a session; the built bridge script carries the platform origin, no cookie, storage, network or key text, no star target, and refuses a bad origin; container-manager carries the bridge tag); the preview-host, same-origin guard and cookie checks pass. Keith's picker check in a static project: the Select Element button appeared after Refresh, hover highlighted elements, a click selected Hello and turned the picker off, Escape turned it off, the button came back after a refresh. Checkpoint: docs/STAGING-DEPLOY-PICKER-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the PREVIEW-PICKER-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-PICKER-01
 **Title:** Deploy PREVIEW-PICKER-01 (Keith checks the picker)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
