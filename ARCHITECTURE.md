@@ -183,8 +183,9 @@ See §14 Communication Mechanism Summary for the full matrix.
 - Session governance (auth, lifetime, idle, concurrency) is enforced at request time
 - Idle timeout is request-driven inside container-manager (no idle sweeper / cron)
 - AI execution is queue-driven: API Gateway enqueues, WorkerProcessor claims and runs
-- No cron jobs
-- No platform schedulers for session maintenance
+- No cron jobs and no platform schedulers for session maintenance. Sessions are governed at request time.
+- In-process timers are allowed only for run recovery and collaboration upkeep: the AI service's stuck-run watchdog, and the gateway's 5-minute collaboration sweep. They never touch session idle or lifetime.
+- User-visible schedules (TRIGGER-01) are approved FUTURE. When built, they run as an in-process gateway timer, are off by default, and have daily limits.
 
 #### Persistent Terminal State
 - Termination is permanent

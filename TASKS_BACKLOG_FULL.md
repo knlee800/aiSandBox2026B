@@ -85669,7 +85669,7 @@ taskId=GOV-PRD-SYNC-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the GOV-ARCH-SYNC-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Governance record by the control plane with Keith's wording ("ok" to each of four drafts). PRD.md and ARCHITECTURE.md synced in Keith's words (approved piece by piece in chat, 2026-11-12): the Chief of Staff front door, and user teams, approval settings and drafts, added to GATED (proven on staging 2026-11-11), with a sentence in the user-workflows paragraph; the walking line replaced (the office page is CURRENT; the isometric pixel-art office is approved FUTURE and the next office step); the office note replaced by Keith's decisions (look, size, room, movement, controls, voice, art); an office row added to CURRENT; ARCHITECTURE.md section 2's scheduler rule reworded (no cron or session schedulers; in-process timers only for run recovery and collaboration upkeep; user schedules approved FUTURE). OFFICE-SCENE-01 is no longer blocked by PRD.md. Checkpoint: docs/GOV-PRD-SYNC-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: READY — registered 2026-11-10 by the GOV-ARCH-SYNC-01 LOCK — not admitted.
 **Task ID:** GOV-PRD-SYNC-01
 **Workstream:** CORE (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP.
@@ -87943,7 +87943,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: the art kit is ready outside the repository (Keith approves palette v2, runs the character tool test, and the first test set is drawn; see Decided below), GOV-PRD-SYNC-01 has reclassified the walking line in PRD.md (line 482 today says walking-town / moving-character simulation is not current or next), and Keith approves the drawing-layer dependency. Keith decides.
+**Start condition:** NOT_READY. Ready when: the art kit is ready outside the repository (Keith approves palette v2, runs the character tool test, and the first test set is drawn; see Decided below), GOV-PRD-SYNC-01 has reclassified the walking line in PRD.md (done 2026-11-12: GOV-PRD-SYNC-01 LOCKED), and Keith approves the drawing-layer dependency. Keith decides.
 **Depends on:** OFFICE-01, GOV-PRD-SYNC-01.
 **Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/office/, frontend/package.json and the lockfile for the drawing layer, art assets in the frontend, the three message files).
 **Mutexes / resources:** set at admission (expected FRONTEND, PACKAGE, I18N).
