@@ -89319,7 +89319,7 @@ taskId=STAGING-DEPLOY-SMOKE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed d610df8 to 1d91897 with runs off (rc 0, 2026-11-12T06:45:37Z): no migration (hash 9cfde25f unchanged), configuration unchanged, container-manager started with the new module wiring (unit active, keyed stats 200), standard and security checks pass, body-limit checks pass; registerBrowserSmokeTarget is in the preview service build. No Keith step; the optional Agent-mode live check (runs on, browser-image session) was not run. Checkpoint: docs/STAGING-DEPLOY-SMOKE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (BROWSER-SMOKE-LIVE-01, the optional Agent-mode live check) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SMOKE-01
 **Title:** Deploy the browser-smoke preview fix (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -89336,6 +89336,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy main with BROWSER-SMOKE-01 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-POLISH-01, keyed checks before the header file is removed; the build contains registerBrowserSmokeTarget). A full live check (an Agent-mode run calling browser smoke on a started Vite preview in a session on the browser-capable image) needs runs on and a browser-image session, which the UI cannot start today; Keith decides whether to run it as a separate live task or accept the module test.
+
+### BROWSER-SMOKE-LIVE-01 — Live check: an Agent-mode run calls browser smoke on a running preview
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BROWSER-SMOKE-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the STAGING-DEPLOY-SMOKE-01 LOCK — not admitted.
+**Task ID:** BROWSER-SMOKE-LIVE-01
+**Title:** Live check: an Agent-mode run calls browser smoke on a running preview
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides to run it (it needs runs on, a real model and a session on the browser-capable image, which the UI cannot start today). Keith decides.
+**Depends on:** BROWSER-SMOKE-01, STAGING-DEPLOY-SMOKE-01.
+**Primary write scope:** records and evidence only; host state (runs on for the window).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** no code change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From BROWSER-SMOKE-01 and STAGING-DEPLOY-SMOKE-01: in a session on the browser-capable image (Playwright at /opt/browser-smoke), start a Vite preview, then an Agent-mode run calls browser smoke: expect a structured result whose url is http://<container ip>:<port>/; stop the preview and call again: expect Preview target not available: No preview port registered. Runs on only for the window; env files back to the baselines. Whether a browser-image session can be started from the host for this check is part of the stage-start.
 
 ### CM-DEPS-01 — Remove container-manager's unused jsonwebtoken packages
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
