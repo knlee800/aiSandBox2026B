@@ -2,6 +2,9 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { SessionsService } from '../sessions/sessions.service';
 import { DockerRuntimeService } from '../docker/docker-runtime.service';
 import { PreviewStrategyResolver } from './preview-strategy.resolver';
+// BROWSER-SMOKE-01: the port registry that browser smoke reads (through
+// PreviewProxyService). Same class name as this service, hence the alias.
+import { PreviewService as PreviewPortRegistry } from '../previews/preview.service';
 import axios from 'axios';
 
 interface PreviewProcess {
@@ -55,6 +58,7 @@ export class PreviewService {
     private sessionsService: SessionsService,
     private dockerRuntimeService: DockerRuntimeService,
     private previewStrategyResolver: PreviewStrategyResolver,
+    private previewPortRegistry: PreviewPortRegistry,
   ) {
     // Initialize port pool
     for (let port = this.PORT_RANGE_START; port <= this.PORT_RANGE_END; port++) {
@@ -215,11 +219,13 @@ export class PreviewService {
       } finally {
         this.releasePort(port);
         this.activePreviews.delete(sessionId);
+        this.previewPortRegistry.unregisterPreviewPort(sessionId);
       }
       throw new BadRequestException('Preview server did not become reachable in time.');
     }
 
     previewAfterWait.status = 'running';
+    await this.registerBrowserSmokeTarget(sessionId, previewAfterWait);
 
     return {
       port,
@@ -249,6 +255,7 @@ export class PreviewService {
 
     this.releasePort(preview.port);
     this.activePreviews.delete(sessionId);
+    this.previewPortRegistry.unregisterPreviewPort(sessionId);
 
     return { message: 'Preview stopped successfully' };
   }
@@ -333,6 +340,39 @@ export class PreviewService {
   }
 
   /**
+   * BROWSER-SMOKE-01: record a running preview server's port in the registry
+   * browser smoke reads, so it can open http://<container ip>:<port>. Only
+   * previews with a server listening in the container are registered; a
+   * static HTML preview is read straight from the workspace and has nothing
+   * listening on its port. A failed registration is logged and does not fail
+   * the preview, which works without it.
+   */
+  private async registerBrowserSmokeTarget(
+    sessionId: string,
+    preview: PreviewProcess,
+  ): Promise<void> {
+    try {
+      await this.previewPortRegistry.registerPreviewPort(sessionId, preview.port);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `Browser smoke target not registered for session ${sessionId} on port ${preview.port}: ${message}`,
+      );
+      return;
+    }
+
+    // A stop during the registration must not leave the old port behind.
+    const current = this.activePreviews.get(sessionId);
+    if (
+      current !== preview &&
+      this.previewPortRegistry.getRegisteredPort(sessionId) === preview.port &&
+      !(current && current.status === 'running' && current.port === preview.port)
+    ) {
+      this.previewPortRegistry.unregisterPreviewPort(sessionId);
+    }
+  }
+
+  /**
    * Allocate a port from the pool
    */
   private allocatePort(): number | null {
@@ -372,6 +412,7 @@ export class PreviewService {
       } catch (error) {
         console.error(`Error killing preview process for session ${sessionId}:`, error);
       }
+      this.previewPortRegistry.unregisterPreviewPort(sessionId);
     }
     this.activePreviews.clear();
   }

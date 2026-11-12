@@ -12,6 +12,7 @@ import { SessionsService } from '../sessions/sessions.service';
 import { PreviewController } from './preview.controller';
 import { PreviewService } from './preview.service';
 import { PreviewStrategyResolver } from './preview-strategy.resolver';
+import { PreviewService as PreviewPortRegistry } from '../previews/preview.service';
 
 /**
  * CM-BINARY-01: a static preview served over real HTTP, through the real
@@ -58,6 +59,15 @@ describe('PreviewController static preview over HTTP (CM-BINARY-01)', () => {
         { provide: SessionsService, useValue: sessionsService },
         { provide: DockerRuntimeService, useValue: dockerRuntimeService },
         { provide: PreviewStrategyResolver, useValue: previewStrategyResolver },
+        // BROWSER-SMOKE-01: the browser-smoke port registry PreviewService injects.
+        {
+          provide: PreviewPortRegistry,
+          useValue: {
+            registerPreviewPort: jest.fn(),
+            unregisterPreviewPort: jest.fn(),
+            getRegisteredPort: jest.fn(),
+          },
+        },
         { provide: APP_GUARD, useClass: InternalServiceAuthGuard },
       ],
     })

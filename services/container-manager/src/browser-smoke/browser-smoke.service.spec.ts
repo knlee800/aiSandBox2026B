@@ -1,4 +1,6 @@
 import { BrowserSmokeService } from './browser-smoke.service';
+import { PreviewProxyService } from '../previews/preview-proxy.service';
+import { PreviewService as PreviewPortRegistry } from '../previews/preview.service';
 
 describe('BrowserSmokeService', () => {
   let service: BrowserSmokeService;
@@ -258,5 +260,75 @@ describe('BrowserSmokeService', () => {
     expect(result.success).toBe(false);
     expect(result.error).toBe('Navigation failed: net::ERR_CONNECTION_REFUSED');
     expect(result.consoleErrors).toEqual(['TypeError: foo is not defined']);
+  });
+});
+
+/**
+ * BROWSER-SMOKE-01: the real PreviewProxyService and port registry, so the
+ * target comes from a registered preview port rather than a mocked proxy.
+ */
+describe('BrowserSmokeService with the preview port registry', () => {
+  const sessionsService = { assertSessionUsable: jest.fn() };
+  let dockerRuntimeService: {
+    findContainerBySessionId: jest.Mock;
+    execInContainerBySessionId: jest.Mock;
+  };
+  let registry: PreviewPortRegistry;
+  let service: BrowserSmokeService;
+
+  beforeEach(() => {
+    dockerRuntimeService = {
+      findContainerBySessionId: jest.fn().mockResolvedValue({
+        inspect: async () => ({
+          State: { Running: true },
+          NetworkSettings: { Networks: { bridge: { IPAddress: '172.18.0.10' } } },
+        }),
+      }),
+      execInContainerBySessionId: jest.fn().mockResolvedValue({
+        exitCode: 0,
+        stdout: JSON.stringify({
+          success: true,
+          url: 'http://172.18.0.10:3001/todo',
+          pageTitle: 'Todo',
+          consoleErrors: [],
+          consoleWarnings: [],
+          networkErrors: [],
+          visibleTextSnippet: 'Todo list',
+          durationMs: 800,
+        }),
+        stderr: '',
+      }),
+    };
+    registry = new PreviewPortRegistry(sessionsService as any, dockerRuntimeService as any);
+    service = new BrowserSmokeService(
+      dockerRuntimeService as any,
+      new PreviewProxyService(registry, dockerRuntimeService as any),
+    );
+  });
+
+  it('builds the target URL from the registered port and runs the smoke script in the session', async () => {
+    await registry.registerPreviewPort('sess-1', 3001);
+
+    const result = await service.run({ sessionId: 'sess-1', url: '/todo' });
+
+    expect(result.success).toBe(true);
+    expect(result.pageTitle).toBe('Todo');
+    expect(dockerRuntimeService.execInContainerBySessionId).toHaveBeenCalledTimes(1);
+    const [sessionId, cmd, workdir, env] =
+      dockerRuntimeService.execInContainerBySessionId.mock.calls[0];
+    expect(sessionId).toBe('sess-1');
+    expect(cmd).toEqual(['sh', '-c', 'echo "$SMOKE_SCRIPT" | node']);
+    expect(workdir).toBe('/workspace');
+    expect(env.SMOKE_URL).toBe('http://172.18.0.10:3001/todo');
+  });
+
+  it('still reports "Preview target not available" without a registered port, and runs nothing', async () => {
+    const result = await service.run({ sessionId: 'sess-1' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe(
+      'Preview target not available: No preview port registered for session sess-1',
+    );
+    expect(dockerRuntimeService.execInContainerBySessionId).not.toHaveBeenCalled();
   });
 });

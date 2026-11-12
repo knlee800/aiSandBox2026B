@@ -12,6 +12,9 @@ import { DockerRuntimeService } from '../docker/docker-runtime.service';
  *
  * Manages preview port registrations for session containers.
  * Stores port mappings in memory only (no database persistence).
+ *
+ * BROWSER-SMOKE-01: filled by preview/PreviewService when a preview server
+ * is running and cleared when it stops; exported by SessionsModule.
  */
 @Injectable()
 export class PreviewService {

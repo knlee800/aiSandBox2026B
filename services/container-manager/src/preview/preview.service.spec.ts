@@ -4,8 +4,18 @@ import { RequestMethod } from '@nestjs/common/enums/request-method.enum';
 import axios from 'axios';
 import { PreviewController } from './preview.controller';
 import { PreviewService } from './preview.service';
+import { PreviewService as PreviewPortRegistry } from '../previews/preview.service';
 
 jest.mock('axios');
+
+/** BROWSER-SMOKE-01: a stand-in port registry for the static-file describes. */
+function mockPortRegistry() {
+  return {
+    registerPreviewPort: jest.fn(),
+    unregisterPreviewPort: jest.fn(),
+    getRegisteredPort: jest.fn(),
+  };
+}
 
 describe('PreviewService readStaticPreviewContent', () => {
   let service: PreviewService;
@@ -26,6 +36,7 @@ describe('PreviewService readStaticPreviewContent', () => {
       sessionsService as any,
       dockerRuntimeService as any,
       previewStrategyResolver as any,
+      mockPortRegistry() as any,
     );
   });
 
@@ -247,6 +258,7 @@ describe('PreviewService subdirectory appRoot routing', () => {
       sessionsService as any,
       dockerRuntimeService as any,
       previewStrategyResolver as any,
+      mockPortRegistry() as any,
     );
 
     previewStrategyResolver.resolve.mockResolvedValue({
@@ -356,6 +368,7 @@ describe('PreviewService root appRoot routing', () => {
       sessionsService as any,
       dockerRuntimeService as any,
       previewStrategyResolver as any,
+      mockPortRegistry() as any,
     );
 
     previewStrategyResolver.resolve.mockResolvedValue({
@@ -407,6 +420,7 @@ describe('PreviewService root appRoot routing', () => {
 
 describe('PreviewService Vite-only node preview', () => {
   let service: PreviewService;
+  let portRegistry: PreviewPortRegistry;
   let execMock: jest.Mock<
     (...args: any[]) => Promise<{ exitCode: number; stdout: string; stderr: string }>
   >;
@@ -495,10 +509,16 @@ describe('PreviewService Vite-only node preview', () => {
     axiosGet.mockResolvedValue({ status: 200 });
     execMock = dockerRuntimeService.execInContainerBySessionId;
     mockRunningContainer();
+    // BROWSER-SMOKE-01: the real registry browser smoke reads.
+    portRegistry = new PreviewPortRegistry(
+      sessionsService as any,
+      dockerRuntimeService as any,
+    );
     service = new PreviewService(
       sessionsService as any,
       dockerRuntimeService as any,
       previewStrategyResolver as any,
+      portRegistry,
     );
     previewStrategyResolver.resolve.mockResolvedValue({
       type: 'node-dev-server',
@@ -837,6 +857,139 @@ describe('PreviewService Vite-only node preview', () => {
     );
 
     expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+  });
+
+  describe('BROWSER-SMOKE-01: browser smoke port registry', () => {
+    it('registers the port once the Vite server is reachable, not before', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      const seenDuringWait: Array<number | null> = [];
+      axiosGet.mockImplementation(async () => {
+        seenDuringWait.push(portRegistry.getRegisteredPort('session-vite'));
+        return { status: 200 };
+      });
+
+      const result = await service.startPreview('session-vite');
+
+      expect(result.status).toBe('running');
+      expect(seenDuringWait.length).toBeGreaterThan(0);
+      expect(seenDuringWait.every((port) => port === null)).toBe(true);
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(3001);
+    });
+
+    it('unregisters the port when the preview is stopped', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      await service.startPreview('session-vite');
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(3001);
+
+      await service.stopPreview('session-vite');
+
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+    });
+
+    it('unregisters the port when stopping fails to kill the process', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      await service.startPreview('session-vite');
+      execMock.mockImplementation(async () => {
+        throw new Error('exec kill failed');
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      await service.stopPreview('session-vite');
+
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+    });
+
+    it('updates the registered port when the preview is restarted on another port', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      const first = await service.startPreview('session-vite');
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(first.port);
+      await service.stopPreview('session-vite');
+
+      const second = await service.startPreview('session-vite');
+
+      expect(second.port).not.toBe(first.port);
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(second.port);
+    });
+
+    it('does not register a port when the Vite server never becomes reachable', async () => {
+      mockViteExec({ nodeModulesExists: true, launchStdout: '4242\n' });
+      let now = 1_000_000;
+      jest.spyOn(Date, 'now').mockImplementation(() => now);
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+      axiosGet.mockImplementation(async () => {
+        now = 1_000_000 + 20_000;
+        throw new Error('ECONNREFUSED');
+      });
+      const unregister = jest.spyOn(portRegistry, 'unregisterPreviewPort');
+
+      await expect(service.startPreview('session-vite')).rejects.toThrow(
+        'Preview server did not become reachable in time.',
+      );
+
+      expect(unregister).toHaveBeenCalledWith('session-vite');
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+    });
+
+    it('unregisters every preview on module destroy', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      jest.spyOn(console, 'log').mockImplementation(() => undefined);
+      await service.startPreview('session-vite');
+      await service.startPreview('session-vite-2');
+      expect(portRegistry.getRegisteredPort('session-vite')).toBe(3001);
+      expect(portRegistry.getRegisteredPort('session-vite-2')).toBe(3002);
+
+      await service.onModuleDestroy();
+
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+      expect(portRegistry.getRegisteredPort('session-vite-2')).toBeNull();
+    });
+
+    it('does not register a static HTML preview, which has no server listening on its port', async () => {
+      previewStrategyResolver.resolve.mockResolvedValue({
+        type: 'static-html',
+        framework: 'Static HTML',
+        command: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
+        appRoot: '/workspace',
+        servingMode: 'direct-read',
+      });
+
+      const result = await service.startPreview('session-static');
+
+      expect(result.status).toBe('running');
+      expect(portRegistry.getRegisteredPort('session-static')).toBeNull();
+    });
+
+    it('keeps the preview running when registration is refused', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      jest
+        .spyOn(portRegistry, 'registerPreviewPort')
+        .mockRejectedValue(new Error('Container for session session-vite is not running'));
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      const result = await service.startPreview('session-vite');
+
+      expect(result.status).toBe('running');
+      expect(service.getPreviewStatus('session-vite')?.status).toBe('running');
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+      expect(String(warn.mock.calls[0]?.[0])).toContain('Browser smoke target not registered');
+    });
+
+    it('leaves no port behind when the preview is stopped during registration', async () => {
+      mockViteExec({ nodeModulesExists: true });
+      const realRegister = portRegistry.registerPreviewPort.bind(portRegistry);
+      jest
+        .spyOn(portRegistry, 'registerPreviewPort')
+        .mockImplementation(async (sessionId: string, port: number) => {
+          await service.stopPreview(sessionId);
+          return realRegister(sessionId, port);
+        });
+
+      await service.startPreview('session-vite');
+
+      expect(service.getPreviewStatus('session-vite')).toBeNull();
+      expect(portRegistry.getRegisteredPort('session-vite')).toBeNull();
+    });
   });
 });
 

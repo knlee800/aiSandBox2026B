@@ -19,6 +19,9 @@ import { BrowserSmokeService } from '../browser-smoke/browser-smoke.service';
     InternalPreviewsController,
   ],
   providers: [SessionsService, PreviewService, PreviewProxyService, GovernanceEventsService, BrowserSmokeService],
-  exports: [SessionsService],
+  // BROWSER-SMOKE-01: PreviewModule's PreviewService registers running
+  // preview ports in this registry PreviewService, which BrowserSmokeService
+  // reads through PreviewProxyService. One instance, owned here.
+  exports: [SessionsService, PreviewService],
 })
 export class SessionsModule {}
