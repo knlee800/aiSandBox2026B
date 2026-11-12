@@ -88782,7 +88782,7 @@ taskId=SNAPSHOT-NOTICE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND released. The not-restored files notice is tied to the session it was set for and cleared on a session switch (state { sessionId, paths }, derived per selected session, an effect drops stale paths); the open flows set the paths and select the new session in the same synchronous block, checked by the control plane; notice, copy and messages unchanged; sonnet subagent, fast-forwarded as 60653e0; control-plane rerun: frontend 1672 of 1672, tsc and build 0. Not deployed; the live check is STAGING-DEPLOY-SNAP-05. Checkpoint: docs/SNAPSHOT-NOTICE-02-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-SNAP-05) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-NOTICE-02
 **Title:** Clear the not-restored files notice when the user switches session
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88799,6 +88799,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-NOTICE-01 worker: the notice is not cleared when the user switches to another session without opening a project (it can be dismissed). Clear it on a session switch; test.
+
+### STAGING-DEPLOY-SNAP-05 — Deploy the session-scoped notice (and any later snapshot follow-ups) and Keith checks it
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SNAP-05
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-02 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SNAP-05
+**Title:** Deploy the session-scoped notice (and any later snapshot follow-ups) and Keith checks it
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for PAGE-STATUS-I18N-01 and SNAPSHOT-LABEL-01 to deploy them together).
+**Depends on:** SNAPSHOT-NOTICE-02.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with SNAPSHOT-NOTICE-02 (and any later locked snapshot follow-ups) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-SNAP-04). Live check by Keith in CL2 test: restore the version big test (the notice names big.bin), switch to another session (the notice is gone), switch back (still gone), then restore the version clean.
 
 ### STAGING-DEPLOY-SNAP-04 — Deploy the not-restored files notice and Keith checks it
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
