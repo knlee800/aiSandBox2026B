@@ -84612,7 +84612,7 @@ taskId=STAGING-DEPLOY-CSRF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 91c0c33 to d9c0911 with runs off (rc 0, 2026-11-12T11:32:03Z): no migration (hash 9cfde25f), configuration unchanged at the baselines gateway.env e0767286 and Caddyfile 205770cf, all units active; the same-origin guard checks with curl passed (foreign Origin 403 for a JSON POST, a form POST to exec and a form login; Origin null 403; a session cookie without Origin 403; the app Origin and no Origin without a cookie 401; a foreign-Origin GET 200; an internal route without the key 401; the refusal body Cross-origin request refused); the preview-host checks and all earlier guard checks pass. Keith's browser pass: file save, preview start and stop, Team, Knowledge and Connections worked; the chat message was saved (one user and one reply row) and answered AI execution temporarily disabled for maintenance, as expected with runs off. Checkpoint: docs/STAGING-DEPLOY-CSRF-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CSRF-01
 **Title:** Deploy CSRF-AUDIT-01 (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
