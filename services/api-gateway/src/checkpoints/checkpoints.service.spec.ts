@@ -315,6 +315,112 @@ describe('CheckpointsService (PHASE-68B)', () => {
       );
     });
 
+    describe('CM-DIFF-NOTICE-01: a diff cut by container-manager', () => {
+      const sessionId = 'session-123';
+      const commitHash = 'abc123def456789012345678901234567890abcd';
+      const files = [
+        {
+          path: 'big.txt',
+          status: 'added' as const,
+          diff: '@@ -0,0 +1 @@\n+line\n',
+        },
+      ];
+
+      beforeEach(() => {
+        sessionService.getSessionById.mockResolvedValue({
+          id: sessionId,
+          userId: 'user-456',
+        } as any);
+        gitCheckpointService.getCheckpointByHash.mockResolvedValue({
+          id: 'checkpoint-1',
+          sessionId,
+          commitHash,
+        } as GitCheckpoint);
+      });
+
+      it('passes truncated and diffLimitBytes through when the diff was cut', async () => {
+        containerManagerClient.getGitDiff.mockResolvedValue({
+          commitHash,
+          parentHash: 'parent123',
+          files,
+          truncated: true,
+          diffLimitBytes: 8 * 1024 * 1024,
+        } as any);
+
+        const result = await service.getCheckpointDiff(sessionId, commitHash);
+
+        expect(result).toStrictEqual({
+          commitHash,
+          parentHash: 'parent123',
+          files,
+          truncated: true,
+          diffLimitBytes: 8388608,
+        });
+      });
+
+      it('leaves both fields out when the diff is whole', async () => {
+        containerManagerClient.getGitDiff.mockResolvedValue({
+          commitHash,
+          parentHash: 'parent123',
+          files,
+        });
+
+        const result = await service.getCheckpointDiff(sessionId, commitHash);
+
+        expect(result).toStrictEqual({ commitHash, parentHash: 'parent123', files });
+        expect(result.truncated).toBeUndefined();
+        expect(result).not.toHaveProperty('diffLimitBytes');
+      });
+
+      it('treats truncated false as whole and drops a stray diffLimitBytes', async () => {
+        containerManagerClient.getGitDiff.mockResolvedValue({
+          commitHash,
+          parentHash: null,
+          files,
+          truncated: false,
+          diffLimitBytes: 8388608,
+        } as any);
+
+        const result = await service.getCheckpointDiff(sessionId, commitHash);
+
+        expect(result).toStrictEqual({ commitHash, parentHash: null, files });
+      });
+
+      it('keeps truncated but drops a diffLimitBytes that is not a positive number', async () => {
+        for (const bad of ['8388608', 0, -1, Number.NaN, Number.POSITIVE_INFINITY, null]) {
+          containerManagerClient.getGitDiff.mockResolvedValue({
+            commitHash,
+            parentHash: 'parent123',
+            files,
+            truncated: true,
+            diffLimitBytes: bad,
+          } as any);
+
+          const result = await service.getCheckpointDiff(sessionId, commitHash);
+
+          expect(result).toStrictEqual({
+            commitHash,
+            parentHash: 'parent123',
+            files,
+            truncated: true,
+          });
+        }
+      });
+
+      it('does not treat a truthy non-boolean truncated as a cut', async () => {
+        containerManagerClient.getGitDiff.mockResolvedValue({
+          commitHash,
+          parentHash: 'parent123',
+          files,
+          truncated: 'true',
+        } as any);
+
+        const result = await service.getCheckpointDiff(sessionId, commitHash);
+
+        expect(result).toStrictEqual({ commitHash, parentHash: 'parent123', files });
+      });
+    });
+
     it.each(['another project', 'another user'])(
       'refuses a diff for a checkpoint from %s',
       async () => {

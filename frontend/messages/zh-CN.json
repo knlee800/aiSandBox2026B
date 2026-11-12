@@ -159,7 +159,9 @@
     "restoreFailedNotice": "部分文件无法恢复：{files}。文件可能过大，请重新添加后再保存。",
     "restoreFailedMore": "{files}，以及另外 {count} 个文件",
     "restoreFailedSeparator": "、",
-    "restoreFailedDismiss": "关闭"
+    "restoreFailedDismiss": "关闭",
+    "checkpointDiffTruncatedNotice": "此差异过大，无法完整显示。内容在 {size} 处截断，最后的文件可能不完整或未列出。",
+    "checkpointDiffTruncatedNoticeNoSize": "此差异过大，无法完整显示，最后的文件可能不完整或未列出。"
   },
   "recovery": {
     "actions": {

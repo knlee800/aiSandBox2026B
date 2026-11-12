@@ -19,6 +19,8 @@ import WorkspaceShell, {
   WorkspaceAdvancedDrawer,
   formatRestoreFailedNotice,
   WorkspaceRestoreFailedNotice,
+  formatCheckpointDiffTruncatedNotice,
+  HistoryCheckpointDiffTruncatedNotice,
   RESTORE_FAILED_NOTICE_MAX_PATHS,
   computeProjectHistoryRows,
 } from './workspace-shell';
@@ -11186,5 +11188,125 @@ describe('SNAPSHOT-LABEL-02: history list uses the shared label parser against t
     for (const example of examples.writerCases) {
       assert.equal(rowsFor(example.label, example.projectId).length, 1, example.label);
     }
+  });
+});
+
+describe('CM-DIFF-NOTICE-01: a checkpoint diff that was cut', () => {
+  const cutDiffResponse: WorkspaceCheckpointDiffResponse = {
+    ...checkpointDiffResponse,
+    truncated: true,
+    diffLimitBytes: 8 * 1024 * 1024,
+  };
+
+  function renderDiff(
+    diffResponse: WorkspaceCheckpointDiffResponse,
+    locale?: string,
+  ): string {
+    return renderWorkspaceShell({
+      ...(locale ? { locale } : {}),
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse: diffResponse,
+      selectedSessionId: session.id,
+    });
+  }
+
+  test('the notice keys exist in en, zh-TW and zh-CN, and the Chinese copy is translated', () => {
+    for (const messages of [enMessages, zhTwMessages, zhCnMessages]) {
+      assert.equal(typeof messages.workspace.checkpointDiffTruncatedNotice, 'string');
+      assert.equal(typeof messages.workspace.checkpointDiffTruncatedNoticeNoSize, 'string');
+      assert.match(messages.workspace.checkpointDiffTruncatedNotice, /\{size\}/);
+      assert.doesNotMatch(messages.workspace.checkpointDiffTruncatedNoticeNoSize, /\{size\}/);
+    }
+    for (const key of ['checkpointDiffTruncatedNotice', 'checkpointDiffTruncatedNoticeNoSize'] as const) {
+      assert.notEqual(zhTwMessages.workspace[key], enMessages.workspace[key], key);
+      assert.notEqual(zhCnMessages.workspace[key], enMessages.workspace[key], key);
+      assert.notEqual(zhTwMessages.workspace[key], zhCnMessages.workspace[key], key);
+      assert.match(zhTwMessages.workspace[key], /差異/, key);
+      assert.match(zhCnMessages.workspace[key], /差异/, key);
+    }
+  });
+
+  test('formats the notice with a readable size in each language', () => {
+    assert.equal(
+      formatCheckpointDiffTruncatedNotice(cutDiffResponse, enMessages.workspace),
+      'This diff is too large to show in full. It stops at 8 MB, so the last files may be incomplete or missing.',
+    );
+    assert.equal(
+      formatCheckpointDiffTruncatedNotice(cutDiffResponse, zhTwMessages.workspace),
+      '此差異太大，無法完整顯示。內容在 8 MB 處截斷，最後的檔案可能不完整或未列出。',
+    );
+    assert.equal(
+      formatCheckpointDiffTruncatedNotice(cutDiffResponse, zhCnMessages.workspace),
+      '此差异过大，无法完整显示。内容在 8 MB 处截断，最后的文件可能不完整或未列出。',
+    );
+  });
+
+  test('uses the copy without a size when the limit is missing, and null for a whole diff', () => {
+    assert.equal(
+      formatCheckpointDiffTruncatedNotice({ truncated: true }, enMessages.workspace),
+      enMessages.workspace.checkpointDiffTruncatedNoticeNoSize,
+    );
+    assert.equal(formatCheckpointDiffTruncatedNotice(checkpointDiffResponse, enMessages.workspace), null);
+    assert.equal(
+      formatCheckpointDiffTruncatedNotice({ truncated: false, diffLimitBytes: 8388608 }, enMessages.workspace),
+      null,
+    );
+    assert.equal(formatCheckpointDiffTruncatedNotice(null, enMessages.workspace), null);
+  });
+
+  test('the History diff view shows the notice above the file summary when the diff was cut', () => {
+    const html = renderDiff(cutDiffResponse);
+    assert.match(html, /data-testid="history-diff-viewer"/);
+    assert.match(html, /data-testid="history-diff-truncated-notice" role="status"/);
+    assert.match(
+      html,
+      /This diff is too large to show in full\. It stops at 8 MB, so the last files may be incomplete or missing\./,
+    );
+    assert.ok(
+      html.indexOf('history-diff-truncated-notice') < html.indexOf('history-diff-summary'),
+      'notice sits above the summary',
+    );
+    // The rest of the viewer is unchanged.
+    assert.match(html, /data-testid="history-diff-commit-hash"/);
+    assert.match(html, /data-testid="history-diff-file-list"/);
+    assert.match(html, /src\/new-file\.ts/);
+  });
+
+  test('the History diff view shows the notice in zh-TW and zh-CN', () => {
+    assert.match(
+      renderDiff(cutDiffResponse, 'zh-TW'),
+      /此差異太大，無法完整顯示。內容在 8 MB 處截斷，最後的檔案可能不完整或未列出。/,
+    );
+    assert.match(
+      renderDiff(cutDiffResponse, 'zh-CN'),
+      /此差异过大，无法完整显示。内容在 8 MB 处截断，最后的文件可能不完整或未列出。/,
+    );
+  });
+
+  test('no notice for a whole diff, or when the diff is not ready', () => {
+    assert.doesNotMatch(renderDiff(checkpointDiffResponse), /history-diff-truncated-notice/);
+    assert.doesNotMatch(
+      renderDiff({ ...checkpointDiffResponse, truncated: false }),
+      /history-diff-truncated-notice/,
+    );
+    assert.doesNotMatch(
+      renderWorkspaceShell({
+        checkpointDiffState: 'loading',
+        checkpointDiffTargetId: checkpoint.id,
+        checkpointDiffResponse: null,
+        selectedSessionId: session.id,
+      }),
+      /history-diff-truncated-notice/,
+    );
+  });
+
+  test('the notice component renders nothing for a whole diff', () => {
+    assert.equal(
+      renderToStaticMarkup(
+        <HistoryCheckpointDiffTruncatedNotice response={checkpointDiffResponse} messages={enMessages.workspace} />,
+      ),
+      '',
+    );
   });
 });

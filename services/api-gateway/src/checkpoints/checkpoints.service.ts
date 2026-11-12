@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException, GoneException } from '@nestjs/common';
 import { GitCheckpointService } from '../git-checkpoints/git-checkpoint.service';
 import { SessionService } from '../sessions/session.service';
-import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
+import {
+  ContainerManagerHttpClient,
+  GitDiffResult,
+} from '../clients/container-manager-http.client';
 import { Session } from '../entities/session.entity';
 import { CheckpointResponseDto } from './dto/checkpoint-response.dto';
 import { DiffResponseDto } from './dto/diff-response.dto';
@@ -70,17 +73,34 @@ export class CheckpointsService {
       );
     }
 
-    // Get diff from container-manager
-    const diffResult = await this.containerManagerHttpClient.getGitDiff(
-      sessionId,
-      commitHash,
-    );
+    // Get diff from container-manager. CM-DIFF-CAP-01 adds truncated and
+    // diffLimitBytes to the body when the commit diff was cut; the client type
+    // does not name them, so they are read here as unknown and checked.
+    const diffResult: GitDiffResult & {
+      truncated?: unknown;
+      diffLimitBytes?: unknown;
+    } = await this.containerManagerHttpClient.getGitDiff(sessionId, commitHash);
 
-    return {
+    const response: DiffResponseDto = {
       commitHash: diffResult.commitHash,
       parentHash: diffResult.parentHash,
       files: diffResult.files,
     };
+
+    // CM-DIFF-NOTICE-01: pass the cut through so the History view can say so.
+    // A whole diff keeps its old shape: no truncated, no diffLimitBytes.
+    if (diffResult.truncated === true) {
+      response.truncated = true;
+      if (
+        typeof diffResult.diffLimitBytes === 'number' &&
+        Number.isFinite(diffResult.diffLimitBytes) &&
+        diffResult.diffLimitBytes > 0
+      ) {
+        response.diffLimitBytes = diffResult.diffLimitBytes;
+      }
+    }
+
+    return response;
   }
 
   /**

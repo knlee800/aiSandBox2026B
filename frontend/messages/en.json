@@ -159,7 +159,9 @@
     "restoreFailedNotice": "Some files could not be restored: {files}. They may be too large. Add them again and save.",
     "restoreFailedMore": "{files} and {count} more",
     "restoreFailedSeparator": ", ",
-    "restoreFailedDismiss": "Dismiss"
+    "restoreFailedDismiss": "Dismiss",
+    "checkpointDiffTruncatedNotice": "This diff is too large to show in full. It stops at {size}, so the last files may be incomplete or missing.",
+    "checkpointDiffTruncatedNoticeNoSize": "This diff is too large to show in full, so the last files may be incomplete or missing."
   },
   "recovery": {
     "actions": {

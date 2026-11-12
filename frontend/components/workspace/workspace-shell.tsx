@@ -45,9 +45,11 @@ import {
 } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointCreateState } from './workspace-checkpoint-create.logic';
 import type { WorkspaceCheckpointRevertState } from './workspace-checkpoint-revert.logic';
-import type {
-  WorkspaceCheckpointDiffState,
-  WorkspaceCheckpointDiffResponse,
+import {
+  formatWorkspaceCheckpointDiffLimit,
+  getWorkspaceCheckpointDiffTruncation,
+  type WorkspaceCheckpointDiffState,
+  type WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
 import {
   resolveWorkspaceFileActionErrorCopy,
@@ -766,6 +768,50 @@ export function WorkspaceRestoreFailedNotice(props: {
           <XMarkIcon className="h-4 w-4" aria-hidden="true" />
         </button>
       ) : null}
+    </div>
+  );
+}
+
+type CheckpointDiffTruncatedMessages = Pick<
+  typeof enMessages.workspace,
+  'checkpointDiffTruncatedNotice' | 'checkpointDiffTruncatedNoticeNoSize'
+>;
+
+/**
+ * CM-DIFF-NOTICE-01: the translated notice text for a checkpoint diff that
+ * container-manager cut at diffLimitBytes. Returns null for a whole diff.
+ */
+export function formatCheckpointDiffTruncatedNotice(
+  response: Pick<WorkspaceCheckpointDiffResponse, 'truncated' | 'diffLimitBytes'> | null | undefined,
+  messages: CheckpointDiffTruncatedMessages,
+): string | null {
+  const { truncated, diffLimitBytes } = getWorkspaceCheckpointDiffTruncation(response);
+  if (!truncated) {
+    return null;
+  }
+  if (diffLimitBytes === null) {
+    return messages.checkpointDiffTruncatedNoticeNoSize;
+  }
+  const size = formatWorkspaceCheckpointDiffLimit(diffLimitBytes);
+  return messages.checkpointDiffTruncatedNotice.replace('{size}', () => size);
+}
+
+export function HistoryCheckpointDiffTruncatedNotice(props: {
+  response: Pick<WorkspaceCheckpointDiffResponse, 'truncated' | 'diffLimitBytes'> | null | undefined;
+  messages: CheckpointDiffTruncatedMessages;
+}) {
+  const text = formatCheckpointDiffTruncatedNotice(props.response, props.messages);
+  if (!text) {
+    return null;
+  }
+  return (
+    <div
+      className="mt-2 flex min-w-0 items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900"
+      data-testid="history-diff-truncated-notice"
+      role="status"
+    >
+      <InformationCircleIcon className="mt-px h-4 w-4 shrink-0" aria-hidden="true" />
+      <p className="min-w-0 flex-1 break-words">{text}</p>
     </div>
   );
 }
@@ -8732,6 +8778,7 @@ function HistoryCheckpointDiffViewer(props: {
         commit {props.diffResponse.commitHash.slice(0, 12)}{' '}
         {props.diffResponse.parentHash ? `← parent ${props.diffResponse.parentHash.slice(0, 12)}` : '(root commit)'}
       </p>
+      <HistoryCheckpointDiffTruncatedNotice response={props.diffResponse} messages={workspaceCopy} />
       <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-diff-summary">
         <p className="text-[11px] font-semibold text-gray-700">Changed Files Summary</p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-diff-count-added">
