@@ -89367,13 +89367,13 @@ taskId=STAGING-DEPLOY-CLEANUP-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the CM-CLEANUP-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CM-CLEANUP-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CLEANUP-02
 **Title:** Deploy CM-CLEANUP-02 (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
+**Start condition:** READY (CM-CLEANUP-02 LOCKED; Keith approved 2026-11-12). Was: NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
 **Depends on:** CM-CLEANUP-02.
 **Primary write scope:** records; host state (deploy).
 **Mutexes / resources:** STAGING, ENV.
