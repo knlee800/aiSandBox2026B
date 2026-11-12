@@ -84392,7 +84392,7 @@ taskId=PREVIEW-ORIGIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-ORIGIN-01-STAGE-START.md, ab078f5); waiting for Keith's approval.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-ORIGIN-01-STAGE-START.md, ab078f5); approved by Keith 2026-11-12 ("Yes, all five"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** PREVIEW-ORIGIN-01
 **Title:** Generated-app previews run on the platform origin: isolate them
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84400,8 +84400,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP.
 **Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides (the control plane recommends it before any user other than Keith; a stage-start chooses the fix).
 **Depends on:** PRIVACY-INVENTORY-01.
-**Primary write scope:** set 2026-11-12 for Step 2: docs/PREVIEW-ORIGIN-01-STAGE-START.md (the stage-start); the implementation write set is set when Keith approves it. Was: PROVISIONAL: the preview iframe in frontend/components/workspace/ and the preview proxy response headers in services/api-gateway/src/preview/, with tests; possibly a separate preview origin (Caddy and env), decided at the stage-start.
-**Mutexes / resources:** none for Step 2 (set 2026-11-12; a stage-start document only); expected FRONTEND and GATEWAY for Step 3.
+**Primary write scope:** set 2026-11-12 for Step 3 (Keith approved the stage-start): services/api-gateway/src/preview/preview.controller.ts, services/api-gateway/src/preview/preview-response-headers.ts, services/api-gateway/src/preview/preview.module.ts, services/api-gateway/src/preview/preview-ticket.ts, services/api-gateway/src/preview/preview-host.ts, services/api-gateway/src/preview/preview-access.guard.ts, services/api-gateway/src/preview/preview-entry.controller.ts, services/api-gateway/src/preview/__tests__/preview.ticket.spec.ts, services/api-gateway/src/preview/__tests__/preview.access.guard.spec.ts, services/api-gateway/src/preview/__tests__/preview.entry.spec.ts, services/api-gateway/src/preview/__tests__/preview.isolation.spec.ts, services/api-gateway/src/preview/__tests__/preview.controller.guard.spec.ts, services/api-gateway/src/preview/__tests__/preview.endpoint-contract.spec.ts, services/api-gateway/src/preview/__tests__/preview.response-headers.spec.ts, services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts, services/api-gateway/src/preview/__tests__/preview.proxy-target.spec.ts, services/api-gateway/src/preview/__tests__/preview.traversal.spec.ts, frontend/components/workspace/workspace-shell.tsx, frontend/components/workspace/workspace-shell.test.tsx, frontend/components/workspace/preview-isolation.source.test.ts, frontend/app/[locale]/driver/page.tsx (9 new; the sidecar lists frontend/app/ as a directory, because the validator refuses brackets in paths; only driver/page.tsx under it may change). Step 2 wrote docs/PREVIEW-ORIGIN-01-STAGE-START.md.
+**Mutexes / resources:** FRONTEND, GATEWAY (set 2026-11-12 for Step 3).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
@@ -84409,6 +84409,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the PRIVACY-INVENTORY-01 worker, confirmed by the control plane: the preview iframe loads /api/preview/<session>/proxy from the platform's own origin with no sandbox attribute (frontend/components/workspace/workspace-shell.tsx:5186-5193), and the gateway proxy adds no Content-Security-Policy sandbox header (services/api-gateway/src/preview/preview-response-headers.ts). Script in a generated app therefore runs as the platform origin: it can call platform APIs with the user's session cookie, read the non-httpOnly aisandbox_csrf cookie, and read localStorage, where the /driver developer page keeps an API key in plain text (frontend/app/[locale]/driver/page.tsx:74, 288). Generated code is AI-written and can carry injected instructions. Stage-start: confirm the risk with a test, then choose sandbox attributes, a CSP sandbox header, a separate preview origin, or a mix; and move or drop the /driver key storage. Security-sensitive: 4-step, opus.
+
+**Decided (Keith, 2026-11-12, "Yes, all five"; docs/PREVIEW-ORIGIN-01-STAGE-START.md section 6):** (1) a separate preview host with a ticketed entry, a host-only preview cookie and a CSP sandbox fail-safe on any other host; (2) host name preview.staging.ainow.biz (Keith adds the A record at the deploy); (3) basic_auth kept on the preview host; (4) the Select Element picker hidden now, rebuilt later; (5) the /driver API key kept in memory only and the stored one removed.
 
 ### HARNESS-FIXES-01 — Harness fixes from the live runs and reviews
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

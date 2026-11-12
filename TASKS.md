@@ -917,7 +917,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## PREVIEW-ORIGIN-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-12
 
-**Current status:** ADMITTED, Lane 1, with no mutex for now (4-step; registered at the PRIVACY-INVENTORY-01 LOCK; this record admits Step 2, the stage-start, which writes one document): stage-start for isolating generated-app previews from the platform origin (confirm the risk, choose the fix, set the implementation write set). The implementation write set and mutexes (expected FRONTEND and GATEWAY; COMPOSE or ENV if a separate origin is chosen) are set when Keith approves the stage-start. Admitted by the control plane on Keith's "Yes, start it". Implementer: fable subagent (Fable: a security stage-start draft across the frontend, gateway proxy and deployment) in worktree lane/PREVIEW-ORIGIN-01. Scope in TASKS_BACKLOG_FULL.md. Step 2 drafted 2026-11-12: docs/PREVIEW-ORIGIN-01-STAGE-START.md (fable subagent ab078f5, fast-forwarded; control-plane checks of the cookie, CSRF, picker and header claims matched the code). It recommends a separate preview host (a ticketed entry on the preview host, a host-only preview cookie, a CSP sandbox header as fail-safe on any other host, a limited iframe sandbox, the /driver key in memory only); write set in gateway preview, the workspace shell and /driver; mutexes FRONTEND and GATEWAY; five questions for Keith. Waiting for Keith's approval of the stage-start; Lane 1 stays ACTIVE with no mutex until then.
+**Current status:** ADMITTED, Lane 1, with no mutex for now (4-step; registered at the PRIVACY-INVENTORY-01 LOCK; this record admits Step 2, the stage-start, which writes one document): stage-start for isolating generated-app previews from the platform origin (confirm the risk, choose the fix, set the implementation write set). The implementation write set and mutexes (expected FRONTEND and GATEWAY; COMPOSE or ENV if a separate origin is chosen) are set when Keith approves the stage-start. Admitted by the control plane on Keith's "Yes, start it". Implementer: fable subagent (Fable: a security stage-start draft across the frontend, gateway proxy and deployment) in worktree lane/PREVIEW-ORIGIN-01. Scope in TASKS_BACKLOG_FULL.md. Step 2 drafted 2026-11-12: docs/PREVIEW-ORIGIN-01-STAGE-START.md (fable subagent ab078f5, fast-forwarded; control-plane checks of the cookie, CSRF, picker and header claims matched the code). It recommends a separate preview host (a ticketed entry on the preview host, a host-only preview cookie, a CSP sandbox header as fail-safe on any other host, a limited iframe sandbox, the /driver key in memory only); write set in gateway preview, the workspace shell and /driver; mutexes FRONTEND and GATEWAY; five questions for Keith. Keith approved the stage-start with all five recommendations on 2026-11-12 ("Yes, all five"): separate preview host preview.staging.ainow.biz, basic_auth kept there, the picker hidden for now, the /driver key in memory only. Step 3 (implementation) holds FRONTEND and GATEWAY; write set of 21 files in docs/PREVIEW-ORIGIN-01-STAGE-START.md section 4.1; opus subagent in worktree lane/PREVIEW-ORIGIN-01. Not to be deployed before the preview host exists.
 
 ## Lane 1
 ACTIVE — PREVIEW-ORIGIN-01 — 2026-11-12.
@@ -1030,9 +1030,9 @@ CLOSED since 2026-11-08T09:44:17Z (closed by TESTER-WINDOW-CLOSE-01; opened by T
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-PRD-SYNC-01 lock 2026-11-12.
-- GATEWAY: UNOWNED — released at CM-DIFF-NOTICE-01 COMPLETE AND LOCKED 2026-11-12.
+- GATEWAY: OWNED by PREVIEW-ORIGIN-01 (2026-11-12).
 - MIGRATION: UNOWNED — released at APPROVAL-SET-01 COMPLETE AND LOCKED 2026-11-11.
-- FRONTEND: UNOWNED — released at CM-DIFF-NOTICE-01 COMPLETE AND LOCKED 2026-11-12.
+- FRONTEND: OWNED by PREVIEW-ORIGIN-01 (2026-11-12).
 - I18N: UNOWNED — released at CM-DIFF-NOTICE-01 COMPLETE AND LOCKED 2026-11-12.
 - STAGING: UNOWNED — released at STAGING-DEPLOY-CLEANUP-02 COMPLETE AND LOCKED 2026-11-12 (stagingAuthorized=false).
 - PROVIDER-LIVE: UNOWNED — released at USER-TEAMS-LIVE-01 COMPLETE AND LOCKED 2026-11-11 (providerLiveAuthorized=false).
