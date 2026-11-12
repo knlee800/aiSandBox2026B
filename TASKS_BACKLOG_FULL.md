@@ -88882,7 +88882,7 @@ taskId=NETWORK-ERROR-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the AUTHMOD-I18N-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. A new frontend/lib/network-error.ts helper recognises a fetch network failure by the browsers' TypeError texts (our own TypeErrors no longer count), and 23 places in page.tsx show the translated network error on a network failure, otherwise their previous text; no new keys; 11 helper tests and source tests; sonnet subagent, fast-forwarded as 1d2ebec; control-plane rerun: frontend 1799 of 1799, tsc and build 0. Not deployed; it goes out with STAGING-DEPLOY-I18N-02. Checkpoint: docs/NETWORK-ERROR-I18N-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (PAGE-ERROR-POLISH-01) / 2 superseded (the raw [PARSE] text, and the checks that depend on raw English text, into PAGE-ERROR-POLISH-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the AUTHMOD-I18N-01 LOCK — not admitted.
 **Task ID:** NETWORK-ERROR-I18N-01
 **Title:** One fetch helper with a translated network error for the workspace page
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88899,6 +88899,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the AUTHMOD-I18N-01 worker: other catch blocks in page.tsx still show error.message, so a network failure there shows the browser's English text; the {detail} in authInstallCheckpointFailed and in the generic authGenerationFailed path is still raw error text; and the instanceof TypeError check is loose. A small shared fetch helper that marks network failures, a translated network error wherever the page shows a request failure, and translated or neutral detail text; tests; no behaviour change.
+
+### PAGE-ERROR-POLISH-01 — Workspace page error polish: network message on fixed-text catches, the raw parse text, and checks on English error text
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PAGE-ERROR-POLISH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the NETWORK-ERROR-I18N-01 LOCK — not admitted.
+**Task ID:** PAGE-ERROR-POLISH-01
+**Title:** Workspace page error polish: network message on fixed-text catches, the raw parse text, and checks on English error text
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Low value; Keith may drop it.
+**Depends on:** NETWORK-ERROR-I18N-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), frontend/lib/network-error.ts, workspace-shell.test.tsx, the three message files.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the NETWORK-ERROR-I18N-01 worker: the catches that show a fixed translated message (file save, revert, compare, diff, checkpoint snapshot, live open, dashboard, preview) show no separate network message; the session bootstrap parse catch shows [PARSE] with raw text; and some branches (for example the 410 check on workspace files) depend on raw English text from helper errors. Decide each; tests; no behaviour change beyond the text shown.
 
 ### STAGING-DEPLOY-I18N-01 — Deploy the translated chat lines (and later locked work)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
