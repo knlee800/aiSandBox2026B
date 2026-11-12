@@ -85685,6 +85685,21 @@ nature=GOVERNANCE
 
 **Also (added 2026-11-12, later; Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-ART-DIRECTION-2026-11-12.md):** the art direction for the office decisions, in Keith's words: isometric pixel art with soft shading, bright daytime, our own art; 64x32 tiles and characters about 64 px tall (replacing 32x16); program-added effects that never hide or fake status; a larger room with 12 desks; characters may be AI-made and retouched by Keith with provenance, the environment drawn by Keith; zoom and drag on phones. The office wording drafted to Keith on 2026-11-12 (piece 2) predates this and is redrafted before it is applied.
 
+### GOV-PRD-SYNC-02 — PRD row for the deeper office levels
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-PRD-SYNC-02
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Governance record by the control plane on Keith's "1 all yes". PRD.md's FUTURE row "Deeper RPG / simulation (not current; not the next committed product)" now reads "Deeper RPG / simulation beyond the fixed office: users build their own office, selling office pieces, and a character the user walks (after the fixed office ships; not current)", because the fixed office (OFFICE-SCENE-01) is now the office work in progress and the deeper levels are OFFICE-BUILD-01, OFFICE-SHOP-01 and OFFICE-PLAYER-01. Keith approved the change on 2026-11-12 ("1 all yes" to the control plane's recommendation). Registered, held GOVERNANCE, and locked in one record; GOVERNANCE released UNOWNED. Checkpoint: docs/GOV-PRD-SYNC-02-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed.
+**Task ID:** GOV-PRD-SYNC-02
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP.
+**Start condition:** READY (Keith, 2026-11-12, "1 all yes").
+**Primary write scope:** PRD.md (one FUTURE row), TASKS.md, TASKS_BACKLOG_FULL.md, docs/AGENT-OPS-PLAN.md and a checkpoint.
+**Mutexes / resources:** GOVERNANCE.
+**Source:** plan row 80a (Keith's small open decisions, 2026-11-12); GOV-PRD-SYNC-01 left the row unchanged.
+
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COLLAB-GATE-TESTS-01
@@ -87975,7 +87990,7 @@ nature=IMPLEMENTATION
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
-**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
+**saturationClass:** OPTIONAL (Keith confirmed 2026-11-12, "1 all yes"). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** The office becomes an isometric scene in a 16-bit style, in our own art: the reference picture is mood only and no outside assets are used. The art is a mix of AI exploration and hand-redrawn final pieces, with a provenance note per piece. The first release is one fixed room, and the characters walk around it. Walking is decoration only: each agent's status still comes from server data, as the office shows it today. A drawing layer is a new dependency, so admission takes the PACKAGE mutex and needs Keith's approval of the package. Reduced motion is honoured (carried from OFFICE-04). This replaces the "no walking, no engine, no canvas" lines in docs/RPG-OFFICE-01-PLAN.md (line 12 and the Rendering paragraph), which is historical and not edited. **Re-scoped into this task:** OFFICE-03 (per-agent figures, user agents pick a look, an appearance column, and the advisors-lead desk getting its own name and figure) and OFFICE-04 (typing and idle loops from the status, reduced motion). **Decided (Keith, 2026-11-10 to 2026-11-12, review window; recorded 2026-11-12 in docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md, art direction updated the same day in docs/OFFICE-ART-DIRECTION-2026-11-12.md):** isometric pixel art with soft shading, bright daytime, our own art (a reference picture is mood only; no outside assets); 64x32 px floor tiles and characters about 64 px tall, shown enlarged (Keith chose this on 2026-11-12 from size-chart.png over 32x16 and 48x24; it replaces the earlier 32x16 plan); palette v1 (32 colours) approved, then v2 (48 colours) approved 2026-11-12; soft shadows, screen glow and similar effects are added by the program, not painted in, and never hide or fake status; one fixed room with 12 desks (4 system agents, 8 user agents), extra agents in a side list that opens the same panel as a desk; the room is larger than the AI concept, with wider aisles, sized by a layout test; a working agent is seated and typing only during a real run, idle agents wander (water cooler, break area) and return, movement is decoration only (status from server data), reduced motion turns wandering off; controls are click or tap and keyboard from the first release (a user-walked character is OFFICE-PLAYER-01, later); on phones, zoom and drag with the side list as the fallback; art sourcing: characters may be AI-made (PixelLab or similar), retouched and palette-matched by Keith, with provenance logged (tool, plan, prompt, date, hand changes) and the terms and receipt saved; floors and walls that must tile are hand-made or heavily corrected; pieces meant for sale need real human work; Keith draws the environment in Aseprite; characters are drawn in two walking directions and mirrored for the other two; status readable without colour; no text in the art; every piece has a permanent ID and a free or paid tag; kit in C:\Users\knlee\office-art. **Decided 2026-11-12 (Keith):** palette v2 (48 colours, office-art\palette\office-palette-v2-draft) is approved and replaces v1 as the drawing palette; PixelLab makes the characters, so the two-tool test is dropped and Retro Diffusion is not used; Keith saves PixelLab's terms and receipt on the purchase day, retouches and palette-matches each character, and logs provenance (tool, plan, prompt, date, hand changes). **Open (Keith):** a first character at about 64 px is made in PixelLab as a test before the rest; then the first test set (floor tile, desk screen off and on, one standing character). **For the stage-start:** a performance budget confirmed by a prototype on a mid-range phone (proposed: art area up to about 2048x2048 px, one sprite sheet of 1 to 2 MB, animation capped at 30 frames a second and paused when the tab is hidden or reduced motion is on, scene loaded only on the office page; nothing measured yet). **Offered, not decided:** an optional checker for PNG size, palette and transparency (Keith asks for it, or it is dropped at the stage-start).
 
@@ -87999,7 +88014,7 @@ nature=IMPLEMENTATION
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
-**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
+**saturationClass:** OPTIONAL (Keith confirmed 2026-11-12, "1 all yes"). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Users build their own office: a layout editor, a saved layout per user, and walking routes that avoid placed furniture. Walking stays decoration; status still comes from the server.
 
@@ -88023,7 +88038,7 @@ nature=IMPLEMENTATION
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
-**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
+**saturationClass:** OPTIONAL (Keith confirmed 2026-11-12, "1 all yes"). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Selling unique pieces: a piece catalog; per-user ownership that records the purchase event id; a purchase route; a server check that a user only places pieces they own; and refund handling. Stripe is not active today, and user_entitlements cannot hold item ownership, so ownership needs its own storage.
 
@@ -88047,7 +88062,7 @@ nature=IMPLEMENTATION
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
-**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10 to 2026-11-12, review window).
+**saturationClass:** OPTIONAL (Keith confirmed 2026-11-12, "1 all yes"). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10 to 2026-11-12, review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From the office controls decision (Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md): click or tap and keyboard stay the always-available controls; later the user can walk a character of their own (arrow keys, a thumb stick on phones, collision with furniture, walking up to an agent to talk to it). Walking stays decoration; agent status still comes from the server. The player character's art waits until the agent characters are done and follows the same sourcing rule (docs/OFFICE-ART-DIRECTION-2026-11-12.md). Reduced motion respected.
 
@@ -88071,7 +88086,7 @@ nature=IMPLEMENTATION
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
-**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10 to 2026-11-12, review window).
+**saturationClass:** OPTIONAL (Keith confirmed 2026-11-12, "1 all yes"). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10 to 2026-11-12, review window).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Decided (Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md): push to talk only, the user holds a button or key while speaking to the selected or nearby agent and the microphone listens only while it is held; microphone permission asked only when voice is first used; speech-to-text for en, zh-TW and zh-CN; spoken replies optional and later; text input always available. Recommended, not decided: audio never stored and a clear notice before first use; hands-free listening is a possible later addition. Nothing for voice exists in the code or in PRD.md today (control-plane check 2026-11-12). Evidence class provisional: LOCAL-TESTS, with a provider-live check set at the stage-start.
 
@@ -88988,7 +89003,7 @@ nature=IMPLEMENTATION
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Low value; Keith may drop it.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Low value; Keith decided 2026-11-12 to keep it as optional ("1 all yes").
 **Depends on:** NETWORK-ERROR-I18N-01.
 **Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), frontend/lib/network-error.ts, workspace-shell.test.tsx, the three message files.
 **Mutexes / resources:** set at admission (expected FRONTEND, I18N).

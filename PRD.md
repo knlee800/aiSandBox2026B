@@ -619,7 +619,7 @@ A capability moves to CURRENT only when proven on staging. Other planned capabil
 | Google OAuth activation |
 | Apple OAuth activation |
 | Live Stripe payment / subscription management |
-| Deeper RPG / simulation (not current; not the next committed product) |
+| Deeper RPG / simulation beyond the fixed office: users build their own office, selling office pieces, and a character the user walks (after the fixed office ships; not current) |
 | Public agent ecosystem |
 | Recursive self-improvement of agents, collaboration and the platform (human approval for every production change) |
 
