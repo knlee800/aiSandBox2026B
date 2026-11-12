@@ -84490,7 +84490,7 @@ taskId=CSRF-AUDIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/CSRF-AUDIT-01-STAGE-START.md, d6fb8c5); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/CSRF-AUDIT-01-STAGE-START.md, d6fb8c5); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with GATEWAY.
 **Task ID:** CSRF-AUDIT-01
 **Title:** Cookie-authenticated write routes without CsrfGuard
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84498,7 +84498,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP.
 **Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides (recommended before any user other than Keith).
 **Depends on:** PREVIEW-ORIGIN-01.
-**Primary write scope:** set 2026-11-12 for Step 3 (Keith approved the stage-start): services/api-gateway/src/guards/same-origin-write.guard.ts, services/api-gateway/src/guards/same-origin-write.guard.spec.ts, services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts, services/api-gateway/src/app.module.ts (3 new). Step 2 wrote docs/CSRF-AUDIT-01-STAGE-START.md.
+**Primary write scope:** set 2026-11-12 for Step 3 (Keith approved the stage-start): services/api-gateway/src/guards/same-origin-write.guard.ts, services/api-gateway/src/guards/same-origin-write.guard.spec.ts, services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts, services/api-gateway/src/app.module.ts (3 new). Widened 2026-11-12 by the control plane with e2e/builder-golden-path/lib/live-adapters.ts and e2e/builder-golden-path/tests/live-adapters.spec.ts (test harness only): the live Builder e2e cleanup stops its staging session with page.request.post, which carries the session cookie and no Origin, so the guard would refuse it under Keith's decision 2; the harness now sends the app origin as a browser does. The worker stopped on it as required. Step 2 wrote docs/CSRF-AUDIT-01-STAGE-START.md.
 **Mutexes / resources:** GATEWAY (set 2026-11-12 for Step 3).
 **Hot-file leases:** none.
 **Shared contracts:** none.

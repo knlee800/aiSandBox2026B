@@ -14,7 +14,9 @@
         "services/api-gateway/src/guards/same-origin-write.guard.ts",
         "services/api-gateway/src/guards/same-origin-write.guard.spec.ts",
         "services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts",
-        "services/api-gateway/src/app.module.ts"
+        "services/api-gateway/src/app.module.ts",
+        "e2e/builder-golden-path/lib/live-adapters.ts",
+        "e2e/builder-golden-path/tests/live-adapters.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -2801,7 +2803,9 @@
         "services/api-gateway/src/guards/same-origin-write.guard.ts",
         "services/api-gateway/src/guards/same-origin-write.guard.spec.ts",
         "services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts",
-        "services/api-gateway/src/app.module.ts"
+        "services/api-gateway/src/app.module.ts",
+        "e2e/builder-golden-path/lib/live-adapters.ts",
+        "e2e/builder-golden-path/tests/live-adapters.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
