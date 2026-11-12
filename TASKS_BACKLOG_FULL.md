@@ -87308,22 +87308,22 @@ taskId=COS-DRAFTS-POLISH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the COS-DRAFTS-01B LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the COS-DRAFTS-01B LOCK — not admitted.
 **Task ID:** COS-DRAFTS-POLISH-01
 **Title:** Draft card reply language as a name
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** COS-DRAFTS-01B.
-**Primary write scope:** PROVISIONAL: frontend/components/collaboration/collaboration-view.tsx or collaboration-draft.ts and the workflows test; the three message files if new keys are needed.
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-11: frontend/components/collaboration/collaboration-view.tsx, frontend/components/collaboration/collaboration-draft.ts, frontend/components/collaboration/collaboration-workflows.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the COS-DRAFTS-01 stage-start 2026-11-11).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the COS-DRAFTS-01B worker: the draft card shows the reply language as a raw code (owner, en, zh-TW, zh-CN); show the same translated names the workflow form uses for its reply-language choice.
 
 ### CHAT-DISCORD-01 — Discord chat channel
@@ -88501,22 +88501,22 @@ taskId=CM-CONTENT-TYPE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CM-CONTENT-TYPE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CM-CONTENT-TYPE-01 LOCK — not admitted.
 **Task ID:** CM-CONTENT-TYPE-02
 **Title:** More preview content types
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-CONTENT-TYPE-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/preview/preview.service.ts and its spec.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/preview/preview.service.ts, services/container-manager/src/preview/preview.service.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-CONTENT-TYPE-01 worker: add .pdf, .mp3, .mp4, .webm, .webmanifest and similar types where previews need them (they still fall back to text/plain, which is wrong for .pdf), and decide whether .js moves from application/javascript to text/javascript to match .mjs (both are valid today).
 
 ### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed
