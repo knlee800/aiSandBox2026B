@@ -9,8 +9,13 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "CSRF-AUDIT-01",
-      "mutexes": [],
-      "writePaths": ["docs/CSRF-AUDIT-01-STAGE-START.md"],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/guards/same-origin-write.guard.ts",
+        "services/api-gateway/src/guards/same-origin-write.guard.spec.ts",
+        "services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts",
+        "services/api-gateway/src/app.module.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "evidenceClass": "LOCAL-TESTS",
@@ -2791,8 +2796,13 @@
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["PREVIEW-ORIGIN-01"],
-      "mutexes": [],
-      "writePaths": ["docs/CSRF-AUDIT-01-STAGE-START.md"],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/guards/same-origin-write.guard.ts",
+        "services/api-gateway/src/guards/same-origin-write.guard.spec.ts",
+        "services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts",
+        "services/api-gateway/src/app.module.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],

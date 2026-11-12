@@ -84490,7 +84490,7 @@ taskId=CSRF-AUDIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/CSRF-AUDIT-01-STAGE-START.md, d6fb8c5); waiting for Keith's approval.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/CSRF-AUDIT-01-STAGE-START.md, d6fb8c5); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** CSRF-AUDIT-01
 **Title:** Cookie-authenticated write routes without CsrfGuard
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84498,8 +84498,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP.
 **Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides (recommended before any user other than Keith).
 **Depends on:** PREVIEW-ORIGIN-01.
-**Primary write scope:** set 2026-11-12 for Step 2: docs/CSRF-AUDIT-01-STAGE-START.md (the stage-start); the implementation write set is set when Keith approves it. Was: PROVISIONAL: services/api-gateway/src/ controllers found by the audit, with tests.
-**Mutexes / resources:** none for Step 2 (set 2026-11-12; a stage-start document only); expected GATEWAY for Step 3.
+**Primary write scope:** set 2026-11-12 for Step 3 (Keith approved the stage-start): services/api-gateway/src/guards/same-origin-write.guard.ts, services/api-gateway/src/guards/same-origin-write.guard.spec.ts, services/api-gateway/src/guards/same-origin-write.guard.http.spec.ts, services/api-gateway/src/app.module.ts (3 new). Step 2 wrote docs/CSRF-AUDIT-01-STAGE-START.md.
+**Mutexes / resources:** GATEWAY (set 2026-11-12 for Step 3).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
@@ -84507,6 +84507,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From PREVIEW-ORIGIN-01: a sibling preview host is same-site with the platform, so SameSite=Lax does not stop a preview page from sending same-site requests with the session cookie; write routes that rely on the session cookie without CsrfGuard (preview start and stop are two) can be triggered. List every cookie-authenticated write route without CsrfGuard, then add the guard or justify each. Also note: main.ts sets a host-only aisandbox_csrf cookie on preview-host responses (harmless; unrelated to the platform cookie).
+
+**Decided (Keith, 2026-11-12, "Yes, approve both"; docs/CSRF-AUDIT-01-STAGE-START.md section 7):** (1) one global same-origin write guard in the gateway rather than CsrfGuard on every route; (2) a request that carries the session cookie but no Origin header is refused.
 
 ### PREVIEW-PICKER-01 — Rebuild Select Element over postMessage for the isolated preview
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
