@@ -89122,7 +89122,7 @@ taskId=STAGING-DEPLOY-I18N-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-LABEL-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed f3de35a to 884110c with runs off (rc 0, 2026-11-12T05:00:29Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, body-limit checks with and without the key pass, the network-failure patterns and the earlier translated text are in the build. No Keith step was required. Checkpoint: docs/STAGING-DEPLOY-I18N-02-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-LABEL-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-I18N-02
 **Title:** Deploy the shared history-list parser and the translated network error (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
