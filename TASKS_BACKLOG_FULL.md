@@ -88882,22 +88882,22 @@ taskId=NETWORK-ERROR-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the AUTHMOD-I18N-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the AUTHMOD-I18N-01 LOCK — not admitted.
 **Task ID:** NETWORK-ERROR-I18N-01
 **Title:** One fetch helper with a translated network error for the workspace page
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** AUTHMOD-I18N-01.
-**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), a small frontend/lib/ helper and its test, workspace-shell.test.tsx, the three message files.
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-12: frontend/lib/network-error.ts, frontend/lib/network-error.test.ts, frontend/app/, frontend/components/workspace/workspace-shell.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json (frontend/lib/network-error.ts and its test are new; frontend/app/ is listed as a directory for frontend/app/[locale]/app/page.tsx only).
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the AUTHMOD-I18N-01 worker: other catch blocks in page.tsx still show error.message, so a network failure there shows the browser's English text; the {detail} in authInstallCheckpointFailed and in the generic authGenerationFailed path is still raw error text; and the instanceof TypeError check is loose. A small shared fetch helper that marks network failures, a translated network error wherever the page shows a request failure, and translated or neutral detail text; tests; no behaviour change.
 
 ### STAGING-DEPLOY-I18N-01 — Deploy the translated chat lines (and later locked work)
