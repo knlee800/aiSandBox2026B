@@ -29,6 +29,15 @@ const STANDARD_CONTENT_TYPES: Record<string, string> = {
   '.map': 'application/json; charset=utf-8',
   '.xml': 'application/xml; charset=utf-8',
   '.txt': 'text/plain; charset=utf-8',
+  // CM-CONTENT-TYPE-02: documents, audio, video, manifest and CSV.
+  '.pdf': 'application/pdf',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.webmanifest': 'application/manifest+json',
+  '.csv': 'text/csv; charset=utf-8',
 };
 
 @Injectable()
@@ -512,7 +521,7 @@ export class PreviewService {
       return 'text/css; charset=utf-8';
     }
     if (lowercase.endsWith('.js')) {
-      return 'application/javascript; charset=utf-8';
+      return 'text/javascript; charset=utf-8';
     }
     if (lowercase.endsWith('.json')) {
       return 'application/json; charset=utf-8';

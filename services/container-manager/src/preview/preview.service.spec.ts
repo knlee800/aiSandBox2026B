@@ -160,15 +160,23 @@ describe('PreviewService readStaticPreviewContent', () => {
       ['/a.map', 'application/json; charset=utf-8'],
       ['/a.xml', 'application/xml; charset=utf-8'],
       ['/a.txt', 'text/plain; charset=utf-8'],
+      ['/a.pdf', 'application/pdf'],
+      ['/a.mp3', 'audio/mpeg'],
+      ['/a.wav', 'audio/wav'],
+      ['/a.ogg', 'audio/ogg'],
+      ['/a.mp4', 'video/mp4'],
+      ['/a.webm', 'video/webm'],
+      ['/site.webmanifest', 'application/manifest+json'],
+      ['/a.CSV', 'text/csv; charset=utf-8'],
       ['/a.svg', 'image/svg+xml'],
       ['/a.png', 'image/png'],
       ['/a.jpeg', 'image/jpeg'],
-      ['/a.js', 'application/javascript; charset=utf-8'],
+      ['/a.js', 'text/javascript; charset=utf-8'],
       ['/a.css', 'text/css; charset=utf-8'],
       ['/a.json', 'application/json; charset=utf-8'],
       ['/a.unknownext', 'text/plain; charset=utf-8'],
       ['/noextension', 'text/plain; charset=utf-8'],
-    ])('CM-CONTENT-TYPE-01: %s is typed %s', async (requestPath, contentType) => {
+    ])('CM-CONTENT-TYPE-01/02: %s is typed %s', async (requestPath, contentType) => {
       dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(PNG_LIKE);
 
       const result = await service.readStaticPreviewContent('session-123', requestPath);
@@ -299,7 +307,7 @@ describe('PreviewService subdirectory appRoot routing', () => {
       'session-sub',
       'WorkspaceA/script.js',
     );
-    expect(result.contentType).toBe('application/javascript; charset=utf-8');
+    expect(result.contentType).toBe('text/javascript; charset=utf-8');
   });
 
   it('resolves nested asset paths from subdirectory appRoot', async () => {
