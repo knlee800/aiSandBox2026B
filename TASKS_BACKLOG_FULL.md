@@ -84329,7 +84329,7 @@ nature=IMPLEMENTATION
 
 **Also (added 2026-11-12, later; Keith, 2026-11-10 to 2026-11-12, review window; docs/OFFICE-ART-DIRECTION-2026-11-12.md):** Keith wants the privacy work run in the main session. The first step, a read-only data inventory, would cover everything stored and where, who can read it (admin staff included), how long it is kept, what leaves our servers (which AI providers see prompts), and whether encryption at rest, backups and workspace snapshots are covered. Items (10) to (15) stay a recommendation; nothing is registered until Keith says which.
 
-**Decided (Keith, 2026-11-13, "Yes, record them"; answers to the questions in docs/PRIVACY-HOST-CHECK-01-CHECKPOINT.md, control-plane recommendations except question 6):** (Q1) staging runs on Lightsail, whose disks AWS encrypts at rest automatically, so no console check is needed; the host shows no OS-level encryption. (Q2) every backup copy is kept 30 days or less: 7 nightly sets on the host, the last 4 weekly off-host bundles on the host, the last 4 weekly copies on Keith's PC; pruning by date is BACKUP-RETENTION-01 (registered 2026-11-13). (Q3) only Keith holds access; Keith changes the basic_auth password if anyone else ever had it and turns on two-factor sign-in for the cloud, DNS, Anthropic, OpenAI and GitHub accounts (Keith's own steps, not a task). (Q4) Keith confirms training and retention terms in the Anthropic and OpenAI consoles; the OpenAI and xAI adapters send store: true because the agent loop continues with previous_response_id, and switching to store: false with the full history each step is ACCESS-01J (S10 option A), now wanted before the first outside user, not only before paid launch; D3 still withholds OpenAI and xAI runs from anyone but Keith until then. (Q5) the usage ledger keeps no AI answer text: model, token counts, cost, status and time only (true in code today; the answer lives in chat history, so deleting a chat deletes it). (Q6) Singapore first (PDPA: consent and purpose, breach reports to the PDPC within 3 days, a named data-protection contact, comparable protection for data sent to providers abroad); the EU (GDPR) and mainland China (PIPL) later; a lawyer confirms. Item (11), Keith's principles, and items (12) to (15) build on these and stay unregistered until Keith chooses.
+**Decided (Keith, 2026-11-13, "Yes, record them"; answers to the questions in docs/PRIVACY-HOST-CHECK-01-CHECKPOINT.md, control-plane recommendations except question 6):** (Q1) staging runs on Lightsail, whose disks AWS encrypts at rest automatically, so no console check is needed; the host shows no OS-level encryption. (Q2) every backup copy is kept 30 days or less: 7 nightly sets on the host, the last 4 weekly off-host bundles on the host, the last 4 weekly copies on Keith's PC; pruning by date is BACKUP-RETENTION-01 (registered 2026-11-13). (Q3) only Keith holds access; Keith changes the basic_auth password if anyone else ever had it and turns on two-factor sign-in for the cloud, DNS, Anthropic, OpenAI and GitHub accounts (Keith's own steps, not a task). (Q4) Keith confirms training and retention terms in the Anthropic and OpenAI consoles; the OpenAI and xAI adapters send store: true because the agent loop continues with previous_response_id, and switching to store: false with the full history each step is ACCESS-01J (S10 option A), now wanted before the first outside user, not only before paid launch; D3 still withholds OpenAI and xAI runs from anyone but Keith until then. (Q5) the usage ledger keeps no AI answer text: model, token counts, cost, status and time only (true in code today; the answer lives in chat history, so deleting a chat deletes it). (Q6) Singapore first (PDPA: consent and purpose, breach reports to the PDPC within 3 days, a named data-protection contact, comparable protection for data sent to providers abroad); the EU (GDPR) and mainland China (PIPL) later; a lawyer confirms. Item (11), Keith's principles, and items (12) to (15) build on these and stay unregistered until Keith chooses. Open (Keith; from the BACKUP-RETENTION-01 LOCK, 2026-11-13): whether the C3 acceptance set 20261029T040824Z kept on Keith's PC stays as an exception to the 30-day rule.
 
 #### Acceptance criteria
 
@@ -84394,7 +84394,7 @@ taskId=BACKUP-RETENTION-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-13 — by the control plane on Keith's "Start BACKUP-RETENTION-01". Was: READY — registered 2026-11-13 from Keith's privacy answers (ACCESS-READY-01, Q2) — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-13. LANE-DONE and LOCKED by the control plane; Lane 1 and the HOTFILE leases released. Backup copies pruned by date (Keith's 30-day decision): backup_prune_retention in ops-lib.sh, called by aisandbox-backup after a successful backup; ages from the UTC timestamp in each name, never mtime; the newest 7 nightly sets kept; pre-migration and failed sets older than 30 days deleted; off-host .tar.age bundles with their .identity files, and orphan identity files, older than 28 days deleted, never the newest bundle; symlinks, partial files, records and other names left alone; names only printed. New mocked regression test backup-retention.sh (115 checks). opus subagent 518a7e2, fast-forwarded; control-plane rerun: 115 passed, all 27 existing ops test files unchanged, syntax ok. Not installed: STAGING-DEPLOY-BACKUP-01. Checkpoint: docs/BACKUP-RETENTION-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (STAGING-DEPLOY-BACKUP-01; BACKUP-RETENTION-02) / 3 superseded (symlinked-root check by STAGING-DEPLOY-BACKUP-01; pre-migration bundles at 28 days by Keith's 30-day decision; the C3 set question by an ACCESS-READY-01 note) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-13 — by the control plane on Keith's "Start BACKUP-RETENTION-01". Was: READY — registered 2026-11-13 from Keith's privacy answers (ACCESS-READY-01, Q2) — not admitted.
 **Task ID:** BACKUP-RETENTION-01
 **Title:** Keep backup copies 30 days or less (prune by date)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84409,6 +84409,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** Keith decided 2026-11-13 that every backup copy is kept 30 days or less. PRIVACY-HOST-CHECK-01 found 15 sets in /var/backups/aisandbox although the nightly script keeps 7 (find out why; probably deploy-time sets made after the last nightly run) and 46 encrypted off-host bundles in /var/backups/aisandbox-offhost back to 2026-10-29 that are never pruned. Prune off-host bundles (and their .identity files) to the last 4 weekly bundles, at most 30 days old, without ever deleting the newest bundle or one being written; keep pre-migration sets within 30 days; tests for the pruning. At stage-start, say whether the C3 acceptance set 20261029T040824Z on Keith's PC is kept as an exception (Keith decides). The weekly copy to Keith's PC keeps the last 4 copies there (Keith's own step).
+
+### BACKUP-RETENTION-02 — Age caps for deploy records and for the newest nightly sets
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BACKUP-RETENTION-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the BACKUP-RETENTION-01 LOCK — not admitted.
+**Task ID:** BACKUP-RETENTION-02
+**Title:** Age caps for deploy records and for the newest nightly sets
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** BACKUP-RETENTION-01.
+**Primary write scope:** PROVISIONAL: ops/clean-baseline/lib/ops-lib.sh and tests/regression/backup-retention.sh.
+**Mutexes / resources:** set at admission (HOTFILE leases expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From BACKUP-RETENTION-01: the records/deploy-<ts> directories under /var/backups/aisandbox (operation records such as quiescence.json) are never pruned; and the count-only nightly rule keeps the newest 7 sets even if backups stop for weeks, so they could become older than 30 days. Decide whether the 30-day rule covers both, then add it with tests.
+
+### STAGING-DEPLOY-BACKUP-01 — Install the backup retention change on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-BACKUP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the BACKUP-RETENTION-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-BACKUP-01
+**Title:** Install the backup retention change on staging
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the install.
+**Depends on:** BACKUP-RETENTION-01.
+**Primary write scope:** records; host state (two ops files).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Install BACKUP-RETENTION-01 on staging from the host: ops/clean-baseline/lib/ops-lib.sh (both installed copies, /usr/local/lib/aisandbox/ops-lib.sh and /usr/local/lib/aisandbox/clean-baseline/lib/ops-lib.sh) and bin/aisandbox-backup together, each checked first against its expected installed hash and afterwards against the repository hash (the new entry point with the old library would exit 127 after a successful backup); no service restart, no deploy of application code, configuration unchanged. Read-only before-listing: whether /var/backups/aisandbox or /var/backups/aisandbox-offhost is a symlink; every set with its kind from MANIFEST (this answers why 15 sets were present); bundle count, oldest and newest. Do not run the prune by hand: check the next nightly run (03:30 UTC) in the journal and list what it deleted and what is left (expected: bundles older than 28 days gone, the newest kept, pre-migration sets older than 30 days gone).
 
 ### PREVIEW-ORIGIN-01 — Generated-app previews run on the platform origin: isolate them
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
