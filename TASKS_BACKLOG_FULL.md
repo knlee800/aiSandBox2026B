@@ -84688,7 +84688,7 @@ taskId=PREVIEW-PICKER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-PICKER-01-STAGE-START.md, ed0142f); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND, GATEWAY and CONTAINER-MANAGER released. Select Element is back for static previews over a checked postMessage bridge (4-step; design approved by Keith: static previews only, no toggle where the picker cannot work): the gateway serves /api/preview/<sid>/proxy/__aisb/bridge.js on the preview host behind the unchanged PreviewAccessGuard (no-store, nosniff, the platform origin written in from APP_BASE_URL), reserves proxy/__aisb on both hosts and never forwards it; container-manager adds one bridge script tag after the base tag in static HTML; the status answer gains previewOrigin (additive); the page sends only to the preview origin and accepts only messages from the preview origin and the iframe window, validated field by field within size limits, a selection only while the picker is on; the bridge acts only on platform-origin messages from its parent and has no cookie, storage or network access; the toggle shows only after the bridge answers ready; the selection feeds the existing Visual Edit prompt unchanged. Guards, cookies, tickets, the route filter, Set-Cookie limits and the iframe sandbox unchanged; no visible text. Write set widened by two test-only specs (ab4d5ec). opus subagent c3da5d5, cherry-picked; control-plane rerun: gateway 4236 passed plus the 14 known smoke failures, container-manager 983, frontend 1849, builds 0. ARCHITECTURE.md section 6 updated. Not deployed: STAGING-DEPLOY-PICKER-01. Checkpoint: docs/PREVIEW-PICKER-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (STAGING-DEPLOY-PICKER-01; PREVIEW-PICKER-02) / 1 superseded (the ARCHITECTURE.md picker line, by this LOCK's ARCHITECTURE.md edit) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-PICKER-01-STAGE-START.md, ed0142f); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** PREVIEW-PICKER-01
 **Title:** Rebuild Select Element over postMessage for the isolated preview
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84707,6 +84707,54 @@ nature=IMPLEMENTATION
 **Scope:** From PREVIEW-ORIGIN-01: the Select Element picker injected through iframe.contentDocument and checked event.origin against the platform origin; it is hidden (PREVIEW_PICKER_TOGGLE_VISIBLE false) because the isolated preview is cross-origin. Rebuild it over postMessage with an explicit origin check on both sides; keep its translated keys.
 
 **Decided (Keith, 2026-11-12, "Yes, approve both"; docs/PREVIEW-PICKER-01-STAGE-START.md section 7):** (1) static previews only in this slice; the picker for dev-server previews is deferred; (2) where the picker cannot work (dev-server previews, no preview host, or the app's own CSP blocks the bridge) the toggle is not shown, so no new text.
+
+### PREVIEW-PICKER-02 — Select Element for dev-server previews
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-PICKER-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-PICKER-01 LOCK — not admitted.
+**Task ID:** PREVIEW-PICKER-02
+**Title:** Select Element for dev-server previews
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** PREVIEW-PICKER-01.
+**Primary write scope:** PROVISIONAL: container-manager preview proxy (HTML response interception) and specs; set at a stage-start.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PREVIEW-PICKER-01 (Keith deferred it): inject the bridge tag into HTML that container-manager proxies from a dev server (for example Vite), which needs response interception in the pass-through proxy (http-proxy-middleware behaviour uncertain); then show the toggle for dev-server previews too.
+
+### STAGING-DEPLOY-PICKER-01 — Deploy PREVIEW-PICKER-01 (Keith checks the picker)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-PICKER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-PICKER-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-PICKER-01
+**Title:** Deploy PREVIEW-PICKER-01 (Keith checks the picker)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** PREVIEW-PICKER-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with PREVIEW-PICKER-01 to staging from the host with runs off (no migration expected; configuration at the baselines gateway.env e0767286 and Caddyfile 205770cf; checks as in STAGING-DEPLOY-COOKIE-01 including the preview-host, same-origin guard and cookie checks). Picker checks from the host: GET status carries previewOrigin https://preview.staging.ainow.biz (needs a session, so checked through the gateway with a stub only if possible, otherwise in Keith's pass); preview-host GET proxy/__aisb/bridge.js without the preview cookie 403; proxy/__aisb/other.js 404 on the preview host (with a cookie only, so otherwise covered by tests); the platform-host bridge path 401 without a session; the built gateway contains the bridge script and container-manager the tag. Keith's pass in a static project: the Select Element toggle appears after Refresh; picker on shows the active line and the hover highlight; a click shows the selected line and turns the toggle off; Escape and turning it off work; after a refresh the toggle comes back; on a dev-server preview there is no toggle. AI edits from the selection need runs on and are not part of this check.
 
 ### PREVIEW-ORIGIN-DEPLOY-01 — Deploy the preview host and PREVIEW-ORIGIN-01
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
