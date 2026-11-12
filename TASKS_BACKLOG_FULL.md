@@ -88806,7 +88806,7 @@ taskId=STAGING-DEPLOY-SNAP-04
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 7c2a401 to 91149ed with runs off (rc 0, 2026-11-12T01:53:59Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, the notice test id and failedPaths are in the builds; body-limit checks with and without the key pass (keyed checks now run before the header file is removed). Keith's live check passed: a 13 MB big.bin in his CL2 test project, saved as the version big test (stored as base64), Stop and reopen showed the amber notice naming big.bin; dismissed; a manual restore of big test showed it again; restoring snap fix showed none; then he removed big.bin and saved the version clean. The reopened workspace restored both save points from the 13 MB history bundle. Checkpoint: docs/STAGING-DEPLOY-SNAP-04-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-04
 **Title:** Deploy the not-restored files notice and Keith checks it
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
