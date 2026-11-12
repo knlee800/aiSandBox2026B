@@ -84688,7 +84688,7 @@ taskId=PREVIEW-PICKER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-PICKER-01-STAGE-START.md, ed0142f); waiting for Keith's approval.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-PICKER-01-STAGE-START.md, ed0142f); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** PREVIEW-PICKER-01
 **Title:** Rebuild Select Element over postMessage for the isolated preview
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84696,8 +84696,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP (changed 2026-11-12 at admission from 3-STEP: the injection design is open and touches the preview proxy, so it gets a stage-start).
 **Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides, after PREVIEW-ORIGIN-DEPLOY-01.
 **Depends on:** PREVIEW-ORIGIN-01.
-**Primary write scope:** set 2026-11-12 for Step 2: docs/PREVIEW-PICKER-01-STAGE-START.md (the stage-start); the implementation write set is set when Keith approves it. Was: PROVISIONAL: frontend/components/workspace/ (picker code, the iframe bridge) and a small script the preview injects; possibly container-manager or gateway for the injection.
-**Mutexes / resources:** none for Step 2 (set 2026-11-12; a stage-start document only); expected FRONTEND plus GATEWAY or CONTAINER-MANAGER for Step 3.
+**Primary write scope:** set 2026-11-12 for Step 3 (Keith approved the stage-start): services/api-gateway/src/preview/preview-bridge-script.ts, services/api-gateway/src/preview/preview-host.ts, services/api-gateway/src/preview/preview-entry.controller.ts, services/api-gateway/src/preview/preview.controller.ts, services/api-gateway/src/preview/__tests__/preview.bridge.spec.ts, services/api-gateway/src/preview/__tests__/preview.entry.spec.ts, services/api-gateway/src/preview/__tests__/preview.isolation.spec.ts, services/api-gateway/src/preview/__tests__/preview.endpoint-contract.spec.ts, services/container-manager/src/preview/preview.service.ts, services/container-manager/src/preview/preview.service.spec.ts, frontend/components/workspace/workspace-preview.logic.ts, frontend/components/workspace/workspace-shell.tsx, frontend/components/workspace/workspace-shell.test.tsx, frontend/components/workspace/preview-isolation.source.test.ts, frontend/app/[locale]/app/page.tsx (2 new; the sidecar lists frontend/app/ as a directory because the validator refuses brackets; only app/[locale]/app/page.tsx under it may change). Step 2 wrote docs/PREVIEW-PICKER-01-STAGE-START.md.
+**Mutexes / resources:** FRONTEND, GATEWAY, CONTAINER-MANAGER (set 2026-11-12 for Step 3).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
@@ -84705,6 +84705,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From PREVIEW-ORIGIN-01: the Select Element picker injected through iframe.contentDocument and checked event.origin against the platform origin; it is hidden (PREVIEW_PICKER_TOGGLE_VISIBLE false) because the isolated preview is cross-origin. Rebuild it over postMessage with an explicit origin check on both sides; keep its translated keys.
+
+**Decided (Keith, 2026-11-12, "Yes, approve both"; docs/PREVIEW-PICKER-01-STAGE-START.md section 7):** (1) static previews only in this slice; the picker for dev-server previews is deferred; (2) where the picker cannot work (dev-server previews, no preview host, or the app's own CSP blocks the bridge) the toggle is not shown, so no new text.
 
 ### PREVIEW-ORIGIN-DEPLOY-01 — Deploy the preview host and PREVIEW-ORIGIN-01
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

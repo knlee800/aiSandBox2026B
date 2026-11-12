@@ -941,7 +941,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## PREVIEW-PICKER-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-12
 
-**Current status:** ADMITTED, Lane 1, with no mutex for now (registered 3-step at the PREVIEW-ORIGIN-01 LOCK; run as 4-step because the injection design is open and touches the preview proxy; this record admits Step 2, the stage-start, which writes one document): design stage-start for PREVIEW-PICKER-01: how Select Element reaches the cross-origin preview (where a bridge script is injected, the postMessage protocol and origin checks on both sides), then the implementation write set. The implementation write set and mutexes (expected FRONTEND, plus GATEWAY or CONTAINER-MANAGER where the bridge script is injected) are set when Keith approves the stage-start. Admitted by the control plane on Keith's "Yes, start it". Implementer: fable subagent (Fable: a design stage-start for a cross-origin bridge between the workspace page and the isolated preview) in worktree lane/PREVIEW-PICKER-01. Scope in TASKS_BACKLOG_FULL.md. Step 2 drafted 2026-11-12: docs/PREVIEW-PICKER-01-STAGE-START.md (fable subagent ed0142f, fast-forwarded; control-plane check of the picker, injection and origin facts matched the code). Recommends a bridge script served by the gateway on the preview host at /api/preview/<sid>/proxy/__aisb/bridge.js, one script tag added by container-manager to static HTML, the preview origin in the preview status answer, and a versioned postMessage protocol with origin and source checks on both sides; static previews only; 15 files; FRONTEND, GATEWAY and CONTAINER-MANAGER; opus. Two questions for Keith. Waiting for Keith's approval; Lane 1 stays ACTIVE with no mutex until then.
+**Current status:** ADMITTED, Lane 1, with no mutex for now (registered 3-step at the PREVIEW-ORIGIN-01 LOCK; run as 4-step because the injection design is open and touches the preview proxy; this record admits Step 2, the stage-start, which writes one document): design stage-start for PREVIEW-PICKER-01: how Select Element reaches the cross-origin preview (where a bridge script is injected, the postMessage protocol and origin checks on both sides), then the implementation write set. The implementation write set and mutexes (expected FRONTEND, plus GATEWAY or CONTAINER-MANAGER where the bridge script is injected) are set when Keith approves the stage-start. Admitted by the control plane on Keith's "Yes, start it". Implementer: fable subagent (Fable: a design stage-start for a cross-origin bridge between the workspace page and the isolated preview) in worktree lane/PREVIEW-PICKER-01. Scope in TASKS_BACKLOG_FULL.md. Step 2 drafted 2026-11-12: docs/PREVIEW-PICKER-01-STAGE-START.md (fable subagent ed0142f, fast-forwarded; control-plane check of the picker, injection and origin facts matched the code). Recommends a bridge script served by the gateway on the preview host at /api/preview/<sid>/proxy/__aisb/bridge.js, one script tag added by container-manager to static HTML, the preview origin in the preview status answer, and a versioned postMessage protocol with origin and source checks on both sides; static previews only; 15 files; FRONTEND, GATEWAY and CONTAINER-MANAGER; opus. Two questions for Keith. Keith approved the design on 2026-11-12 ("Yes, approve both"): static previews only for now (dev-server previews deferred), and no picker button where the picker cannot work (no new text). Step 3 (implementation) holds FRONTEND, GATEWAY and CONTAINER-MANAGER; write set of 15 files in docs/PREVIEW-PICKER-01-STAGE-START.md; opus subagent in worktree lane/PREVIEW-PICKER-01.
 
 ## Lane 1
 ACTIVE — PREVIEW-PICKER-01 — 2026-11-12.
@@ -1054,9 +1054,9 @@ CLOSED since 2026-11-08T09:44:17Z (closed by TESTER-WINDOW-CLOSE-01; opened by T
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-PRD-SYNC-01 lock 2026-11-12.
-- GATEWAY: UNOWNED — released at COOKIE-PREFIX-01 COMPLETE AND LOCKED 2026-11-12.
+- GATEWAY: OWNED by PREVIEW-PICKER-01 (2026-11-12).
 - MIGRATION: UNOWNED — released at APPROVAL-SET-01 COMPLETE AND LOCKED 2026-11-11.
-- FRONTEND: UNOWNED — released at COOKIE-PREFIX-01 COMPLETE AND LOCKED 2026-11-12.
+- FRONTEND: OWNED by PREVIEW-PICKER-01 (2026-11-12).
 - I18N: UNOWNED — released at CM-DIFF-NOTICE-01 COMPLETE AND LOCKED 2026-11-12.
 - STAGING: UNOWNED — released at STAGING-DEPLOY-COOKIE-01 COMPLETE AND LOCKED 2026-11-12 (stagingAuthorized=false).
 - PROVIDER-LIVE: UNOWNED — released at USER-TEAMS-LIVE-01 COMPLETE AND LOCKED 2026-11-11 (providerLiveAuthorized=false).
@@ -1078,7 +1078,7 @@ CLOSED since 2026-11-08T09:44:17Z (closed by TESTER-WINDOW-CLOSE-01; opened by T
 - COMPOSE: UNOWNED — released at LOCAL-DEV-SYNC-01 COMPLETE AND LOCKED 2026-11-10.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
 - AI-SERVICE: UNOWNED — released at COS-DRAFTS-01 COMPLETE AND LOCKED 2026-11-11.
-- CONTAINER-MANAGER: UNOWNED — released at CM-CLEANUP-02 COMPLETE AND LOCKED 2026-11-12.
+- CONTAINER-MANAGER: OWNED by PREVIEW-PICKER-01 (2026-11-12).
 - All other resources: UNOWNED
 - HOTFILE:ops/clean-baseline/lib/ops-lib.sh: UNOWNED — released at CONN-01 COMPLETE AND LOCKED 2026-11-09.
 - HOTFILE:ops/clean-baseline/bin/aisandbox-prepare: UNOWNED — released at CONN-01 COMPLETE AND LOCKED 2026-11-09.
