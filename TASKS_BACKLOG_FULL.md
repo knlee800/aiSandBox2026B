@@ -84334,13 +84334,15 @@ nature=IMPLEMENTATION
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
+**Also (added 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK; docs/PRIVACY-DATA-INVENTORY.md):** data retention covers these findings: (a) correction: the usage ledger does keep AI answer text and proposed file changes in usage_records.metadata (services/ai-service/src/worker/worker.processor.ts:2274-2284), although the entity comment and docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md section 4.1 say it stores no response content; Keith decides whether the ledger keeps it; (b) failed AI jobs stay in Redis with prompt, files and the connector grant token (removeOnFail false, services/api-gateway/src/queue/queue.service.ts:43); (c) the backup script never prunes the encrypted off-host bundles, and docs/backup/postgresql-backup-procedure.md states a different policy; (d) token_usage uses RESTRICT on its session relation and several tables have no cascade from users, which would block an account deletion; (e) the old ai-service SQLite conversation store and its routes still exist.
+
 ### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=PRIVACY-INVENTORY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "4 inventory first". Was: READY — registered 2026-11-12 by the control plane on Keith's "4 inventory first" (plan row 46: privacy starts with the data inventory) — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1 released. docs/PRIVACY-DATA-INVENTORY.md (323 lines, every row with file and line): what user data is stored and where, who can read it, what leaves our servers, retention today, 22 gaps and 27 open host or Keith questions. Main findings: user content is plain text (only passwords, tokens and keys are hashed; connector secrets AES-256-GCM); nothing is deleted over time (no account, chat or project deletion; session delete keeps the workspace and snapshots; soft deletes); the usage ledger keeps AI answer text in usage_records.metadata despite its no-content comment; failed AI jobs stay in Redis with prompt, files and the connector grant token; five AI providers can receive user data, OpenAI and xAI Agent runs with store true; staff and internal-key reads are not audited; backups hold everything and the encrypted off-host bundles are never pruned; the preview iframe runs generated apps on the platform origin with no sandbox (the control plane confirmed no sandbox attribute and no CSP sandbox header). fable subagent 8ac1ddd (the worker reported its environment as Fable 5.2), fast-forwarded; control-plane spot checks of the ledger, Redis, provider-storage, iframe and driver-key claims matched the code; no secret values in the document. No code change. Checkpoint: docs/PRIVACY-INVENTORY-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (PREVIEW-ORIGIN-01; PRIVACY-HOST-CHECK-01) / 6 superseded (the usage-ledger record correction, failed jobs in Redis, unpruned encrypted backups, deletion blockers in foreign keys, the old ai-service SQLite conversation store, and the differing backup-policy document, all by ACCESS-READY-01 data retention) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "4 inventory first". Was: READY — registered 2026-11-12 by the control plane on Keith's "4 inventory first" (plan row 46: privacy starts with the data inventory) — not admitted.
 **Task ID:** PRIVACY-INVENTORY-01
 **Title:** Privacy data inventory (read-only)
 **Workstream:** CORE (taxonomy only; zero admission weight)
@@ -84359,6 +84361,54 @@ nature=IMPLEMENTATION
 **Source:** docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md section 4.3 item 1; plan row 46; ACCESS-READY-01 privacy conditions. Keith chose the inventory first on 2026-11-12; the other five privacy items (his principles, delete and export with retention, policy and terms with a lawyer, staff access with an audit log, a public privacy page) stay unregistered in plan row 46 until he chooses.
 **Scope:** A read-only inventory built from the repository, with file and line references: every place user or personal data is stored (database tables and columns, Redis, workspace files, snapshots and checkpoint history, container volumes, logs, backups as the repository's scripts and docs describe them); which service and which people can read each; everything that leaves our servers (AI providers, email, sign-in providers, payments, any other outside service) and what is sent; retention and deletion as they work today; and the gaps. Facts only the host can confirm (encryption at rest, backup retention on staging, staff access) are listed as exact questions, not guessed. No code change. It feeds Keith's principles, delete and export, and the policy.
 **Acceptance:** docs/PRIVACY-DATA-INVENTORY.md exists; every row cites file and line; outside processors listed with what each receives; open host questions listed; no code or other file changed.
+
+### PRIVACY-HOST-CHECK-01 — Answer the privacy inventory host questions on staging (read-only)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PRIVACY-HOST-CHECK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted.
+**Task ID:** PRIVACY-HOST-CHECK-01
+**Title:** Answer the privacy inventory host questions on staging (read-only)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** PRIVACY-INVENTORY-01.
+**Primary write scope:** records and an evidence file; read-only host commands (no change).
+**Mutexes / resources:** STAGING (read-only).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From PRIVACY-INVENTORY-01 section 5: answer the questions a read-only host check can answer (disk encryption at rest, Redis persistence, loopback binding, the old SQLite conversations table, the snapshot store path, the backup timer and pruning, off-host bundle count and age, log destinations and retention, Caddy access logs, who can read the env files, admin role holders, provider switches by name only, EMAIL_PROVIDER, GOOGLE_ and APPLE_ and STRIPE_ variables set or not by name only, container network reach), never printing secret values. Questions only Keith can answer (people with access, provider terms, the ledger text decision, regions) are listed for him.
+
+### PREVIEW-ORIGIN-01 — Generated-app previews run on the platform origin: isolate them
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-ORIGIN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted.
+**Task ID:** PREVIEW-ORIGIN-01
+**Title:** Generated-app previews run on the platform origin: isolate them
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (the control plane recommends it before any user other than Keith; a stage-start chooses the fix).
+**Depends on:** PRIVACY-INVENTORY-01.
+**Primary write scope:** PROVISIONAL: the preview iframe in frontend/components/workspace/ and the preview proxy response headers in services/api-gateway/src/preview/, with tests; possibly a separate preview origin (Caddy and env), decided at the stage-start.
+**Mutexes / resources:** set at admission (expected FRONTEND and GATEWAY; COMPOSE or ENV if a separate origin is chosen).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the PRIVACY-INVENTORY-01 worker, confirmed by the control plane: the preview iframe loads /api/preview/<session>/proxy from the platform's own origin with no sandbox attribute (frontend/components/workspace/workspace-shell.tsx:5186-5193), and the gateway proxy adds no Content-Security-Policy sandbox header (services/api-gateway/src/preview/preview-response-headers.ts). Script in a generated app therefore runs as the platform origin: it can call platform APIs with the user's session cookie, read the non-httpOnly aisandbox_csrf cookie, and read localStorage, where the /driver developer page keeps an API key in plain text (frontend/app/[locale]/driver/page.tsx:74, 288). Generated code is AI-written and can carry injected instructions. Stage-start: confirm the risk with a test, then choose sandbox attributes, a CSP sandbox header, a separate preview origin, or a mix; and move or drop the /driver key storage. Security-sensitive: 4-step, opus.
 
 ### HARNESS-FIXES-01 — Harness fixes from the live runs and reviews
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

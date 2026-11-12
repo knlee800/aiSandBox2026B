@@ -78,7 +78,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 46 | ACCESS-READY-01 | Charge Agent runs, real per-user limit, per-feature write switch; privacy conditions added 2026-11-12 (data inventory, Keith's principles, delete and export with retention, policy and terms with a lawyer, staff access with an audit log, a public privacy page): not registered, Keith chose the data inventory first on 2026-11-12: PRIVACY-INVENTORY-01 (admitted); the other five stay unregistered until Keith chooses |
+| 46 | ACCESS-READY-01 | Charge Agent runs, real per-user limit, per-feature write switch; privacy conditions added 2026-11-12 (data inventory, Keith's principles, delete and export with retention, policy and terms with a lawyer, staff access with an audit log, a public privacy page): not registered, Keith chose the data inventory first on 2026-11-12: PRIVACY-INVENTORY-01 (done 2026-11-12: docs/PRIVACY-DATA-INVENTORY.md; findings and questions for Keith); then PREVIEW-ORIGIN-01 (security: generated-app previews on the platform origin; recommended before any other user) and PRIVACY-HOST-CHECK-01 (read-only host answers); the other five stay unregistered until Keith chooses |
 | 47 | SIGNUP-ALLOWLIST-01 | Sign-up allowlist (READY, parked) |
 | 48 | ACCESS-01E | Credits per model; models per plan |
 | 49 | ACCESS-01G | Admin settings store with audit |
