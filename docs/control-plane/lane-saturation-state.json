@@ -13,6 +13,7 @@
       "writePaths": [
         "services/container-manager/src/preview/preview.service.ts",
         "services/container-manager/src/preview/preview.service.spec.ts",
+        "services/container-manager/src/preview/preview.controller.spec.ts",
         "services/container-manager/src/sessions/sessions.module.ts",
         "services/container-manager/src/previews/preview.service.ts",
         "services/container-manager/src/previews/preview-proxy.service.ts",
@@ -7056,6 +7057,7 @@
       "writePaths": [
         "services/container-manager/src/preview/preview.service.ts",
         "services/container-manager/src/preview/preview.service.spec.ts",
+        "services/container-manager/src/preview/preview.controller.spec.ts",
         "services/container-manager/src/sessions/sessions.module.ts",
         "services/container-manager/src/previews/preview.service.ts",
         "services/container-manager/src/previews/preview-proxy.service.ts",
