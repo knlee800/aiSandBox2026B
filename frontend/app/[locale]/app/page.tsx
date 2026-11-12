@@ -184,6 +184,8 @@ import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 
+const EMPTY_RESTORE_FAILED_PATHS: string[] = [];
+
 function getCsrfTokenFromCookie(): string | null {
   const csrfCookie = document.cookie
     .split(';')
@@ -1021,7 +1023,28 @@ export default function AppPage() {
   >('idle');
   const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
   // SNAPSHOT-NOTICE-01: files the last project open or manual restore could not write.
-  const [restoreFailedPaths, setRestoreFailedPaths] = useState<string[]>([]);
+  // SNAPSHOT-NOTICE-02: the paths are tied to the session they were set for.
+  const [restoreFailedState, setRestoreFailedState] = useState<{
+    sessionId: string | null;
+    paths: string[];
+  }>({ sessionId: null, paths: [] });
+  const restoreFailedPaths =
+    restoreFailedState.sessionId !== null &&
+    restoreFailedState.sessionId === selectedSessionId
+      ? restoreFailedState.paths
+      : EMPTY_RESTORE_FAILED_PATHS;
+  const setRestoreFailedPaths = (paths: string[], forSessionId: string | null) => {
+    setRestoreFailedState({ sessionId: forSessionId, paths });
+  };
+  useEffect(() => {
+    // Switching to another session drops the notice; the open flows set the paths and the
+    // new session id in the same batch, so they match here and are kept.
+    setRestoreFailedState((current) =>
+      current.sessionId !== selectedSessionId && current.paths.length > 0
+        ? { sessionId: null, paths: [] }
+        : current,
+    );
+  }, [selectedSessionId]);
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
@@ -2555,7 +2578,7 @@ export default function AppPage() {
         });
         const openSessionId = openResult.sessionId;
         const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
-        setRestoreFailedPaths(openResult.failedPaths ?? []);
+        setRestoreFailedPaths(openResult.failedPaths ?? [], openSessionId);
 
         skipNextSessionEffectFileReloadRef.current =
           openSessionId !== selectedSessionIdRef.current;
@@ -2695,7 +2718,7 @@ export default function AppPage() {
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
-      setRestoreFailedPaths(openResult.failedPaths ?? []);
+      setRestoreFailedPaths(openResult.failedPaths ?? [], openSessionId);
 
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
@@ -2753,7 +2776,7 @@ export default function AppPage() {
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
-      setRestoreFailedPaths(openResult.failedPaths ?? []);
+      setRestoreFailedPaths(openResult.failedPaths ?? [], openSessionId);
 
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
@@ -2818,7 +2841,7 @@ export default function AppPage() {
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
-      setRestoreFailedPaths(openResult.failedPaths ?? []);
+      setRestoreFailedPaths(openResult.failedPaths ?? [], openSessionId);
 
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
@@ -3202,7 +3225,7 @@ export default function AppPage() {
         );
         return;
       }
-      setRestoreFailedPaths(restoreResult.failedPaths ?? []);
+      setRestoreFailedPaths(restoreResult.failedPaths ?? [], selectedSessionId);
       await loadWorkspaceFilesForSession(selectedSessionId);
       await refreshPreviewForSession(selectedSessionId);
       await loadCheckpoints(selectedSessionId);
@@ -6535,7 +6558,7 @@ export default function AppPage() {
       }}
       restoreFailedPaths={restoreFailedPaths}
       onDismissRestoreFailedPaths={() => {
-        setRestoreFailedPaths([]);
+        setRestoreFailedPaths([], null);
       }}
       onExecutionIntentChange={(nextIntent) => {
         setAgentMode(false);

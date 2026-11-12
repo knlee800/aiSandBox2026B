@@ -10707,14 +10707,36 @@ describe('SNAPSHOT-NOTICE-01: files a restore could not write', () => {
       'utf8',
     );
     const openSets =
-      pageSource.match(/setRestoreFailedPaths\(openResult\.failedPaths \?\? \[\]\);/g) ?? [];
+      pageSource.match(/setRestoreFailedPaths\(openResult\.failedPaths \?\? \[\], openSessionId\);/g) ?? [];
     assert.equal(openSets.length, 4);
     assert.equal((pageSource.match(/await openProjectInFreshSession\(/g) ?? []).length, 4);
-    assert.match(pageSource, /setRestoreFailedPaths\(restoreResult\.failedPaths \?\? \[\]\);/);
+    assert.match(
+      pageSource,
+      /setRestoreFailedPaths\(restoreResult\.failedPaths \?\? \[\], selectedSessionId\);/,
+    );
     assert.match(pageSource, /restoreFailedPaths=\{restoreFailedPaths\}/);
     assert.match(
       pageSource,
-      /onDismissRestoreFailedPaths=\{\(\) => \{\s*setRestoreFailedPaths\(\[\]\);\s*\}\}/,
+      /onDismissRestoreFailedPaths=\{\(\) => \{\s*setRestoreFailedPaths\(\[\], null\);\s*\}\}/,
     );
+  });
+
+  test('SNAPSHOT-NOTICE-02: the paths are tied to a session and a session switch clears them', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+    assert.match(pageSource, /useState<\{\s*sessionId: string \| null;\s*paths: string\[\];\s*\}>/);
+    assert.match(
+      pageSource,
+      /restoreFailedState\.sessionId === selectedSessionId\s*\?\s*restoreFailedState\.paths\s*:\s*EMPTY_RESTORE_FAILED_PATHS/,
+    );
+    assert.match(
+      pageSource,
+      /setRestoreFailedState\(\(current\) =>\s*current\.sessionId !== selectedSessionId && current\.paths\.length > 0\s*\?\s*\{ sessionId: null, paths: \[\] \}\s*:\s*current,?\s*\);\s*\}, \[selectedSessionId\]\);/,
+    );
+    // The open flows set the paths for the new session before selecting it.
+    const openFlow = /setRestoreFailedPaths\(openResult\.failedPaths \?\? \[\], openSessionId\);\s*skipNextSessionEffectFileReloadRef\.current =\s*openSessionId !== selectedSessionIdRef\.current;\s*setSelectedSessionId\(openSessionId\);/g;
+    assert.equal((pageSource.match(openFlow) ?? []).length, 4);
   });
 });
