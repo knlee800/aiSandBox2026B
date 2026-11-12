@@ -84518,7 +84518,7 @@ taskId=STAGING-DEPLOY-COOKIE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the COOKIE-PREFIX-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed d9c0911 to 9555d3c with runs off (rc 0, 2026-11-12T12:49:16Z): no migration (hash 9cfde25f), configuration unchanged at the baselines e0767286 and 205770cf, all units active; cookie checks with curl passed (GET /api/health sets __Host-aisandbox_csrf with Path=/, Secure, SameSite=Lax, no Domain, no HttpOnly, and no old-name line; a client with only the old CSRF cookie gets the new one; with the new one no CSRF Set-Cookie; a logout with only old-name cookies 401; /api/auth/me with only the old session cookie 401; the new session cookie without Origin 403; no OAuth state cookie on /api/auth/google, as expected); the preview-host and same-origin guard checks pass. Keith's pass: signed out once, signed in, still signed in after a reload, a project and its preview opened, logout worked, signed in again. Checkpoint: docs/STAGING-DEPLOY-COOKIE-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the COOKIE-PREFIX-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-COOKIE-01
 **Title:** Deploy COOKIE-PREFIX-01 (Keith signs in once)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
