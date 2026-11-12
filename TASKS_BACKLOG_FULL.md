@@ -88758,22 +88758,22 @@ taskId=PAGE-STATUS-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
 **Task ID:** PAGE-STATUS-I18N-01
 **Title:** Translate the older hardcoded status messages on the workspace page
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-NOTICE-01.
-**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), the three message files and tests.
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-12: frontend/app/, frontend/components/workspace/workspace-shell.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json (frontend/app/ is listed as a directory for frontend/app/[locale]/app/page.tsx and a new test file beside it only).
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-NOTICE-01 worker: page.tsx still sets hardcoded English status messages (for example Project opened. and Workspace snapshot restored.), which predate the multilingual-first rule. List them, move each to en, zh-TW and zh-CN keys through the existing hook with real translations, tests on the keys; no behaviour change.
 
 ### SNAPSHOT-NOTICE-02 — Clear the not-restored files notice when the user switches session
