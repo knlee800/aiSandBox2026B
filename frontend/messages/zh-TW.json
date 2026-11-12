@@ -1863,6 +1863,14 @@
     "authGenerationFailed": "驗證模組產生失敗：{detail}",
     "authFilesReady": "驗證模組檔案已準備好 — 共準備了 {count} 個檔案。\n\n後續步驟：\n1. 執行：npm install\n2. 設定 .env — 複製 .env.example，並填入 AUTH_SECRET 與 DATABASE_URL\n3. 執行：npx prisma migrate dev --name init\n4. 啟動你的開發伺服器\n完整說明請見專案中的 SETUP-AUTH.md。",
     "sessionCreateFailedCode": "建立工作階段失敗（{status}）",
-    "sessionStopFailedCode": "停止工作階段失敗（{status}）"
+    "sessionStopFailedCode": "停止工作階段失敗（{status}）",
+    "authReasonMissingPackageJson": "工作區的 package.json 不存在或是空的。",
+    "authReasonMalformedPackageJson": "工作區的 package.json 格式有誤，無法解析。",
+    "authReasonUnsupportedFramework": "目前驗證模組僅支援 Next.js 專案。",
+    "authErrorIneligible": "無法產生驗證模組檔案動作：{reason}",
+    "authErrorMalformedPackageJson": "package.json 格式有誤，無法產生驗證模組動作。",
+    "authErrorUnsafeTemplatePath": "範本檔案路徑「{path}」不是安全的相對路徑。",
+    "authErrorForbiddenTemplateContent": "「{path}」的產生內容含有禁止使用的平台內容。",
+    "networkError": "網路錯誤，請檢查連線後再試一次。"
   }
 }

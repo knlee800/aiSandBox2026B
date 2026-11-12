@@ -1863,6 +1863,14 @@
     "authGenerationFailed": "Auth module generation failed: {detail}",
     "authFilesReady": "Auth module files are ready — {count} files prepared.\n\nNext steps:\n1. Run: npm install\n2. Set up .env — copy .env.example and fill in AUTH_SECRET and DATABASE_URL\n3. Run: npx prisma migrate dev --name init\n4. Start your dev server\nSee SETUP-AUTH.md in your project for full instructions.",
     "sessionCreateFailedCode": "Session create failed ({status})",
-    "sessionStopFailedCode": "Session stop failed ({status})"
+    "sessionStopFailedCode": "Session stop failed ({status})",
+    "authReasonMissingPackageJson": "Workspace package.json is missing or empty.",
+    "authReasonMalformedPackageJson": "Workspace package.json is malformed and could not be parsed.",
+    "authReasonUnsupportedFramework": "Auth module installation currently supports Next.js projects only.",
+    "authErrorIneligible": "Cannot generate auth module file actions: {reason}",
+    "authErrorMalformedPackageJson": "Cannot generate auth module actions because package.json is malformed.",
+    "authErrorUnsafeTemplatePath": "Template file path \"{path}\" is not a safe relative path.",
+    "authErrorForbiddenTemplateContent": "Generated content for \"{path}\" contains forbidden platform content.",
+    "networkError": "Network error. Check your connection and try again."
   }
 }

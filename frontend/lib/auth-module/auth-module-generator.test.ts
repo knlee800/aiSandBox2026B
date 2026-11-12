@@ -121,6 +121,8 @@ describe('auth module file generation engine', () => {
       (error: unknown) => {
         assert.equal(error instanceof AuthModuleGenerationError, true);
         assert.equal((error as AuthModuleGenerationError).code, 'INELIGIBLE');
+        assert.equal((error as AuthModuleGenerationError).subject, 'UNSUPPORTED_FRAMEWORK');
+        assert.match((error as AuthModuleGenerationError).message, /UNSUPPORTED_FRAMEWORK \(Auth module installation currently supports Next\.js projects only\.\)/);
         return true;
       },
     );

@@ -31,10 +31,13 @@ export interface GenerateAuthModuleFileActionsInput {
 
 export class AuthModuleGenerationError extends Error {
   readonly code: AuthModuleGenerationErrorCode;
+  /** Value for the translated message: eligibility code (INELIGIBLE) or file path (path errors). */
+  readonly subject: string | null;
 
-  constructor(code: AuthModuleGenerationErrorCode, message: string) {
+  constructor(code: AuthModuleGenerationErrorCode, message: string, subject: string | null = null) {
     super(message);
     this.code = code;
+    this.subject = subject;
     this.name = 'AuthModuleGenerationError';
   }
 }
@@ -121,6 +124,7 @@ function ensureNoForbiddenPlatformTokens(content: string, filePath: string): voi
       throw new AuthModuleGenerationError(
         'FORBIDDEN_TEMPLATE_CONTENT',
         `Generated content for "${filePath}" contains forbidden platform token "${token}".`,
+        filePath,
       );
     }
   }
@@ -237,6 +241,7 @@ export function generateAuthModuleFileActions(
     throw new AuthModuleGenerationError(
       'INELIGIBLE',
       `Cannot generate auth module file actions: ${input.eligibility.code} (${input.eligibility.reason}).`,
+      input.eligibility.code,
     );
   }
 
@@ -255,6 +260,7 @@ export function generateAuthModuleFileActions(
       throw new AuthModuleGenerationError(
         'UNSAFE_TEMPLATE_PATH',
         `Template file path "${file.path}" is not a safe relative path.`,
+        file.path,
       );
     }
 

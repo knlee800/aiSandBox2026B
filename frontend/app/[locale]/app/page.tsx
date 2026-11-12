@@ -264,6 +264,43 @@ function fill(template: string, values: Record<string, string>): string {
   );
 }
 
+type PageStatusKey = keyof typeof enMessages.pageStatus;
+
+// AUTHMOD-I18N-01: stable lib/auth-module codes -> translated pageStatus keys.
+const AUTH_REASON_KEYS: Record<string, PageStatusKey> = {
+  MISSING_PACKAGE_JSON: 'authReasonMissingPackageJson',
+  MALFORMED_PACKAGE_JSON: 'authReasonMalformedPackageJson',
+  UNSUPPORTED_FRAMEWORK: 'authReasonUnsupportedFramework',
+};
+const AUTH_ERROR_KEYS: Record<string, PageStatusKey> = {
+  INELIGIBLE: 'authErrorIneligible',
+  MALFORMED_PACKAGE_JSON: 'authErrorMalformedPackageJson',
+  UNSAFE_TEMPLATE_PATH: 'authErrorUnsafeTemplatePath',
+  FORBIDDEN_TEMPLATE_CONTENT: 'authErrorForbiddenTemplateContent',
+};
+
+function translateAuthReason(messages: typeof enMessages.pageStatus, code: string, fallback: string): string {
+  const key = AUTH_REASON_KEYS[code];
+  return key ? messages[key] : fallback;
+}
+
+function translateAuthGenerationError(
+  messages: typeof enMessages.pageStatus,
+  error: AuthModuleGenerationError,
+): string {
+  const key = AUTH_ERROR_KEYS[error.code];
+  if (!key) return error.message;
+  return fill(messages[key], {
+    path: error.subject ?? '',
+    reason: translateAuthReason(messages, error.subject ?? '', error.subject ?? ''),
+  });
+}
+
+// A failed fetch rejects with a TypeError whose text is the browser's own English.
+function isNetworkFailure(error: unknown): boolean {
+  return error instanceof TypeError;
+}
+
 type WorkspaceChatMessageKind = 'ai' | 'system';
 type WorkspaceChatThreadUiMessage = WorkspaceChatThreadMessage & {
   messageKind?: WorkspaceChatMessageKind;
@@ -2158,7 +2195,7 @@ export default function AppPage() {
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       console.error('[WORKSPACE_BOOTSTRAP_FAIL_CREATE_SESSION]', detail);
-      setSessionCreateError(detail);
+      setSessionCreateError(isNetworkFailure(error) ? pageStatusMessages.networkError : detail);
     } finally {
       setIsCreatingSession(false);
     }
@@ -2187,7 +2224,7 @@ export default function AppPage() {
       await loadDashboardSlice();
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      setSessionActionError(detail);
+      setSessionActionError(isNetworkFailure(error) ? pageStatusMessages.networkError : detail);
     } finally {
       setStoppingSessionId((currentStoppingSessionId) =>
         currentStoppingSessionId === sessionId ? null : currentStoppingSessionId,
@@ -5298,7 +5335,9 @@ export default function AppPage() {
       const unsupportedReasonMessage =
         eligibility.code === 'MISSING_PACKAGE_JSON' || eligibility.code === 'MALFORMED_PACKAGE_JSON'
           ? authModuleMessages.notNextJsProject
-          : fill(pageStatusMessages.authInstallUnavailable, { reason: eligibility.reason });
+          : fill(pageStatusMessages.authInstallUnavailable, {
+              reason: translateAuthReason(pageStatusMessages, eligibility.code, eligibility.reason),
+            });
       appendAssistantMessage(unsupportedReasonMessage);
       return;
     }
@@ -5341,7 +5380,9 @@ export default function AppPage() {
       });
     } catch (error) {
       if (error instanceof AuthModuleGenerationError) {
-        appendAssistantMessage(fill(pageStatusMessages.authGenerationFailed, { detail: error.message }));
+        appendAssistantMessage(fill(pageStatusMessages.authGenerationFailed, {
+            detail: translateAuthGenerationError(pageStatusMessages, error),
+          }));
         return;
       }
       const detail = error instanceof Error ? error.message : String(error);

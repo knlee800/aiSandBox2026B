@@ -11056,6 +11056,70 @@ describe('auth module chat lines and thrown session errors are translated (PAGE-
   });
 });
 
+describe('auth module reasons, generation errors and network fallback are translated (AUTHMOD-I18N-01)', () => {
+  const KEYS = [
+    'authReasonMissingPackageJson',
+    'authReasonMalformedPackageJson',
+    'authReasonUnsupportedFramework',
+    'authErrorIneligible',
+    'authErrorMalformedPackageJson',
+    'authErrorUnsafeTemplatePath',
+    'authErrorForbiddenTemplateContent',
+    'networkError',
+  ];
+  const CODE_KEYS: Array<[string, string]> = [
+    ['MISSING_PACKAGE_JSON', 'authReasonMissingPackageJson'],
+    ['MALFORMED_PACKAGE_JSON', 'authReasonMalformedPackageJson'],
+    ['UNSUPPORTED_FRAMEWORK', 'authReasonUnsupportedFramework'],
+    ['INELIGIBLE', 'authErrorIneligible'],
+    ['MALFORMED_PACKAGE_JSON', 'authErrorMalformedPackageJson'],
+    ['UNSAFE_TEMPLATE_PATH', 'authErrorUnsafeTemplatePath'],
+    ['FORBIDDEN_TEMPLATE_CONTENT', 'authErrorForbiddenTemplateContent'],
+  ];
+  const readMessages = (name: string) =>
+    JSON.parse(readFileSync(new URL(`../../messages/${name}.json`, import.meta.url), 'utf8')).pageStatus as Record<string, string>;
+  const placeholders = (value: string) => (value.match(/\{\w+\}/g) ?? []).sort();
+
+  test('new keys exist in en, zh-TW and zh-CN with real translations and matching placeholders', () => {
+    const en = readMessages('en');
+    const zhTw = readMessages('zh-TW');
+    const zhCn = readMessages('zh-CN');
+    for (const key of KEYS) {
+      assert.ok(en[key]?.trim(), `en ${key}`);
+      assert.ok(zhTw[key]?.trim(), `zh-TW ${key}`);
+      assert.ok(zhCn[key]?.trim(), `zh-CN ${key}`);
+      assert.notEqual(zhTw[key], en[key], `zh-TW ${key} is translated`);
+      assert.notEqual(zhCn[key], en[key], `zh-CN ${key} is translated`);
+      assert.deepEqual(placeholders(zhTw[key]), placeholders(en[key]), `zh-TW ${key}`);
+      assert.deepEqual(placeholders(zhCn[key]), placeholders(en[key]), `zh-CN ${key}`);
+    }
+    assert.deepEqual(Object.keys(zhTw).sort(), Object.keys(en).sort());
+    assert.deepEqual(Object.keys(zhCn).sort(), Object.keys(en).sort());
+  });
+
+  test('page.tsx maps every lib/auth-module code to its key and uses the helpers', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    for (const [code, key] of CODE_KEYS) {
+      assert.match(pageSource, new RegExp(`${code}: '${key}'`), `${code} -> ${key}`);
+    }
+    assert.match(pageSource, /translateAuthReason\(\s*pageStatusMessages,\s*eligibility\.code,\s*eligibility\.reason\s*\)/);
+    assert.match(pageSource, /translateAuthGenerationError\(pageStatusMessages, error\)/);
+  });
+
+  test('session create and stop catch blocks show the translated network fallback', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /setSessionCreateError\(isNetworkFailure\(error\) \? pageStatusMessages\.networkError : detail\)/,
+    );
+    assert.match(
+      pageSource,
+      /setSessionActionError\(isNetworkFailure\(error\) \? pageStatusMessages\.networkError : detail\)/,
+    );
+    assert.match(pageSource, /error instanceof TypeError/);
+  });
+});
+
 describe('SNAPSHOT-LABEL-01: history list label parser against the shared examples', () => {
   // The history list has its own project-id parser. It cuts the id at the
   // earliest of :name:, :source: and :hint:, so for a few labels no writer
