@@ -88906,13 +88906,13 @@ taskId=STAGING-DEPLOY-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-I18N-01
 **Title:** Deploy the translated chat lines (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
+**Start condition:** READY (PAGE-CHAT-I18N-01 and AUTHMOD-I18N-01 LOCKED; Keith approved 2026-11-12). Was: NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
 **Depends on:** PAGE-CHAT-I18N-01.
 **Primary write scope:** records; host state (deploy).
 **Mutexes / resources:** STAGING, ENV.
