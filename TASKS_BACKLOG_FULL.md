@@ -89122,13 +89122,13 @@ taskId=STAGING-DEPLOY-I18N-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the SNAPSHOT-LABEL-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-LABEL-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-I18N-02
 **Title:** Deploy the shared history-list parser and the translated network error (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for NETWORK-ERROR-I18N-01).
+**Start condition:** READY (SNAPSHOT-LABEL-02 and NETWORK-ERROR-I18N-01 LOCKED; Keith approved 2026-11-12). Was: NOT_READY. Ready when: Keith approves the deploy (it may wait for NETWORK-ERROR-I18N-01).
 **Depends on:** SNAPSHOT-LABEL-02.
 **Primary write scope:** records; host state (deploy).
 **Mutexes / resources:** STAGING, ENV.
