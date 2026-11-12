@@ -84460,13 +84460,15 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From PREVIEW-ORIGIN-01: all sessions share one preview host, so one user's generated apps share an origin (localStorage, cookies under different paths); and the preview host is same-site with the platform. A per-session subdomain or a separate registrable domain would isolate further. Decide whether it is worth the DNS and TLS work.
 
+**Also (added 2026-11-12 by the COOKIE-PREFIX-01 LOCK):** the __Host- prefix stops cookie planting from the preview host, but a sibling host can still push platform cookies out of the browser's cookie jar (eviction) or send Clear-Site-Data, which can sign the user out (browser behaviour uncertain); only a separate registrable domain for previews removes that.
+
 ### COOKIE-PREFIX-01 — Harden platform cookies against a sibling host (__Host- prefix)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COOKIE-PREFIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/COOKIE-PREFIX-01-STAGE-START.md, 32cef0f); approved by Keith 2026-11-12 ("Yes, all four"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and GATEWAY released. Platform cookies hardened against a sibling host (4-step; stage-start approved by Keith with all four recommendations): in secure mode (https APP_BASE_URL or NODE_ENV production) the cookies are __Host-aisandbox_session, __Host-aisandbox_csrf and __Host-aisandbox_oauth_state (Secure, Path=/, no Domain) and only those names are read; local http and Jest keep the old names; sign-in clears the old session cookie and logout clears both, so the deploy forces one sign-in; SameOriginWriteGuard rule 3 matches either session name exactly; the frontend has one CSRF cookie reader (new name first) and the build-apply proxy reads either session name; preview responses: every upstream Set-Cookie dropped on the platform host, on the preview host only host-only cookies without aisandbox_ in the name kept, Clear-Site-Data dropped on both. trust proxy not set; no dependency, text or migration change. Write set widened by one test-only spec (6554e00). opus subagent e8cd87d, cherry-picked; control-plane rerun: gateway 4152 passed plus the 14 known smoke failures, frontend 1831, builds 0. ARCHITECTURE.md cookie lines updated. Not deployed: STAGING-DEPLOY-COOKIE-01 (Keith signs in once). Checkpoint: docs/COOKIE-PREFIX-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (STAGING-DEPLOY-COOKIE-01; OAUTH-STATE-PROXY-01) / 1 superseded (the cookie eviction and Clear-Site-Data note, by PREVIEW-ORIGIN-02) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/COOKIE-PREFIX-01-STAGE-START.md, 32cef0f); approved by Keith 2026-11-12 ("Yes, all four"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** COOKIE-PREFIX-01
 **Title:** Harden platform cookies against a sibling host (__Host- prefix)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84485,6 +84487,54 @@ nature=IMPLEMENTATION
 **Scope:** From PREVIEW-ORIGIN-01: a sibling host such as the preview host can set cookies for the parent domain that shadow platform cookies; the __Host- prefix (Secure, Path=/, no Domain) prevents that. Also: with PREVIEW_BASE_URL unset (fail-safe mode), an upstream Set-Cookie from a dev-server preview still passes through on the platform host; strip it. Auth-sensitive: 4-step.
 
 **Decided (Keith, 2026-11-12, "Yes, all four"; docs/COOKIE-PREFIX-01-STAGE-START.md section 9):** (1) two modes: __Host- names in secure mode (https APP_BASE_URL or NODE_ENV production), today's names for local http and Jest; (2) one forced sign-in, no dual-accept window; (3) upstream Set-Cookie dropped on every preview response on the platform host; on the preview host host-only app cookies kept, lines with a Domain attribute or a name containing aisandbox_ dropped; Clear-Site-Data dropped on both; (4) the OAuth state cookie renamed now, its proxy problem left to a follow-up.
+
+### OAUTH-STATE-PROXY-01 — The OAuth state cookie behind Caddy (trust proxy)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OAUTH-STATE-PROXY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the COOKIE-PREFIX-01 LOCK — not admitted.
+**Task ID:** OAUTH-STATE-PROXY-01
+**Title:** The OAuth state cookie behind Caddy (trust proxy)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides; needed before Google or Apple sign-in is turned on.
+**Depends on:** COOKIE-PREFIX-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/main.ts and auth/platform-cookies.ts (trust proxy or cookie-session options), with tests.
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From COOKIE-PREFIX-01 (stage-start 1.4; pinned by its http spec): cookie-session with a Secure cookie refuses to write over plain http without trust proxy, and the gateway sees http behind Caddy, so the OAuth state cookie is probably never set on staging; Google OAuth is not activated, so nothing is visibly broken. Confirm and fix (for example trust proxy for the loopback Caddy only), together with APPLE-STATE-01, before any OAuth sign-in is enabled.
+
+### STAGING-DEPLOY-COOKIE-01 — Deploy COOKIE-PREFIX-01 (Keith signs in once)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-COOKIE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the COOKIE-PREFIX-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-COOKIE-01
+**Title:** Deploy COOKIE-PREFIX-01 (Keith signs in once)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (he is told first that he will be signed out once).
+**Depends on:** COOKIE-PREFIX-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with COOKIE-PREFIX-01 to staging from the host with runs off (no migration expected; configuration at the baselines gateway.env e0767286 and Caddyfile 205770cf; checks as in STAGING-DEPLOY-CSRF-01 including the preview-host and same-origin guard checks). Cookie checks with curl against 127.0.0.1:4000: GET /api/health sets __Host-aisandbox_csrf with Path=/, Secure, SameSite=Lax, no Domain, no HttpOnly, and no aisandbox_csrf line; with Cookie aisandbox_csrf=x the prefixed cookie is still issued; with Cookie __Host-aisandbox_csrf=x no CSRF Set-Cookie; a logout with only old-name cookies, the app Origin and a matching token gets 401 or 403; note whether GET /api/auth/google sets a state cookie (none expected). Keith's pass: open the app (signed out once), sign in, reload (still signed in), open a project and its preview, log out (works), sign in again.
 
 ### CSRF-AUDIT-01 — Cookie-authenticated write routes without CsrfGuard
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
