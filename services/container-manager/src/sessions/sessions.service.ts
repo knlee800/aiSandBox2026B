@@ -49,9 +49,11 @@ export class SessionsService {
 
   /**
    * BROWSER-SMOKE-02: listeners told when a session ends or its container is
-   * removed (stop, delete, container removal, container lost, idle timeout,
-   * max lifetime). PreviewModule's PreviewService subscribes here, because
-   * this service cannot inject it (PreviewModule imports SessionsModule).
+   * removed (stop, delete, container lost, idle timeout, max lifetime).
+   * PreviewModule's PreviewService subscribes here, because this service
+   * cannot inject it (PreviewModule imports SessionsModule).
+   * CM-CLEANUP-02: the internal route DELETE /api/internal/sessions/:id/container
+   * and its removeSessionContainer were removed; nothing called them.
    */
   private sessionEndedListeners: Array<SessionEndedListener> = [];
 
@@ -311,28 +313,6 @@ export class SessionsService {
   }
 
   /**
-   * Remove a Docker container for a session
-   * Task 6.5: Explicit Container Deletion
-   * Task 8.3A: Clean up idle timeout tracking
-   * Task 8.3B: Clean up all governance tracking
-   *
-   * Fail-fast behavior:
-   * 1. Find container by session ID (fails if not found)
-   * 2. Stop container if running
-   * 3. Remove container
-   *
-   * BROWSER-SMOKE-02: once the container is removed, the session-ended
-   * listeners are told (best-effort).
-   *
-   * @param sessionId - Session UUID
-   * @throws Error if container not found or removal fails
-   */
-  async removeSessionContainer(sessionId: string): Promise<void> {
-    await this.removeContainerForSession(sessionId);
-    this.notifySessionEnded(sessionId);
-  }
-
-  /**
    * BROWSER-SMOKE-02: register a listener called when a session ends or its
    * container is removed. Listeners are called best-effort: an error (thrown
    * or rejected) is logged, and none blocks or fails the session operation.
@@ -364,8 +344,18 @@ export class SessionsService {
   }
 
   /**
-   * The container removal behind removeSessionContainer, without the
-   * session-ended listeners (stop and delete tell them once themselves).
+   * Remove a session's Docker container (Task 6.5; Task 8.3A and 8.3B clean
+   * up the idle and governance tracking), without the session-ended
+   * listeners: stop and delete tell them once themselves, and so do the
+   * container-lost, idle-timeout and max-lifetime paths that schedule it.
+   *
+   * Fail-fast behavior:
+   * 1. Find container by session ID (fails if not found)
+   * 2. Stop container if running
+   * 3. Remove container
+   *
+   * @param sessionId - Session UUID
+   * @throws Error if container not found or removal fails
    */
   private async removeContainerForSession(sessionId: string): Promise<void> {
     // Find container by session ID (fail-fast if not found)

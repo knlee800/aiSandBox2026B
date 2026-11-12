@@ -137,6 +137,9 @@ function methodsFor(route: Route): string[] {
  * BROWSER-SMOKE-02 removed POST /api/internal/sessions/:id/previews (the
  * internal preview port register route): uncalled, as the preview service
  * fills the registry itself.
+ * CM-CLEANUP-02 removed DELETE /api/internal/sessions/:id/container (the
+ * internal container removal route): uncalled, as stop and delete remove the
+ * container themselves.
  */
 const EXPECTED_INVENTORY = [
   'POST /api/sessions/:id/start',
@@ -145,7 +148,6 @@ const EXPECTED_INVENTORY = [
   'POST /api/sessions/:id/stop',
   'DELETE /api/sessions/:id',
   'POST /api/internal/sessions/:id/start',
-  'DELETE /api/internal/sessions/:id/container',
   'POST /api/internal/sessions/:id/exec',
   'GET /api/internal/sessions/:id/files',
   'POST /api/internal/sessions/:id/files',
@@ -202,13 +204,13 @@ describe('container-manager route inventory (CM-AUTH-01)', () => {
     expect(providers).toContainEqual({ provide: APP_GUARD, useClass: InternalServiceAuthGuard });
   });
 
-  it('serves exactly the expected 48 routes (47 guarded + GET /api/health)', () => {
+  it('serves exactly the expected 47 routes (46 guarded + GET /api/health)', () => {
     const actual = routes.map(routeKey);
     // One line per route, so the real serving paths (F2) show in the test log.
     console.info(`CM-AUTH-01 route inventory (${actual.length}):\n${actual.join('\n')}`);
     expect(actual.sort()).toEqual([...EXPECTED_INVENTORY].sort());
-    expect(routes).toHaveLength(48);
-    expect(guardedRoutes).toHaveLength(47);
+    expect(routes).toHaveLength(47);
+    expect(guardedRoutes).toHaveLength(46);
   });
 
   it('marks exactly one handler exempt: HealthController.getHealth', () => {
@@ -513,6 +515,31 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     expect(controllers.map((controller) => controller.name)).not.toContain('InternalPreviewsController');
   });
 
+  it.each([
+    ['DELETE', '/api/internal/sessions/p1/container'],
+    ['DELETE', '/api/internal/sessions/3f2a8c1e-0b4d-4c5e-9f6a-7b8c9d0e1f2a/container'],
+  ])('CM-CLEANUP-02: removed route %s %s is not found even with the key', async (method, path) => {
+    const response = await send(method, path, internalKey);
+    expect(isRouteNotFound(response)).toBe(true);
+    expect(allCalls()).toBe(0);
+  });
+
+  it.each([
+    ['DELETE', '/api/internal/sessions/p1/container'],
+    ['DELETE', '/api/internal/sessions/3f2a8c1e-0b4d-4c5e-9f6a-7b8c9d0e1f2a/container'],
+  ])('CM-CLEANUP-02: the removed container route %s %s answers 404 without the key too', async (method, path) => {
+    // The global guard runs only for a matched route, so an unmatched path is
+    // Express's 404 with or without the key.
+    const response = await send(method, path);
+    expect(isRouteNotFound(response)).toBe(true);
+    expect(allCalls()).toBe(0);
+  });
+
+  it('CM-CLEANUP-02: no remaining route ends in /container', () => {
+    expect(routes.filter((route) => /\/container$/.test(route.path))).toEqual([]);
+    expect(guardedRoutes.map((route) => route.handler)).not.toContain('removeContainer');
+  });
+
   it('CM-GIT-HOST-01: no remaining route is a git init or history route, or a bare session create', () => {
     const keys = routes.map(routeKey);
     expect(keys.filter((key) => /^POST \/api\/sessions$/.test(key))).toEqual([]);
@@ -562,11 +589,11 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
       });
     }
 
-    it('covers every remaining route with a session id parameter (27)', () => {
+    it('covers every remaining route with a session id parameter (26)', () => {
       expect(sessionRoutes.map(routeKey).sort()).toEqual(
         EXPECTED_INVENTORY.filter((key) => SESSION_PARAM.test(key)).sort(),
       );
-      expect(sessionRoutes).toHaveLength(27);
+      expect(sessionRoutes).toHaveLength(26);
     });
 
     describe.each(sessionRoutes.map((route) => [routeKey(route), route] as const))('%s', (_name, route) => {

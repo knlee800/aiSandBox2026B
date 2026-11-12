@@ -1779,19 +1779,36 @@ describe('SessionsService session-ended listeners (BROWSER-SMOKE-02)', () => {
     expect(mockRemoveContainer).toHaveBeenCalledWith('container-1');
   });
 
-  it('calls the listeners once when removeSessionContainer removes the container, and not when it fails', async () => {
+  it('calls the listeners once on deleteSession even when the container removal fails', async () => {
+    mockFindContainerBySessionId.mockRejectedValue(new Error('no such container'));
     const listener = jest.fn<(sessionId: string) => void>();
     service.onSessionEnded(listener);
 
-    await service.removeSessionContainer('sess-remove');
-    expect(listener).toHaveBeenCalledTimes(1);
-    expect(listener).toHaveBeenCalledWith('sess-remove');
+    await expect(service.deleteSession('sess-delete')).resolves.toEqual({
+      message: 'Session deleted successfully',
+    });
 
-    mockFindContainerBySessionId.mockRejectedValue(new Error('no such container'));
-    await expect(service.removeSessionContainer('sess-remove-2')).rejects.toThrow(
-      'no such container',
-    );
     expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('sess-delete');
+    expect(mockDeleteRun).toHaveBeenCalledWith('sess-delete');
+  });
+
+  it('CM-CLEANUP-02: stop then delete of one session call the listeners exactly once each', async () => {
+    const listener = jest.fn<(sessionId: string) => void>();
+    service.onSessionEnded(listener);
+
+    await service.stopSession('sess-both');
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    await service.deleteSession('sess-both');
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(listener.mock.calls).toEqual([['sess-both'], ['sess-both']]);
+    expect(mockRemoveContainer).toHaveBeenCalledTimes(2);
+  });
+
+  it('CM-CLEANUP-02: has no public removeSessionContainer (its only caller, the internal route, was removed)', () => {
+    expect((service as unknown as Record<string, unknown>).removeSessionContainer).toBeUndefined();
+    expect(Object.getOwnPropertyNames(SessionsService.prototype)).not.toContain('removeSessionContainer');
   });
 
   it('calls the listeners when terminateIfContainerLost ends the session, keeping the 410', async () => {

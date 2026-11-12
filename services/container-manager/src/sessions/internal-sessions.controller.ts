@@ -35,13 +35,15 @@ export function decodeStrictBase64(value: unknown): Buffer | null {
 
 /**
  * InternalSessionsController
- * Task 6.5: Explicit Container Deletion
  * Task 7.1A: Internal Container Exec Primitive
  * Task 7.2A: Container File Read (Read-Only)
  * Task 7.2B: Container File Write (Create / Overwrite)
  *
  * Internal-only endpoints for container lifecycle management
  * Protected by X-Internal-Service-Key authentication
+ *
+ * CM-CLEANUP-02: DELETE /api/internal/sessions/:id/container (Task 6.5) was
+ * removed; nothing called it. Stop and delete still remove the container.
  */
 @Controller('internal/sessions')
 @UseGuards(InternalServiceAuthGuard)
@@ -78,26 +80,6 @@ export class InternalSessionsController {
       browserCapable === true ? { browserCapable: true } : undefined,
     );
     return { message: 'Session container started successfully' };
-  }
-
-  /**
-   * DELETE /api/internal/sessions/:id/container
-   * Remove a session's Docker container
-   *
-   * Behavior:
-   * 1. Find container by session ID (fail-fast if not found)
-   * 2. Stop container if running
-   * 3. Remove container
-   * 4. Return 204 No Content on success
-   *
-   * Errors:
-   * - 403 Forbidden: Missing or invalid X-Internal-Service-Key
-   * - 500 Internal Server Error: Container not found or removal failed
-   */
-  @Delete(':id/container')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async removeContainer(@Param('id', SessionIdPipe) sessionId: string): Promise<void> {
-    await this.sessionsService.removeSessionContainer(sessionId);
   }
 
   /**
