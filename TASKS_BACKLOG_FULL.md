@@ -89343,7 +89343,7 @@ taskId=CM-CLEANUP-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1 and CONTAINER-MANAGER released. The uncalled internal route DELETE /api/internal/sessions/:id/container and the public SessionsService.removeSessionContainer that only it used are removed (404 with and without the key; 47 routes, 46 guarded, 26 session-id routes; no guard, pipe or key change); stop, delete and the scheduled clean-up keep the private removal, and the session-ended hook keeps its call sites (stop, delete, container lost, idle timeout, max lifetime); opus subagent fea734a, fast-forwarded; control-plane rerun: container-manager 22 suites, 974 passed, 3 skipped, build 0. Not deployed; the deploy is STAGING-DEPLOY-CLEANUP-02. Checkpoint: docs/CM-CLEANUP-02-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-CLEANUP-02) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
 **Task ID:** CM-CLEANUP-02
 **Title:** Remove the uncalled internal route DELETE /api/internal/sessions/:id/container
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -89360,6 +89360,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the BROWSER-SMOKE-02 worker, confirmed by the control plane: no service calls DELETE /api/internal/sessions/:id/container (searches of the gateway client and ai-service found none). Remove the route as CM-CLEANUP-01 and BROWSER-SMOKE-02 did (404 with and without the key; inventory counts updated; no guard change). SessionsService.removeSessionContainer stays if anything else uses it; otherwise decide. Tests.
+
+### STAGING-DEPLOY-CLEANUP-02 — Deploy CM-CLEANUP-02 (and later locked work)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CLEANUP-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CM-CLEANUP-02 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CLEANUP-02
+**Title:** Deploy CM-CLEANUP-02 (and later locked work)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
+**Depends on:** CM-CLEANUP-02.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with CM-CLEANUP-02 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-SMOKE-02, keyed checks before the header file is removed; DELETE /api/internal/sessions/<id>/container answers 404 with the key and without it; sessions.service.js no longer has removeSessionContainer; container-manager starts (unit active, keyed stats 200)).
 
 ### STAGING-DEPLOY-SMOKE-02 — Deploy BROWSER-SMOKE-02 (and later locked work)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
