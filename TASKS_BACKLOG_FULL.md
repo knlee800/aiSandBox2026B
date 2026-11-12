@@ -88882,7 +88882,7 @@ taskId=STAGING-DEPLOY-SNAP-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 91149ed to 01df4a7 with runs off (rc 0, 2026-11-12T03:07:48Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, body-limit checks with and without the key pass, the translated page messages (zh-TW and zh-CN snapshotRestored) are in the build. Keith's live check passed: in CL2 test a manual restore of big test showed the notice naming big.bin; opening another project cleared it; reopening CL2 test (newest version clean) showed none. Checkpoint: docs/STAGING-DEPLOY-SNAP-05-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-05
 **Title:** Deploy the session-scoped notice (and any later snapshot follow-ups) and Keith checks it
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
