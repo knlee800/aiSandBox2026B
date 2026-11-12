@@ -88734,7 +88734,7 @@ taskId=SNAPSHOT-NOTICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, FRONTEND and I18N released. The project open and the manual restore return failedPaths (empty when none, when nothing was restored or after a continued 5xx), and the workspace shows a dismissible translated notice under the project header naming up to 5 files, then and N more (en, zh-TW, zh-CN; DESIGN.md warning style; Heroicons Outline); existing fields and paths unchanged; 6 gateway and 14 frontend tests; opus subagent, fast-forwarded as dc86371; control-plane rerun: gateway 3814 passed plus the 14 known smoke failures, frontend 1671 of 1671, tsc and builds 0. Not deployed; the live check is STAGING-DEPLOY-SNAP-04. Checkpoint: docs/SNAPSHOT-NOTICE-01-CHECKPOINT.md. FOLLOWUPS: 3 registered (STAGING-DEPLOY-SNAP-04, SNAPSHOT-NOTICE-02, PAGE-STATUS-I18N-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-NOTICE-01
 **Title:** Tell the user which files were not restored
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88751,6 +88751,78 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-BINARY-01 LOCK: restoreSnapshot now returns failedPaths and the reopen succeeds without them, but the user is not told. Return the failed paths from the project open (and the manual restore) and show a short translated notice naming them, in en, zh-TW and zh-CN.
+
+### PAGE-STATUS-I18N-01 — Translate the older hardcoded status messages on the workspace page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PAGE-STATUS-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Task ID:** PAGE-STATUS-I18N-01
+**Title:** Translate the older hardcoded status messages on the workspace page
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-NOTICE-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), the three message files and tests.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-NOTICE-01 worker: page.tsx still sets hardcoded English status messages (for example Project opened. and Workspace snapshot restored.), which predate the multilingual-first rule. List them, move each to en, zh-TW and zh-CN keys through the existing hook with real translations, tests on the keys; no behaviour change.
+
+### SNAPSHOT-NOTICE-02 — Clear the not-restored files notice when the user switches session
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-NOTICE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Task ID:** SNAPSHOT-NOTICE-02
+**Title:** Clear the not-restored files notice when the user switches session
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-NOTICE-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx) and its tests.
+**Mutexes / resources:** set at admission (expected FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-NOTICE-01 worker: the notice is not cleared when the user switches to another session without opening a project (it can be dismissed). Clear it on a session switch; test.
+
+### STAGING-DEPLOY-SNAP-04 — Deploy the not-restored files notice and Keith checks it
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SNAP-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SNAP-04
+**Title:** Deploy the not-restored files notice and Keith checks it
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** SNAPSHOT-NOTICE-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with SNAPSHOT-NOTICE-01 to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-SNAP-03, with every keyed check before the header file is removed). Live check by Keith: in a test project, one command makes a 13 MB file (head -c 13000000 /dev/urandom > big.bin); he saves a version, stops and reopens; the amber notice names big.bin; he dismisses it; a manual restore of that version shows it again; a project without such a file shows none; the text is in his site language. Then he removes big.bin and saves.
 
 ### ARCHIVE-BINARY-01 — Binary-safe zip export and import
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
