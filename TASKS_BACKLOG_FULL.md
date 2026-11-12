@@ -88565,7 +88565,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy main with COS-DRAFTS-POLISH-01 and CM-CONTENT-TYPE-02 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-I18N-02, keyed checks before the header file is removed). No Keith step required.
+**Scope:** Deploy main with COS-DRAFTS-POLISH-01 and CM-CONTENT-TYPE-02 (and any later locked work; CM-DEPS-01 added 2026-11-12, a lockfile change, so the deploy's install step must succeed) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-I18N-02, keyed checks before the header file is removed). No Keith step required.
 
 ### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89271,7 +89271,7 @@ taskId=CM-DEPS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-12 — admitted by the control plane on Keith's "Keep working". Was: READY — registered 2026-11-10 by the CODE-TIDY-01 split — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 2, PACKAGE and CONTAINER-MANAGER released. container-manager's unused jsonwebtoken and @types/jsonwebtoken removed from its package.json; the root lockfile drops only those two workspace entries (the package stays for @nestjs/jwt, passport-jwt, jwks-rsa and passport-apple); updated with npm install --package-lock-only in a worktree without node_modules; control plane, fast-forwarded as 78ce9e1; container-manager 886 passed, build 0. Not deployed; it goes out with STAGING-DEPLOY-POLISH-01. Checkpoint: docs/CM-DEPS-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the deploy, into STAGING-DEPLOY-POLISH-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-12 — admitted by the control plane on Keith's "Keep working". Was: READY — registered 2026-11-10 by the CODE-TIDY-01 split — not admitted.
 **Task ID:** CM-DEPS-01
 **Title:** Remove container-manager's unused jsonwebtoken packages
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
