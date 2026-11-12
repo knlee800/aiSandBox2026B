@@ -114,6 +114,7 @@ export class ProjectsController {
     projectId: string;
     sessionId: string;
     restoredSnapshotId: string | null;
+    failedPaths: string[];
   }> {
     return await this.projectsService.openProjectIntoSession({
       userId: req.user.userId,

@@ -155,7 +155,11 @@
     "savePointNoActiveSession": "没有活动会话，无法创建保存点。",
     "savePointSessionTerminated": "会话已终止，无法创建保存点。",
     "savePointNoFileChanges": "未检测到文件更改，未创建保存点。",
-    "savePointCreateFailed": "无法创建保存点。"
+    "savePointCreateFailed": "无法创建保存点。",
+    "restoreFailedNotice": "部分文件无法恢复：{files}。文件可能过大，请重新添加后再保存。",
+    "restoreFailedMore": "{files}，以及另外 {count} 个文件",
+    "restoreFailedSeparator": "、",
+    "restoreFailedDismiss": "关闭"
   },
   "recovery": {
     "actions": {

@@ -195,6 +195,35 @@ describe('workspace-projects.logic', () => {
 
     assert.equal(calls[0].url, '/api/projects/project-1/open');
     assert.equal(result.restoredSnapshotId, 'snapshot-1');
+    // SNAPSHOT-NOTICE-01: a response without failedPaths (an older gateway) means none.
+    assert.deepEqual(result.failedPaths, []);
+  });
+
+  test('openWorkspaceProject passes failedPaths through from the open response (SNAPSHOT-NOTICE-01)', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          projectId: 'project-1',
+          sessionId: 'session-1',
+          restoredSnapshotId: 'snapshot-1',
+          failedPaths: ['img/a.png', 'fonts/b.ttf'],
+        }),
+        { status: 200 },
+      );
+
+    const result = await openWorkspaceProject({
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(result, {
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      restoredSnapshotId: 'snapshot-1',
+      failedPaths: ['img/a.png', 'fonts/b.ttf'],
+    });
   });
 
   test('openWorkspaceProject throws ProjectOpenError with status 410 and the response message', async () => {

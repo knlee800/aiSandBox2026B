@@ -1,4 +1,9 @@
-import { GoneException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  GoneException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { In } from 'typeorm';
@@ -504,6 +509,7 @@ describe('ProjectsService (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: 'snapshot-latest',
+      failedPaths: [],
     });
     expect(sessionRepository.update).toHaveBeenCalledWith(
       { id: 'session-1' },
@@ -538,6 +544,7 @@ describe('ProjectsService (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: null,
+      failedPaths: [],
     });
     expect(sessionRepository.update).toHaveBeenCalledWith(
       { id: 'session-1' },
@@ -686,6 +693,7 @@ describe('ProjectsService (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: 'snapshot-1',
+      failedPaths: [],
     });
   });
 
@@ -809,6 +817,7 @@ describe('ProjectsService (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: null,
+      failedPaths: [],
     });
   });
 
@@ -838,6 +847,7 @@ describe('ProjectsService (PR-03-01)', () => {
         projectId: 'project-1',
         sessionId: 'session-1',
         restoredSnapshotId: 'snapshot-1',
+        failedPaths: [],
       });
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('session-1'));
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('bundle missing'));
@@ -868,6 +878,7 @@ describe('ProjectsService (PR-03-01)', () => {
         projectId: 'project-1',
         sessionId: 'session-1',
         restoredSnapshotId: null,
+        failedPaths: [],
       });
       expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledTimes(1);
       expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledWith(
@@ -909,6 +920,7 @@ describe('ProjectsService (PR-03-01)', () => {
         projectId: 'project-1',
         sessionId: 'session-1',
         restoredSnapshotId: 'snapshot-1',
+        failedPaths: ['img/red.png'],
       });
       expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledTimes(1);
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('1 file(s) not written'));
@@ -967,6 +979,7 @@ describe('ProjectsService (PR-03-01)', () => {
           projectId: 'project-1',
           sessionId: 'session-1',
           restoredSnapshotId: null,
+          failedPaths: [],
         });
         expect(sessionRepository.update).toHaveBeenCalledWith(
           { id: 'session-1' },
@@ -1030,6 +1043,79 @@ describe('ProjectsService (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: 'snapshot-1',
+      failedPaths: [],
+    });
+  });
+
+  describe('SNAPSHOT-NOTICE-01: the open returns failedPaths', () => {
+    const metadata = {
+      id: 'snapshot-1',
+      userId: 'user-1',
+      label: null,
+      createdAt: '2026-04-04T00:00:00.000Z',
+      fileCount: 3,
+    };
+    const open = () =>
+      service.openProjectIntoSession({
+        userId: 'user-1',
+        projectId: 'project-1',
+        sessionId: 'session-1',
+        snapshotId: 'snapshot-1',
+      });
+
+    it('returns the paths restoreSnapshot could not write', async () => {
+      const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+      mockOpenableSession();
+      snapshotPersistenceService.restoreSnapshot.mockResolvedValue({
+        ...metadata,
+        failedPaths: ['img/a.png', 'fonts/b.ttf'],
+      });
+
+      try {
+        const result = await open();
+        expect(result.restoredSnapshotId).toBe('snapshot-1');
+        expect(result.failedPaths).toEqual(['img/a.png', 'fonts/b.ttf']);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('returns an empty list when restoreSnapshot reports no failedPaths field', async () => {
+      mockOpenableSession();
+      snapshotPersistenceService.restoreSnapshot.mockResolvedValue({ ...metadata });
+
+      const result = await open();
+      expect(result.failedPaths).toEqual([]);
+    });
+
+    it('returns an empty list when no snapshot is restored', async () => {
+      mockOpenableSession();
+      snapshotPersistenceService.listSnapshots.mockResolvedValue([]);
+
+      const result = await service.openProjectIntoSession({
+        userId: 'user-1',
+        projectId: 'project-1',
+        sessionId: 'session-1',
+      });
+      expect(snapshotPersistenceService.restoreSnapshot).not.toHaveBeenCalled();
+      expect(result.failedPaths).toEqual([]);
+    });
+
+    it('returns an empty list when the snapshot restore throws a 5xx and the open continues', async () => {
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      mockOpenableSession();
+      snapshotPersistenceService.restoreSnapshot.mockRejectedValue(
+        new BadGatewayException('container write failed'),
+      );
+
+      try {
+        const result = await open();
+        expect(result.restoredSnapshotId).toBeNull();
+        expect(result.failedPaths).toEqual([]);
+        expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledTimes(1);
+      } finally {
+        errorSpy.mockRestore();
+      }
     });
   });
 });

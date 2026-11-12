@@ -23,6 +23,8 @@ export interface OpenProjectInFreshSessionResult {
   projectId: string;
   sessionId: string;
   restoredSnapshotId: string | null;
+  /** SNAPSHOT-NOTICE-01: files the snapshot restore could not write ([] when none). */
+  failedPaths: string[];
 }
 
 interface CreatedWorkspaceSession {
@@ -127,5 +129,6 @@ export async function openProjectInFreshSession(
     projectId,
     sessionId,
     restoredSnapshotId: null,
+    failedPaths: [],
   };
 }

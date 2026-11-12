@@ -231,6 +231,7 @@ export class ProjectsService {
     projectId: string;
     sessionId: string;
     restoredSnapshotId: string | null;
+    failedPaths: string[];
   }> {
     // SNAPSHOT-PICK-01: without an explicit snapshot id, restore only the
     // newest snapshot labelled for this project (listSnapshots is newest
@@ -263,6 +264,7 @@ export class ProjectsService {
         projectId: args.projectId,
         sessionId: args.sessionId,
         restoredSnapshotId: null,
+        failedPaths: [],
       };
     }
 
@@ -273,7 +275,11 @@ export class ProjectsService {
     // such as an unknown snapshot or a terminated session) is then thrown as
     // before, any other failure is logged and the open resolves with no
     // restored snapshot.
+    // SNAPSHOT-NOTICE-01: the paths that could not be written are returned to
+    // the client as failedPaths (empty when none, when nothing was restored,
+    // or when the restore threw), so the workspace can name them.
     let restoredSnapshotId: string | null = snapshotIdToRestore ?? null;
+    let failedPaths: string[] = [];
     let snapshotRestoreError: unknown;
     if (snapshotIdToRestore) {
       try {
@@ -282,7 +288,10 @@ export class ProjectsService {
           sessionId: args.sessionId,
           snapshotId: snapshotIdToRestore,
         });
-        const failedCount = restoreResult?.failedPaths?.length ?? 0;
+        failedPaths = Array.isArray(restoreResult?.failedPaths)
+          ? [...restoreResult.failedPaths]
+          : [];
+        const failedCount = failedPaths.length;
         if (failedCount > 0) {
           this.logger.warn(
             `Snapshot ${snapshotIdToRestore} restored into session ${args.sessionId} with ${failedCount} file(s) not written`,
@@ -291,6 +300,7 @@ export class ProjectsService {
       } catch (error: unknown) {
         snapshotRestoreError = error;
         restoredSnapshotId = null;
+        failedPaths = [];
         const detail = error instanceof Error ? error.message : String(error);
         this.logger.error(
           `Failed to restore snapshot ${snapshotIdToRestore} into session ${args.sessionId}: ${detail}`,
@@ -321,6 +331,7 @@ export class ProjectsService {
       projectId: args.projectId,
       sessionId: args.sessionId,
       restoredSnapshotId,
+      failedPaths,
     };
   }
 }

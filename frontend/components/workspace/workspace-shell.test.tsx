@@ -17,6 +17,9 @@ import WorkspaceShell, {
   runStopSessionWithConfirmation,
   shouldCloseFocusedProjectActionOnProjectSuccessTransition,
   WorkspaceAdvancedDrawer,
+  formatRestoreFailedNotice,
+  WorkspaceRestoreFailedNotice,
+  RESTORE_FAILED_NOTICE_MAX_PATHS,
 } from './workspace-shell';
 import WorkspaceAccountMenu, {
   GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH,
@@ -45,6 +48,8 @@ import WorkspaceTabBar from './workspace-tab-bar';
 import type { WorkspaceTabBarProps } from './workspace-tab-bar';
 import { TAB_REGISTRY } from './workspace-tab-registry';
 import enMessages from '@/messages/en.json';
+import zhTwMessages from '@/messages/zh-TW.json';
+import zhCnMessages from '@/messages/zh-CN.json';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -10571,5 +10576,145 @@ describe('workspace team link — COLLAB-SCREEN-01', () => {
     );
     assert.match(shown, /workspace-chat-intent-ask/);
     assert.match(shown, /workspace-chat-intent-build/);
+  });
+});
+
+describe('SNAPSHOT-NOTICE-01: files a restore could not write', () => {
+  const sevenPaths = ['a.png', 'b.ttf', 'c.png', 'd.woff2', 'e.jpg', 'f.gif', 'g.mp3'];
+
+  test('the notice keys exist in en, zh-TW and zh-CN, and the Chinese copy is translated', () => {
+    const keys = [
+      'restoreFailedNotice',
+      'restoreFailedMore',
+      'restoreFailedSeparator',
+      'restoreFailedDismiss',
+    ] as const;
+    for (const messages of [enMessages, zhTwMessages, zhCnMessages]) {
+      for (const key of keys) {
+        assert.equal(typeof messages.workspace[key], 'string', key);
+        assert.ok(messages.workspace[key].length > 0, key);
+      }
+      assert.match(messages.workspace.restoreFailedNotice, /\{files\}/);
+      assert.match(messages.workspace.restoreFailedMore, /\{files\}/);
+      assert.match(messages.workspace.restoreFailedMore, /\{count\}/);
+    }
+    assert.notEqual(zhTwMessages.workspace.restoreFailedNotice, enMessages.workspace.restoreFailedNotice);
+    assert.notEqual(zhCnMessages.workspace.restoreFailedNotice, enMessages.workspace.restoreFailedNotice);
+    assert.notEqual(zhTwMessages.workspace.restoreFailedNotice, zhCnMessages.workspace.restoreFailedNotice);
+    assert.match(zhTwMessages.workspace.restoreFailedNotice, /還原/);
+    assert.match(zhCnMessages.workspace.restoreFailedNotice, /恢复/);
+  });
+
+  test('formats the paths in each language', () => {
+    assert.equal(
+      formatRestoreFailedNotice(['a.png', 'b.ttf'], enMessages.workspace),
+      'Some files could not be restored: a.png, b.ttf. They may be too large. Add them again and save.',
+    );
+    assert.equal(
+      formatRestoreFailedNotice(['a.png', 'b.ttf'], zhTwMessages.workspace),
+      '部分檔案無法還原：a.png、b.ttf。檔案可能太大，請重新加入後再儲存。',
+    );
+    assert.equal(
+      formatRestoreFailedNotice(['a.png', 'b.ttf'], zhCnMessages.workspace),
+      '部分文件无法恢复：a.png、b.ttf。文件可能过大，请重新添加后再保存。',
+    );
+  });
+
+  test('shows the first five paths, then "and N more"', () => {
+    assert.equal(RESTORE_FAILED_NOTICE_MAX_PATHS, 5);
+    assert.equal(
+      formatRestoreFailedNotice(sevenPaths, enMessages.workspace),
+      'Some files could not be restored: a.png, b.ttf, c.png, d.woff2, e.jpg and 2 more. They may be too large. Add them again and save.',
+    );
+    assert.equal(
+      formatRestoreFailedNotice(sevenPaths, zhTwMessages.workspace),
+      '部分檔案無法還原：a.png、b.ttf、c.png、d.woff2、e.jpg，以及另外 2 個檔案。檔案可能太大，請重新加入後再儲存。',
+    );
+    assert.equal(
+      formatRestoreFailedNotice(sevenPaths, zhCnMessages.workspace),
+      '部分文件无法恢复：a.png、b.ttf、c.png、d.woff2、e.jpg，以及另外 2 个文件。文件可能过大，请重新添加后再保存。',
+    );
+    assert.doesNotMatch(
+      formatRestoreFailedNotice(sevenPaths.slice(0, 5), enMessages.workspace) ?? '',
+      /more/,
+    );
+  });
+
+  test('returns null for an empty or missing list, and keeps a path with $ literally', () => {
+    assert.equal(formatRestoreFailedNotice([], enMessages.workspace), null);
+    assert.equal(formatRestoreFailedNotice(undefined, enMessages.workspace), null);
+    assert.equal(formatRestoreFailedNotice(['  '], enMessages.workspace), null);
+    assert.match(
+      formatRestoreFailedNotice(['price$&.png'], enMessages.workspace) ?? '',
+      /restored: price\$&\.png\./,
+    );
+  });
+
+  test('the shell renders the notice in the project view with the translated text and a dismiss button', () => {
+    const markup = renderWorkspaceShell({
+      workspaceView: 'project',
+      restoreFailedPaths: ['img/a.png', 'fonts/b.ttf'],
+      onDismissRestoreFailedPaths: () => undefined,
+    });
+    assert.match(markup, /data-testid="workspace-restore-failed-notice" role="status"/);
+    assert.match(
+      markup,
+      /Some files could not be restored: img\/a\.png, fonts\/b\.ttf\. They may be too large\. Add them again and save\./,
+    );
+    assert.match(markup, /data-testid="workspace-restore-failed-notice-dismiss"/);
+    assert.match(markup, /aria-label="Dismiss"/);
+  });
+
+  test('the shell renders the notice in zh-TW and zh-CN', () => {
+    const zhTw = renderWorkspaceShell({
+      locale: 'zh-TW',
+      workspaceView: 'project',
+      restoreFailedPaths: sevenPaths,
+    });
+    assert.match(zhTw, /部分檔案無法還原：a\.png、b\.ttf、c\.png、d\.woff2、e\.jpg，以及另外 2 個檔案。/);
+    const zhCn = renderWorkspaceShell({
+      locale: 'zh-CN',
+      workspaceView: 'project',
+      restoreFailedPaths: ['a.png'],
+      onDismissRestoreFailedPaths: () => undefined,
+    });
+    assert.match(zhCn, /部分文件无法恢复：a\.png。/);
+    assert.match(zhCn, /aria-label="关闭"/);
+  });
+
+  test('the shell does not render the notice when the list is empty or missing', () => {
+    assert.doesNotMatch(
+      renderWorkspaceShell({ workspaceView: 'project', restoreFailedPaths: [] }),
+      /workspace-restore-failed-notice/,
+    );
+    assert.doesNotMatch(
+      renderWorkspaceShell({ workspaceView: 'project' }),
+      /workspace-restore-failed-notice/,
+    );
+  });
+
+  test('the notice has no dismiss button without a handler', () => {
+    const markup = renderToStaticMarkup(
+      <WorkspaceRestoreFailedNotice paths={['a.png']} messages={enMessages.workspace} />,
+    );
+    assert.match(markup, /data-testid="workspace-restore-failed-notice"/);
+    assert.doesNotMatch(markup, /workspace-restore-failed-notice-dismiss/);
+  });
+
+  test('the page stores failedPaths from every project open and the manual restore and passes them to the shell', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+    const openSets =
+      pageSource.match(/setRestoreFailedPaths\(openResult\.failedPaths \?\? \[\]\);/g) ?? [];
+    assert.equal(openSets.length, 4);
+    assert.equal((pageSource.match(/await openProjectInFreshSession\(/g) ?? []).length, 4);
+    assert.match(pageSource, /setRestoreFailedPaths\(restoreResult\.failedPaths \?\? \[\]\);/);
+    assert.match(pageSource, /restoreFailedPaths=\{restoreFailedPaths\}/);
+    assert.match(
+      pageSource,
+      /onDismissRestoreFailedPaths=\{\(\) => \{\s*setRestoreFailedPaths\(\[\]\);\s*\}\}/,
+    );
   });
 });

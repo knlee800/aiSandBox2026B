@@ -155,7 +155,11 @@
     "savePointNoActiveSession": "Cannot create a save point without an active session.",
     "savePointSessionTerminated": "Cannot create a save point for a terminated session.",
     "savePointNoFileChanges": "No file changes detected. Save point was not created.",
-    "savePointCreateFailed": "Failed to create save point."
+    "savePointCreateFailed": "Failed to create save point.",
+    "restoreFailedNotice": "Some files could not be restored: {files}. They may be too large. Add them again and save.",
+    "restoreFailedMore": "{files} and {count} more",
+    "restoreFailedSeparator": ", ",
+    "restoreFailedDismiss": "Dismiss"
   },
   "recovery": {
     "actions": {

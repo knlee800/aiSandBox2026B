@@ -106,6 +106,7 @@ describe('ProjectsController (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: 'snapshot-1',
+      failedPaths: ['img/a.png'],
     });
 
     const userReq = { user: { userId: 'user-1' } };
@@ -122,11 +123,18 @@ describe('ProjectsController (PR-03-01)', () => {
       userReq,
     );
     await controller.associateSessionWithProject('project-1', 'session-1', userReq);
-    await controller.openProjectIntoSession(
+    const openResult = await controller.openProjectIntoSession(
       'project-1',
       { sessionId: 'session-1', snapshotId: 'snapshot-1' },
       userReq,
     );
+    // SNAPSHOT-NOTICE-01: the open response carries failedPaths through.
+    expect(openResult).toEqual({
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      restoredSnapshotId: 'snapshot-1',
+      failedPaths: ['img/a.png'],
+    });
 
     expect(projectsService.getProjectByIdForUser).toHaveBeenCalledWith('user-1', 'project-1');
     expect(projectsService.renameProject).toHaveBeenCalledWith(

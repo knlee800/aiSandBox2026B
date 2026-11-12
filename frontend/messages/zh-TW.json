@@ -155,7 +155,11 @@
     "savePointNoActiveSession": "沒有作用中的工作階段，無法建立儲存點。",
     "savePointSessionTerminated": "工作階段已終止，無法建立儲存點。",
     "savePointNoFileChanges": "未偵測到檔案變更，未建立儲存點。",
-    "savePointCreateFailed": "無法建立儲存點。"
+    "savePointCreateFailed": "無法建立儲存點。",
+    "restoreFailedNotice": "部分檔案無法還原：{files}。檔案可能太大，請重新加入後再儲存。",
+    "restoreFailedMore": "{files}，以及另外 {count} 個檔案",
+    "restoreFailedSeparator": "、",
+    "restoreFailedDismiss": "關閉"
   },
   "recovery": {
     "actions": {

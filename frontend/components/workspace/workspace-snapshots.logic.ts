@@ -20,8 +20,22 @@ interface RestoreSnapshotArgs {
   fetchImpl?: typeof fetch;
 }
 
+/**
+ * SNAPSHOT-NOTICE-01: the files a snapshot restore could not write, from a
+ * project open or a manual restore response. A missing or malformed field
+ * (an older gateway) means none.
+ */
+export function normalizeRestoreFailedPaths(raw: unknown): string[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw.filter(
+    (path): path is string => typeof path === 'string' && path.trim().length > 0,
+  );
+}
+
 export type RestoreWorkspaceSnapshotResult =
-  | { kind: 'restored' }
+  | { kind: 'restored'; failedPaths: string[] }
   | { kind: 'run_active' };
 
 interface LoadSnapshotsArgs {
@@ -319,7 +333,12 @@ export async function restoreWorkspaceSnapshot(
     );
   }
 
-  return { kind: 'restored' };
+  // SNAPSHOT-NOTICE-01: carry the files the restore could not write; a
+  // missing field (an older gateway) or an unreadable body means none.
+  const payload = (await Promise.resolve()
+    .then(() => response.json())
+    .catch(() => null)) as { failedPaths?: unknown } | null;
+  return { kind: 'restored', failedPaths: normalizeRestoreFailedPaths(payload?.failedPaths) };
 }
 
 export async function exportWorkspaceArchive(

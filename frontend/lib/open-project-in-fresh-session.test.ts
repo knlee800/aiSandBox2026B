@@ -77,6 +77,7 @@ describe('open-project-in-fresh-session', () => {
       projectId: 'project-1',
       sessionId: 'session-existing-1',
       restoredSnapshotId: 'snapshot-1',
+      failedPaths: [],
     });
   });
 
@@ -135,6 +136,7 @@ describe('open-project-in-fresh-session', () => {
       projectId: 'project-1',
       sessionId: 'session-fresh-1',
       restoredSnapshotId: 'snapshot-1',
+      failedPaths: [],
     });
   });
 
@@ -181,6 +183,7 @@ describe('open-project-in-fresh-session', () => {
       projectId: 'project-1',
       sessionId: 'session-fresh-2',
       restoredSnapshotId: null,
+      failedPaths: [],
     });
   });
 
@@ -249,6 +252,7 @@ describe('open-project-in-fresh-session', () => {
       projectId: 'project-1',
       sessionId: 'session-fresh-6',
       restoredSnapshotId: null,
+      failedPaths: [],
     });
   });
 
@@ -492,6 +496,7 @@ describe('open-project-in-fresh-session', () => {
       projectId: 'project-1',
       sessionId: 'session-fresh-retry',
       restoredSnapshotId: 'snapshot-explicit',
+      failedPaths: [],
     });
   });
 
@@ -578,5 +583,38 @@ describe('open-project-in-fresh-session', () => {
     );
 
     assert.deepEqual(calls.map((call) => call.url), ['/api/projects/project-1/open']);
+  });
+
+  test('passes the failed paths from the project open through (SNAPSHOT-NOTICE-01)', async () => {
+    const fetchImpl = async (url: string): Promise<Response> => {
+      if (url === '/api/sessions') {
+        return new Response(JSON.stringify({ id: 'session-new-1' }), { status: 201 });
+      }
+      if (url === '/api/projects/project-1/open') {
+        return new Response(
+          JSON.stringify({
+            projectId: 'project-1',
+            sessionId: 'session-new-1',
+            restoredSnapshotId: 'snapshot-explicit',
+            failedPaths: ['img/a.png', 'fonts/b.ttf'],
+          }),
+          { status: 200 },
+        );
+      }
+      throw new Error(`Unexpected url: ${url}`);
+    };
+
+    const result = await openProjectInFreshSession({
+      projectId: 'project-1',
+      snapshotId: 'snapshot-explicit',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(result, {
+      projectId: 'project-1',
+      sessionId: 'session-new-1',
+      restoredSnapshotId: 'snapshot-explicit',
+      failedPaths: ['img/a.png', 'fonts/b.ttf'],
+    });
   });
 });

@@ -1,3 +1,5 @@
+import { normalizeRestoreFailedPaths } from './workspace-snapshots.logic';
+
 export interface WorkspaceProjectSummary {
   id: string;
   userId: string;
@@ -232,9 +234,16 @@ export class ProjectOpenError extends Error {
   }
 }
 
+export interface OpenWorkspaceProjectResult {
+  projectId: string;
+  sessionId: string;
+  restoredSnapshotId: string | null;
+  failedPaths: string[];
+}
+
 export async function openWorkspaceProject(
   args: OpenProjectArgs,
-): Promise<{ projectId: string; sessionId: string; restoredSnapshotId: string | null }> {
+): Promise<OpenWorkspaceProjectResult> {
   const response = await (args.fetchImpl ?? fetch)(`/api/projects/${args.projectId}/open`, {
     method: 'POST',
     headers: {
@@ -256,10 +265,15 @@ export async function openWorkspaceProject(
     );
   }
 
-  return (await response.json()) as {
+  const payload = (await response.json()) as {
     projectId: string;
     sessionId: string;
     restoredSnapshotId: string | null;
+    failedPaths?: unknown;
+  };
+  return {
+    ...payload,
+    failedPaths: normalizeRestoreFailedPaths(payload?.failedPaths),
   };
 }
 

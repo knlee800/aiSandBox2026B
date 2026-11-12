@@ -623,6 +623,9 @@ interface WorkspaceShellProps {
   harnessProgress?: HarnessProgressItem[];
   boundUserAgentId?: string | null;
   onDismissBoundUserAgentAsk?: () => void;
+  /** SNAPSHOT-NOTICE-01: files the last project open or manual restore could not write. */
+  restoreFailedPaths?: string[];
+  onDismissRestoreFailedPaths?: () => void;
   onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
   selectedModelProvider?: string;
   onSelectedModelProviderChange?: (value: string) => void;
@@ -697,6 +700,74 @@ interface WorkspaceShellProps {
 }
 
 type ProjectActionState = NonNullable<WorkspaceShellProps['projectActionState']>;
+
+export const RESTORE_FAILED_NOTICE_MAX_PATHS = 5;
+
+/**
+ * SNAPSHOT-NOTICE-01: the translated notice text naming the files a snapshot
+ * restore could not write. Shows up to RESTORE_FAILED_NOTICE_MAX_PATHS paths,
+ * then "and N more". Returns null when there is nothing to report.
+ */
+export function formatRestoreFailedNotice(
+  paths: readonly string[] | null | undefined,
+  messages: Pick<
+    typeof enMessages.workspace,
+    'restoreFailedNotice' | 'restoreFailedMore' | 'restoreFailedSeparator'
+  >,
+  maxShown: number = RESTORE_FAILED_NOTICE_MAX_PATHS,
+): string | null {
+  const visiblePaths = (paths ?? []).filter((path) => path.trim().length > 0);
+  if (visiblePaths.length === 0) {
+    return null;
+  }
+  const shown = visiblePaths.slice(0, maxShown).join(messages.restoreFailedSeparator);
+  const hiddenCount = visiblePaths.length - Math.min(visiblePaths.length, maxShown);
+  const files =
+    hiddenCount > 0
+      ? messages.restoreFailedMore
+          .replace('{files}', () => shown)
+          .replace('{count}', String(hiddenCount))
+      : shown;
+  return messages.restoreFailedNotice.replace('{files}', () => files);
+}
+
+export function WorkspaceRestoreFailedNotice(props: {
+  paths: readonly string[] | null | undefined;
+  messages: Pick<
+    typeof enMessages.workspace,
+    'restoreFailedNotice' | 'restoreFailedMore' | 'restoreFailedSeparator' | 'restoreFailedDismiss'
+  >;
+  onDismiss?: () => void;
+}) {
+  const text = formatRestoreFailedNotice(props.paths, props.messages);
+  if (!text) {
+    return null;
+  }
+  return (
+    <div
+      className="mx-4 mt-2 flex min-w-0 shrink-0 items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+      data-testid="workspace-restore-failed-notice"
+      role="status"
+    >
+      <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      <p className="min-w-0 flex-1 break-words" data-testid="workspace-restore-failed-notice-text">
+        {text}
+      </p>
+      {props.onDismiss ? (
+        <button
+          type="button"
+          className="shrink-0 rounded p-0.5 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          data-testid="workspace-restore-failed-notice-dismiss"
+          aria-label={props.messages.restoreFailedDismiss}
+          title={props.messages.restoreFailedDismiss}
+          onClick={props.onDismiss}
+        >
+          <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 export function shouldCloseFocusedProjectActionOnProjectSuccessTransition(args: {
   previousProjectActionState: ProjectActionState;
@@ -2472,6 +2543,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   {aiPanelCollapsed ? projectPanelMessages.expandPanel : projectPanelMessages.collapsePanel}
                 </button>
               </header>
+              <WorkspaceRestoreFailedNotice
+                paths={props.restoreFailedPaths}
+                messages={workspaceMessages}
+                onDismiss={props.onDismissRestoreFailedPaths}
+              />
               <div className="flex flex-1 md:min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
                   <aside

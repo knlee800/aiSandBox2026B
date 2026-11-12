@@ -417,7 +417,12 @@ export class SessionController {
       }
     }
 
-    return result;
+    // SNAPSHOT-NOTICE-01: always return failedPaths (the files the restore
+    // could not write) so the workspace can name them; [] when none.
+    return {
+      ...result,
+      failedPaths: Array.isArray(result?.failedPaths) ? [...result.failedPaths] : [],
+    };
   }
 
   @Get(':id/export')

@@ -13,6 +13,7 @@ import {
   parseProjectScopedSnapshotName,
   parseProjectScopedSnapshotSource,
   resolveProjectScopedLatestSnapshotId,
+  normalizeRestoreFailedPaths,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
 } from './workspace-snapshots.logic';
@@ -84,7 +85,57 @@ describe('workspace-snapshots.logic', () => {
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, '/api/sessions/session-1/restore');
-    assert.deepEqual(result, { kind: 'restored' });
+    // SNAPSHOT-NOTICE-01: an empty body (an older gateway) means no failed paths.
+    assert.deepEqual(result, { kind: 'restored', failedPaths: [] });
+  });
+
+  test('restoreWorkspaceSnapshot returns the paths the restore could not write (SNAPSHOT-NOTICE-01)', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          id: 'snapshot-1',
+          userId: 'user-1',
+          label: null,
+          createdAt: '2026-04-03T00:00:00.000Z',
+          fileCount: 3,
+          failedPaths: ['img/a.png', 'fonts/b.ttf'],
+        }),
+        { status: 200 },
+      );
+
+    const result = await restoreWorkspaceSnapshot({
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(result, { kind: 'restored', failedPaths: ['img/a.png', 'fonts/b.ttf'] });
+  });
+
+  test('restoreWorkspaceSnapshot defaults failedPaths to [] when the field is missing or malformed (SNAPSHOT-NOTICE-01)', async () => {
+    for (const body of [
+      { id: 'snapshot-1', fileCount: 3 },
+      { id: 'snapshot-1', failedPaths: 'img/a.png' },
+      { id: 'snapshot-1', failedPaths: null },
+    ]) {
+      const fetchImpl = async (): Promise<Response> =>
+        new Response(JSON.stringify(body), { status: 200 });
+      const result = await restoreWorkspaceSnapshot({
+        sessionId: 'session-1',
+        snapshotId: 'snapshot-1',
+        fetchImpl: fetchImpl as typeof fetch,
+      });
+      assert.deepEqual(result, { kind: 'restored', failedPaths: [] });
+    }
+  });
+
+  test('normalizeRestoreFailedPaths keeps only non-empty strings (SNAPSHOT-NOTICE-01)', () => {
+    assert.deepEqual(normalizeRestoreFailedPaths(undefined), []);
+    assert.deepEqual(normalizeRestoreFailedPaths({}), []);
+    assert.deepEqual(normalizeRestoreFailedPaths(['a.png', '', 3, null, 'b.ttf']), [
+      'a.png',
+      'b.ttf',
+    ]);
   });
 
   test('restoreWorkspaceSnapshot maps 409 to run_active and still throws other errors', async () => {

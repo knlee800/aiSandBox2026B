@@ -928,7 +928,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
       'session-1',
       'project-1',
     );
-    expect(result).toEqual(restoredSnapshot);
+    expect(result).toEqual({ ...restoredSnapshot, failedPaths: [] });
   });
 
   it('awaits checkpoint history restore after the snapshot restore when the session has a project', async () => {
@@ -964,7 +964,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
     );
 
     releaseRestore({ status: 'restored', head: 'abc123' });
-    await expect(resultPromise).resolves.toEqual(restoredSnapshot);
+    await expect(resultPromise).resolves.toEqual({ ...restoredSnapshot, failedPaths: [] });
   });
 
   it('returns the snapshot result when checkpoint history restore fails', async () => {
@@ -985,12 +985,55 @@ describe('SessionController (PR-01-01 snapshots)', () => {
         { user: { userId: 'user-1' } },
       );
 
-      expect(result).toEqual(restoredSnapshot);
+      expect(result).toEqual({ ...restoredSnapshot, failedPaths: [] });
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('bundle missing'));
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('session-1'));
     } finally {
       errorSpy.mockRestore();
     }
+  });
+
+  it('POST /api/sessions/:id/restore returns the paths the restore could not write (SNAPSHOT-NOTICE-01)', async () => {
+    sessionService.getSessionById.mockResolvedValue({
+      ...mockActiveSession,
+      projectId: 'project-1',
+    });
+    snapshotService.restoreSnapshot.mockResolvedValue({
+      ...restoredSnapshot,
+      failedPaths: ['img/a.png', 'fonts/b.ttf'],
+    });
+
+    const result = await controller.restoreSessionSnapshot(
+      'session-1',
+      { snapshotId: 'snapshot-1' },
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(result).toEqual({
+      ...restoredSnapshot,
+      failedPaths: ['img/a.png', 'fonts/b.ttf'],
+    });
+    expect(containerManagerClient.restoreCheckpointHistory).toHaveBeenCalledWith(
+      'session-1',
+      'project-1',
+    );
+  });
+
+  it('POST /api/sessions/:id/restore returns an empty failedPaths when the restore reports none (SNAPSHOT-NOTICE-01)', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    snapshotService.restoreSnapshot.mockResolvedValue({
+      ...restoredSnapshot,
+      failedPaths: [],
+    });
+
+    const result = await controller.restoreSessionSnapshot(
+      'session-1',
+      { snapshotId: 'snapshot-1' },
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(result.failedPaths).toEqual([]);
+    expect(result.id).toBe('snapshot-1');
   });
 
   it('does not restore checkpoint history when the session has no project', async () => {
@@ -1003,7 +1046,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
       { user: { userId: 'user-1' } },
     );
 
-    expect(result).toEqual(restoredSnapshot);
+    expect(result).toEqual({ ...restoredSnapshot, failedPaths: [] });
     expect(containerManagerClient.restoreCheckpointHistory).not.toHaveBeenCalled();
   });
 });

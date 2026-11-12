@@ -1020,6 +1020,8 @@ export default function AppPage() {
     'idle' | 'saving' | 'restoring' | 'exporting' | 'importing' | 'success' | 'error'
   >('idle');
   const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
+  // SNAPSHOT-NOTICE-01: files the last project open or manual restore could not write.
+  const [restoreFailedPaths, setRestoreFailedPaths] = useState<string[]>([]);
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
@@ -2553,6 +2555,7 @@ export default function AppPage() {
         });
         const openSessionId = openResult.sessionId;
         const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+        setRestoreFailedPaths(openResult.failedPaths ?? []);
 
         skipNextSessionEffectFileReloadRef.current =
           openSessionId !== selectedSessionIdRef.current;
@@ -2692,6 +2695,7 @@ export default function AppPage() {
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+      setRestoreFailedPaths(openResult.failedPaths ?? []);
 
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
@@ -2749,6 +2753,7 @@ export default function AppPage() {
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+      setRestoreFailedPaths(openResult.failedPaths ?? []);
 
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
@@ -2813,6 +2818,7 @@ export default function AppPage() {
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+      setRestoreFailedPaths(openResult.failedPaths ?? []);
 
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
@@ -3196,6 +3202,7 @@ export default function AppPage() {
         );
         return;
       }
+      setRestoreFailedPaths(restoreResult.failedPaths ?? []);
       await loadWorkspaceFilesForSession(selectedSessionId);
       await refreshPreviewForSession(selectedSessionId);
       await loadCheckpoints(selectedSessionId);
@@ -6525,6 +6532,10 @@ export default function AppPage() {
       boundUserAgentId={boundUserAgentId}
       onDismissBoundUserAgentAsk={() => {
         setBoundUserAgentId(null);
+      }}
+      restoreFailedPaths={restoreFailedPaths}
+      onDismissRestoreFailedPaths={() => {
+        setRestoreFailedPaths([]);
       }}
       onExecutionIntentChange={(nextIntent) => {
         setAgentMode(false);
