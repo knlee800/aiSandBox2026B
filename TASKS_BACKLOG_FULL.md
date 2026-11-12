@@ -84392,7 +84392,7 @@ taskId=PREVIEW-ORIGIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-ORIGIN-01-STAGE-START.md, ab078f5); approved by Keith 2026-11-12 ("Yes, all five"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and GATEWAY released. Generated-app previews isolated on a separate preview host (4-step; stage-start approved by Keith with all five recommendations): on the platform host a proxy GET answers 302 with a 60-second single-use HMAC ticket to the preview host's enter route, which sets an httpOnly host-only path-scoped aisandbox_preview cookie (12 h); the preview host serves only enter and proxy GET/HEAD (a route filter answers 404 for everything else) and never reads the session cookie; every proxy response off the preview host carries Content-Security-Policy sandbox without allow-same-origin (the fail-safe, also when PREVIEW_BASE_URL is unset); host detection is fail-closed (Host and every X-Forwarded-Host must equal the PREVIEW_BASE_URL host); the iframe has a sandbox without allow-top-navigation; the Select Element toggle is hidden; /driver keeps its API key in memory only and removes the stored one. SessionCookieGuard, CsrfGuard, the platform cookies and internal routes unchanged. opus subagent d0738ee, fast-forwarded; control-plane rerun: gateway 4032 passed plus the 14 known smoke.integration failures, build 0; frontend tsc 0, 1822 passed, build 0. Not deployed: it needs the preview host first (PREVIEW-ORIGIN-DEPLOY-01). Checkpoint: docs/PREVIEW-ORIGIN-01-CHECKPOINT.md. FOLLOWUPS: 6 registered (PREVIEW-ORIGIN-DEPLOY-01; PREVIEW-PICKER-01; CSRF-AUDIT-01; COOKIE-PREFIX-01; PREVIEW-ORIGIN-02; DRIVER-PAGE-01) / 1 superseded (the ARCHITECTURE.md preview-path update, by PREVIEW-ORIGIN-DEPLOY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-ORIGIN-01-STAGE-START.md, ab078f5); approved by Keith 2026-11-12 ("Yes, all five"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** PREVIEW-ORIGIN-01
 **Title:** Generated-app previews run on the platform origin: isolate them
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84411,6 +84411,150 @@ nature=IMPLEMENTATION
 **Scope:** From the PRIVACY-INVENTORY-01 worker, confirmed by the control plane: the preview iframe loads /api/preview/<session>/proxy from the platform's own origin with no sandbox attribute (frontend/components/workspace/workspace-shell.tsx:5186-5193), and the gateway proxy adds no Content-Security-Policy sandbox header (services/api-gateway/src/preview/preview-response-headers.ts). Script in a generated app therefore runs as the platform origin: it can call platform APIs with the user's session cookie, read the non-httpOnly aisandbox_csrf cookie, and read localStorage, where the /driver developer page keeps an API key in plain text (frontend/app/[locale]/driver/page.tsx:74, 288). Generated code is AI-written and can carry injected instructions. Stage-start: confirm the risk with a test, then choose sandbox attributes, a CSP sandbox header, a separate preview origin, or a mix; and move or drop the /driver key storage. Security-sensitive: 4-step, opus.
 
 **Decided (Keith, 2026-11-12, "Yes, all five"; docs/PREVIEW-ORIGIN-01-STAGE-START.md section 6):** (1) a separate preview host with a ticketed entry, a host-only preview cookie and a CSP sandbox fail-safe on any other host; (2) host name preview.staging.ainow.biz (Keith adds the A record at the deploy); (3) basic_auth kept on the preview host; (4) the Select Element picker hidden now, rebuilt later; (5) the /driver API key kept in memory only and the stored one removed.
+
+### DRIVER-PAGE-01 — Keep or delete the /driver developer page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DRIVER-PAGE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Task ID:** DRIVER-PAGE-01
+**Title:** Keep or delete the /driver developer page
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** PREVIEW-ORIGIN-01.
+**Primary write scope:** PROVISIONAL: frontend/app/[locale]/driver/ and its tests (and nav links if any).
+**Mutexes / resources:** set at admission (expected FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PREVIEW-ORIGIN-01: the /driver developer page now keeps an API key in memory only. Keith decides whether the page stays (developer tool) or is deleted.
+
+### PREVIEW-ORIGIN-02 — One preview origin per session, or a separate registrable domain
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-ORIGIN-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Task ID:** PREVIEW-ORIGIN-02
+**Title:** One preview origin per session, or a separate registrable domain
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional; design first.
+**Depends on:** PREVIEW-ORIGIN-01.
+**Primary write scope:** PROVISIONAL: set at a stage-start.
+**Mutexes / resources:** set at a stage-start.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PREVIEW-ORIGIN-01: all sessions share one preview host, so one user's generated apps share an origin (localStorage, cookies under different paths); and the preview host is same-site with the platform. A per-session subdomain or a separate registrable domain would isolate further. Decide whether it is worth the DNS and TLS work.
+
+### COOKIE-PREFIX-01 — Harden platform cookies against a sibling host (__Host- prefix)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COOKIE-PREFIX-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Task ID:** COOKIE-PREFIX-01
+**Title:** Harden platform cookies against a sibling host (__Host- prefix)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** PREVIEW-ORIGIN-01.
+**Primary write scope:** PROVISIONAL: gateway cookie setters and readers (auth, main.ts CSRF middleware) and frontend readers of aisandbox_csrf, with tests; a migration path for signed-in users.
+**Mutexes / resources:** set at admission (expected GATEWAY and FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PREVIEW-ORIGIN-01: a sibling host such as the preview host can set cookies for the parent domain that shadow platform cookies; the __Host- prefix (Secure, Path=/, no Domain) prevents that. Also: with PREVIEW_BASE_URL unset (fail-safe mode), an upstream Set-Cookie from a dev-server preview still passes through on the platform host; strip it. Auth-sensitive: 4-step.
+
+### CSRF-AUDIT-01 — Cookie-authenticated write routes without CsrfGuard
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CSRF-AUDIT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Task ID:** CSRF-AUDIT-01
+**Title:** Cookie-authenticated write routes without CsrfGuard
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (recommended before any user other than Keith).
+**Depends on:** PREVIEW-ORIGIN-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/ controllers found by the audit, with tests.
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PREVIEW-ORIGIN-01: a sibling preview host is same-site with the platform, so SameSite=Lax does not stop a preview page from sending same-site requests with the session cookie; write routes that rely on the session cookie without CsrfGuard (preview start and stop are two) can be triggered. List every cookie-authenticated write route without CsrfGuard, then add the guard or justify each. Also note: main.ts sets a host-only aisandbox_csrf cookie on preview-host responses (harmless; unrelated to the platform cookie).
+
+### PREVIEW-PICKER-01 — Rebuild Select Element over postMessage for the isolated preview
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-PICKER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Task ID:** PREVIEW-PICKER-01
+**Title:** Rebuild Select Element over postMessage for the isolated preview
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides, after PREVIEW-ORIGIN-DEPLOY-01.
+**Depends on:** PREVIEW-ORIGIN-01.
+**Primary write scope:** PROVISIONAL: frontend/components/workspace/ (picker code, the iframe bridge) and a small script the preview injects; possibly container-manager or gateway for the injection.
+**Mutexes / resources:** set at admission (expected FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PREVIEW-ORIGIN-01: the Select Element picker injected through iframe.contentDocument and checked event.origin against the platform origin; it is hidden (PREVIEW_PICKER_TOGGLE_VISIBLE false) because the isolated preview is cross-origin. Rebuild it over postMessage with an explicit origin check on both sides; keep its translated keys.
+
+### PREVIEW-ORIGIN-DEPLOY-01 — Deploy the preview host and PREVIEW-ORIGIN-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-ORIGIN-DEPLOY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Task ID:** PREVIEW-ORIGIN-DEPLOY-01
+**Title:** Deploy the preview host and PREVIEW-ORIGIN-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith adds the DNS A record for preview.staging.ainow.biz and approves the deploy.
+**Depends on:** PREVIEW-ORIGIN-01.
+**Primary write scope:** records; host state (Caddy site, gateway env PREVIEW_BASE_URL, deploy); ARCHITECTURE.md section 6 preview path (GOVERNANCE, at its LOCK).
+**Mutexes / resources:** STAGING, ENV (and GOVERNANCE for the ARCHITECTURE.md line at the LOCK).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From PREVIEW-ORIGIN-01 (docs/PREVIEW-ORIGIN-01-STAGE-START.md sections 4.5 and the worker's report): add a Caddy site for preview.staging.ainow.biz with basic_auth and reverse_proxy to the gateway passing Host through (no header_up Host); the host Caddyfile is installed only by aisandbox-prepare, so a manual approved edit plus the template and t-caddy-site.sh; set PREVIEW_BASE_URL in the gateway env (new env hashes recorded); deploy with runs off. Host checks with curl and a stored test session: platform proxy URL 302 to the preview host enter; enter 302 with Set-Cookie aisandbox_preview HttpOnly, the session path and no Domain; preview host proxy 200 with the app's HTML and assets, refused without the cookie or with only the session cookie; preview host /en and /api/keys 404; the platform host never answers 200 with preview HTML; Refresh mints a new ticket. Keith's browser check: a multi-file app renders with CSS and JS, an app using localStorage works, the iframe address is on the preview host, Select Element is gone, and how the basic_auth prompt behaves inside the iframe (a ticket lives 60 s; a slow prompt means Refresh). Do not deploy PREVIEW-ORIGIN-01 before the preview host exists. At its LOCK: update ARCHITECTURE.md section 6 (Preview Proxy Path).
 
 ### HARNESS-FIXES-01 — Harness fixes from the live runs and reviews
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
