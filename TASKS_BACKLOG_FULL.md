@@ -89074,7 +89074,7 @@ taskId=SNAPSHOT-LABEL-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-LABEL-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and FRONTEND released. The project history list uses the shared label parser (computeProjectHistoryRows filters with parseProjectIdFromSnapshotLabel); the duplicate parser and its constants and the unreachable :name: fallback are removed; the 4 hand-built example labels now follow the shared result; no writer label changes place; sonnet subagent, fast-forwarded as d85eec2; control-plane rerun: frontend 1788 of 1788, tsc and build 0, gateway projects and internal workspace files specs 132 passed. Not deployed; it goes out with STAGING-DEPLOY-I18N-02. Checkpoint: docs/SNAPSHOT-LABEL-02-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-I18N-02) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-LABEL-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-LABEL-02
 **Title:** One label parser for the project history list
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -89091,6 +89091,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-LABEL-01 worker: workspace-shell.tsx keeps its own label parser (parseProjectIdFromProjectScopedSnapshotLabel), used by computeProjectHistoryRows to choose which versions a project's history list shows; it cuts the id at the first of :name:, :source: or :hint:, while the shared parser cuts at :name: if present, else :source:. They differ on 4 hand-built labels no writer produces (pinned with historyListProjectId in the examples). Replace it with the shared parser from workspace-snapshots.logic.ts (or decide to keep it), update the 4 pinned cases, and drop the unreachable :name: fallback in computeProjectHistoryRows if it stays unreachable for UUID ids.
+
+### STAGING-DEPLOY-I18N-02 — Deploy the shared history-list parser and the translated network error (and later locked work)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-I18N-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the SNAPSHOT-LABEL-02 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-I18N-02
+**Title:** Deploy the shared history-list parser and the translated network error (and later locked work)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for NETWORK-ERROR-I18N-01).
+**Depends on:** SNAPSHOT-LABEL-02.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with SNAPSHOT-LABEL-02 and NETWORK-ERROR-I18N-01 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-I18N-01, keyed checks before the header file is removed). No Keith step required.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
