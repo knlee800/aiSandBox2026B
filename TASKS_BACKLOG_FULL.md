@@ -88858,22 +88858,22 @@ taskId=AUTHMOD-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
 **Task ID:** AUTHMOD-I18N-01
 **Title:** Translate the auth-module eligibility and generation messages and the network fallback
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** PAGE-CHAT-I18N-01.
-**Primary write scope:** PROVISIONAL: frontend/lib/auth-module/ (eligibility and generator messages), frontend/app/ (page.tsx network fallback), the three message files and tests.
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-12: frontend/lib/auth-module/auth-module-detection.ts, frontend/lib/auth-module/auth-module-detection.test.ts, frontend/lib/auth-module/auth-module-generator.ts, frontend/lib/auth-module/auth-module-generator.test.ts, frontend/app/, frontend/components/workspace/workspace-shell.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json (frontend/app/ is listed as a directory for frontend/app/[locale]/app/page.tsx only; the auth template files are excluded).
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the PAGE-CHAT-I18N-01 worker: the {reason} and {detail} parts of the translated auth-module chat lines come from lib/auth-module (detectAuthModuleEligibility reasons, AuthModuleGenerationError messages) in English, and a network failure on session create or stop shows the browser's own text (for example Failed to fetch). Return reason codes or keys from lib/auth-module and translate them in en, zh-TW and zh-CN, and show a translated network-error fallback; tests on the keys; no behaviour change.
 
 ### STAGING-DEPLOY-I18N-01 — Deploy the translated chat lines (and later locked work)
