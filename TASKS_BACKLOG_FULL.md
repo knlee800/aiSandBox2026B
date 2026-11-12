@@ -84334,6 +84334,32 @@ nature=IMPLEMENTATION
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
+### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PRIVACY-INVENTORY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "4 inventory first". Was: READY — registered 2026-11-12 by the control plane on Keith's "4 inventory first" (plan row 46: privacy starts with the data inventory) — not admitted.
+**Task ID:** PRIVACY-INVENTORY-01
+**Title:** Privacy data inventory (read-only)
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (Keith, 2026-11-12, "4 inventory first"). Was: NOT_READY. Ready when: Keith decides. Keith decides.
+**Depends on:** none.
+**Primary write scope:** set 2026-11-12: docs/PRIVACY-DATA-INVENTORY.md.
+**Mutexes / resources:** none (set 2026-11-12; a new document only).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** one new document; no code change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (supports ACCESS-READY-01, the gate before users other than Keith).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
+**Source:** docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md section 4.3 item 1; plan row 46; ACCESS-READY-01 privacy conditions. Keith chose the inventory first on 2026-11-12; the other five privacy items (his principles, delete and export with retention, policy and terms with a lawyer, staff access with an audit log, a public privacy page) stay unregistered in plan row 46 until he chooses.
+**Scope:** A read-only inventory built from the repository, with file and line references: every place user or personal data is stored (database tables and columns, Redis, workspace files, snapshots and checkpoint history, container volumes, logs, backups as the repository's scripts and docs describe them); which service and which people can read each; everything that leaves our servers (AI providers, email, sign-in providers, payments, any other outside service) and what is sent; retention and deletion as they work today; and the gaps. Facts only the host can confirm (encryption at rest, backup retention on staging, staff access) are listed as exact questions, not guessed. No code change. It feeds Keith's principles, delete and export, and the policy.
+**Acceptance:** docs/PRIVACY-DATA-INVENTORY.md exists; every row cites file and line; outside processors listed with what each receives; open host questions listed; no code or other file changed.
+
 ### HARNESS-FIXES-01 — Harness fixes from the live runs and reviews
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=HARNESS-FIXES-01
