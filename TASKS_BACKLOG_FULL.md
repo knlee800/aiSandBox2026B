@@ -88926,22 +88926,22 @@ taskId=SNAPSHOT-LABEL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the SNAPSHOT-PICK-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-PICK-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-LABEL-01
 **Title:** One project-label rule for snapshots in the frontend and the gateway
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-PICK-01.
-**Primary write scope:** PROVISIONAL: a shared set of label examples tested on both sides (frontend workspace-snapshots.logic.ts; gateway projects.service.ts and internal-workspace-files.controller.ts) and their tests.
-**Mutexes / resources:** set at admission (expected GATEWAY and FRONTEND).
+**Primary write scope:** set 2026-11-12: services/api-gateway/src/snapshots/snapshot-label-examples.json, services/api-gateway/src/projects/projects.service.ts, services/api-gateway/src/projects/projects.service.spec.ts, services/api-gateway/src/sessions/internal-workspace-files.controller.ts, services/api-gateway/src/sessions/internal-workspace-files.controller.spec.ts, frontend/components/workspace/workspace-snapshots.logic.ts, frontend/components/workspace/workspace-snapshots.logic.test.ts, frontend/components/workspace/workspace-shell.tsx, frontend/components/workspace/workspace-shell.test.tsx (the JSON fixture is new).
+**Mutexes / resources:** GATEWAY, FRONTEND.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-PICK-01 worker: the project-id label rule ([project-id:<id>:name:...] / [project-id:<id>:source:...]) now exists in the frontend parser, the gateway reopen helper and the gateway label writer. Pin it with one shared set of examples tested on both sides, so a change on one side cannot silently break reopen or the history list.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
