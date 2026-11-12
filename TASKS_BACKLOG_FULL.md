@@ -84518,13 +84518,13 @@ taskId=STAGING-DEPLOY-COOKIE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the COOKIE-PREFIX-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the COOKIE-PREFIX-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-COOKIE-01
 **Title:** Deploy COOKIE-PREFIX-01 (Keith signs in once)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy (he is told first that he will be signed out once).
+**Start condition:** READY (COOKIE-PREFIX-01 LOCKED; Keith approved 2026-11-12, told he is signed out once). Was: NOT_READY. Ready when: Keith approves the deploy (he is told first that he will be signed out once).
 **Depends on:** COOKIE-PREFIX-01.
 **Primary write scope:** records; host state (deploy).
 **Mutexes / resources:** STAGING, ENV.
