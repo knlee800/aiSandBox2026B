@@ -60,3 +60,12 @@ These conditions are on ACCESS-READY-01, the gate for users other than Keith.
 | OFFICE-BUILD-01, OFFICE-SHOP-01 | Kept as registered in 78f23d2 |
 
 FOLLOWUPS: 0 registered / 6 superseded (art direction, palette v2, tool test and performance prototype into OFFICE-SCENE-01; art direction wording into GOV-PRD-SYNC-01; inventory scope into ACCESS-READY-01) / 0 dropped / 0 undisposed.
+
+## Update (Keith, later on 2026-11-12)
+
+- **Palette v2 approved:** the 48-colour palette (`office-art\palette\office-palette-v2-draft`) is approved and is now the drawing palette.
+- **PixelLab makes the characters:** the two-tool test is dropped, and Retro Diffusion is not used.
+- **On the purchase day,** Keith saves PixelLab's terms and the receipt. He retouches and palette-matches each character, and logs provenance.
+- **Still open:** a first character at about 64 px is made in PixelLab as a test before the rest, then the first test set.
+
+These replace the "Palette v2" and "Tool test" rows of the Open table above. OFFICE-SCENE-01 and plan rows 21 and 80a are updated in the same record.
