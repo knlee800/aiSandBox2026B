@@ -88597,22 +88597,22 @@ taskId=CM-DIFF-NOTICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane on Keith's "Keep working". Was: READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
 **Task ID:** CM-DIFF-NOTICE-01
 **Title:** Show when a checkpoint diff was cut
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-DIFF-CAP-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway (the checkpoint diff mapping in getCheckpointDiff and its spec), frontend History diff view and its test, the three message files.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-12: services/api-gateway/src/checkpoints/checkpoints.service.ts, services/api-gateway/src/checkpoints/checkpoints.service.spec.ts, services/api-gateway/src/checkpoints/dto/diff-response.dto.ts, frontend/components/workspace/workspace-checkpoint-diff.logic.ts, frontend/components/workspace/workspace-checkpoint-diff.logic.test.ts, frontend/components/workspace/workspace-shell.tsx, frontend/components/workspace/workspace-shell.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N (set 2026-11-12).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the CM-DIFF-CAP-01 worker: container-manager's getDiff now returns optional truncated: true and diffLimitBytes when a commit diff was cut at 8 MiB, but the gateway's getCheckpointDiff copies only commitHash, parentHash and files, so nobody sees it; pass the two fields through and show a translated notice on the History diff view (en, zh-TW, zh-CN). Mutexes expected GATEWAY, FRONTEND, I18N.
 
 ### CM-UNTRACKED-DASH-01 — Untracked files in the working-tree diff under dash
@@ -89271,22 +89271,22 @@ taskId=CM-DEPS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CODE-TIDY-01 split — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-12 — admitted by the control plane on Keith's "Keep working". Was: READY — registered 2026-11-10 by the CODE-TIDY-01 split — not admitted.
 **Task ID:** CM-DEPS-01
 **Title:** Remove container-manager's unused jsonwebtoken packages
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction), with a lockfile-safe method chosen.
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction), with a lockfile-safe method chosen.
 **Depends on:** CODE-TIDY-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/package.json and the lockfile.
-**Mutexes / resources:** set at admission (expected PACKAGE, CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-12: services/container-manager/package.json, package-lock.json.
+**Mutexes / resources:** PACKAGE, CONTAINER-MANAGER (set 2026-11-12).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** package files only.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From CM-CLEANUP-01: jsonwebtoken and @types/jsonwebtoken in services/container-manager/package.json are unused since PreviewsController was removed. Remove them and update the lockfile without touching an installed node_modules (for example npm install --package-lock-only in a checkout without junctions, run by the control plane), then rerun container-manager's gates.
 **Also (added 2026-11-10 by the CODE-TIDY-01 LOCK):** the root script test-preview-backend.sh calls container-manager without X-Internal-Service-Key, so every call is 403 since CM-AUTH-01; delete it or update it to read the key from the environment.
 **Also (added 2026-11-10 by the CM-SYMLINK-01 LOCK):** the stale services/container-manager/test-container.sh calls the removed /api/files routes on the wrong port without the key (delete or update it); isPathInside in services/container-manager/src/files/path-containment.ts has no production user (keep as a helper or remove with its spec); and the gateway POST /api/events/file-changed (services/api-gateway/src/websocket/events.controller.ts:8) has no container-manager caller since CM-SYMLINK-01 (remove it or record its other callers; that item needs GATEWAY).
