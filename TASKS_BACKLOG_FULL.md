@@ -88906,7 +88906,7 @@ taskId=STAGING-DEPLOY-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 01df4a7 to f3de35a with runs off (rc 0, 2026-11-12T04:36:15Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, body-limit checks with and without the key pass, the new zh-TW auth install line and zh-CN network error are in the build. No Keith step was required. Checkpoint: docs/STAGING-DEPLOY-I18N-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-I18N-01
 **Title:** Deploy the translated chat lines (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
