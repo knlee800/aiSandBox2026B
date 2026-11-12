@@ -88834,7 +88834,7 @@ taskId=PAGE-CHAT-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the PAGE-STATUS-I18N-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. The remaining English auth-module chat lines, the files-ready summary and the two screen-reaching session errors in page.tsx moved to 12 pageStatus keys in en, zh-TW and zh-CN (auth module as 驗證模組 / 认证模块); internal-only error text stays; no behaviour change; 2 new tests and 3 updated; sonnet subagent, fast-forwarded as e942dd9; control-plane rerun: frontend 1785 of 1785, tsc and build 0. Not deployed; it goes out with STAGING-DEPLOY-I18N-01. Checkpoint: docs/PAGE-CHAT-I18N-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (AUTHMOD-I18N-01; STAGING-DEPLOY-I18N-01) / 1 superseded (the untranslatable network fallback, into AUTHMOD-I18N-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the PAGE-STATUS-I18N-01 LOCK — not admitted.
 **Task ID:** PAGE-CHAT-I18N-01
 **Title:** Translate the remaining English chat lines and visible error text on the workspace page
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88851,6 +88851,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the PAGE-STATUS-I18N-01 worker: page.tsx still appends English auth-module assistant chat lines (about 9, for example Auth module installation failed: ...) and has throw new Error(...) literals; list the ones that can reach the screen and move them to en, zh-TW and zh-CN keys with real translations and key tests; internal-only text stays.
+
+### AUTHMOD-I18N-01 — Translate the auth-module eligibility and generation messages and the network fallback
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AUTHMOD-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
+**Task ID:** AUTHMOD-I18N-01
+**Title:** Translate the auth-module eligibility and generation messages and the network fallback
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** PAGE-CHAT-I18N-01.
+**Primary write scope:** PROVISIONAL: frontend/lib/auth-module/ (eligibility and generator messages), frontend/app/ (page.tsx network fallback), the three message files and tests.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the PAGE-CHAT-I18N-01 worker: the {reason} and {detail} parts of the translated auth-module chat lines come from lib/auth-module (detectAuthModuleEligibility reasons, AuthModuleGenerationError messages) in English, and a network failure on session create or stop shows the browser's own text (for example Failed to fetch). Return reason codes or keys from lib/auth-module and translate them in en, zh-TW and zh-CN, and show a translated network-error fallback; tests on the keys; no behaviour change.
+
+### STAGING-DEPLOY-I18N-01 — Deploy the translated chat lines (and later locked work)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-I18N-01
+**Title:** Deploy the translated chat lines (and later locked work)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
+**Depends on:** PAGE-CHAT-I18N-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with PAGE-CHAT-I18N-01 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-SNAP-05, keyed checks before the header file is removed). No Keith step required; the new text is seen when the auth module is installed or a session create or stop fails.
 
 ### SNAPSHOT-NOTICE-02 — Clear the not-restored files notice when the user switches session
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
