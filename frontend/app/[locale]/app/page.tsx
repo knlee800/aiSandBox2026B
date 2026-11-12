@@ -2149,7 +2149,7 @@ export default function AppPage() {
           setSessionCreateError(pageStatusMessages.sessionCreateQuotaBlocked);
           return;
         }
-        throw new Error(`Session create failed (${response.status})`);
+        throw new Error(fill(pageStatusMessages.sessionCreateFailedCode, { status: String(response.status) }));
       }
 
       const createdSession = (await response.json()) as WorkspaceShellSession;
@@ -2181,7 +2181,7 @@ export default function AppPage() {
         method: 'POST',
       });
       if (!response.ok) {
-        throw new Error(`Session stop failed (${response.status})`);
+        throw new Error(fill(pageStatusMessages.sessionStopFailedCode, { status: String(response.status) }));
       }
       await loadSessions();
       await loadDashboardSlice();
@@ -5218,20 +5218,18 @@ export default function AppPage() {
     appendAssistantMessage(authModuleMessages.installing);
 
     if (!userId) {
-      appendAssistantMessage('Auth module installation failed: missing authenticated user.');
+      appendAssistantMessage(pageStatusMessages.authInstallMissingUser);
       return;
     }
 
     if (!selectedSessionId) {
-      appendAssistantMessage('Auth module installation failed: no workspace session is selected.');
+      appendAssistantMessage(pageStatusMessages.authInstallNoSession);
       return;
     }
 
     const selectedSession = getSessionByIdForFileActions(selectedSessionId);
     if (!selectedSession) {
-      appendAssistantMessage(
-        'Auth module installation failed: selected workspace session is not active.',
-      );
+      appendAssistantMessage(pageStatusMessages.authInstallSessionNotActive);
       return;
     }
     const isSelectedSessionUsable =
@@ -5239,16 +5237,12 @@ export default function AppPage() {
       !selectedSession.terminatedAt &&
       selectedSession.status !== 'terminated';
     if (!isSelectedSessionUsable) {
-      appendAssistantMessage(
-        'Auth module installation failed: selected workspace session is not active.',
-      );
+      appendAssistantMessage(pageStatusMessages.authInstallSessionNotActive);
       return;
     }
 
     if (fileSurfaceState !== 'ready') {
-      appendAssistantMessage(
-        'Auth module installation failed: workspace file surface is not ready yet.',
-      );
+      appendAssistantMessage(pageStatusMessages.authInstallFileSurfaceNotReady);
       return;
     }
 
@@ -5304,7 +5298,7 @@ export default function AppPage() {
       const unsupportedReasonMessage =
         eligibility.code === 'MISSING_PACKAGE_JSON' || eligibility.code === 'MALFORMED_PACKAGE_JSON'
           ? authModuleMessages.notNextJsProject
-          : `Auth module installation is not available: ${eligibility.reason}`;
+          : fill(pageStatusMessages.authInstallUnavailable, { reason: eligibility.reason });
       appendAssistantMessage(unsupportedReasonMessage);
       return;
     }
@@ -5317,21 +5311,21 @@ export default function AppPage() {
         allowEmpty: true,
       });
       if (!preinstallResult.commitHash) {
-        appendAssistantMessage('Auth module installation failed: unable to create pre-install checkpoint.');
+        appendAssistantMessage(pageStatusMessages.authInstallCheckpointUnavailable);
         return;
       }
       await loadCheckpoints(selectedSessionId);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       appendAssistantMessage(
-        `Auth module installation failed: unable to create pre-install checkpoint (${detail}).`,
+        fill(pageStatusMessages.authInstallCheckpointFailed, { detail }),
       );
       return;
     }
 
     const template = AUTH_TEMPLATES_V1[0];
     if (!template) {
-      appendAssistantMessage('Auth module installation failed: auth template registry is empty.');
+      appendAssistantMessage(pageStatusMessages.authInstallTemplateEmpty);
       return;
     }
 
@@ -5347,26 +5341,19 @@ export default function AppPage() {
       });
     } catch (error) {
       if (error instanceof AuthModuleGenerationError) {
-        appendAssistantMessage(`Auth module generation failed: ${error.message}`);
+        appendAssistantMessage(fill(pageStatusMessages.authGenerationFailed, { detail: error.message }));
         return;
       }
       const detail = error instanceof Error ? error.message : String(error);
-      appendAssistantMessage(`Auth module generation failed: ${detail}`);
+      appendAssistantMessage(fill(pageStatusMessages.authGenerationFailed, { detail }));
       return;
     }
 
     const executionId = crypto.randomUUID();
     const assistantMessageId = crypto.randomUUID();
-    const assistantSummary = [
-      `Auth module files are ready — ${actions.length} files prepared.`,
-      '',
-      'Next steps:',
-      '1. Run: npm install',
-      '2. Set up .env — copy .env.example and fill in AUTH_SECRET and DATABASE_URL',
-      '3. Run: npx prisma migrate dev --name init',
-      '4. Start your dev server',
-      'See SETUP-AUTH.md in your project for full instructions.',
-    ].join('\n');
+    const assistantSummary = fill(pageStatusMessages.authFilesReady, {
+      count: String(actions.length),
+    });
 
     executionFileActionsByExecutionIdRef.current[executionId] = actions;
     executionSessionIdByExecutionIdRef.current[executionId] = selectedSessionId;

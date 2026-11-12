@@ -1851,6 +1851,18 @@
     "archiveImportFailed": "导入工作区压缩包失败。",
     "chatExecutionFailed": "聊天执行失败。",
     "buildRequestFailedEarly": "构建请求在执行完成前失败。",
-    "executionNoResponseText": "执行已完成，但没有响应文本。"
+    "executionNoResponseText": "执行已完成，但没有响应文本。",
+    "authInstallMissingUser": "认证模块安装失败：缺少已登录的用户。",
+    "authInstallNoSession": "认证模块安装失败：尚未选择工作区会话。",
+    "authInstallSessionNotActive": "认证模块安装失败：所选的工作区会话已不在使用中。",
+    "authInstallFileSurfaceNotReady": "认证模块安装失败：工作区文件界面尚未就绪。",
+    "authInstallUnavailable": "当前无法安装认证模块：{reason}",
+    "authInstallCheckpointUnavailable": "认证模块安装失败：无法创建安装前的检查点。",
+    "authInstallCheckpointFailed": "认证模块安装失败：无法创建安装前的检查点（{detail}）。",
+    "authInstallTemplateEmpty": "认证模块安装失败：认证模板列表为空。",
+    "authGenerationFailed": "认证模块生成失败：{detail}",
+    "authFilesReady": "认证模块文件已准备好 — 共准备了 {count} 个文件。\n\n后续步骤：\n1. 运行：npm install\n2. 设置 .env — 复制 .env.example，并填写 AUTH_SECRET 和 DATABASE_URL\n3. 运行：npx prisma migrate dev --name init\n4. 启动你的开发服务器\n完整说明请见项目中的 SETUP-AUTH.md。",
+    "sessionCreateFailedCode": "创建会话失败（{status}）",
+    "sessionStopFailedCode": "停止会话失败（{status}）"
   }
 }

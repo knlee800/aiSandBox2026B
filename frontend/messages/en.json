@@ -1851,6 +1851,18 @@
     "archiveImportFailed": "Failed to import workspace archive.",
     "chatExecutionFailed": "Chat execution failed.",
     "buildRequestFailedEarly": "Build request failed before execution completed.",
-    "executionNoResponseText": "Execution completed with no response text."
+    "executionNoResponseText": "Execution completed with no response text.",
+    "authInstallMissingUser": "Auth module installation failed: missing authenticated user.",
+    "authInstallNoSession": "Auth module installation failed: no workspace session is selected.",
+    "authInstallSessionNotActive": "Auth module installation failed: selected workspace session is not active.",
+    "authInstallFileSurfaceNotReady": "Auth module installation failed: workspace file surface is not ready yet.",
+    "authInstallUnavailable": "Auth module installation is not available: {reason}",
+    "authInstallCheckpointUnavailable": "Auth module installation failed: unable to create pre-install checkpoint.",
+    "authInstallCheckpointFailed": "Auth module installation failed: unable to create pre-install checkpoint ({detail}).",
+    "authInstallTemplateEmpty": "Auth module installation failed: auth template registry is empty.",
+    "authGenerationFailed": "Auth module generation failed: {detail}",
+    "authFilesReady": "Auth module files are ready — {count} files prepared.\n\nNext steps:\n1. Run: npm install\n2. Set up .env — copy .env.example and fill in AUTH_SECRET and DATABASE_URL\n3. Run: npx prisma migrate dev --name init\n4. Start your dev server\nSee SETUP-AUTH.md in your project for full instructions.",
+    "sessionCreateFailedCode": "Session create failed ({status})",
+    "sessionStopFailedCode": "Session stop failed ({status})"
   }
 }

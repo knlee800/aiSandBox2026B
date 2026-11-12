@@ -9505,7 +9505,7 @@ describe('auth module install flow integration — AUTH-MODULE-01D', () => {
     assert.ok(guardIndex < loadIndex);
     assert.match(
       pageSource,
-      /appendAssistantMessage\('Auth module installation failed: unable to create pre-install checkpoint\.'\);/,
+      /appendAssistantMessage\(pageStatusMessages\.authInstallCheckpointUnavailable\);/,
     );
   });
 
@@ -9600,10 +9600,15 @@ describe('auth module intent recognition — AUTH-MODULE-01E', () => {
 
   test('completion summary mentions setup steps and SETUP-AUTH.md', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
-    assert.match(pageSource, /Auth module files are ready — \$\{actions\.length\} files prepared\./);
-    assert.match(pageSource, /Next steps:/);
-    assert.match(pageSource, /Run: npm install/);
-    assert.match(pageSource, /SETUP-AUTH\.md/);
+    assert.match(pageSource, /fill\(pageStatusMessages\.authFilesReady, \{/);
+    for (const name of ['en', 'zh-TW', 'zh-CN']) {
+      const summary = JSON.parse(
+        readFileSync(new URL(`../../messages/${name}.json`, import.meta.url), 'utf8'),
+      ).pageStatus.authFilesReady as string;
+      assert.match(summary, /\{count\}/);
+      assert.match(summary, /npm install/);
+      assert.match(summary, /SETUP-AUTH\.md/);
+    }
   });
 });
 
@@ -10952,7 +10957,10 @@ describe('page status messages are translated (PAGE-STATUS-I18N-01)', () => {
     const en = readMessages('en');
     const zhTw = readMessages('zh-TW');
     const zhCn = readMessages('zh-CN');
-    assert.deepEqual(Object.keys(en).sort(), [...PAGE_STATUS_KEYS].sort());
+    // PAGE-CHAT-I18N-01 added more keys to the namespace; those are checked in their own block.
+    for (const key of PAGE_STATUS_KEYS) {
+      assert.ok(key in en, `en has ${key}`);
+    }
     assert.deepEqual(Object.keys(zhTw).sort(), Object.keys(en).sort());
     assert.deepEqual(Object.keys(zhCn).sort(), Object.keys(en).sort());
     for (const key of PAGE_STATUS_KEYS) {
@@ -10981,6 +10989,68 @@ describe('page status messages are translated (PAGE-STATUS-I18N-01)', () => {
     }
     assert.match(pageSource, /getPageStatusMessages\(locale\)/);
     for (const key of PAGE_STATUS_KEYS) {
+      assert.ok(pageSource.includes(`pageStatusMessages.${key}`), `page.tsx uses ${key}`);
+    }
+  });
+});
+
+describe('auth module chat lines and thrown session errors are translated (PAGE-CHAT-I18N-01)', () => {
+  const KEYS = [
+    'authInstallMissingUser',
+    'authInstallNoSession',
+    'authInstallSessionNotActive',
+    'authInstallFileSurfaceNotReady',
+    'authInstallUnavailable',
+    'authInstallCheckpointUnavailable',
+    'authInstallCheckpointFailed',
+    'authInstallTemplateEmpty',
+    'authGenerationFailed',
+    'authFilesReady',
+    'sessionCreateFailedCode',
+    'sessionStopFailedCode',
+  ];
+  const MOVED_LITERALS = [
+    "'Auth module installation failed: missing authenticated user.'",
+    "'Auth module installation failed: no workspace session is selected.'",
+    "'Auth module installation failed: selected workspace session is not active.'",
+    "'Auth module installation failed: workspace file surface is not ready yet.'",
+    '`Auth module installation is not available: ${eligibility.reason}`',
+    "'Auth module installation failed: unable to create pre-install checkpoint.'",
+    '`Auth module installation failed: unable to create pre-install checkpoint (${detail}).`',
+    "'Auth module installation failed: auth template registry is empty.'",
+    '`Auth module generation failed: ${error.message}`',
+    '`Auth module generation failed: ${detail}`',
+    "'Next steps:'",
+    '`Session create failed (${response.status})`',
+    '`Session stop failed (${response.status})`',
+  ];
+  const readMessages = (name: string) =>
+    JSON.parse(readFileSync(new URL(`../../messages/${name}.json`, import.meta.url), 'utf8')).pageStatus as Record<string, string>;
+  const placeholders = (value: string) => (value.match(/\{\w+\}/g) ?? []).sort();
+
+  test('new keys exist in en, zh-TW and zh-CN with real translations and matching placeholders', () => {
+    const en = readMessages('en');
+    const zhTw = readMessages('zh-TW');
+    const zhCn = readMessages('zh-CN');
+    for (const key of KEYS) {
+      assert.ok(en[key]?.trim(), `en ${key}`);
+      assert.ok(zhTw[key]?.trim(), `zh-TW ${key}`);
+      assert.ok(zhCn[key]?.trim(), `zh-CN ${key}`);
+      assert.notEqual(zhTw[key], en[key], `zh-TW ${key} is translated`);
+      assert.notEqual(zhCn[key], en[key], `zh-CN ${key} is translated`);
+      assert.deepEqual(placeholders(zhTw[key]), placeholders(en[key]), `zh-TW ${key}`);
+      assert.deepEqual(placeholders(zhCn[key]), placeholders(en[key]), `zh-CN ${key}`);
+    }
+    assert.deepEqual(Object.keys(zhTw).sort(), Object.keys(en).sort());
+    assert.deepEqual(Object.keys(zhCn).sort(), Object.keys(en).sort());
+  });
+
+  test('page.tsx no longer contains the moved English literals and references every new key', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    for (const literal of MOVED_LITERALS) {
+      assert.equal(pageSource.includes(literal), false, literal);
+    }
+    for (const key of KEYS) {
       assert.ok(pageSource.includes(`pageStatusMessages.${key}`), `page.tsx uses ${key}`);
     }
   });

@@ -1851,6 +1851,18 @@
     "archiveImportFailed": "無法匯入工作區封存檔。",
     "chatExecutionFailed": "聊天執行失敗。",
     "buildRequestFailedEarly": "建置請求在執行完成前失敗。",
-    "executionNoResponseText": "執行已完成，但沒有回應文字。"
+    "executionNoResponseText": "執行已完成，但沒有回應文字。",
+    "authInstallMissingUser": "驗證模組安裝失敗：缺少已登入的使用者。",
+    "authInstallNoSession": "驗證模組安裝失敗：尚未選取工作區工作階段。",
+    "authInstallSessionNotActive": "驗證模組安裝失敗：所選的工作區工作階段已不在使用中。",
+    "authInstallFileSurfaceNotReady": "驗證模組安裝失敗：工作區檔案介面尚未就緒。",
+    "authInstallUnavailable": "目前無法安裝驗證模組：{reason}",
+    "authInstallCheckpointUnavailable": "驗證模組安裝失敗：無法建立安裝前的檢查點。",
+    "authInstallCheckpointFailed": "驗證模組安裝失敗：無法建立安裝前的檢查點（{detail}）。",
+    "authInstallTemplateEmpty": "驗證模組安裝失敗：驗證範本清單是空的。",
+    "authGenerationFailed": "驗證模組產生失敗：{detail}",
+    "authFilesReady": "驗證模組檔案已準備好 — 共準備了 {count} 個檔案。\n\n後續步驟：\n1. 執行：npm install\n2. 設定 .env — 複製 .env.example，並填入 AUTH_SECRET 與 DATABASE_URL\n3. 執行：npx prisma migrate dev --name init\n4. 啟動你的開發伺服器\n完整說明請見專案中的 SETUP-AUTH.md。",
+    "sessionCreateFailedCode": "建立工作階段失敗（{status}）",
+    "sessionStopFailedCode": "停止工作階段失敗（{status}）"
   }
 }
