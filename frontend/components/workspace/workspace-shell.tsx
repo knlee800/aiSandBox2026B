@@ -31,11 +31,16 @@ import {
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState, SelectedPreviewElement } from './workspace-preview.logic';
 import {
-  generatePickerScriptSource,
-  getPickerScriptId,
-  getPickerOverlayId,
-  isVisualEditElementSelectedMessage,
+  buildPreviewBridgeCommand,
+  INITIAL_PREVIEW_PICKER_STATE,
   isValidVisualEditMessageOriginAndSource,
+  parsePreviewBridgeMessage,
+  PREVIEW_BRIDGE_READY_TIMEOUT_MS,
+  readPreviewOrigin,
+  stepPreviewPicker,
+  type PreviewBridgeCommandType,
+  type PreviewPickerAction,
+  type PreviewPickerState,
 } from './workspace-preview.logic';
 import {
   readWorkspaceFile,
@@ -178,13 +183,14 @@ export const PROJECT_REPO_DOCS_UPDATED_EVENT = 'workspace:project-repo-docs-upda
  */
 export const PREVIEW_IFRAME_SANDBOX =
   'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads';
-/**
- * PREVIEW-ORIGIN-01: the Select Element picker needs same-origin access to
- * the preview, which the separate preview host removes. Its toggle is hidden
- * until it is rebuilt over postMessage; the picker code and its message keys
- * stay.
+/*
+ * PREVIEW-PICKER-01: the Select Element picker talks to a bridge script in the
+ * preview over postMessage (workspace-preview.logic.ts). Its toggle is shown
+ * only while the bridge of the current preview document has answered hello,
+ * so it is not shown where the picker cannot work: a dev-server preview (no
+ * bridge tag), no preview host (no preview origin), or an app whose own
+ * content policy blocks the bridge.
  */
-export const PREVIEW_PICKER_TOGGLE_VISIBLE = false;
 
 interface UserAiInstructionsResponse {
   globalInstructions: string | null;
@@ -707,6 +713,11 @@ interface WorkspaceShellProps {
   onPreviewLoad: () => void;
   onPreviewError: () => void;
   onPreviewElementSelected?: (element: SelectedPreviewElement | null) => void;
+  /**
+   * PREVIEW-PICKER-01: the preview host's origin from the preview status
+   * answer; null or missing means no picker.
+   */
+  previewOrigin?: string | null;
   fileSurfaceState: WorkspaceFileSurfaceState;
   workspaceFileTree: WorkspaceFileNode[];
   selectedFilePath: string | null;
@@ -972,7 +983,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [tabOrientation, setTabOrientation] = React.useState<TabOrientation>(readStoredTabOrientation);
   const [aiPanelCollapsed, setAiPanelCollapsed] = React.useState(readStoredAiPanelCollapsed);
   const [historyPanelOpen, setHistoryPanelOpen] = React.useState(false);
-  const [pickerActive, setPickerActive] = React.useState(false);
+  const [pickerView, setPickerView] = React.useState<PreviewPickerState>(INITIAL_PREVIEW_PICKER_STATE);
+  const pickerActive = pickerView.pickerActive;
   const previewIframeRef = React.useRef<HTMLIFrameElement | null>(null);
   const [selectedPreviewElement, setSelectedPreviewElement] = React.useState<SelectedPreviewElement | null>(null);
   const [pendingRestoreSnapshotId, setPendingRestoreSnapshotId] = React.useState<string | null>(
@@ -1408,108 +1420,125 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     });
   }, []);
 
-  const injectPickerScript = React.useCallback(() => {
+  // PREVIEW-PICKER-01: the preview origin is checked on every bridge message.
+  const pageOrigin = typeof window !== 'undefined' ? window.location.origin : null;
+  const previewOrigin = readPreviewOrigin(props.previewOrigin, pageOrigin);
+  const previewOriginRef = React.useRef<string | null>(previewOrigin);
+  previewOriginRef.current = previewOrigin;
+  const pickerStateRef = React.useRef<PreviewPickerState>(INITIAL_PREVIEW_PICKER_STATE);
+  const onPreviewElementSelectedRef = React.useRef(props.onPreviewElementSelected);
+  onPreviewElementSelectedRef.current = props.onPreviewElementSelected;
+  const previewFrameLoadCountRef = React.useRef(0);
+  const bridgeReadyTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pickerAvailable = Boolean(previewOrigin) && pickerView.bridgeReady;
+
+  const postToPreviewBridge = React.useCallback((type: PreviewBridgeCommandType) => {
+    const targetOrigin = previewOriginRef.current;
+    const target = previewIframeRef.current?.contentWindow ?? null;
+    if (!targetOrigin || !target) {
+      return;
+    }
     try {
-      const iframe = previewIframeRef.current;
-      if (!iframe) return;
-      const doc = iframe.contentDocument;
-      const win = iframe.contentWindow;
-      if (!doc || !win) return;
-      const scriptId = getPickerScriptId();
-      if (doc.getElementById(scriptId + '-active')) return;
-      const existing = doc.getElementById(scriptId);
-      if (existing && existing.parentNode) {
-        existing.parentNode.removeChild(existing);
-      }
-      const script = doc.createElement('script');
-      script.id = scriptId;
-      script.textContent = generatePickerScriptSource();
-      doc.body.appendChild(script);
+      // Only the preview origin: a document of any other origin never receives it.
+      target.postMessage(buildPreviewBridgeCommand(type), targetOrigin);
     } catch {
-      // iframe not same-origin or not yet loaded
+      // The frame is gone; the next load says hello again.
     }
   }, []);
 
-  const removePickerScript = React.useCallback(() => {
-    try {
-      const iframe = previewIframeRef.current;
-      if (!iframe) return;
-      const win = iframe.contentWindow;
-      if (win) {
-        win.postMessage({ type: 'visual-edit:deactivate-picker' }, '*');
+  const applyPickerAction = React.useCallback(
+    (action: PreviewPickerAction) => {
+      const result = stepPreviewPicker(pickerStateRef.current, action);
+      pickerStateRef.current = result.state;
+      setPickerView((current) =>
+        current.frameLoaded === result.state.frameLoaded &&
+        current.bridgeReady === result.state.bridgeReady &&
+        current.pickerActive === result.state.pickerActive
+          ? current
+          : result.state,
+      );
+      if (result.command) {
+        postToPreviewBridge(result.command);
       }
-      const doc = iframe.contentDocument;
-      if (!doc) return;
-      const scriptId = getPickerScriptId();
-      const overlayId = getPickerOverlayId();
-      const marker = doc.getElementById(scriptId + '-active');
-      if (marker && marker.parentNode) marker.parentNode.removeChild(marker);
-      const overlay = doc.getElementById(overlayId);
-      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-      const scriptEl = doc.getElementById(scriptId);
-      if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
-    } catch {
-      // iframe not same-origin or already cleaned
+      if (result.clearSelection) {
+        setSelectedPreviewElement(null);
+        onPreviewElementSelectedRef.current?.(null);
+      }
+      if (result.selection) {
+        setSelectedPreviewElement(result.selection);
+        onPreviewElementSelectedRef.current?.(result.selection);
+      }
+    },
+    [postToPreviewBridge],
+  );
+
+  const clearBridgeReadyTimer = React.useCallback(() => {
+    if (bridgeReadyTimerRef.current !== null) {
+      clearTimeout(bridgeReadyTimerRef.current);
+      bridgeReadyTimerRef.current = null;
     }
   }, []);
 
   const handlePickerToggle = React.useCallback(() => {
-    setPickerActive((current) => {
-      const next = !current;
-      if (next) {
-        setSelectedPreviewElement(null);
-        props.onPreviewElementSelected?.(null);
-        setTimeout(() => injectPickerScript(), 0);
-      } else {
-        removePickerScript();
-      }
-      return next;
-    });
-  }, [injectPickerScript, removePickerScript, props.onPreviewElementSelected]);
+    applyPickerAction({ kind: 'toggle' });
+  }, [applyPickerAction]);
+
+  // A new preview URL or origin is a new document: no bridge until it answers.
+  React.useEffect(() => {
+    clearBridgeReadyTimer();
+    applyPickerAction({ kind: 'reset' });
+  }, [props.previewUrl, previewOrigin, applyPickerAction, clearBridgeReadyTimer]);
 
   React.useEffect(() => {
-    if (!props.previewUrl || props.previewState !== 'ready') {
-      setPickerActive(false);
-      removePickerScript();
-      setSelectedPreviewElement(null);
-      props.onPreviewElementSelected?.(null);
+    if (props.previewState !== 'ready') {
+      applyPickerAction({ kind: 'reset' });
     }
-  }, [props.previewUrl, props.previewState, removePickerScript, props.onPreviewElementSelected]);
+  }, [props.previewState, applyPickerAction]);
+
+  React.useEffect(() => clearBridgeReadyTimer, [clearBridgeReadyTimer]);
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (!isVisualEditElementSelectedMessage(event.data)) {
-        return;
-      }
-      const iframe = previewIframeRef.current;
-      const expectedSource = iframe?.contentWindow ?? null;
-      const expectedOrigin = typeof window !== 'undefined' ? window.location.origin : null;
+      // Only the preview origin and only the preview iframe's window.
       if (
         !isValidVisualEditMessageOriginAndSource({
-          expectedOrigin,
+          expectedOrigin: previewOriginRef.current,
           messageOrigin: event.origin,
-          expectedSource,
+          expectedSource: previewIframeRef.current?.contentWindow ?? null,
           messageSource: event.source,
         })
       ) {
         return;
       }
-      setSelectedPreviewElement(event.data.payload);
-      props.onPreviewElementSelected?.(event.data.payload);
-      setPickerActive(false);
+      const message = parsePreviewBridgeMessage(event.data);
+      if (!message) {
+        return;
+      }
+      applyPickerAction({ kind: 'message', message });
     };
 
     window.addEventListener('message', handleMessage);
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [props.onPreviewElementSelected]);
+  }, [applyPickerAction]);
+
   const handlePreviewLoadWithPicker = React.useCallback(() => {
     props.onPreviewLoad();
-    if (pickerActive) {
-      setTimeout(() => injectPickerScript(), 0);
+    clearBridgeReadyTimer();
+    if (!previewOriginRef.current) {
+      return;
     }
-  }, [props.onPreviewLoad, pickerActive, injectPickerScript]);
+    previewFrameLoadCountRef.current += 1;
+    const load = previewFrameLoadCountRef.current;
+    applyPickerAction({ kind: 'frame-loaded' });
+    bridgeReadyTimerRef.current = setTimeout(() => {
+      bridgeReadyTimerRef.current = null;
+      if (previewFrameLoadCountRef.current === load) {
+        applyPickerAction({ kind: 'ready-timeout' });
+      }
+    }, PREVIEW_BRIDGE_READY_TIMEOUT_MS);
+  }, [props.onPreviewLoad, applyPickerAction, clearBridgeReadyTimer]);
   const handleSaveProjectHistorySnapshot =
     projectUxEnabled &&
     props.selectedProjectId &&
@@ -1956,6 +1985,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         onPreviewLoad={handlePreviewLoadWithPicker}
         onPreviewError={props.onPreviewError}
         iframeRef={previewIframeRef}
+        pickerAvailable={pickerAvailable}
         pickerActive={pickerActive}
         onPickerToggle={handlePickerToggle}
         selectedPreviewElement={selectedPreviewElement}
@@ -2657,6 +2687,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                           onPreviewLoad={handlePreviewLoadWithPicker}
                           onPreviewError={props.onPreviewError}
                           iframeRef={previewIframeRef}
+                          pickerAvailable={pickerAvailable}
                           pickerActive={pickerActive}
                           onPickerToggle={handlePickerToggle}
                           selectedPreviewElement={selectedPreviewElement}
@@ -5042,7 +5073,7 @@ function WorkspaceExecPanel(props: {
   );
 }
 
-function WorkspacePreviewPanel(props: {
+export function WorkspacePreviewPanel(props: {
   projectUxEnabled: boolean;
   projectMessages: Pick<
     typeof enMessages.project,
@@ -5063,6 +5094,8 @@ function WorkspacePreviewPanel(props: {
   onPreviewLoad: () => void;
   onPreviewError: () => void;
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
+  /** PREVIEW-PICKER-01: the bridge of the current preview document is ready. */
+  pickerAvailable?: boolean;
   pickerActive?: boolean;
   onPickerToggle?: () => void;
   selectedPreviewElement?: SelectedPreviewElement | null;
@@ -5156,7 +5189,7 @@ function WorkspacePreviewPanel(props: {
               ? props.commonMessages.refreshing
               : props.commonMessages.refresh}
           </button>
-          {PREVIEW_PICKER_TOGGLE_VISIBLE ? (
+          {props.pickerAvailable ? (
             <button
               type="button"
               data-testid="workspace-preview-picker-toggle"

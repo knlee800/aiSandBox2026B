@@ -67,6 +67,16 @@ export function readPreviewHostConfig(env: EnvLike = process.env): PreviewHostCo
   return { origin: url.origin, host, protocol: url.protocol as 'http:' | 'https:' };
 }
 
+/**
+ * PREVIEW-PICKER-01: the platform origin the preview bridge trusts, from
+ * APP_BASE_URL. Null when APP_BASE_URL is unset, not an http(s) URL or
+ * carries credentials; the bridge route then answers 404.
+ */
+export function readPlatformOrigin(env: EnvLike = process.env): string | null {
+  const url = parseHttpUrl(env.APP_BASE_URL);
+  return url ? url.origin : null;
+}
+
 /** Lower-cases a host header value and drops the scheme's default port. */
 export function normalizeHostValue(value: string, protocol: 'http:' | 'https:'): string {
   const lower = value.trim().toLowerCase();
@@ -216,6 +226,34 @@ export function resolvePreviewForward(method: unknown, rawPath: unknown): Previe
 /** True for the proxy shapes ('proxy' and 'proxy/<rest>'). */
 export function isPreviewProxySuffix(suffix: string): boolean {
   return suffix === 'proxy' || suffix.startsWith('proxy/');
+}
+
+/**
+ * PREVIEW-PICKER-01: the reserved proxy prefix. The gateway answers every
+ * proxy/__aisb and proxy/__aisb/... path itself, on both hosts, and never
+ * forwards one to container-manager: the bridge script on the preview host,
+ * 404 everywhere else. The first segment after proxy/ is compared decoded
+ * and in any case, so an encoded or upper-case spelling is reserved too.
+ */
+export const PREVIEW_RESERVED_SEGMENT = '__aisb';
+export const PREVIEW_BRIDGE_SUFFIX = `proxy/${PREVIEW_RESERVED_SEGMENT}/bridge.js`;
+
+export function isReservedPreviewSuffix(suffix: string): boolean {
+  if (typeof suffix !== 'string' || !suffix.startsWith('proxy/')) return false;
+  const first = suffix.slice('proxy/'.length).split('/')[0];
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(first);
+  } catch {
+    // resolvePreviewForward refuses such a path already; stay on the safe side.
+    return true;
+  }
+  return decoded.toLowerCase() === PREVIEW_RESERVED_SEGMENT;
+}
+
+/** True only for the exact raw bridge path, proxy/__aisb/bridge.js. */
+export function isPreviewBridgeSuffix(suffix: string): boolean {
+  return suffix === PREVIEW_BRIDGE_SUFFIX;
 }
 
 /**

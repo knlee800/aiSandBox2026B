@@ -105,7 +105,7 @@ describe('PreviewController catch-all response headers', () => {
     expect(names).not.toContain('content-length');
     expect(res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
     expect(res.setHeader).toHaveBeenCalledWith('cache-control', 'no-store');
-    expect(res.send).toHaveBeenCalledWith({ ok: true });
+    expect(res.send).toHaveBeenCalledWith({ ok: true, previewOrigin: null });
   });
 
   it('keeps content-length on the streamed proxy path', async () => {

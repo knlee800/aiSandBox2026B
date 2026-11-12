@@ -2,6 +2,11 @@ export type WorkspacePreviewState = 'loading' | 'ready' | 'unavailable' | 'error
 
 export interface WorkspacePreviewStatusResponse {
   running?: boolean;
+  /**
+   * PREVIEW-PICKER-01: added by the gateway on the platform host. The preview
+   * host's origin, or null when no preview host is configured.
+   */
+  previewOrigin?: string | null;
 }
 
 export interface SelectedPreviewElementBoundingBox {
@@ -19,29 +24,6 @@ export interface SelectedPreviewElement {
   tagName: string;
   id?: string | null;
 }
-
-export type VisualEditElementSelectedMessage = {
-  type: 'visual-edit:element-selected';
-  payload: SelectedPreviewElement;
-};
-
-export type VisualEditPickerReadyMessage = {
-  type: 'visual-edit:picker-ready';
-};
-
-export type VisualEditActivatePickerMessage = {
-  type: 'visual-edit:activate-picker';
-};
-
-export type VisualEditDeactivatePickerMessage = {
-  type: 'visual-edit:deactivate-picker';
-};
-
-export type VisualEditMessage =
-  | VisualEditElementSelectedMessage
-  | VisualEditPickerReadyMessage
-  | VisualEditActivatePickerMessage
-  | VisualEditDeactivatePickerMessage;
 
 export interface CssSelectorSegment {
   tagName: string;
@@ -166,157 +148,283 @@ function formatSelectedPreviewElementClasses(classList: readonly string[]): stri
   return normalized.length > 0 ? normalized.join(' ') : '(none)';
 }
 
-export function isVisualEditElementSelectedMessage(
-  data: unknown,
-): data is VisualEditElementSelectedMessage {
-  if (typeof data !== 'object' || data === null) {
-    return false;
-  }
+/*
+ * PREVIEW-PICKER-01: Select Element over postMessage.
+ *
+ * The preview runs on its own origin (the preview host), so the workspace
+ * page cannot reach into the iframe. A bridge script, served by the gateway
+ * on the preview host and loaded by a tag container-manager adds to static
+ * HTML, talks to this page over postMessage:
+ *
+ * - bridge to parent: ready, picker-state {active}, element-selected {payload}
+ * - parent to bridge: hello (on every iframe load), activate-picker,
+ *   deactivate-picker
+ *
+ * Every message is { aisb: 'preview-bridge', v: 1, type, ... }. The page
+ * accepts a message only when event.origin is the preview origin from the
+ * status answer and event.source is the preview iframe's window, posts only
+ * to the preview origin (never '*'), and drops anything it does not know,
+ * silently. The generated app shares the bridge's origin and can forge a
+ * message that passes those checks, so every field is validated and a
+ * selection is accepted only while the picker is on; it is used as text.
+ */
 
-  const record = data as Record<string, unknown>;
-  if (record.type !== 'visual-edit:element-selected') {
-    return false;
-  }
+export const PREVIEW_BRIDGE_NAMESPACE = 'preview-bridge';
+export const PREVIEW_BRIDGE_VERSION = 1;
 
-  const payload = record.payload;
-  if (typeof payload !== 'object' || payload === null) {
-    return false;
-  }
+/** Stage-start section 3.3. The bridge cuts to these; the page refuses more. */
+export const PREVIEW_BRIDGE_LIMITS = Object.freeze({
+  tagName: 64,
+  selector: 1024,
+  textContent: 203,
+  classCount: 32,
+  className: 128,
+  id: 128,
+  message: 8192,
+});
 
-  const p = payload as Record<string, unknown>;
-  return (
-    typeof p.tagName === 'string' &&
-    typeof p.selector === 'string' &&
-    typeof p.textContent === 'string' &&
-    Array.isArray(p.classList) &&
-    typeof p.boundingBox === 'object' &&
-    p.boundingBox !== null
-  );
+/**
+ * How long the page waits for the bridge's ready after an iframe load
+ * before it hides the toggle and turns the picker off.
+ */
+export const PREVIEW_BRIDGE_READY_TIMEOUT_MS = 3000;
+
+export type PreviewBridgeCommandType = 'hello' | 'activate-picker' | 'deactivate-picker';
+
+export interface PreviewBridgeCommand {
+  aisb: typeof PREVIEW_BRIDGE_NAMESPACE;
+  v: typeof PREVIEW_BRIDGE_VERSION;
+  type: PreviewBridgeCommandType;
 }
 
-const PICKER_SCRIPT_ID = '__visual_edit_picker_script__';
-const PICKER_OVERLAY_ID = '__visual_edit_picker_overlay__';
-const MAX_TEXT_CONTENT_LENGTH = 200;
+export type PreviewBridgeMessage =
+  | { type: 'ready' }
+  | { type: 'picker-state'; active: boolean }
+  | { type: 'element-selected'; payload: SelectedPreviewElement };
 
-export function getPickerScriptId(): string {
-  return PICKER_SCRIPT_ID;
+export function buildPreviewBridgeCommand(type: PreviewBridgeCommandType): PreviewBridgeCommand {
+  return { aisb: PREVIEW_BRIDGE_NAMESPACE, v: PREVIEW_BRIDGE_VERSION, type };
 }
 
-export function getPickerOverlayId(): string {
-  return PICKER_OVERLAY_ID;
+const TAG_NAME_PATTERN = /^[a-z0-9-]{1,64}$/;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function getMaxTextContentLength(): number {
-  return MAX_TEXT_CONTENT_LENGTH;
+function isBoundedString(value: unknown, max: number): value is string {
+  return typeof value === 'string' && value.length <= max;
 }
 
-export function generatePickerScriptSource(): string {
-  return `(function() {
-  'use strict';
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
 
-  var SCRIPT_ID = '${PICKER_SCRIPT_ID}';
-  var OVERLAY_ID = '${PICKER_OVERLAY_ID}';
-  var MAX_TEXT = ${MAX_TEXT_CONTENT_LENGTH};
-
-  if (document.getElementById(SCRIPT_ID + '-active')) return;
-  var marker = document.createElement('meta');
-  marker.id = SCRIPT_ID + '-active';
-  document.head.appendChild(marker);
-
-  var overlay = document.createElement('div');
-  overlay.id = OVERLAY_ID;
-  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;pointer-events:none;';
-  document.body.appendChild(overlay);
-
-  var highlight = document.createElement('div');
-  highlight.style.cssText = 'position:absolute;border:2px solid #7c3aed;background:rgba(124,58,237,0.08);pointer-events:none;transition:all 0.05s ease;display:none;';
-  overlay.appendChild(highlight);
-
-  function showHighlight(el) {
-    var rect = el.getBoundingClientRect();
-    highlight.style.left = rect.left + 'px';
-    highlight.style.top = rect.top + 'px';
-    highlight.style.width = rect.width + 'px';
-    highlight.style.height = rect.height + 'px';
-    highlight.style.display = 'block';
+function serializedLength(value: unknown): number | null {
+  try {
+    const text = JSON.stringify(value);
+    return typeof text === 'string' ? text.length : null;
+  } catch {
+    return null;
   }
+}
 
-  function hideHighlight() {
-    highlight.style.display = 'none';
+/** A selection payload within the limits, copied field by field, or null. */
+export function parseSelectedPreviewElement(value: unknown): SelectedPreviewElement | null {
+  if (!isRecord(value)) {
+    return null;
   }
-
-  function truncate(str, max) {
-    if (!str) return '';
-    var trimmed = str.trim();
-    return trimmed.length > max ? trimmed.slice(0, max) + '...' : trimmed;
+  const limits = PREVIEW_BRIDGE_LIMITS;
+  const { tagName, selector, textContent, classList, boundingBox, id } = value;
+  if (typeof tagName !== 'string' || !TAG_NAME_PATTERN.test(tagName)) {
+    return null;
   }
+  if (!isBoundedString(selector, limits.selector) || !isBoundedString(textContent, limits.textContent)) {
+    return null;
+  }
+  if (!Array.isArray(classList) || classList.length > limits.classCount) {
+    return null;
+  }
+  if (!classList.every((className) => isBoundedString(className, limits.className))) {
+    return null;
+  }
+  if (!(id === null || id === undefined || isBoundedString(id, limits.id))) {
+    return null;
+  }
+  if (!isRecord(boundingBox)) {
+    return null;
+  }
+  const { x, y, width, height } = boundingBox;
+  if (!isFiniteNumber(x) || !isFiniteNumber(y) || !isFiniteNumber(width) || !isFiniteNumber(height)) {
+    return null;
+  }
+  return {
+    tagName,
+    selector,
+    textContent,
+    classList: [...(classList as string[])],
+    boundingBox: { x, y, width, height },
+    id: typeof id === 'string' ? id : null,
+  };
+}
 
-  function buildSelector(el) {
-    var parts = [];
-    var current = el;
-    while (current && current !== document.body && current !== document.documentElement) {
-      var tag = current.tagName.toLowerCase();
-      if (current.id) {
-        parts.unshift(tag + '#' + current.id);
-        break;
+/**
+ * A bridge message from the preview, or null for anything that is not one:
+ * the wrong envelope or version, an unknown type, a field outside the
+ * limits, or a whole message longer than 8192 characters as JSON.
+ */
+export function parsePreviewBridgeMessage(data: unknown): PreviewBridgeMessage | null {
+  if (!isRecord(data) || data.aisb !== PREVIEW_BRIDGE_NAMESPACE || data.v !== PREVIEW_BRIDGE_VERSION) {
+    return null;
+  }
+  const length = serializedLength(data);
+  if (length === null || length > PREVIEW_BRIDGE_LIMITS.message) {
+    return null;
+  }
+  switch (data.type) {
+    case 'ready':
+      return { type: 'ready' };
+    case 'picker-state':
+      return typeof data.active === 'boolean' ? { type: 'picker-state', active: data.active } : null;
+    case 'element-selected': {
+      const payload = parseSelectedPreviewElement(data.payload);
+      return payload ? { type: 'element-selected', payload } : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * The preview origin the page may trust: an http(s) origin that parses back
+ * to exactly itself and is not the page's own origin. Anything else is null,
+ * and with null every bridge message is refused and the toggle is not shown.
+ */
+export function readPreviewOrigin(value: unknown, pageOrigin: string | null): string | null {
+  if (typeof value !== 'string' || value.length === 0) {
+    return null;
+  }
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return null;
+  }
+  if (url.origin !== value || value === pageOrigin) {
+    return null;
+  }
+  return value;
+}
+
+/**
+ * The previewOrigin field of a status answer: a string or null when the
+ * gateway sent it, undefined when the answer has no such field (the page
+ * then keeps the last value it saw).
+ */
+export function readStatusPreviewOrigin(status: unknown): string | null | undefined {
+  if (!isRecord(status) || !Object.prototype.hasOwnProperty.call(status, 'previewOrigin')) {
+    return undefined;
+  }
+  return typeof status.previewOrigin === 'string' ? status.previewOrigin : null;
+}
+
+export interface PreviewPickerState {
+  /** The current preview document has loaded and been sent hello. */
+  frameLoaded: boolean;
+  /** The bridge of the current preview document has answered hello. */
+  bridgeReady: boolean;
+  /** Picker mode is on. */
+  pickerActive: boolean;
+}
+
+export const INITIAL_PREVIEW_PICKER_STATE: PreviewPickerState = Object.freeze({
+  frameLoaded: false,
+  bridgeReady: false,
+  pickerActive: false,
+});
+
+export type PreviewPickerAction =
+  | { kind: 'frame-loaded' }
+  | { kind: 'ready-timeout' }
+  | { kind: 'toggle' }
+  | { kind: 'reset' }
+  | { kind: 'message'; message: PreviewBridgeMessage };
+
+export interface PreviewPickerStep {
+  state: PreviewPickerState;
+  /** A command to post to the bridge, if any. */
+  command: PreviewBridgeCommandType | null;
+  /** A selection the page accepts, if any. */
+  selection: SelectedPreviewElement | null;
+  /** The current selection is cleared. */
+  clearSelection: boolean;
+}
+
+/**
+ * The picker's state machine (stage-start section 3.5), with no side
+ * effects: the shell posts the command and applies the selection.
+ */
+export function stepPreviewPicker(state: PreviewPickerState, action: PreviewPickerAction): PreviewPickerStep {
+  const step = (
+    next: PreviewPickerState,
+    command: PreviewBridgeCommandType | null = null,
+    extra: Partial<Pick<PreviewPickerStep, 'selection' | 'clearSelection'>> = {},
+  ): PreviewPickerStep => ({
+    state: next,
+    command,
+    selection: extra.selection ?? null,
+    clearSelection: extra.clearSelection ?? false,
+  });
+
+  switch (action.kind) {
+    case 'frame-loaded':
+      // A new document: not ready until its bridge answers hello. A picker
+      // that was on comes back on with the new document's ready.
+      return step({ frameLoaded: true, bridgeReady: false, pickerActive: state.pickerActive }, 'hello');
+    case 'ready-timeout':
+      return state.bridgeReady ? step(state) : step({ ...state, bridgeReady: false, pickerActive: false });
+    case 'toggle':
+      if (state.pickerActive) {
+        return step({ ...state, pickerActive: false }, 'deactivate-picker');
       }
-      var classes = Array.prototype.slice.call(current.classList || []);
-      var siblingsOfType = current.parentElement
-        ? Array.prototype.slice.call(current.parentElement.children).filter(function(c) { return c.tagName === current.tagName; })
-        : [];
-      var nth = siblingsOfType.length > 1 ? ':nth-of-type(' + (siblingsOfType.indexOf(current) + 1) + ')' : '';
-      parts.unshift(tag + (classes.length > 0 ? '.' + classes.join('.') : '') + nth);
-      current = current.parentElement;
+      if (!state.bridgeReady) {
+        return step(state);
+      }
+      return step({ ...state, pickerActive: true }, 'activate-picker', { clearSelection: true });
+    case 'reset':
+      return step(
+        { frameLoaded: false, bridgeReady: false, pickerActive: false },
+        state.pickerActive ? 'deactivate-picker' : null,
+        { clearSelection: true },
+      );
+    case 'message': {
+      const message = action.message;
+      if (message.type === 'ready') {
+        // A ready sent before the iframe's load event is not counted: the
+        // bridge repeats it in answer to the hello sent on load.
+        if (!state.frameLoaded) {
+          return step(state);
+        }
+        return step({ ...state, bridgeReady: true }, state.pickerActive ? 'activate-picker' : null);
+      }
+      if (message.type === 'picker-state') {
+        if (message.active) {
+          // The bridge never turns the picker on by itself: resync it.
+          return step(state, state.pickerActive ? null : 'deactivate-picker');
+        }
+        return step({ ...state, pickerActive: false });
+      }
+      // element-selected: only while the picker is on; one pick turns it off.
+      if (!state.pickerActive) {
+        return step(state);
+      }
+      return step({ ...state, pickerActive: false }, null, { selection: message.payload });
     }
-    return parts.join(' > ');
+    default:
+      return step(state);
   }
-
-  function handleMouseMove(e) {
-    if (e.target && e.target !== overlay && e.target !== highlight) {
-      showHighlight(e.target);
-    }
-  }
-
-  function handleClick(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    var el = e.target;
-    if (!el || el === overlay || el === highlight) return;
-
-    var rect = el.getBoundingClientRect();
-    var payload = {
-      tagName: el.tagName.toLowerCase(),
-      selector: buildSelector(el),
-      textContent: truncate(el.textContent, MAX_TEXT),
-      classList: Array.prototype.slice.call(el.classList || []),
-      boundingBox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-      id: el.id || null
-    };
-
-    window.parent.postMessage({ type: 'visual-edit:element-selected', payload: payload }, '*');
-    cleanup();
-  }
-
-  function cleanup() {
-    document.removeEventListener('mousemove', handleMouseMove, true);
-    document.removeEventListener('click', handleClick, true);
-    hideHighlight();
-    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    var m = document.getElementById(SCRIPT_ID + '-active');
-    if (m && m.parentNode) m.parentNode.removeChild(m);
-  }
-
-  function handleParentMessage(e) {
-    if (e.data && e.data.type === 'visual-edit:deactivate-picker') {
-      cleanup();
-      window.removeEventListener('message', handleParentMessage);
-    }
-  }
-
-  document.addEventListener('mousemove', handleMouseMove, true);
-  document.addEventListener('click', handleClick, true);
-  window.addEventListener('message', handleParentMessage);
-})();`;
 }
+

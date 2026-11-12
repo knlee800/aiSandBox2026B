@@ -4,8 +4,9 @@ import { describe, test } from 'node:test';
 
 /**
  * PREVIEW-ORIGIN-01 source checks: the preview iframe is sandboxed without
- * top-window navigation, the Select Element toggle is hidden (its code and
- * keys stay), and /driver keeps its API key in memory only.
+ * top-window navigation, and /driver keeps its API key in memory only.
+ * (PREVIEW-PICKER-01 replaced the hidden-toggle check with the postMessage
+ * checks below.)
  */
 
 function read(relative: string): string {
@@ -36,15 +37,68 @@ describe('PREVIEW-ORIGIN-01 workspace preview iframe', () => {
     assert.doesNotMatch(code, /allow-popups-to-escape-sandbox/);
   });
 
-  test('the picker toggle is behind a false flag and the picker code stays', () => {
-    assert.match(shell, /export const PREVIEW_PICKER_TOGGLE_VISIBLE = false;/);
+});
+
+/**
+ * PREVIEW-PICKER-01 source checks: Select Element works over postMessage
+ * with the preview origin from the status answer; nothing reaches into the
+ * iframe's document and nothing posts to '*'.
+ */
+describe('PREVIEW-PICKER-01 picker over postMessage', () => {
+  const shell = read('./workspace-shell.tsx');
+  const logic = read('./workspace-preview.logic.ts');
+  const page = read('../../app/[locale]/app/page.tsx');
+  const shellCode = withoutComments(shell);
+  const logicCode = withoutComments(logic);
+  const pageCode = withoutComments(page);
+
+  test('no code path reads iframe.contentDocument or injects a script into the preview', () => {
+    for (const code of [shellCode, logicCode, pageCode]) {
+      assert.doesNotMatch(code, /contentDocument/);
+      assert.doesNotMatch(code, /generatePickerScriptSource|injectPickerScript|removePickerScript/);
+    }
+  });
+
+  test("no postMessage uses '*' as its target", () => {
+    for (const code of [shellCode, logicCode, pageCode]) {
+      assert.doesNotMatch(code, /postMessage\([^;]*['"`]\*['"`]/);
+    }
+    const posts = shellCode.match(/\.postMessage\(/g) ?? [];
+    assert.equal(posts.length, 1);
+    assert.match(shellCode, /target\.postMessage\(buildPreviewBridgeCommand\(type\), targetOrigin\);/);
+    assert.match(shellCode, /const targetOrigin = previewOriginRef\.current;\s+const target = previewIframeRef\.current\?\.contentWindow \?\? null;\s+if \(!targetOrigin \|\| !target\) \{\s+return;\s+\}/);
+  });
+
+  test('a message is checked against the preview origin and the iframe window before it is parsed', () => {
+    assert.match(
+      shellCode,
+      /isValidVisualEditMessageOriginAndSource\(\{\s+expectedOrigin: previewOriginRef\.current,\s+messageOrigin: event\.origin,\s+expectedSource: previewIframeRef\.current\?\.contentWindow \?\? null,\s+messageSource: event\.source,\s+\}\)/,
+    );
+    assert.match(shellCode, /const message = parsePreviewBridgeMessage\(event\.data\);\s+if \(!message\) \{\s+return;\s+\}/);
+    assert.doesNotMatch(shellCode, /expectedOrigin: (typeof )?window/);
+  });
+
+  test('the toggle is rendered only when the bridge is available, with its test id', () => {
+    assert.doesNotMatch(shell, /PREVIEW_PICKER_TOGGLE_VISIBLE/);
     assert.match(
       shell,
-      /\{PREVIEW_PICKER_TOGGLE_VISIBLE \? \(\s*<button\s+type="button"\s+data-testid="workspace-preview-picker-toggle"/,
+      /\{props\.pickerAvailable \? \(\s*<button\s+type="button"\s+data-testid="workspace-preview-picker-toggle"/,
     );
-    assert.match(shell, /const injectPickerScript = React\.useCallback\(/);
-    assert.match(shell, /const removePickerScript = React\.useCallback\(/);
-    assert.match(shell, /const handlePickerToggle = React\.useCallback\(/);
+    assert.match(shellCode, /const pickerAvailable = Boolean\(previewOrigin\) && pickerView\.bridgeReady;/);
+    assert.equal((shellCode.match(/pickerAvailable=\{pickerAvailable\}/g) ?? []).length, 2);
+  });
+
+  test('the page keeps previewOrigin from the status answer and passes it to the shell', () => {
+    assert.match(pageCode, /const \[previewOrigin, setPreviewOrigin\] = useState<string \| null>\(null\);/);
+    assert.equal((pageCode.match(/rememberPreviewOrigin\(statusData\);/g) ?? []).length, 2);
+    assert.match(pageCode, /previewOrigin=\{previewOrigin\}/);
+    assert.match(pageCode, /const origin = readStatusPreviewOrigin\(status\);\s+if \(origin !== undefined\) \{\s+setPreviewOrigin\(origin\);\s+\}/);
+  });
+
+  test('the selection still feeds the existing Visual Edit prompt path', () => {
+    assert.match(pageCode, /onPreviewElementSelected=\{handlePreviewElementSelected\}/);
+    assert.match(pageCode, /function handlePreviewElementSelected\(element: SelectedPreviewElement \| null\): void \{\s+setSelectedPreviewElement\(element\);\s+\}/);
+    assert.match(pageCode, /buildPromptWithSelectedPreviewElement\(/);
   });
 });
 

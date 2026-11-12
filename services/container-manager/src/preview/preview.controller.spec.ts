@@ -153,7 +153,7 @@ describe('PreviewController static preview over HTTP (CM-BINARY-01)', () => {
     expect(reply.status).toBe(200);
     expect(reply.contentType).toBe('text/html; charset=utf-8');
     expect(reply.body.toString('utf8')).toBe(
-      `<html><head><base href="/api/preview/${SESSION}/proxy/"><title>Café 😀</title></head></html>`,
+      `<html><head><base href="/api/preview/${SESSION}/proxy/"><script src="/api/preview/${SESSION}/proxy/__aisb/bridge.js" async data-aisb-preview-bridge></script><title>Café 😀</title></head></html>`,
     );
     expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(SESSION, 'index.html');
   });

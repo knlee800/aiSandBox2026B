@@ -230,10 +230,11 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
     }
   });
 
-  async function startApp(previewBaseUrl: string | undefined) {
+  async function startApp(previewBaseUrl: string | undefined, appBaseUrl: string | null = `https://${PLATFORM}`) {
     if (previewBaseUrl === undefined) delete process.env.PREVIEW_BASE_URL;
     else process.env.PREVIEW_BASE_URL = previewBaseUrl;
-    process.env.APP_BASE_URL = `https://${PLATFORM}`;
+    if (appBaseUrl === null) delete process.env.APP_BASE_URL;
+    else process.env.APP_BASE_URL = appBaseUrl;
     process.env.INTERNAL_SERVICE_KEY = SERVER_KEY;
     process.env.CONTAINER_MANAGER_URL = upstreamUrl;
     process.env.NODE_ENV = 'test';
@@ -500,6 +501,118 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
       expect(lines[0]).toContain(`Path=/api/preview/${SID}/`);
     });
 
+    // PREVIEW-PICKER-01 (stage-start 4.4, "Gateway routes").
+    it('preview host: the bridge script is served with a valid preview cookie, and container-manager is not called', async () => {
+      for (const method of ['GET', 'HEAD']) {
+        const reply = await rawRequest(port, method, `/api/preview/${SID}/proxy/__aisb/bridge.js`, {
+          ...onPreview,
+          cookie: previewCookie(),
+        });
+        expect(reply.status).toBe(200);
+        expect(reply.headers['content-type']).toBe('text/javascript; charset=utf-8');
+        expect(reply.headers['cache-control']).toBe('no-store');
+        expect(reply.headers['x-content-type-options']).toBe('nosniff');
+        expect(reply.headers['content-security-policy']).toBeUndefined();
+        expect(reply.headers['set-cookie']).toBeUndefined();
+        if (method === 'GET') {
+          expect(reply.body).toContain(`var PLATFORM_ORIGIN = ${JSON.stringify(`https://${PLATFORM}`)};`);
+          expect(reply.body).not.toContain('aisandbox_');
+          expect(reply.body).not.toContain(SERVER_KEY);
+          expect(reply.body).not.toContain('platform-session-token');
+        }
+      }
+      expect(received).toHaveLength(0);
+      expect(validateSessionToken).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['no cookie', ''],
+      ["another session's cookie", 'other'],
+      ['the session cookie alone', 'session'],
+    ])('preview host: the bridge script with %s is refused as any proxy path is', async (_label, kind) => {
+      const cookie = kind === 'other' ? previewCookie('session-2') : kind === 'session' ? sessionCookie : '';
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy/__aisb/bridge.js`, {
+        ...onPreview,
+        ...(cookie ? { cookie } : {}),
+      });
+      expect(reply.status).toBe(403);
+      expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+      expect(received).toHaveLength(0);
+    });
+
+    it.each([
+      `/api/preview/${SID}/proxy/__aisb/other.js`,
+      `/api/preview/${SID}/proxy/__aisb/bridge.js/`,
+      `/api/preview/${SID}/proxy/__aisb/`,
+      `/api/preview/${SID}/proxy/__aisb`,
+      `/api/preview/${SID}/proxy/%5F%5Faisb/bridge.js`,
+      `/api/preview/${SID}/proxy/__AISB/bridge.js`,
+    ])('preview host: reserved path %s is 404 and never forwarded', async (path) => {
+      const reply = await rawRequest(port, 'GET', path, { ...onPreview, cookie: previewCookie() });
+      expect(reply.status).toBe(404);
+      expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+      expect(received).toHaveLength(0);
+    });
+
+    it('preview host: an app path that only contains __aisb deeper down is still forwarded', async () => {
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy/assets/__aisb/bridge.js`, {
+        ...onPreview,
+        cookie: previewCookie(),
+      });
+      expect(reply.status).toBe(200);
+      expect(received.map((call) => call.url)).toEqual([`/api/preview/${SID}/proxy/assets/__aisb/bridge.js`]);
+    });
+
+    it.each([
+      ['GET', `/api/preview/${SID}/proxy/__aisb/bridge.js`],
+      ['HEAD', `/api/preview/${SID}/proxy/__aisb/bridge.js`],
+      ['GET', `/api/preview/${SID}/proxy/__aisb/other.js`],
+      ['GET', `/api/preview/${SID}/proxy/%5F%5Faisb/bridge.js`],
+    ])('platform host: %s %s is 404, with no redirect, no ticket and no container-manager call', async (method, path) => {
+      const issueTicket = jest.spyOn(tickets, 'issueTicket');
+      const reply = await rawRequest(port, method, path, { ...onPlatform, cookie: sessionCookie });
+      expect(reply.status).toBe(404);
+      expect(reply.headers.location).toBeUndefined();
+      expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+      expect(issueTicket).not.toHaveBeenCalled();
+      expect(received).toHaveLength(0);
+    });
+
+    it('platform host: the reserved prefix without a session cookie is refused by the unchanged session guard', async () => {
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy/__aisb/bridge.js`, onPlatform);
+      expect(reply.status).toBe(401);
+      expect(reply.headers.location).toBeUndefined();
+      expect(received).toHaveLength(0);
+    });
+
+    it('platform host: GET status carries previewOrigin, the preview host origin', async () => {
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/status`, { ...onPlatform, cookie: sessionCookie });
+      expect(reply.status).toBe(200);
+      expect(JSON.parse(reply.body)).toEqual({ ok: true, previewOrigin: `https://${PREVIEW}` });
+      expect(received.map((call) => `${call.method} ${call.url}`)).toEqual([`GET /api/preview/${SID}/status`]);
+    });
+
+    it('platform host: start and stop answers do not change', async () => {
+      for (const [method, path] of [
+        ['POST', `/api/preview/${SID}/start`],
+        ['POST', `/api/preview/${SID}/stop`],
+        ['DELETE', `/api/preview/${SID}/stop`],
+      ]) {
+        const reply = await rawRequest(port, method, path, { ...onPlatform, cookie: sessionCookie });
+        expect(reply.status).toBe(200);
+        expect(JSON.parse(reply.body)).toEqual({ ok: true });
+      }
+    });
+
+    it('preview host: an app page is still served unchanged (no previewOrigin, no rewrite by the gateway)', async () => {
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy/index.html`, {
+        ...onPreview,
+        cookie: previewCookie(),
+      });
+      expect(reply.status).toBe(200);
+      expect(reply.body).toBe('<!doctype html><title>app</title><script src="app.js"></script>');
+    });
+
     it('behind the local Next rewrite a request counts as the platform host', async () => {
       const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy`, {
         host: PREVIEW,
@@ -509,6 +622,22 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
       expect(reply.status).toBe(401);
       expect(received).toHaveLength(0);
     });
+  });
+
+  describe('APP_BASE_URL unusable (PREVIEW-PICKER-01)', () => {
+    it.each([[null], ['ftp://staging.ainow.biz'], ['not a url']])(
+      'APP_BASE_URL %p: the bridge path is 404 on the preview host, with a valid cookie',
+      async (appBaseUrl) => {
+        await startApp(`https://${PREVIEW}`, appBaseUrl);
+        const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy/__aisb/bridge.js`, {
+          ...onPreview,
+          cookie: previewCookie(),
+        });
+        expect(reply.status).toBe(404);
+        expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+        expect(received).toHaveLength(0);
+      },
+    );
   });
 
   describe('PREVIEW_BASE_URL unset: the fail-safe (stage-start 4.3 item 5)', () => {
@@ -550,7 +679,10 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
       ]) {
         const reply = await rawRequest(port, method, path, { ...onPlatform, cookie: sessionCookie });
         expect(reply.status).toBe(200);
-        expect(JSON.parse(reply.body)).toEqual({ ok: true });
+        // PREVIEW-PICKER-01: only GET status gains previewOrigin (null: no preview host).
+        expect(JSON.parse(reply.body)).toEqual(
+          method === 'GET' && path.endsWith('/status') ? { ok: true, previewOrigin: null } : { ok: true },
+        );
         expect(reply.headers['content-security-policy']).toBeUndefined();
       }
       expect(received.map((call) => `${call.method} ${call.url} ${call.headers['x-internal-service-key']}`)).toEqual([
@@ -588,6 +720,20 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
       const proxy = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy`, { ...onPlatform, cookie: sessionCookie });
       expect(proxy.status).toBe(200);
       expect(proxy.headers.location).toBeUndefined();
+    });
+
+    // PREVIEW-PICKER-01: no bridge without a preview host; the reserved prefix is never forwarded.
+    it.each([
+      [onPlatform],
+      [onPreview],
+      [{ host: '127.0.0.1:4000' }],
+    ])('the reserved prefix is 404 and never forwarded (%p)', async (hosts) => {
+      for (const path of [`/api/preview/${SID}/proxy/__aisb/bridge.js`, `/api/preview/${SID}/proxy/__aisb/x`]) {
+        const reply = await rawRequest(port, 'GET', path, { ...hosts, cookie: sessionCookie });
+        expect(reply.status).toBe(404);
+        expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+      }
+      expect(received).toHaveLength(0);
     });
 
     it('the route filter lets every platform route through', async () => {

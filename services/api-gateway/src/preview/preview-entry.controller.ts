@@ -2,11 +2,15 @@ import { Controller, Get, Next, Optional, Req, Res, UseGuards } from '@nestjs/co
 import type { NextFunction, Request, Response } from 'express';
 import { SessionService } from '../sessions/session.service';
 import { PreviewAccessGuard, PreviewAccessRequest } from './preview-access.guard';
+import { buildPreviewBridgeScript } from './preview-bridge-script';
 import {
+  isPreviewBridgeSuffix,
   isPreviewHostRequest,
   isPreviewProxySuffix,
+  isReservedPreviewSuffix,
   PREVIEW_COOKIE_NAME,
   previewCookieSecure,
+  readPlatformOrigin,
   readPreviewHostConfig,
   resolvePreviewEnter,
   resolvePreviewForward,
@@ -43,6 +47,11 @@ import {
  *   aisandbox_preview cookie for the session; the request then goes to
  *   container-manager exactly as on the platform host (same path, same
  *   stripped headers, same internal key), without the sandbox policy.
+ *
+ * PREVIEW-PICKER-01: proxy/__aisb/... is reserved and never forwarded. Behind
+ *   the same guard, proxy/__aisb/bridge.js is the preview bridge script with
+ *   the platform origin from APP_BASE_URL written in (404 when APP_BASE_URL
+ *   is unusable); every other reserved path is 404.
  */
 @Controller('preview')
 export class PreviewEntryController {
@@ -67,6 +76,24 @@ export class PreviewEntryController {
           ? { statusCode: 404, message: 'Not Found' }
           : { statusCode: 403, message: 'Preview link expired or invalid' },
       );
+  }
+
+  /**
+   * PREVIEW-PICKER-01: the bridge script for proxy/__aisb/bridge.js, 404 for
+   * any other reserved path or when APP_BASE_URL is unusable.
+   */
+  private answerReserved(res: Response, suffix: string) {
+    const platformOrigin = readPlatformOrigin();
+    const script =
+      isPreviewBridgeSuffix(suffix) && platformOrigin ? buildPreviewBridgeScript(platformOrigin) : null;
+    if (!script) {
+      return this.answer(res, 404);
+    }
+    res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    return res.status(200).send(script);
   }
 
   private async ownsSession(sessionId: string, userId: string): Promise<boolean> {
@@ -147,6 +174,11 @@ export class PreviewEntryController {
       !isPreviewProxySuffix(forward.suffix)
     ) {
       return this.answer(res, 404);
+    }
+
+    // PREVIEW-PICKER-01: the reserved prefix is answered here, never forwarded.
+    if (isReservedPreviewSuffix(forward.suffix)) {
+      return this.answerReserved(res, forward.suffix);
     }
 
     return forwardPreviewRequest({

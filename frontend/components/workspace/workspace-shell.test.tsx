@@ -24,7 +24,7 @@ import WorkspaceShell, {
   RESTORE_FAILED_NOTICE_MAX_PATHS,
   computeProjectHistoryRows,
   PREVIEW_IFRAME_SANDBOX,
-  PREVIEW_PICKER_TOGGLE_VISIBLE,
+  WorkspacePreviewPanel,
 } from './workspace-shell';
 import WorkspaceAccountMenu, {
   GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH,
@@ -35,13 +35,17 @@ import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-she
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
 import {
+  buildPreviewBridgeCommand,
   buildPromptWithSelectedPreviewElement,
-  generatePickerScriptSource,
-  getPickerScriptId,
-  getPickerOverlayId,
-  getMaxTextContentLength,
-  isVisualEditElementSelectedMessage,
+  INITIAL_PREVIEW_PICKER_STATE,
   isValidVisualEditMessageOriginAndSource,
+  parsePreviewBridgeMessage,
+  parseSelectedPreviewElement,
+  PREVIEW_BRIDGE_LIMITS,
+  readPreviewOrigin,
+  readStatusPreviewOrigin,
+  stepPreviewPicker,
+  type PreviewPickerState,
 } from './workspace-preview.logic';
 import type { SelectedPreviewElement } from './workspace-preview.logic';
 import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
@@ -5374,8 +5378,7 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="workspace-preview-iframe"/);
   });
 
-  test('PREVIEW-ORIGIN-01: hides the preview picker toggle in the Preview tab toolbar', () => {
-    assert.equal(PREVIEW_PICKER_TOGGLE_VISIBLE, false);
+  test('PREVIEW-PICKER-01: no picker toggle in the Preview tab toolbar before a bridge reports ready', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
       previewState: 'ready',
@@ -5385,6 +5388,19 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
     assert.doesNotMatch(html, new RegExp(enMessages.project.selectElement));
     assert.doesNotMatch(html, new RegExp(enMessages.project.deselectElement));
+  });
+
+  test('PREVIEW-PICKER-01: no picker toggle with a preview origin but no ready bridge', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=10`,
+      previewOrigin: 'https://preview.staging.ainow.biz',
+    });
+
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-active"/);
+    assert.match(html, /data-testid="workspace-preview-iframe"/);
   });
 
   test('PREVIEW-ORIGIN-01: the picker toggle stays hidden when the preview URL is missing', () => {
@@ -7113,88 +7129,7 @@ describe('workspace shell snapshot surface', () => {
   });
 });
 
-describe('workspace preview logic — UX-IA-15B helpers', () => {
-  test('generatePickerScriptSource returns a non-empty string', () => {
-    const source = generatePickerScriptSource();
-    assert.ok(typeof source === 'string');
-    assert.ok(source.length > 100);
-  });
-
-  test('generatePickerScriptSource contains picker script ID', () => {
-    const source = generatePickerScriptSource();
-    assert.ok(source.includes(getPickerScriptId()));
-  });
-
-  test('generatePickerScriptSource contains overlay ID', () => {
-    const source = generatePickerScriptSource();
-    assert.ok(source.includes(getPickerOverlayId()));
-  });
-
-  test('generatePickerScriptSource contains element-selected message type', () => {
-    const source = generatePickerScriptSource();
-    assert.ok(source.includes('visual-edit:element-selected'));
-  });
-
-  test('generatePickerScriptSource contains deactivate-picker listener', () => {
-    const source = generatePickerScriptSource();
-    assert.ok(source.includes('visual-edit:deactivate-picker'));
-  });
-
-  test('generatePickerScriptSource contains max text content length', () => {
-    const source = generatePickerScriptSource();
-    assert.ok(source.includes(String(getMaxTextContentLength())));
-  });
-
-  test('getPickerScriptId returns a stable value', () => {
-    assert.strictEqual(getPickerScriptId(), getPickerScriptId());
-    assert.ok(getPickerScriptId().length > 0);
-  });
-
-  test('getPickerOverlayId returns a stable value', () => {
-    assert.strictEqual(getPickerOverlayId(), getPickerOverlayId());
-    assert.ok(getPickerOverlayId().length > 0);
-  });
-
-  test('isVisualEditElementSelectedMessage accepts valid message', () => {
-    const valid = {
-      type: 'visual-edit:element-selected',
-      payload: {
-        tagName: 'div',
-        selector: 'div.foo',
-        textContent: 'hello',
-        classList: ['foo'],
-        boundingBox: { x: 0, y: 0, width: 100, height: 50 },
-        id: null,
-      },
-    };
-    assert.strictEqual(isVisualEditElementSelectedMessage(valid), true);
-  });
-
-  test('isVisualEditElementSelectedMessage rejects wrong type', () => {
-    assert.strictEqual(isVisualEditElementSelectedMessage({ type: 'other' }), false);
-  });
-
-  test('isVisualEditElementSelectedMessage rejects null', () => {
-    assert.strictEqual(isVisualEditElementSelectedMessage(null), false);
-  });
-
-  test('isVisualEditElementSelectedMessage rejects missing payload', () => {
-    assert.strictEqual(
-      isVisualEditElementSelectedMessage({ type: 'visual-edit:element-selected' }),
-      false,
-    );
-  });
-
-  test('isVisualEditElementSelectedMessage rejects incomplete payload', () => {
-    assert.strictEqual(
-      isVisualEditElementSelectedMessage({
-        type: 'visual-edit:element-selected',
-        payload: { tagName: 'div' },
-      }),
-      false,
-    );
-  });
-
+describe('workspace preview logic — origin and source helper', () => {
   test('isValidVisualEditMessageOriginAndSource rejects mismatched origin', () => {
     assert.strictEqual(
       isValidVisualEditMessageOriginAndSource({
@@ -7243,6 +7178,396 @@ describe('workspace preview logic — UX-IA-15B helpers', () => {
       }),
       true,
     );
+  });
+
+  test('PREVIEW-PICKER-01: the preview origin is required and another window is refused', () => {
+    const iframeWindow = {} as MessageEventSource;
+    const otherWindow = {} as MessageEventSource;
+    const previewOrigin = 'https://preview.staging.ainow.biz';
+    const check = (messageOrigin: string, messageSource: MessageEventSource | null, expectedOrigin: string | null) =>
+      isValidVisualEditMessageOriginAndSource({
+        expectedOrigin,
+        messageOrigin,
+        expectedSource: iframeWindow,
+        messageSource,
+      });
+    assert.equal(check(previewOrigin, iframeWindow, previewOrigin), true);
+    assert.equal(check('https://staging.ainow.biz', iframeWindow, previewOrigin), false);
+    assert.equal(check('null', iframeWindow, previewOrigin), false);
+    assert.equal(check(previewOrigin, otherWindow, previewOrigin), false);
+    // With no preview origin every message is refused.
+    assert.equal(check(previewOrigin, iframeWindow, null), false);
+  });
+});
+
+describe('workspace preview logic — PREVIEW-PICKER-01 bridge protocol', () => {
+  const payload = {
+    tagName: 'button',
+    selector: 'main > button.cta:nth-of-type(2)',
+    textContent: 'Buy now',
+    classList: ['cta'],
+    boundingBox: { x: 1, y: 2, width: 30, height: 40 },
+    id: null,
+  };
+  const envelope = (type: string, extra: Record<string, unknown> = {}) => ({
+    aisb: 'preview-bridge',
+    v: 1,
+    type,
+    ...extra,
+  });
+
+  test('builds commands in the versioned envelope', () => {
+    assert.deepEqual(buildPreviewBridgeCommand('hello'), { aisb: 'preview-bridge', v: 1, type: 'hello' });
+    assert.deepEqual(buildPreviewBridgeCommand('activate-picker'), {
+      aisb: 'preview-bridge',
+      v: 1,
+      type: 'activate-picker',
+    });
+    assert.deepEqual(buildPreviewBridgeCommand('deactivate-picker'), {
+      aisb: 'preview-bridge',
+      v: 1,
+      type: 'deactivate-picker',
+    });
+  });
+
+  test('accepts the three bridge messages', () => {
+    assert.deepEqual(parsePreviewBridgeMessage(envelope('ready')), { type: 'ready' });
+    assert.deepEqual(parsePreviewBridgeMessage(envelope('picker-state', { active: true })), {
+      type: 'picker-state',
+      active: true,
+    });
+    assert.deepEqual(parsePreviewBridgeMessage(envelope('element-selected', { payload })), {
+      type: 'element-selected',
+      payload,
+    });
+  });
+
+  test('copies the payload field by field and drops unknown fields', () => {
+    const parsed = parsePreviewBridgeMessage(
+      envelope('element-selected', { payload: { ...payload, id: 'buy', extra: '<script>' }, extra: 1 }),
+    );
+    assert.ok(parsed && parsed.type === 'element-selected');
+    assert.deepEqual(parsed.payload, { ...payload, id: 'buy' });
+    assert.equal('extra' in parsed.payload, false);
+    // A missing id is null.
+    const withoutId: Record<string, unknown> = { ...payload };
+    delete withoutId.id;
+    assert.equal(parseSelectedPreviewElement(withoutId)?.id, null);
+  });
+
+  test('refuses the wrong envelope, a wrong version and unknown types, silently', () => {
+    for (const data of [
+      null,
+      undefined,
+      'ready',
+      42,
+      [],
+      { type: 'ready' },
+      { aisb: 'other', v: 1, type: 'ready' },
+      { aisb: 'preview-bridge', v: 2, type: 'ready' },
+      { aisb: 'preview-bridge', v: '1', type: 'ready' },
+      { aisb: 'preview-bridge', type: 'ready' },
+      envelope('hello'),
+      envelope('activate-picker'),
+      envelope('run-script'),
+      envelope('picker-state'),
+      envelope('picker-state', { active: 'yes' }),
+      envelope('element-selected'),
+      { type: 'visual-edit:element-selected', payload },
+    ]) {
+      assert.equal(parsePreviewBridgeMessage(data), null, JSON.stringify(data));
+    }
+  });
+
+  test('refuses each field over its limit, and a whole message over 8192 characters', () => {
+    const limits = PREVIEW_BRIDGE_LIMITS;
+    assert.deepEqual(limits, {
+      tagName: 64,
+      selector: 1024,
+      textContent: 203,
+      classCount: 32,
+      className: 128,
+      id: 128,
+      message: 8192,
+    });
+    const over = [
+      { tagName: 'a'.repeat(65) },
+      { tagName: '' },
+      { tagName: 'DIV' },
+      { tagName: 'div onclick' },
+      { tagName: 7 },
+      { selector: 's'.repeat(1025) },
+      { selector: null },
+      { textContent: 't'.repeat(204) },
+      { classList: Array.from({ length: 33 }, () => 'c') },
+      { classList: ['c'.repeat(129)] },
+      { classList: [1] },
+      { classList: 'cta' },
+      { id: 'i'.repeat(129) },
+      { id: 5 },
+      { boundingBox: null },
+      { boundingBox: { x: 1, y: 2, width: 3 } },
+      { boundingBox: { x: Number.NaN, y: 2, width: 3, height: 4 } },
+      { boundingBox: { x: Number.POSITIVE_INFINITY, y: 2, width: 3, height: 4 } },
+      { boundingBox: { x: '1', y: 2, width: 3, height: 4 } },
+    ];
+    for (const change of over) {
+      assert.equal(
+        parsePreviewBridgeMessage(envelope('element-selected', { payload: { ...payload, ...change } })),
+        null,
+        JSON.stringify(change).slice(0, 80),
+      );
+    }
+    // Every field at its limit passes.
+    const atLimit = {
+      tagName: 'a'.repeat(64),
+      selector: 's'.repeat(1024),
+      textContent: 't'.repeat(203),
+      classList: Array.from({ length: 32 }, () => 'c'.repeat(100)),
+      boundingBox: { x: 0, y: 0, width: 0, height: 0 },
+      id: 'i'.repeat(128),
+    };
+    assert.ok(parsePreviewBridgeMessage(envelope('element-selected', { payload: atLimit })));
+    // Each field within its limit, but the whole message over 8192.
+    // (A '"' doubles in JSON, so 32 classes of 128 quotes alone pass 8192.)
+    const tooBig = { ...atLimit, classList: Array.from({ length: 32 }, () => '"'.repeat(128)) };
+    assert.ok(JSON.stringify(envelope('element-selected', { payload: tooBig })).length > 8192);
+    assert.equal(parsePreviewBridgeMessage(envelope('element-selected', { payload: tooBig })), null);
+    // Extra junk that makes the message too big is refused too.
+    assert.equal(parsePreviewBridgeMessage(envelope('ready', { junk: 'x'.repeat(9000) })), null);
+  });
+
+  test('refuses a message that cannot be serialized', () => {
+    const cyclic: Record<string, unknown> = envelope('ready');
+    cyclic.self = cyclic;
+    assert.equal(parsePreviewBridgeMessage(cyclic), null);
+  });
+
+  test('reads the preview origin only as a real http(s) origin other than the page', () => {
+    const page = 'https://staging.ainow.biz';
+    assert.equal(readPreviewOrigin('https://preview.staging.ainow.biz', page), 'https://preview.staging.ainow.biz');
+    assert.equal(readPreviewOrigin('http://preview.localhost:4100', 'http://localhost:3000'), 'http://preview.localhost:4100');
+    for (const value of [
+      null,
+      undefined,
+      '',
+      42,
+      'preview.staging.ainow.biz',
+      'https://preview.staging.ainow.biz/',
+      'https://preview.staging.ainow.biz/app',
+      'https://PREVIEW.staging.ainow.biz',
+      'https://preview.staging.ainow.biz:443',
+      'https://user:pw@preview.staging.ainow.biz',
+      'ftp://preview.staging.ainow.biz',
+      'javascript:alert(1)',
+      'null',
+      '*',
+      page,
+    ]) {
+      assert.equal(readPreviewOrigin(value, page), null, String(value));
+    }
+  });
+
+  test('reads previewOrigin from a status answer, telling a missing field from null', () => {
+    assert.equal(readStatusPreviewOrigin({ running: true, previewOrigin: 'https://p.example' }), 'https://p.example');
+    assert.equal(readStatusPreviewOrigin({ running: true, previewOrigin: null }), null);
+    assert.equal(readStatusPreviewOrigin({ running: true, previewOrigin: 7 }), null);
+    assert.equal(readStatusPreviewOrigin({ running: true }), undefined);
+    assert.equal(readStatusPreviewOrigin(null), undefined);
+  });
+});
+
+describe('workspace preview logic — PREVIEW-PICKER-01 picker states', () => {
+  const payload = {
+    tagName: 'p',
+    selector: 'p',
+    textContent: 'hi',
+    classList: [],
+    boundingBox: { x: 0, y: 0, width: 1, height: 1 },
+    id: null,
+  };
+  const off: PreviewPickerState = { frameLoaded: false, bridgeReady: false, pickerActive: false };
+  const loadedOff: PreviewPickerState = { frameLoaded: true, bridgeReady: false, pickerActive: false };
+  const ready: PreviewPickerState = { frameLoaded: true, bridgeReady: true, pickerActive: false };
+  const on: PreviewPickerState = { frameLoaded: true, bridgeReady: true, pickerActive: true };
+
+  test('starts with no bridge and the picker off', () => {
+    assert.deepEqual(INITIAL_PREVIEW_PICKER_STATE, off);
+  });
+
+  test('a ready sent before the first iframe load is not counted', () => {
+    const early = stepPreviewPicker(off, { kind: 'message', message: { type: 'ready' } });
+    assert.deepEqual(early.state, off);
+    assert.equal(early.command, null);
+  });
+
+  test('every iframe load says hello and waits for ready; ready makes the toggle available', () => {
+    const loaded = stepPreviewPicker(ready, { kind: 'frame-loaded' });
+    assert.deepEqual(loaded.state, loadedOff);
+    assert.equal(loaded.command, 'hello');
+    const answered = stepPreviewPicker(loaded.state, { kind: 'message', message: { type: 'ready' } });
+    assert.deepEqual(answered.state, ready);
+    assert.equal(answered.command, null);
+  });
+
+  test('turning the picker on clears the selection and activates the bridge; off deactivates it', () => {
+    const turnedOn = stepPreviewPicker(ready, { kind: 'toggle' });
+    assert.deepEqual(turnedOn.state, on);
+    assert.equal(turnedOn.command, 'activate-picker');
+    assert.equal(turnedOn.clearSelection, true);
+    const turnedOff = stepPreviewPicker(on, { kind: 'toggle' });
+    assert.deepEqual(turnedOff.state, ready);
+    assert.equal(turnedOff.command, 'deactivate-picker');
+    assert.equal(turnedOff.clearSelection, false);
+  });
+
+  test('the picker cannot be turned on without a ready bridge', () => {
+    for (const state of [off, loadedOff]) {
+      const step = stepPreviewPicker(state, { kind: 'toggle' });
+      assert.deepEqual(step.state, state);
+      assert.equal(step.command, null);
+    }
+  });
+
+  test('a selection is accepted only while the picker is on, and one pick turns it off', () => {
+    const picked = stepPreviewPicker(on, { kind: 'message', message: { type: 'element-selected', payload } });
+    assert.deepEqual(picked.state, ready);
+    assert.deepEqual(picked.selection, payload);
+    assert.equal(picked.command, null);
+    for (const state of [ready, off, loadedOff]) {
+      const ignored = stepPreviewPicker(state, { kind: 'message', message: { type: 'element-selected', payload } });
+      assert.deepEqual(ignored.state, state);
+      assert.equal(ignored.selection, null);
+    }
+  });
+
+  test('Escape in the preview (picker-state off) turns the picker off; the bridge never turns it on', () => {
+    const escaped = stepPreviewPicker(on, { kind: 'message', message: { type: 'picker-state', active: false } });
+    assert.deepEqual(escaped.state, ready);
+    assert.equal(escaped.command, null);
+    const confirmed = stepPreviewPicker(on, { kind: 'message', message: { type: 'picker-state', active: true } });
+    assert.deepEqual(confirmed.state, on);
+    assert.equal(confirmed.command, null);
+    const forged = stepPreviewPicker(ready, { kind: 'message', message: { type: 'picker-state', active: true } });
+    assert.deepEqual(forged.state, ready);
+    assert.equal(forged.command, 'deactivate-picker');
+  });
+
+  test('a reload while the picker is on activates it again on the new ready', () => {
+    const loaded = stepPreviewPicker(on, { kind: 'frame-loaded' });
+    assert.deepEqual(loaded.state, { frameLoaded: true, bridgeReady: false, pickerActive: true });
+    assert.equal(loaded.command, 'hello');
+    const answered = stepPreviewPicker(loaded.state, { kind: 'message', message: { type: 'ready' } });
+    assert.deepEqual(answered.state, on);
+    assert.equal(answered.command, 'activate-picker');
+  });
+
+  test('no ready after a load: the toggle goes away and the picker turns off', () => {
+    const loaded = stepPreviewPicker(on, { kind: 'frame-loaded' });
+    const timedOut = stepPreviewPicker(loaded.state, { kind: 'ready-timeout' });
+    assert.deepEqual(timedOut.state, loadedOff);
+    assert.equal(timedOut.command, null);
+    // A ready that came in time is kept.
+    assert.deepEqual(stepPreviewPicker(on, { kind: 'ready-timeout' }).state, on);
+  });
+
+  test('a reset (preview not ready, new URL or origin) turns everything off and clears the selection', () => {
+    const fromOn = stepPreviewPicker(on, { kind: 'reset' });
+    assert.deepEqual(fromOn.state, off);
+    assert.equal(fromOn.command, 'deactivate-picker');
+    assert.equal(fromOn.clearSelection, true);
+    const fromReady = stepPreviewPicker(ready, { kind: 'reset' });
+    assert.deepEqual(fromReady.state, off);
+    assert.equal(fromReady.command, null);
+    assert.equal(fromReady.clearSelection, true);
+  });
+});
+
+describe('workspace preview panel — PREVIEW-PICKER-01 toggle states', () => {
+  function renderPanel(
+    overrides: Partial<React.ComponentProps<typeof WorkspacePreviewPanel>> = {},
+    messages: typeof enMessages = enMessages,
+  ): string {
+    return renderToStaticMarkup(
+      <WorkspacePreviewPanel
+        projectUxEnabled
+        projectMessages={messages.project}
+        previewMessages={messages.preview}
+        commonMessages={messages.common}
+        selectedSessionId={session.id}
+        previewState="ready"
+        previewUrl={`/api/preview/${session.id}/proxy?refresh=1`}
+        onStartPreview={async () => {}}
+        onRefreshPreview={async () => {}}
+        onPreviewLoad={() => {}}
+        onPreviewError={() => {}}
+        {...overrides}
+      />,
+    );
+  }
+
+  test('unavailable: no toggle and no picker banner; Start, Stop and Refresh unchanged', () => {
+    for (const pickerAvailable of [undefined, false]) {
+      const html = renderPanel({ pickerAvailable });
+      assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
+      assert.doesNotMatch(html, /data-testid="workspace-preview-picker-active"/);
+      assert.match(html, /data-testid="workspace-preview-start"/);
+      assert.match(html, /data-testid="workspace-preview-stop"/);
+      assert.match(html, /data-testid="workspace-preview-refresh"/);
+    }
+  });
+
+  test('off: the toggle after Refresh, with its test id, label and style', () => {
+    const html = renderPanel({ pickerAvailable: true, pickerActive: false });
+    assert.match(
+      html,
+      /<button type="button" data-testid="workspace-preview-picker-toggle" aria-pressed="false" class="rounded border border-violet-300 bg-white px-3 py-1 text-xs text-violet-700 disabled:border-gray-200 disabled:text-gray-400">Select Element<\/button>/,
+    );
+    assert.ok(html.indexOf('workspace-preview-refresh') < html.indexOf('workspace-preview-picker-toggle'));
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-active"/);
+    assert.ok(html.includes(enMessages.project.selectElement));
+  });
+
+  test('on: the toggle is pressed, says Deselect, and the Picker active banner shows', () => {
+    const html = renderPanel({ pickerAvailable: true, pickerActive: true });
+    assert.match(html, /data-testid="workspace-preview-picker-toggle" aria-pressed="true"/);
+    assert.ok(html.includes(`>${enMessages.project.deselectElement}</button>`));
+    assert.match(html, /data-testid="workspace-preview-picker-active"/);
+    assert.ok(html.includes(enMessages.project.pickerActive));
+  });
+
+  test('picked: the Element selected banner shows the tag and selector, and the toggle is off', () => {
+    const html = renderPanel({
+      pickerAvailable: true,
+      pickerActive: false,
+      selectedPreviewElement: {
+        tagName: 'button',
+        selector: 'main > button.cta',
+        textContent: 'Buy',
+        classList: ['cta'],
+        boundingBox: { x: 0, y: 0, width: 1, height: 1 },
+        id: null,
+      },
+    });
+    assert.match(html, /data-testid="workspace-preview-picker-toggle" aria-pressed="false"/);
+    assert.match(html, /data-testid="workspace-preview-selected-element"/);
+    assert.ok(html.includes(`${enMessages.project.elementSelected}: &lt;button&gt;`));
+    assert.ok(html.includes('main &gt; button.cta'));
+  });
+
+  test('the toggle is disabled while the preview is not ready', () => {
+    const html = renderPanel({ pickerAvailable: true, previewState: 'loading' });
+    assert.match(html, /data-testid="workspace-preview-picker-toggle" aria-pressed="false" disabled=""/);
+  });
+
+  test('the toggle and banners use the translated keys in zh-TW and zh-CN', () => {
+    for (const messages of [zhTwMessages, zhCnMessages] as unknown as Array<typeof enMessages>) {
+      const offHtml = renderPanel({ pickerAvailable: true }, messages);
+      assert.ok(offHtml.includes(`>${messages.project.selectElement}</button>`));
+      const onHtml = renderPanel({ pickerAvailable: true, pickerActive: true }, messages);
+      assert.ok(onHtml.includes(`>${messages.project.deselectElement}</button>`));
+      assert.ok(onHtml.includes(messages.project.pickerActive));
+    }
   });
 });
 

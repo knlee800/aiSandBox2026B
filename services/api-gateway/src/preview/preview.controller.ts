@@ -6,6 +6,7 @@ import { PreviewOwnershipGuard } from './preview-ownership.guard';
 import {
   isPreviewHostRequest,
   isPreviewProxySuffix,
+  isReservedPreviewSuffix,
   PreviewForward,
   PreviewHostConfig,
   readPreviewHostConfig,
@@ -94,6 +95,23 @@ export function previewInternalKeyHeaders(internalServiceKey: string): Record<st
 }
 
 /**
+ * PREVIEW-PICKER-01: the status answer on the platform host gains
+ * previewOrigin, the preview host's origin (PREVIEW_BASE_URL), or null when
+ * no preview host is configured. Only a 200 answer whose body is a JSON
+ * object changes; the gateway's value replaces any field of that name from
+ * container-manager. The workspace page checks bridge messages against it.
+ */
+export function withPreviewOrigin(status: number, body: unknown, previewOrigin: string | null): unknown {
+  if (status !== 200 || typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return body;
+  }
+  if (Buffer.isBuffer(body)) {
+    return body;
+  }
+  return { ...(body as Record<string, unknown>), previewOrigin };
+}
+
+/**
  * Forwards one allowed preview request to container-manager and copies the
  * answer back. Shared by the platform-host catch-all and the preview-host
  * proxy route, so the container-manager request is the same on both: same
@@ -111,8 +129,10 @@ export async function forwardPreviewRequest(args: {
   keyHeaders: Record<string, string>;
   failSafe: boolean;
   cookieHost: PreviewCookieHost;
+  /** PREVIEW-PICKER-01: changes a non-streamed body before it is sent. */
+  transformBody?: (status: number, body: unknown) => unknown;
 }): Promise<void> {
-  const { req, res, forward, url, keyHeaders, failSafe, cookieHost } = args;
+  const { req, res, forward, url, keyHeaders, failSafe, cookieHost, transformBody } = args;
   const isProxy = isPreviewProxySuffix(forward.suffix);
   try {
     console.log(`[Preview Proxy] ${req.method} ${req.path} -> ${url}`);
@@ -149,7 +169,7 @@ export async function forwardPreviewRequest(args: {
     if (streamed) {
       response.data.pipe(res);
     } else {
-      res.send(response.data);
+      res.send(transformBody ? transformBody(response.status, response.data) : response.data);
     }
   } catch (error) {
     console.error('[Preview Proxy] Error:', error.message);
@@ -293,6 +313,13 @@ export class PreviewController {
       res.setHeader(PREVIEW_CSP_HEADER, PREVIEW_SANDBOX_CSP);
     }
 
+    // PREVIEW-PICKER-01: proxy/__aisb/... is reserved. The bridge exists
+    // only on the preview host; here it is 404 before any redirect, ticket
+    // or container-manager call.
+    if (forward && isReservedPreviewSuffix(forward.suffix)) {
+      return this.refuse(res);
+    }
+
     const url = forward ? buildPreviewTargetUrl(this.containerManagerUrl, forward) : null;
     if (!forward || !url) {
       return this.refuse(res);
@@ -311,6 +338,13 @@ export class PreviewController {
       failSafe: isProxy,
       // COOKIE-PREFIX-01: answers here are on the platform host.
       cookieHost: 'platform',
+      // PREVIEW-PICKER-01: GET status tells the page the preview origin.
+      ...(forward.suffix === 'status' && req.method.toUpperCase() === 'GET'
+        ? {
+            transformBody: (status: number, body: unknown) =>
+              withPreviewOrigin(status, body, previewHost ? previewHost.origin : null),
+          }
+        : {}),
     });
   }
 }

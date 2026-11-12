@@ -609,17 +609,32 @@ export class PreviewService implements OnModuleInit {
     return normalizedPath;
   }
 
+  /**
+   * Adds the preview base tag (unless the app has its own <base>) and,
+   * PREVIEW-PICKER-01, one script tag for the preview bridge right after it
+   * (unless the HTML already carries one). The bridge path is absolute, so
+   * it is added whether or not the app has its own <base>. The gateway
+   * serves the bridge itself on the preview host; container-manager never
+   * serves proxy/__aisb/.
+   */
   private injectPreviewBaseTag(html: string, sessionId: string): string {
-    if (/<base\b/i.test(html)) {
+    const encodedSessionId = encodeURIComponent(sessionId);
+    const baseTag = /<base\b/i.test(html)
+      ? ''
+      : `<base href="/api/preview/${encodedSessionId}/proxy/">`;
+    const bridgeTag = /<script\b[^>]*\bdata-aisb-preview-bridge\b/i.test(html)
+      ? ''
+      : `<script src="/api/preview/${encodedSessionId}/proxy/__aisb/bridge.js" async data-aisb-preview-bridge></script>`;
+    const tags = `${baseTag}${bridgeTag}`;
+    if (!tags) {
       return html;
     }
 
-    const baseTag = `<base href="/api/preview/${encodeURIComponent(sessionId)}/proxy/">`;
     if (/<head\b[^>]*>/i.test(html)) {
-      return html.replace(/<head\b[^>]*>/i, (match) => `${match}${baseTag}`);
+      return html.replace(/<head\b[^>]*>/i, (match) => `${match}${tags}`);
     }
 
-    return `${baseTag}${html}`;
+    return `${tags}${html}`;
   }
 
   private resolveContentType(filePath: string): string {

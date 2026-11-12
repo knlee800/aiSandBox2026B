@@ -278,6 +278,48 @@ describe('PreviewEntryController enter (PREVIEW-ORIGIN-01)', () => {
     expect(line.split(';').map((part) => part.trim())).not.toContain('Secure');
   });
 
+  describe('the bridge script (PREVIEW-PICKER-01)', () => {
+    const bridgePath = `/api/preview/${SID}/proxy/__aisb/bridge.js`;
+
+    it('is answered by the gateway on the preview host after the ticketed enter, never forwarded', async () => {
+      await startApp(`https://${PREVIEW}`);
+      const ticket = tickets.issueTicket(SID, 'user-1', 'proxy')!;
+      const entered = await rawRequest(port, 'GET', enterPath(ticket), onPreview);
+      const cookie = (entered.headers['set-cookie'] ?? [])[0].split(';')[0];
+
+      // CONTAINER_MANAGER_URL points at a closed port: a forwarded request would be 502.
+      const reply = await rawRequest(port, 'GET', bridgePath, { ...onPreview, cookie });
+      expect(reply.status).toBe(200);
+      expect(reply.headers['content-type']).toBe('text/javascript; charset=utf-8');
+      expect(reply.headers['cache-control']).toBe('no-store');
+      expect(reply.headers['x-content-type-options']).toBe('nosniff');
+      expect(reply.body).toContain(`"https://${PLATFORM}"`);
+      expect(reply.body).not.toContain(cookie.split('=')[1]);
+      expect(logged.join('\n')).not.toContain('->');
+      expect(validateSessionToken).not.toHaveBeenCalled();
+    });
+
+    it('is refused without the preview cookie, before anything is served', async () => {
+      await startApp(`https://${PREVIEW}`);
+      const reply = await rawRequest(port, 'GET', bridgePath, onPreview);
+      expect(reply.status).toBe(403);
+      expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+    });
+
+    it('is 404 on every host when PREVIEW_BASE_URL is unset (signed in, no forwarding)', async () => {
+      await startApp(undefined);
+      validateSessionToken.mockResolvedValue({ id: 'user-1', email: 'u@example.test', role: 'user', planType: 'free' });
+      for (const headers of [onPreview, onPlatform, { host: '127.0.0.1:4000' }]) {
+        const reply = await rawRequest(port, 'GET', bridgePath, {
+          ...headers,
+          cookie: '__Host-aisandbox_session=valid; aisandbox_session=valid',
+        });
+        expect(reply.status).toBe(404);
+        expect(reply.body).not.toContain('PLATFORM_ORIGIN');
+      }
+    });
+  });
+
   it('is 404 everywhere when PREVIEW_BASE_URL is unset', async () => {
     await startApp(undefined);
     const ticket = tickets.issueTicket(SID, 'user-1', 'proxy')!;

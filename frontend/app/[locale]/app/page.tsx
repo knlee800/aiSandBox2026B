@@ -39,6 +39,7 @@ import {
   buildPromptWithSelectedPreviewElement,
   buildPreviewProxyUrl,
   isPreviewRunning,
+  readStatusPreviewOrigin,
   type SelectedPreviewElement,
   type WorkspacePreviewStatusResponse,
   type WorkspacePreviewState,
@@ -1348,6 +1349,8 @@ export default function AppPage() {
   });
   const [previewState, setPreviewState] = useState<WorkspacePreviewState>('unavailable');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // PREVIEW-PICKER-01: the preview host's origin from the last status answer.
+  const [previewOrigin, setPreviewOrigin] = useState<string | null>(null);
   const previewRequestIdRef = useRef(0);
   const previewErrorRetryCountRef = useRef(0);
   const previewErrorRetryTimeoutRef = useRef<number | null>(null);
@@ -6234,6 +6237,18 @@ export default function AppPage() {
     await loadWorkspaceFileContent(selectedSessionId, filePath);
   }
 
+  /**
+   * PREVIEW-PICKER-01: keeps the previewOrigin the gateway adds to the status
+   * answer (a string, or null without a preview host). An answer without the
+   * field leaves the last value as it was.
+   */
+  function rememberPreviewOrigin(status: unknown): void {
+    const origin = readStatusPreviewOrigin(status);
+    if (origin !== undefined) {
+      setPreviewOrigin(origin);
+    }
+  }
+
   async function pollPreviewStatusUntilRunning(
     sessionId: string,
     requestId: number,
@@ -6254,6 +6269,7 @@ export default function AppPage() {
         if (previewRequestIdRef.current !== requestId) {
           return false;
         }
+        rememberPreviewOrigin(statusData);
         if (isPreviewRunning(statusData)) {
           previewErrorRetryCountRef.current = 0;
           setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
@@ -6290,6 +6306,7 @@ export default function AppPage() {
       if (previewRequestIdRef.current !== requestId) {
         return;
       }
+      rememberPreviewOrigin(statusData);
 
       if (isPreviewRunning(statusData)) {
         previewErrorRetryCountRef.current = 0;
@@ -6700,6 +6717,7 @@ export default function AppPage() {
       buildError={buildError}
       previewState={previewState}
       previewUrl={previewUrl}
+      previewOrigin={previewOrigin}
       onStartPreview={handleStartPreview}
       onRefreshPreview={handleRefreshPreview}
       onAskAiToFixPreview={handleAskAiToFixPreview}

@@ -8,6 +8,11 @@ import { PreviewService as PreviewPortRegistry } from '../previews/preview.servi
 
 jest.mock('axios');
 
+/** PREVIEW-PICKER-01: the bridge tag added to static HTML right after the base tag. */
+function bridgeTag(encodedSessionId: string): string {
+  return `<script src="/api/preview/${encodedSessionId}/proxy/__aisb/bridge.js" async data-aisb-preview-bridge></script>`;
+}
+
 /** BROWSER-SMOKE-01: a stand-in port registry for the static-file describes. */
 function mockPortRegistry() {
   return {
@@ -57,7 +62,7 @@ describe('PreviewService readStaticPreviewContent', () => {
 
     expect(result.contentType).toBe('text/html; charset=utf-8');
     expect(result.content.toString('utf8')).toContain(
-      '<head><base href="/api/preview/session-123/proxy/"><title>Preview</title></head>',
+      `<head><base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}<title>Preview</title></head>`,
     );
   });
 
@@ -69,7 +74,7 @@ describe('PreviewService readStaticPreviewContent', () => {
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
     expect(result.content.toString('utf8')).toContain(
-      '<head data-test="preview"><base href="/api/preview/session-123/proxy/"><title>Preview</title></head>',
+      `<head data-test="preview"><base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}<title>Preview</title></head>`,
     );
   });
 
@@ -81,9 +86,13 @@ describe('PreviewService readStaticPreviewContent', () => {
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
     expect(result.content.toString('utf8').startsWith('<base href="/api/preview/session-123/proxy/">')).toBe(true);
+    // PREVIEW-PICKER-01: the bridge tag follows the base tag when there is no <head>.
+    expect(result.content.toString('utf8')).toBe(
+      `<base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}<html><body><a href="./page2.html">Next</a></body></html>`,
+    );
   });
 
-  it('does not double inject when a base tag already exists', async () => {
+  it('does not double inject when a base tag already exists, but still adds the bridge tag', async () => {
     dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
       Buffer.from('<html><head><base href="/custom/"><title>Preview</title></head></html>'),
     );
@@ -91,9 +100,77 @@ describe('PreviewService readStaticPreviewContent', () => {
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
     expect(result.content.toString('utf8')).toBe(
-      '<html><head><base href="/custom/"><title>Preview</title></head></html>',
+      `<html><head>${bridgeTag('session-123')}<base href="/custom/"><title>Preview</title></head></html>`,
     );
     expect(result.content.toString('utf8').match(/<base\b/gi)).toHaveLength(1);
+  });
+
+  describe('PREVIEW-PICKER-01: the preview bridge tag', () => {
+    it('adds exactly one bridge tag right after the base tag', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+        Buffer.from('<!doctype html><html><head><meta charset="utf-8"></head><body>x</body></html>'),
+      );
+
+      const html = (await service.readStaticPreviewContent('session-123', '/index.html')).content.toString('utf8');
+
+      expect(html).toBe(
+        `<!doctype html><html><head><base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}<meta charset="utf-8"></head><body>x</body></html>`,
+      );
+      expect(html.match(/data-aisb-preview-bridge/g)).toHaveLength(1);
+    });
+
+    it('adds the bridge tag when the app has its own base tag', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+        Buffer.from('<html><head data-x="1"><base href="./"></head></html>'),
+      );
+
+      const html = (await service.readStaticPreviewContent('session-123', '/index.html')).content.toString('utf8');
+
+      expect(html).toBe(`<html><head data-x="1">${bridgeTag('session-123')}<base href="./"></head></html>`);
+    });
+
+    it('prepends the bridge tag when there is no head and the app has its own base tag', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('<base href="./"><p>x</p>'));
+
+      const html = (await service.readStaticPreviewContent('session-123', '/page.htm')).content.toString('utf8');
+
+      expect(html).toBe(`${bridgeTag('session-123')}<base href="./"><p>x</p>`);
+    });
+
+    it('does not add a second bridge tag', async () => {
+      const already = `<html><head><base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}</head></html>`;
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from(already));
+
+      const html = (await service.readStaticPreviewContent('session-123', '/index.html')).content.toString('utf8');
+
+      expect(html).toBe(already);
+      expect(html.match(/data-aisb-preview-bridge/g)).toHaveLength(1);
+    });
+
+    it('url-encodes the session id in the bridge path', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('<html><head></head></html>'));
+
+      const html = (await service.readStaticPreviewContent('session with spaces', '/index.html')).content.toString('utf8');
+
+      expect(html).toContain(
+        '<script src="/api/preview/session%20with%20spaces/proxy/__aisb/bridge.js" async data-aisb-preview-bridge></script>',
+      );
+    });
+
+    it.each([
+      ['/app.js', 'const tag = "<head>";'],
+      ['/styles.css', 'head { color: red; }'],
+      ['/data.json', '{"html":"<head></head>"}'],
+      ['/notes.txt', '<head></head>'],
+    ])('leaves %s byte for byte unchanged', async (requestPath, body) => {
+      const bytes = Buffer.from(body, 'utf8');
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(bytes);
+
+      const result = await service.readStaticPreviewContent('session-123', requestPath);
+
+      expect(result.content.equals(bytes)).toBe(true);
+      expect(result.content.toString('utf8')).not.toContain('data-aisb-preview-bridge');
+    });
   });
 
   it('leaves non-html content unchanged', async () => {
@@ -210,7 +287,7 @@ describe('PreviewService readStaticPreviewContent', () => {
       const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
       const expected =
-        '<html><head><base href="/api/preview/session-123/proxy/"><title>Café 日本 😀</title></head><body>ü</body></html>';
+        `<html><head><base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}<title>Café 日本 😀</title></head><body>ü</body></html>`;
       expect(Buffer.isBuffer(result.content)).toBe(true);
       expect(result.content.equals(Buffer.from(expected, 'utf8'))).toBe(true);
       expect(result.contentType).toBe('text/html; charset=utf-8');
@@ -222,7 +299,7 @@ describe('PreviewService readStaticPreviewContent', () => {
       const result = await service.readStaticPreviewContent('session-123', '/page.htm');
 
       expect(result.content.toString('utf8')).toBe(
-        '<base href="/api/preview/session-123/proxy/"><p>x</p>',
+        `<base href="/api/preview/session-123/proxy/">${bridgeTag('session-123')}<p>x</p>`,
       );
     });
 
