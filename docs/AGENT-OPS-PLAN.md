@@ -132,6 +132,8 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 |---|---|---|
 | 79 | Weekly encrypted backup copy off the staging host | Every week |
 | 80 | Review the two archival snapshots of the deleted old host (aisandbox-staging-archive-20261026 and aisandbox-staging-archive-stopped-20261026): keep or delete (plan S3; OLD-HOST-RETIRE-01 deleted the instance and the rest on 2026-11-09) | 2027-01-24 |
+| 80a | Keith's small open decisions (2026-11-12): confirm saturationClass OPTIONAL for OFFICE-SCENE-01, OFFICE-BUILD-01, OFFICE-SHOP-01, OFFICE-PLAYER-01 and OFFICE-VOICE-01; whether to reword PRD.md's FUTURE row "Deeper RPG / simulation (not current; not the next committed product)" (left unchanged by GOV-PRD-SYNC-01); keep or drop PAGE-ERROR-POLISH-01. Bigger ones are in their rows: palette v2 and the character tool test (21), voice provider and audio storage (23), which privacy tasks to register (46) | When Keith chooses |
+| 80b | Leftover files for Keith to delete (outside the repository; the control plane does not delete them): C:\Users\knlee\aisb-worktrees\CM-CLEANUP-01B (folder no longer a git worktree), C:\Users\knlee\aisb-worktrees\scratch-build.log, C:\Users\knlee\AppData\Local\Temp\app-setup.bak, C:\Users\knlee\AppData\Local\Temp\addmsgs.js | Any time |
 
 **Stage 12 — old tasks from before the clean rebuild; Keith decides whether to drop each**
 
