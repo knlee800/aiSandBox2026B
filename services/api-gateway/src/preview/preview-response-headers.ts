@@ -50,3 +50,35 @@ export function filterProxyResponseHeaders(
   }
   return result;
 }
+
+/**
+ * PREVIEW-ORIGIN-01 fail-safe. Every proxy response served on a host that
+ * is not the preview host (including when PREVIEW_BASE_URL is unset) carries
+ * this header. Without allow-same-origin the document gets an opaque
+ * origin: its script cannot use the platform session, read platform cookies
+ * or storage, or reach the parent page. Multi-file previews degrade (their
+ * asset requests lose the session cookie) instead of running as the
+ * platform.
+ */
+export const PREVIEW_CSP_HEADER = 'Content-Security-Policy';
+export const PREVIEW_SANDBOX_CSP = 'sandbox allow-scripts allow-forms allow-modals allow-popups';
+
+/**
+ * Adds the fail-safe policy to forwarded headers. An upstream policy is
+ * kept next to it (the browser enforces both), never in its place.
+ */
+export function withPreviewSandboxPolicy(headers: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {};
+  const upstream: string[] = [];
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === PREVIEW_CSP_HEADER.toLowerCase()) {
+      for (const item of Array.isArray(value) ? value : [value]) {
+        if (item !== undefined && item !== null && String(item).trim()) upstream.push(String(item));
+      }
+      continue;
+    }
+    result[key] = value;
+  }
+  result[PREVIEW_CSP_HEADER] = upstream.length > 0 ? [...upstream, PREVIEW_SANDBOX_CSP] : PREVIEW_SANDBOX_CSP;
+  return result;
+}

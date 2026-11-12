@@ -1,6 +1,10 @@
 import axios from 'axios';
 import { PreviewController } from '../preview.controller';
-import { filterProxyResponseHeaders } from '../preview-response-headers';
+import {
+  filterProxyResponseHeaders,
+  PREVIEW_SANDBOX_CSP,
+  withPreviewSandboxPolicy,
+} from '../preview-response-headers';
 
 jest.mock('axios');
 
@@ -120,5 +124,94 @@ describe('PreviewController catch-all response headers', () => {
     expect(names).not.toContain('transfer-encoding');
     expect(res.setHeader).toHaveBeenCalledWith('content-length', '5');
     expect(pipe).toHaveBeenCalledWith(res);
+  });
+});
+
+describe('PREVIEW-ORIGIN-01 sandbox fail-safe (PREVIEW_BASE_URL unset)', () => {
+  const mockedAxios = axios as jest.MockedFunction<typeof axios>;
+  const savedPreviewBaseUrl = process.env.PREVIEW_BASE_URL;
+
+  beforeEach(() => {
+    delete process.env.PREVIEW_BASE_URL;
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    if (savedPreviewBaseUrl === undefined) delete process.env.PREVIEW_BASE_URL;
+    else process.env.PREVIEW_BASE_URL = savedPreviewBaseUrl;
+  });
+
+  function makeRes() {
+    return { setHeader: jest.fn(), status: jest.fn().mockReturnThis(), send: jest.fn(), json: jest.fn() };
+  }
+
+  function lastPolicy(res: ReturnType<typeof makeRes>) {
+    const calls = res.setHeader.mock.calls.filter((c) => String(c[0]).toLowerCase() === 'content-security-policy');
+    return calls.length ? calls[calls.length - 1][1] : undefined;
+  }
+
+  it('has the agreed token list and no allow-same-origin', () => {
+    expect(PREVIEW_SANDBOX_CSP).toBe('sandbox allow-scripts allow-forms allow-modals allow-popups');
+    expect(PREVIEW_SANDBOX_CSP).not.toMatch(/allow-same-origin|allow-top-navigation/);
+  });
+
+  it('withPreviewSandboxPolicy adds the policy and keeps an upstream one beside it', () => {
+    expect(withPreviewSandboxPolicy({ 'content-type': 'text/html' })).toEqual({
+      'content-type': 'text/html',
+      'Content-Security-Policy': PREVIEW_SANDBOX_CSP,
+    });
+    expect(
+      withPreviewSandboxPolicy({ 'content-security-policy': "default-src 'self'", etag: 'x' }),
+    ).toEqual({ etag: 'x', 'Content-Security-Policy': ["default-src 'self'", PREVIEW_SANDBOX_CSP] });
+    expect(
+      withPreviewSandboxPolicy({ 'Content-Security-Policy': ['a', 'b'] })['Content-Security-Policy'],
+    ).toEqual(['a', 'b', PREVIEW_SANDBOX_CSP]);
+  });
+
+  it('a streamed proxy response carries the policy', async () => {
+    const pipe = jest.fn();
+    mockedAxios.mockResolvedValue({ status: 200, headers: { 'content-type': 'text/html' }, data: { pipe } } as never);
+    const res = makeRes();
+    await new PreviewController().proxyToContainerManager(
+      { method: 'GET', path: '/api/preview/session-123/proxy/index.html', body: undefined, query: {}, headers: {} } as never,
+      res as never,
+    );
+    expect(lastPolicy(res)).toBe(PREVIEW_SANDBOX_CSP);
+    expect(pipe).toHaveBeenCalledWith(res);
+  });
+
+  it('a non-stream proxy response carries the policy', async () => {
+    mockedAxios.mockResolvedValue({ status: 200, headers: { 'content-type': 'text/html' }, data: '<p>x</p>' } as never);
+    const res = makeRes();
+    await new PreviewController().proxyToContainerManager(
+      { method: 'GET', path: '/api/preview/session-123/proxy', body: undefined, query: {}, headers: {} } as never,
+      res as never,
+    );
+    expect(lastPolicy(res)).toBe(PREVIEW_SANDBOX_CSP);
+    expect(res.send).toHaveBeenCalledWith('<p>x</p>');
+  });
+
+  it('a 502 on the proxy path carries the policy', async () => {
+    mockedAxios.mockRejectedValue(new Error('down'));
+    const res = makeRes();
+    await new PreviewController().proxyToContainerManager(
+      { method: 'GET', path: '/api/preview/session-123/proxy', body: undefined, query: {}, headers: {} } as never,
+      res as never,
+    );
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(lastPolicy(res)).toBe(PREVIEW_SANDBOX_CSP);
+  });
+
+  it('status keeps its headers as before (no policy)', async () => {
+    mockedAxios.mockResolvedValue({ status: 200, headers: { 'content-type': 'application/json' }, data: { ok: true } } as never);
+    const res = makeRes();
+    await new PreviewController().proxyToContainerManager(
+      { method: 'GET', path: '/api/preview/session-123/status', body: undefined, query: {}, headers: {} } as never,
+      res as never,
+    );
+    expect(lastPolicy(res)).toBeUndefined();
   });
 });

@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import ErrorRemediation, { ErrorContext, createErrorContext } from '@/components/ErrorRemediation';
 
 const DRIVER_LAST_EXECUTION_STATE_KEY = 'driver_last_execution_state';
+// PREVIEW-ORIGIN-01: where earlier versions kept the API key; only removed now.
+const DRIVER_LEGACY_API_KEY_STORAGE_KEY = 'driver_api_key';
 
 interface DriverExecutionStatusResponse {
   executionId?: string;
@@ -69,11 +71,13 @@ export default function DriverPage() {
   const [rateLimitClarityVisible, setRateLimitClarityVisible] = useState(false);
   const [submittedAtMs, setSubmittedAtMs] = useState<number | null>(null);
 
-  // Phase 37B: Load API key from localStorage on mount
+  // PREVIEW-ORIGIN-01: the API key lives in memory only (typed again after a
+  // reload). A key an earlier version saved in browser storage is removed.
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('driver_api_key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
+    try {
+      localStorage.removeItem(DRIVER_LEGACY_API_KEY_STORAGE_KEY);
+    } catch {
+      // Storage unavailable: nothing was stored there either.
     }
 
     const savedExecutionStateRaw = localStorage.getItem(DRIVER_LAST_EXECUTION_STATE_KEY);
@@ -283,9 +287,8 @@ export default function DriverPage() {
       setExecutionStatus(nextExecutionStatus);
       setStatusDetail(nextStatusDetail);
       setLastStatusCheckAt(nextExecutionStatus ? checkedAt : null);
-      
-      // Save API key to localStorage for convenience
-      localStorage.setItem('driver_api_key', apiKey.trim());
+
+      // PREVIEW-ORIGIN-01: the API key is not saved in browser storage.
       persistExecutionState({
         nextPrompt: prompt.trim(),
         nextOutput,

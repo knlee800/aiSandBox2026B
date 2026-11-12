@@ -23,6 +23,8 @@ import WorkspaceShell, {
   HistoryCheckpointDiffTruncatedNotice,
   RESTORE_FAILED_NOTICE_MAX_PATHS,
   computeProjectHistoryRows,
+  PREVIEW_IFRAME_SANDBOX,
+  PREVIEW_PICKER_TOGGLE_VISIBLE,
 } from './workspace-shell';
 import WorkspaceAccountMenu, {
   GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH,
@@ -5372,34 +5374,94 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="workspace-preview-iframe"/);
   });
 
-  test('renders preview picker toggle in Preview tab toolbar', () => {
+  test('PREVIEW-ORIGIN-01: hides the preview picker toggle in the Preview tab toolbar', () => {
+    assert.equal(PREVIEW_PICKER_TOGGLE_VISIBLE, false);
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
       previewState: 'ready',
       previewUrl: `/api/preview/${session.id}/proxy?refresh=11`,
     });
 
-    assert.match(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.doesNotMatch(html, new RegExp(enMessages.project.selectElement));
+    assert.doesNotMatch(html, new RegExp(enMessages.project.deselectElement));
   });
 
-  test('disables preview picker toggle when preview URL is missing', () => {
+  test('PREVIEW-ORIGIN-01: the picker toggle stays hidden when the preview URL is missing', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
       previewState: 'ready',
       previewUrl: null,
     });
 
-    assert.match(html, /data-testid="workspace-preview-picker-toggle"[^>]*disabled/);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
   });
 
-  test('sets preview picker toggle aria-pressed false by default', () => {
+  test('PREVIEW-ORIGIN-01: Start, Stop and Refresh still render without the picker toggle', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
       previewState: 'ready',
       previewUrl: `/api/preview/${session.id}/proxy?refresh=12`,
     });
 
-    assert.match(html, /data-testid="workspace-preview-picker-toggle"[^>]*aria-pressed="false"/);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-stop"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
+  });
+
+  test('PREVIEW-ORIGIN-01: the hidden picker keeps its message keys in en, zh-TW and zh-CN', () => {
+    for (const messages of [enMessages, zhTwMessages, zhCnMessages]) {
+      for (const key of ['selectElement', 'deselectElement', 'pickerActive', 'elementSelected'] as const) {
+        assert.equal(typeof messages.project[key], 'string');
+        assert.ok(messages.project[key].length > 0);
+      }
+    }
+  });
+
+  test('PREVIEW-ORIGIN-01: the preview iframe is sandboxed with the agreed token list', () => {
+    assert.equal(
+      PREVIEW_IFRAME_SANDBOX,
+      'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads',
+    );
+    const previewIframe = renderWorkspaceShellElementByTestId('workspace-preview-iframe', {
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=20`,
+    });
+    assert.ok(previewIframe);
+    const sandbox = String((previewIframe.props as { sandbox?: unknown }).sandbox ?? '');
+    assert.equal(sandbox, PREVIEW_IFRAME_SANDBOX);
+    const tokens = sandbox.split(' ');
+    assert.deepEqual(tokens, [
+      'allow-scripts',
+      'allow-same-origin',
+      'allow-forms',
+      'allow-modals',
+      'allow-popups',
+      'allow-downloads',
+    ]);
+    assert.ok(!tokens.some((token) => token.startsWith('allow-top-navigation')));
+    assert.ok(!tokens.includes('allow-popups-to-escape-sandbox'));
+
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=21`,
+    });
+    assert.match(
+      html,
+      /<iframe[^>]*data-testid="workspace-preview-iframe"[^>]*sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads"/,
+    );
+  });
+
+  test('PREVIEW-ORIGIN-01: the sandboxed iframe still loads the same preview URL', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=22`,
+    });
+    assert.ok(html.includes(`src="/api/preview/${session.id}/proxy?refresh=22"`));
   });
 
   test('keeps preview Start and Refresh controls visible with picker infrastructure', () => {
@@ -5433,14 +5495,14 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /data-testid="workspace-preview-selected-element"/);
   });
 
-  test('picker toggle still renders after 15B implementation', () => {
+  test('picker toggle stays hidden after PREVIEW-ORIGIN-01; Start and Refresh remain', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
       previewState: 'ready',
       previewUrl: `/api/preview/${session.id}/proxy?refresh=16`,
     });
 
-    assert.match(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
     assert.match(html, /data-testid="workspace-preview-start"/);
     assert.match(html, /data-testid="workspace-preview-refresh"/);
   });
@@ -5473,7 +5535,7 @@ describe('workspace shell component', () => {
       onPreviewElementSelected: () => {},
     });
 
-    assert.match(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-toggle"/);
     assert.match(html, /data-testid="workspace-preview-iframe"/);
   });
 

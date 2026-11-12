@@ -10,6 +10,8 @@ import {
   resolvePreviewForward,
 } from '../preview.controller';
 import { PreviewOwnershipGuard } from '../preview-ownership.guard';
+import { PreviewAccessGuard } from '../preview-access.guard';
+import { PreviewEntryController } from '../preview-entry.controller';
 
 /**
  * CM-AUTH-01 (D4, D5): the gateway preview proxy sends the internal key to
@@ -180,8 +182,13 @@ describe('PreviewController over HTTP with a recording container-manager (CM-AUT
     process.env.CONTAINER_MANAGER_URL = upstreamUrl;
 
     const moduleRef = await Test.createTestingModule({
-      controllers: [PreviewController],
-      providers: [PreviewOwnershipGuard, { provide: SessionService, useValue: { getSessionById } }],
+      // PREVIEW-ORIGIN-01: the real route order, the preview-host routes first.
+      controllers: [PreviewEntryController, PreviewController],
+      providers: [
+        PreviewOwnershipGuard,
+        PreviewAccessGuard,
+        { provide: SessionService, useValue: { getSessionById } },
+      ],
     })
       .overrideGuard(SessionCookieGuard)
       .useValue({

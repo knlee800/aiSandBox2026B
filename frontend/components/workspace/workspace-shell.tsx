@@ -168,6 +168,23 @@ export const REPO_DOC_PICKER_MAX_CANDIDATES = 100;
 export const GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:global-ai-instructions-updated';
 export const PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:project-ai-instructions-updated';
 export const PROJECT_REPO_DOCS_UPDATED_EVENT = 'workspace:project-repo-docs-updated';
+/**
+ * PREVIEW-ORIGIN-01: the generated app runs in a sandboxed frame.
+ * allow-same-origin only lets the app keep its own preview-host origin (its
+ * storage, modules and fonts work); without allow-top-navigation it cannot
+ * redirect the whole tab. When the gateway serves the preview off the
+ * preview host it adds a CSP sandbox without allow-same-origin, and the
+ * browser applies both.
+ */
+export const PREVIEW_IFRAME_SANDBOX =
+  'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads';
+/**
+ * PREVIEW-ORIGIN-01: the Select Element picker needs same-origin access to
+ * the preview, which the separate preview host removes. Its toggle is hidden
+ * until it is rebuilt over postMessage; the picker code and its message keys
+ * stay.
+ */
+export const PREVIEW_PICKER_TOGGLE_VISIBLE = false;
 
 interface UserAiInstructionsResponse {
   globalInstructions: string | null;
@@ -5139,16 +5156,18 @@ function WorkspacePreviewPanel(props: {
               ? props.commonMessages.refreshing
               : props.commonMessages.refresh}
           </button>
-          <button
-            type="button"
-            data-testid="workspace-preview-picker-toggle"
-            aria-pressed={pickerActive}
-            disabled={!canTogglePicker}
-            onClick={() => props.onPickerToggle?.()}
-            className="rounded border border-violet-300 bg-white px-3 py-1 text-xs text-violet-700 disabled:border-gray-200 disabled:text-gray-400"
-          >
-            {pickerToggleLabel}
-          </button>
+          {PREVIEW_PICKER_TOGGLE_VISIBLE ? (
+            <button
+              type="button"
+              data-testid="workspace-preview-picker-toggle"
+              aria-pressed={pickerActive}
+              disabled={!canTogglePicker}
+              onClick={() => props.onPickerToggle?.()}
+              className="rounded border border-violet-300 bg-white px-3 py-1 text-xs text-violet-700 disabled:border-gray-200 disabled:text-gray-400"
+            >
+              {pickerToggleLabel}
+            </button>
+          ) : null}
         </div>
       </div>
       {previewStopFailed ? (
@@ -5188,6 +5207,7 @@ function WorkspacePreviewPanel(props: {
           title="Session Preview"
           data-testid="workspace-preview-iframe"
           src={props.previewUrl}
+          sandbox={PREVIEW_IFRAME_SANDBOX}
           onLoad={props.onPreviewLoad}
           onError={props.onPreviewError}
           className={iframeClassName}
