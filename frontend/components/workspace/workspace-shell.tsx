@@ -55,6 +55,7 @@ import {
 } from './workspace-ai-file-actions.logic';
 import { DIFF_MAX_LINES, computeLineDiff, type FileDiffResult } from './workspace-diff.logic';
 import {
+  parseProjectIdFromSnapshotLabel,
   parseProjectScopedSnapshotHint,
   parseProjectScopedSnapshotName,
   parseProjectScopedSnapshotSource,
@@ -9233,39 +9234,6 @@ function formatQuotaResetTimestamp(value: string | null | undefined): string {
   return parsedDate.toLocaleString();
 }
 
-const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
-const PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR = ':name:';
-const PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR = ':source:';
-const PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR = ':hint:';
-const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
-
-export function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): string | null {
-  if (!label) {
-    return null;
-  }
-  const trimmed = label.trim();
-  if (
-    !trimmed.startsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX) ||
-    !trimmed.endsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX)
-  ) {
-    return null;
-  }
-  const rawProjectId = trimmed.slice(
-    PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX.length,
-    trimmed.length - PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX.length,
-  );
-  const separatorIndexCandidates = [
-    rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR),
-    rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR),
-    rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR),
-  ].filter((index) => index >= 0);
-  const separatorIndex =
-    separatorIndexCandidates.length > 0 ? Math.min(...separatorIndexCandidates) : -1;
-  const normalizedProjectId =
-    separatorIndex >= 0 ? rawProjectId.slice(0, separatorIndex).trim() : rawProjectId.trim();
-  return normalizedProjectId ? normalizedProjectId : null;
-}
-
 function formatProjectHistoryFallbackLabel(
   label: string | null,
   recoveryCopy: typeof enMessages.recovery,
@@ -9292,7 +9260,7 @@ function formatProjectHistoryTimestamp(value: string): string {
   return parsedDate.toLocaleString();
 }
 
-function computeProjectHistoryRows(
+export function computeProjectHistoryRows(
   snapshots: WorkspaceSnapshotSummary[],
   projectId: string,
   recoveryCopy: typeof enMessages.recovery,
@@ -9304,23 +9272,7 @@ function computeProjectHistoryRows(
 
   return snapshots
     .filter(
-      (snapshot) => {
-        if (
-          parseProjectIdFromProjectScopedSnapshotLabel(snapshot.label) ===
-          normalizedProjectId
-        ) {
-          return true;
-        }
-
-        const trimmedLabel = snapshot.label?.trim();
-        return (
-          typeof trimmedLabel === 'string' &&
-          trimmedLabel.startsWith(
-            `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR}`,
-          ) &&
-          trimmedLabel.endsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX)
-        );
-      },
+      (snapshot) => parseProjectIdFromSnapshotLabel(snapshot.label) === normalizedProjectId,
     )
     .sort((left, right) => {
       const createdAtComparison = right.createdAt.localeCompare(left.createdAt);

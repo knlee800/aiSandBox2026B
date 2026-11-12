@@ -1,5 +1,5 @@
 {
-  "description": "SNAPSHOT-LABEL-01: shared examples of the project-scoped snapshot label rule. Read by the gateway tests (projects.service.spec.ts, internal-workspace-files.controller.spec.ts) and the frontend tests (workspace-snapshots.logic.test.ts, workspace-shell.test.tsx). parseCases: the expected result of parsing each label; the reference is the frontend parseProjectScopedSnapshotLabelParts, which the gateway reopen helper mirrors. historyListProjectId is given only where the workspace-shell history-list parser (which cuts the id at the earliest of :name:, :source: and :hint:) differs from the reference; no writer produces those labels. writerCases: the exact label each writer produces for the given input.",
+  "description": "SNAPSHOT-LABEL-01: shared examples of the project-scoped snapshot label rule. Read by the gateway tests (projects.service.spec.ts, internal-workspace-files.controller.spec.ts) and the frontend tests (workspace-snapshots.logic.test.ts, workspace-shell.test.tsx). parseCases: the expected result of parsing each label; the reference is the frontend parseProjectScopedSnapshotLabelParts, which the gateway reopen helper mirrors. The workspace-shell history list uses the same parser (SNAPSHOT-LABEL-02).writerCases: the exact label each writer produces for the given input.",
   "parseCases": [
     { "id": "plain", "label": "[project-id:project-1]", "projectId": "project-1", "name": null, "source": null, "hint": null },
     { "id": "plain-uuid", "label": "[project-id:3f2c9a1e-7b4d-4e8a-9c21-5d6e7f8a9b0c]", "projectId": "3f2c9a1e-7b4d-4e8a-9c21-5d6e7f8a9b0c", "name": null, "source": null, "hint": null },
@@ -41,10 +41,10 @@
     { "id": "empty-string", "label": "", "projectId": null, "name": null, "source": null, "hint": null },
     { "id": "whitespace-only", "label": "   ", "projectId": null, "name": null, "source": null, "hint": null },
     { "id": "null-label", "label": null, "projectId": null, "name": null, "source": null, "hint": null },
-    { "id": "hint-without-source", "label": "[project-id:project-1:hint:x]", "projectId": "project-1:hint:x", "name": null, "source": null, "hint": null, "historyListProjectId": "project-1" },
-    { "id": "name-after-source", "label": "[project-id:project-1:source:ai:name:Draft]", "projectId": "project-1:source:ai", "name": "Draft", "source": null, "hint": null, "historyListProjectId": "project-1" },
-    { "id": "name-after-hint", "label": "[project-id:project-1:source:ai:hint:x:name:y]", "projectId": "project-1:source:ai:hint:x", "name": "y", "source": null, "hint": null, "historyListProjectId": "project-1" },
-    { "id": "hint-before-source", "label": "[project-id:project-1:hint:x:source:ai]", "projectId": "project-1:hint:x", "name": null, "source": "ai", "hint": null, "historyListProjectId": "project-1" }
+    { "id": "hint-without-source", "label": "[project-id:project-1:hint:x]", "projectId": "project-1:hint:x", "name": null, "source": null, "hint": null },
+    { "id": "name-after-source", "label": "[project-id:project-1:source:ai:name:Draft]", "projectId": "project-1:source:ai", "name": "Draft", "source": null, "hint": null },
+    { "id": "name-after-hint", "label": "[project-id:project-1:source:ai:hint:x:name:y]", "projectId": "project-1:source:ai:hint:x", "name": "y", "source": null, "hint": null },
+    { "id": "hint-before-source", "label": "[project-id:project-1:hint:x:source:ai]", "projectId": "project-1:hint:x", "name": null, "source": "ai", "hint": null }
   ],
   "writerCases": [
     { "writer": "frontend-plain", "projectId": "project-1", "label": "[project-id:project-1]" },

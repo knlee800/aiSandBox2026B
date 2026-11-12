@@ -20,7 +20,7 @@ import WorkspaceShell, {
   formatRestoreFailedNotice,
   WorkspaceRestoreFailedNotice,
   RESTORE_FAILED_NOTICE_MAX_PATHS,
-  parseProjectIdFromProjectScopedSnapshotLabel,
+  computeProjectHistoryRows,
 } from './workspace-shell';
 import WorkspaceAccountMenu, {
   GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH,
@@ -11120,47 +11120,41 @@ describe('auth module reasons, generation errors and network fallback are transl
   });
 });
 
-describe('SNAPSHOT-LABEL-01: history list label parser against the shared examples', () => {
-  // The history list has its own project-id parser. It cuts the id at the
-  // earliest of :name:, :source: and :hint:, so for a few labels no writer
-  // produces it differs from the reference parser; the shared file pins those
-  // as historyListProjectId.
+describe('SNAPSHOT-LABEL-02: history list uses the shared label parser against the shared examples', () => {
   const examples = JSON.parse(
     readFileSync(
       new URL('../../../services/api-gateway/src/snapshots/snapshot-label-examples.json', import.meta.url),
       'utf8',
     ),
   ) as {
-    parseCases: Array<{
-      id: string;
-      label: string | null;
-      projectId: string | null;
-      historyListProjectId?: string | null;
-    }>;
+    parseCases: Array<{ id: string; label: string | null; projectId: string | null }>;
     writerCases: Array<{ projectId: string; label: string }>;
   };
+  const rowsFor = (label: string | null, projectId: string) =>
+    computeProjectHistoryRows(
+      [{ id: 'v1', label, createdAt: '2026-01-01T00:00:00.000Z' } as WorkspaceSnapshotSummary],
+      projectId,
+      enMessages.recovery,
+    );
 
   test('the shared file has parse cases', () => {
     assert.ok(examples.parseCases.length > 30);
   });
 
   for (const example of examples.parseCases) {
-    test(`history list parser reads ${example.id}`, () => {
-      const expected =
-        example.historyListProjectId !== undefined
-          ? example.historyListProjectId
-          : example.projectId;
-      assert.equal(parseProjectIdFromProjectScopedSnapshotLabel(example.label), expected);
+    test(`history list shows ${example.id} only under its shared-parser project`, () => {
+      if (example.projectId === null) {
+        assert.equal(rowsFor(example.label, 'project-1').length, 0);
+        return;
+      }
+      assert.equal(rowsFor(example.label, example.projectId).length, 1);
+      assert.equal(rowsFor(example.label, `${example.projectId}-other`).length, 0);
     });
   }
 
   test('every writer label is listed under the project it was written for', () => {
     for (const example of examples.writerCases) {
-      assert.equal(
-        parseProjectIdFromProjectScopedSnapshotLabel(example.label),
-        example.projectId.trim(),
-        example.label,
-      );
+      assert.equal(rowsFor(example.label, example.projectId).length, 1, example.label);
     }
   });
 });
