@@ -84466,7 +84466,7 @@ taskId=COOKIE-PREFIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/COOKIE-PREFIX-01-STAGE-START.md, 32cef0f); waiting for Keith's approval.
 **Task ID:** COOKIE-PREFIX-01
 **Title:** Harden platform cookies against a sibling host (__Host- prefix)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
