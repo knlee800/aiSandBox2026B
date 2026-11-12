@@ -84538,15 +84538,15 @@ taskId=PREVIEW-ORIGIN-DEPLOY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("DNS record added"). Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
 **Task ID:** PREVIEW-ORIGIN-DEPLOY-01
 **Title:** Deploy the preview host and PREVIEW-ORIGIN-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith adds the DNS A record for preview.staging.ainow.biz and approves the deploy.
+**Start condition:** READY (PREVIEW-ORIGIN-01 LOCKED; Keith added the DNS record and asked for the deploy 2026-11-12). Was: NOT_READY. Ready when: Keith adds the DNS A record for preview.staging.ainow.biz and approves the deploy.
 **Depends on:** PREVIEW-ORIGIN-01.
-**Primary write scope:** records; host state (Caddy site, gateway env PREVIEW_BASE_URL, deploy); ARCHITECTURE.md section 6 preview path (GOVERNANCE, at its LOCK).
+**Primary write scope:** records; ops/clean-baseline/caddy/Caddyfile (the preview site, added by the control plane at admission 2026-11-12; ops static tests t-caddy-site 22 passed and t-target-membership 61 passed); host state (Caddy site, gateway env PREVIEW_BASE_URL, deploy); ARCHITECTURE.md section 6 preview path (GOVERNANCE, at its LOCK).
 **Mutexes / resources:** STAGING, ENV (and GOVERNANCE for the ARCHITECTURE.md line at the LOCK).
 **Hot-file leases:** none.
 **Shared contracts:** none.

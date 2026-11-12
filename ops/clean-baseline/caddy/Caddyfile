@@ -15,3 +15,17 @@ staging.ainow.biz {
 		reverse_proxy 127.0.0.1:3002
 	}
 }
+
+# PREVIEW-ORIGIN-01: generated-app previews on their own host. The gateway serves only
+# the ticketed enter route and the preview proxy there; Host passes through unchanged.
+preview.staging.ainow.biz {
+	basic_auth {
+		{$AISB_OPERATOR_USER} {$AISB_OPERATOR_HASH}
+	}
+	handle /api/preview/* {
+		reverse_proxy 127.0.0.1:4000
+	}
+	handle {
+		respond 404
+	}
+}
