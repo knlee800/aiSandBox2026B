@@ -89367,7 +89367,7 @@ taskId=STAGING-DEPLOY-SMOKE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 1d91897 to 8427c2f with runs off (rc 0, 2026-11-12T07:18:50Z): no migration (hash 9cfde25f unchanged), configuration unchanged, container-manager started (unit active, keyed stats 200), standard and security checks pass, body-limit checks pass; POST /api/internal/sessions/<id>/previews answers 404 with and without the key (two ids); static-preview.invalid is in the browser-smoke build, onSessionEnded in the sessions service build, and sessions.module.js no longer names InternalPreviewsController. No Keith step; the live check with real Playwright is BROWSER-SMOKE-LIVE-01. Checkpoint: docs/STAGING-DEPLOY-SMOKE-02-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SMOKE-02
 **Title:** Deploy BROWSER-SMOKE-02 (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
