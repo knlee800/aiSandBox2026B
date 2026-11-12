@@ -84368,13 +84368,13 @@ taskId=PRIVACY-HOST-CHECK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith asked for the read-only host check ("Yes, run it"). Was: READY — registered 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK — not admitted.
 **Task ID:** PRIVACY-HOST-CHECK-01
 **Title:** Answer the privacy inventory host questions on staging (read-only)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-12, "Yes, run it"). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** PRIVACY-INVENTORY-01.
 **Primary write scope:** records and an evidence file; read-only host commands (no change).
 **Mutexes / resources:** STAGING (read-only).
