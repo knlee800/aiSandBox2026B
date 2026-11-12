@@ -1292,6 +1292,156 @@ backup_write_set() {
   printf 'COMPLETE\n' > "$dest/COMPLETE" || return 20
 }
 
+# Backup retention. The age of an item comes from the UTC timestamp in its name, never from mtime.
+# Only names of the form 20YYMMDDTHHMMSSZ plus an exact suffix are acted on. Symlinks and *.partial
+# are never touched. Each deletion prints its name only.
+backup_ts_epoch() {
+  local ts="$1" epoch back
+  [[ "$ts" =~ ^(20[0-9]{2})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})Z$ ]] || return 1
+  epoch="$(date -u -d "${BASH_REMATCH[1]}-${BASH_REMATCH[2]}-${BASH_REMATCH[3]} ${BASH_REMATCH[4]}:${BASH_REMATCH[5]}:${BASH_REMATCH[6]}" +%s 2>/dev/null)" || return 1
+  [[ "$epoch" =~ ^[0-9]+$ ]] || return 1
+  back="$(date -u -d "@${epoch}" +%Y%m%dT%H%M%SZ 2>/dev/null)" || return 1
+  [[ "$back" == "$ts" ]] || return 1
+  printf '%s\n' "$epoch"
+}
+
+backup_retention_is_link() {
+  [[ -L "$1" ]]
+}
+
+# Usage: backup_prune_retention <now-epoch-seconds>
+# Nightly sets: the newest 7 are kept. Pre-migration and failed sets: deleted when older than 30 days.
+# Off-host bundles and their identity files: deleted when older than 28 days; the newest bundle is always kept.
+backup_prune_retention() {
+  local now="${1:-}"
+  local set_max=$((30 * 86400)) bundle_max=$((28 * 86400)) keep_nightly=7
+  local re='^(20[0-9]{6}T[0-9]{6}Z)(\.failed|\.tar\.age|\.identity)?$'
+  local path name ts suffix epoch kind line i
+  local newest_ts="" newest_epoch=-1
+  local n_nightly=0 n_pre=0 n_failed=0 n_bundle=0 n_identity=0
+  local -a nightly=() bundles=()
+  if [[ $# -ne 1 || ! "$now" =~ ^[0-9]+$ ]]; then
+    note "retention needs the current time in epoch seconds"
+    return 10
+  fi
+  if [[ -z "${AISB_BACKUPS:-}" || -z "${AISB_OFFHOST:-}" ]]; then
+    note "retention needs AISB_BACKUPS and AISB_OFFHOST"
+    return 10
+  fi
+  if [[ -d "$AISB_BACKUPS" ]] && ! backup_retention_is_link "$AISB_BACKUPS"; then
+    for path in "$AISB_BACKUPS"/*; do
+      name="${path##*/}"
+      [[ "$name" =~ $re ]] || continue
+      ts="${BASH_REMATCH[1]}"
+      suffix="${BASH_REMATCH[2]}"
+      if [[ -n "$suffix" && "$suffix" != ".failed" ]]; then
+        continue
+      fi
+      if backup_retention_is_link "$path" || [[ ! -d "$path" ]]; then
+        continue
+      fi
+      if ! epoch="$(backup_ts_epoch "$ts")"; then
+        continue
+      fi
+      if [[ "$suffix" == ".failed" ]]; then
+        if (( now - epoch > set_max )); then
+          rm -rf -- "$path"
+          note "retention deleted failed set ${name}"
+          n_failed=$((n_failed + 1))
+        fi
+        continue
+      fi
+      kind="$(awk -F= '/^kind=/{print $2}' "$path/MANIFEST" 2>/dev/null || true)"
+      if [[ "$kind" == "pre-migration" ]]; then
+        if (( now - epoch > set_max )); then
+          rm -rf -- "$path"
+          note "retention deleted pre-migration set ${name}"
+          n_pre=$((n_pre + 1))
+        fi
+        continue
+      fi
+      nightly+=("${epoch} ${name}")
+    done
+    if [[ "${#nightly[@]}" -gt "$keep_nightly" ]]; then
+      i=0
+      while IFS= read -r line; do
+        i=$((i + 1))
+        if [[ "$i" -le "$keep_nightly" ]]; then
+          continue
+        fi
+        name="${line#* }"
+        rm -rf -- "${AISB_BACKUPS:?}/${name}"
+        note "retention deleted nightly set ${name}"
+        n_nightly=$((n_nightly + 1))
+      done < <(printf '%s\n' "${nightly[@]}" | sort -rn)
+    fi
+  fi
+  if [[ -d "$AISB_OFFHOST" ]] && ! backup_retention_is_link "$AISB_OFFHOST"; then
+    for path in "$AISB_OFFHOST"/*; do
+      name="${path##*/}"
+      [[ "$name" =~ $re ]] || continue
+      ts="${BASH_REMATCH[1]}"
+      suffix="${BASH_REMATCH[2]}"
+      if [[ "$suffix" != ".tar.age" ]]; then
+        continue
+      fi
+      if backup_retention_is_link "$path" || [[ ! -f "$path" ]]; then
+        continue
+      fi
+      if ! epoch="$(backup_ts_epoch "$ts")"; then
+        continue
+      fi
+      bundles+=("${epoch} ${ts}")
+      if (( epoch > newest_epoch )); then
+        newest_epoch="$epoch"
+        newest_ts="$ts"
+      fi
+    done
+    for line in "${bundles[@]}"; do
+      epoch="${line%% *}"
+      ts="${line#* }"
+      if [[ "$ts" == "$newest_ts" ]]; then
+        continue
+      fi
+      if (( now - epoch > bundle_max )); then
+        rm -f -- "${AISB_OFFHOST:?}/${ts}.tar.age"
+        note "retention deleted off-host bundle ${ts}.tar.age"
+        n_bundle=$((n_bundle + 1))
+        path="$AISB_OFFHOST/${ts}.identity"
+        if ! backup_retention_is_link "$path" && [[ -f "$path" ]]; then
+          rm -f -- "$path"
+          note "retention deleted identity file ${ts}.identity"
+          n_identity=$((n_identity + 1))
+        fi
+      fi
+    done
+    for path in "$AISB_OFFHOST"/*; do
+      name="${path##*/}"
+      [[ "$name" =~ $re ]] || continue
+      ts="${BASH_REMATCH[1]}"
+      suffix="${BASH_REMATCH[2]}"
+      if [[ "$suffix" != ".identity" ]]; then
+        continue
+      fi
+      if backup_retention_is_link "$path" || [[ ! -f "$path" ]]; then
+        continue
+      fi
+      if [[ -e "$AISB_OFFHOST/${ts}.tar.age" ]] || backup_retention_is_link "$AISB_OFFHOST/${ts}.tar.age"; then
+        continue
+      fi
+      if ! epoch="$(backup_ts_epoch "$ts")"; then
+        continue
+      fi
+      if (( now - epoch > bundle_max )); then
+        rm -f -- "$path"
+        note "retention deleted orphan identity file ${name}"
+        n_identity=$((n_identity + 1))
+      fi
+    done
+  fi
+  note "retention deleted $((n_nightly + n_pre + n_failed + n_bundle + n_identity)) (nightly sets ${n_nightly}, pre-migration sets ${n_pre}, failed sets ${n_failed}, off-host bundles ${n_bundle}, identity files ${n_identity})"
+}
+
 persistent_git_clean() {
   local rel="$1" out first
   out="$(git_as_owner status --porcelain=v1 --ignored=matching --untracked-files=all -- "$rel")" || return 1

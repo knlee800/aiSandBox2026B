@@ -89,29 +89,5 @@ else
   restarted=1
 fi
 note "backup complete ${final}"
-mapfile -t nightly < <(find "$AISB_BACKUPS" -mindepth 1 -maxdepth 1 -type d -name '20*' ! -name '*.failed' -printf '%T@ %p\n' | sort -n | awk '{print $2}')
-keep=0
-for dir in "${nightly[@]}"; do
-  kind="$(awk -F= '/^kind=/{print $2}' "$dir/MANIFEST" 2>/dev/null || true)"
-  if [[ "$kind" == "pre-migration" ]]; then
-    continue
-  fi
-  keep=$((keep + 1))
-done
-excess=$((keep - 7))
-if [[ "$excess" -gt 0 ]]; then
-  for dir in "${nightly[@]}"; do
-    [[ "$excess" -gt 0 ]] || break
-    kind="$(awk -F= '/^kind=/{print $2}' "$dir/MANIFEST" 2>/dev/null || true)"
-    [[ "$kind" == "pre-migration" ]] && continue
-    rm -rf -- "$dir"
-    excess=$((excess - 1))
-  done
-fi
-find "$AISB_BACKUPS" -mindepth 1 -maxdepth 1 -type d -name '20*' -mtime +30 -print | while IFS= read -r dir; do
-  kind="$(awk -F= '/^kind=/{print $2}' "$dir/MANIFEST" 2>/dev/null || true)"
-  if [[ "$kind" == "pre-migration" ]]; then
-    rm -rf -- "$dir"
-  fi
-done
+backup_prune_retention "$(date -u +%s)"
 exit 0
