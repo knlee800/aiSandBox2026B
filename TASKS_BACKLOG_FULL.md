@@ -84466,22 +84466,22 @@ taskId=COOKIE-PREFIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
 **Task ID:** COOKIE-PREFIX-01
 **Title:** Harden platform cookies against a sibling host (__Host- prefix)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** PREVIEW-ORIGIN-01.
-**Primary write scope:** PROVISIONAL: gateway cookie setters and readers (auth, main.ts CSRF middleware) and frontend readers of aisandbox_csrf, with tests; a migration path for signed-in users.
-**Mutexes / resources:** set at admission (expected GATEWAY and FRONTEND).
+**Primary write scope:** set 2026-11-12 for Step 2: docs/COOKIE-PREFIX-01-STAGE-START.md (the stage-start); the implementation write set is set when Keith approves it. Was: PROVISIONAL: gateway cookie setters and readers (auth, main.ts CSRF middleware) and frontend readers of aisandbox_csrf, with tests; a migration path for signed-in users.
+**Mutexes / resources:** none for Step 2 (set 2026-11-12; a stage-start document only); expected GATEWAY and FRONTEND for Step 3.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From PREVIEW-ORIGIN-01: a sibling host such as the preview host can set cookies for the parent domain that shadow platform cookies; the __Host- prefix (Secure, Path=/, no Domain) prevents that. Also: with PREVIEW_BASE_URL unset (fail-safe mode), an upstream Set-Cookie from a dev-server preview still passes through on the platform host; strip it. Auth-sensitive: 4-step.
 
 ### CSRF-AUDIT-01 — Cookie-authenticated write routes without CsrfGuard
