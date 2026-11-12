@@ -107,7 +107,7 @@ Frontend (Next.js) — port 3002
   │    (confirm-build-apply proxy is retained locally; not staging public path)
   ▼
 API Gateway (NestJS) — port 4000
-  │  Auth (session cookie), CSRF guard, Rate-limit guard
+  │  Auth (session cookie), same-origin write guard (global), CSRF guard (logout, admin entitlements), Rate-limit guard
   │  Credit balance guard, Execution safety gate (GLOBAL_EXECUTION_ENABLED)
   │
   ├──► BullMQ queue (ai-execution) ── Redis (port 6379)
@@ -361,6 +361,7 @@ Local/staging listen port: **3002**.
 - Password reset: `POST /api/auth/password-reset/request`, `POST /api/auth/password-reset/confirm`
 - Session: `GET /api/auth/me`, `POST /api/auth/logout`
 - Cookies: `aisandbox_session` (session) and `aisandbox_csrf` (CSRF)
+- Cross-site write protection (CSRF-AUDIT-01): the global `SameOriginWriteGuard` (an `APP_GUARD` after `InternalServiceAuthGuard`) refuses every non-GET/HEAD/OPTIONS request whose `Origin` is not the `APP_BASE_URL` origin, and every such request that carries `aisandbox_session` without an `Origin`; `POST /api/auth/apple/callback` is exempt; requests without `Origin` and without the session cookie (internal key, API keys, webhooks) are unaffected. The double-submit `CsrfGuard` applies only to logout and the admin entitlements PATCH. `APP_BASE_URL` must equal the origin the browser uses: opening the app locally at 127.0.0.1 or a LAN address refuses writes unless it matches.
 - Execute / confirm-build-apply accept `SessionOrApiKeyAuthGuard`
 - Ownership: session / project / execution / agent rows scoped to `userId`; cross-user reads return not-found
 - Per-user gated access (ACCESS-01B, replacing the env allowlist): `user_entitlements` (`harness_enabled`, `agent_write_enabled`, `plan_override`, `daily_token_limit_override`) read fail-closed by `EntitlementService`; `GET /api/auth/me` returns `harnessEntitled` and `agentWriteEnabled` (AGENT-WRITE-UI-01); `harnessVersion` on `POST /api/ai/execute` and every `/api/collaboration` route are refused without `harnessEntitled`; admins change rows through `PATCH /api/admin/users/:userId/entitlements` (session, admin role, CSRF), each change written to the append-only `audit_events` table. Live on staging (STAGING-DEPLOY-06, STAGING-DEPLOY-CONN-01)
@@ -680,7 +681,7 @@ DELETE /api/connectors/:kind
 PATCH  /api/admin/users/:userId/entitlements        (ACCESS-01B; admin)
 ```
 
-Session cookie (and CSRF where required). Execute / confirm-build-apply also accept API key via `SessionOrApiKeyAuthGuard`.
+Session cookie, with cross-site writes refused by the global same-origin write guard (CsrfGuard only on logout and the admin entitlements PATCH). Execute / confirm-build-apply also accept API key via `SessionOrApiKeyAuthGuard`.
 
 Ownership enforced on session, project, execution, and agent resources (cross-user → not-found).
 

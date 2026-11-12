@@ -84490,7 +84490,7 @@ taskId=CSRF-AUDIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/CSRF-AUDIT-01-STAGE-START.md, d6fb8c5); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with GATEWAY.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Cross-site writes closed in the gateway (4-step; the audit found 56 of 58 cookie-authenticated write routes without CsrfGuard, 5 high and 10 medium risk from a same-site page such as the preview host): a global SameOriginWriteGuard (second APP_GUARD after InternalServiceAuthGuard) refuses every non-GET/HEAD/OPTIONS request whose Origin is not the APP_BASE_URL origin (decided by the existing resolveHttpCorsOrigin; fails closed when APP_BASE_URL is unset) and every such request carrying aisandbox_session without an Origin; POST /api/auth/apple/callback exact path exempt; requests without Origin and without the session cookie (internal key, bearer keys, webhooks, curl) unchanged. The live e2e harness cleanup now sends the app Origin (write set widened, f55af8d). CsrfGuard, SessionCookieGuard, cookies, main.ts and internal routes unchanged. opus subagent b4d1068, cherry-picked; control-plane rerun: gateway 4073 passed plus the 14 known smoke.integration failures, build 0. ARCHITECTURE.md CSRF statements corrected. Not deployed: STAGING-DEPLOY-CSRF-01. Checkpoint: docs/CSRF-AUDIT-01-CHECKPOINT.md. FOLLOWUPS: 5 registered (STAGING-DEPLOY-CSRF-01; CSRF-AUDIT-02; CSRF-LAYER-02; APPLE-STATE-01; E2E-FLAKY-01) / 2 superseded (the ARCHITECTURE.md CSRF wording and the local-dev APP_BASE_URL note, by this LOCK's ARCHITECTURE.md edit) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/CSRF-AUDIT-01-STAGE-START.md, d6fb8c5); approved by Keith 2026-11-12 ("Yes, approve both"); Step 3 (implementation) admitted with GATEWAY.
 **Task ID:** CSRF-AUDIT-01
 **Title:** Cookie-authenticated write routes without CsrfGuard
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84509,6 +84509,126 @@ nature=IMPLEMENTATION
 **Scope:** From PREVIEW-ORIGIN-01: a sibling preview host is same-site with the platform, so SameSite=Lax does not stop a preview page from sending same-site requests with the session cookie; write routes that rely on the session cookie without CsrfGuard (preview start and stop are two) can be triggered. List every cookie-authenticated write route without CsrfGuard, then add the guard or justify each. Also note: main.ts sets a host-only aisandbox_csrf cookie on preview-host responses (harmless; unrelated to the platform cookie).
 
 **Decided (Keith, 2026-11-12, "Yes, approve both"; docs/CSRF-AUDIT-01-STAGE-START.md section 7):** (1) one global same-origin write guard in the gateway rather than CsrfGuard on every route; (2) a request that carries the session cookie but no Origin header is refused.
+
+### E2E-FLAKY-01 — Flaky timing tests in the Builder e2e contract suite
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=E2E-FLAKY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
+**Task ID:** E2E-FLAKY-01
+**Title:** Flaky timing tests in the Builder e2e contract suite
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** CSRF-AUDIT-01.
+**Primary write scope:** PROVISIONAL: e2e/builder-golden-path/ tests and fixtures.
+**Mutexes / resources:** none expected.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CSRF-AUDIT-01 worker: one of five runs of the contract suite under load had 4 timing failures and 16 not run in AUTO-01H (missing executionId fails closed) and AUTO-01J (non-array checkpoint body); the other four runs passed 114 of 114. Unrelated to CSRF-AUDIT-01. Make the fixture timing robust or record it as accepted.
+
+### APPLE-STATE-01 — Apple sign-in callback and the SameSite=Lax state cookie
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=APPLE-STATE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
+**Task ID:** APPLE-STATE-01
+**Title:** Apple sign-in callback and the SameSite=Lax state cookie
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith turns Apple sign-in on (it needs its env variables, which are not set).
+**Depends on:** CSRF-AUDIT-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/auth/ Apple callback and state cookie handling, with tests.
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CSRF-AUDIT-01 audit (F3, uncertain, untested): Apple posts the callback cross-site as a form, which will not carry the SameSite=Lax aisandbox_oauth_state cookie, so the state check may always fail. Confirm with a test and fix (for example a SameSite=None state cookie for that flow) before Apple sign-in is enabled.
+
+### CSRF-LAYER-02 — CsrfGuard on every cookie write route as a second layer
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CSRF-LAYER-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
+**Task ID:** CSRF-LAYER-02
+**Title:** CsrfGuard on every cookie write route as a second layer
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith wants a second layer beyond the same-origin guard. Optional.
+**Depends on:** CSRF-AUDIT-01.
+**Primary write scope:** PROVISIONAL: gateway controllers, a bearer-aware CSRF guard, a shared frontend fetch helper and the 38 frontend call sites listed in docs/CSRF-AUDIT-01-STAGE-START.md.
+**Mutexes / resources:** set at admission (expected GATEWAY and FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CSRF-AUDIT-01 audit (F1): defence in depth with the double-submit CsrfGuard on every cookie-authenticated write, a bearer-aware variant for SessionOrApiKeyAuthGuard routes, and one frontend fetch helper that sends X-CSRF-Token. Keith chose the global origin guard instead; this stays optional.
+
+### CSRF-AUDIT-02 — Origin checks outside the gateway HTTP guard: WebSocket handshake and the Next confirm-build-apply route
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CSRF-AUDIT-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
+**Task ID:** CSRF-AUDIT-02
+**Title:** Origin checks outside the gateway HTTP guard: WebSocket handshake and the Next confirm-build-apply route
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional (neither is reachable on staging today: Caddy sends only /api/* to the gateway, and no page mounts the socket client).
+**Depends on:** CSRF-AUDIT-01.
+**Primary write scope:** PROVISIONAL: the gateway socket gateway or adapter, frontend/app/api/ai/executions/[executionId]/confirm-build-apply/route.ts, with tests.
+**Mutexes / resources:** set at admission (expected GATEWAY and FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CSRF-AUDIT-01 audit (F2, F4): the Socket.IO handshake is cookie-authenticated with no Origin check (engine.io applies cors as headers only), a read risk; the Next route handler confirm-build-apply accepts the session cookie for a write with no Origin check (local topology only). Add Origin checks matching the gateway rule, or record why not.
+
+### STAGING-DEPLOY-CSRF-01 — Deploy CSRF-AUDIT-01 (and later locked work)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CSRF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CSRF-AUDIT-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CSRF-01
+**Title:** Deploy CSRF-AUDIT-01 (and later locked work)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** CSRF-AUDIT-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with CSRF-AUDIT-01 to staging from the host with runs off (no migration expected; configuration at the baselines gateway.env e0767286 and Caddyfile 205770cf; checks as in PREVIEW-ORIGIN-DEPLOY-01 including the preview-host checks). Guard checks with curl against 127.0.0.1:4000: POST /api/sessions with Origin https://preview.staging.ainow.biz 403; form POST /api/sessions/<uuid>/exec with that Origin 403; form POST /api/auth/login with that Origin 403; POST /api/sessions with Origin https://staging.ainow.biz 401; POST /api/sessions with no Origin and no cookie 401; with a dummy aisandbox_session cookie and no Origin 403; GET /api/health with a foreign Origin 200; POST /api/internal/... without the key 401. Then Keith's short browser pass: sign in, chat, save a file, start and stop the preview, open Team, Knowledge and Connections.
 
 ### PREVIEW-PICKER-01 — Rebuild Select Element over postMessage for the isolated preview
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
