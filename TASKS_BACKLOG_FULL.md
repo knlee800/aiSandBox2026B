@@ -84688,7 +84688,7 @@ taskId=PREVIEW-PICKER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/PREVIEW-PICKER-01-STAGE-START.md, ed0142f); waiting for Keith's approval.
 **Task ID:** PREVIEW-PICKER-01
 **Title:** Rebuild Select Element over postMessage for the isolated preview
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
