@@ -89271,22 +89271,22 @@ taskId=BROWSER-SMOKE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "Yes, fix it". Was: READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
 **Task ID:** BROWSER-SMOKE-01
 **Title:** Browser smoke never finds a preview target
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith, 2026-11-12, "Yes, fix it"). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CODE-TIDY-01.
-**Primary write scope:** PROVISIONAL, set at admission.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER; GATEWAY if a caller is added there).
+**Primary write scope:** set 2026-11-12: services/container-manager/src/preview/preview.service.ts, services/container-manager/src/preview/preview.service.spec.ts, services/container-manager/src/sessions/sessions.module.ts, services/container-manager/src/previews/preview.service.ts, services/container-manager/src/previews/preview-proxy.service.ts, services/container-manager/src/previews/preview-proxy.service.spec.ts, services/container-manager/src/browser-smoke/browser-smoke.service.ts, services/container-manager/src/browser-smoke/browser-smoke.service.spec.ts (previews/preview-proxy.service.spec.ts is new).
+**Mutexes / resources:** CONTAINER-MANAGER (set 2026-11-12).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the CODE-TIDY-01 worker: nothing calls POST /api/internal/sessions/:id/previews, so the previews PreviewService port registry stays empty and every browser-smoke run (ai-service api-gateway-http.client.ts:507, gateway container-manager-http.client.ts:516, container-manager BrowserSmokeService) answers "Preview target not available: No preview port registered". Either register the port when a preview starts, or have BrowserSmokeService resolve the port from the preview service in src/preview/. Tests for both paths.
 
 ### CM-DEPS-01 — Remove container-manager's unused jsonwebtoken packages
