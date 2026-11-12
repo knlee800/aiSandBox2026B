@@ -88858,7 +88858,7 @@ taskId=AUTHMOD-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. The auth-module eligibility reasons and generation errors are translated by their existing codes (8 new pageStatus keys in en, zh-TW and zh-CN; English fallback for unknown codes; AuthModuleGenerationError gains an optional subject; template files untouched), and a network failure on session create or stop shows a translated network error; no behaviour change; 3 new tests; sonnet subagent, fast-forwarded as 713baee; control-plane rerun: frontend 1788 of 1788, tsc and build 0. Not deployed; it goes out with STAGING-DEPLOY-I18N-01. Checkpoint: docs/AUTHMOD-I18N-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (NETWORK-ERROR-I18N-01) / 2 superseded (the raw detail texts, and the loose TypeError check, into NETWORK-ERROR-I18N-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the PAGE-CHAT-I18N-01 LOCK — not admitted.
 **Task ID:** AUTHMOD-I18N-01
 **Title:** Translate the auth-module eligibility and generation messages and the network fallback
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88875,6 +88875,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the PAGE-CHAT-I18N-01 worker: the {reason} and {detail} parts of the translated auth-module chat lines come from lib/auth-module (detectAuthModuleEligibility reasons, AuthModuleGenerationError messages) in English, and a network failure on session create or stop shows the browser's own text (for example Failed to fetch). Return reason codes or keys from lib/auth-module and translate them in en, zh-TW and zh-CN, and show a translated network-error fallback; tests on the keys; no behaviour change.
+
+### NETWORK-ERROR-I18N-01 — One fetch helper with a translated network error for the workspace page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=NETWORK-ERROR-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the AUTHMOD-I18N-01 LOCK — not admitted.
+**Task ID:** NETWORK-ERROR-I18N-01
+**Title:** One fetch helper with a translated network error for the workspace page
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** AUTHMOD-I18N-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), a small frontend/lib/ helper and its test, workspace-shell.test.tsx, the three message files.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the AUTHMOD-I18N-01 worker: other catch blocks in page.tsx still show error.message, so a network failure there shows the browser's English text; the {detail} in authInstallCheckpointFailed and in the generic authGenerationFailed path is still raw error text; and the instanceof TypeError check is loose. A small shared fetch helper that marks network failures, a translated network error wherever the page shows a request failure, and translated or neutral detail text; tests; no behaviour change.
 
 ### STAGING-DEPLOY-I18N-01 — Deploy the translated chat lines (and later locked work)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
