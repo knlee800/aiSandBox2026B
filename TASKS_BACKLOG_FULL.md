@@ -89295,7 +89295,7 @@ taskId=BROWSER-SMOKE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1 and CONTAINER-MANAGER released. Browser smoke for static HTML previews (Playwright serves the files from the preview's app root at http://static-preview.invalid; the path check refuses traversal and symlinks out of the root; a registered port still wins); preview clean-up when a session ends (a SessionsService session-ended hook, called on stop, delete, container removal, container lost, idle timeout and max lifetime; the preview service drops the entry, frees the port and clears the registry); the uncalled internal route POST /api/internal/sessions/:id/previews removed (404 with and without the key; 48 routes, 47 guarded; no guard change); opus subagent 300440c, fast-forwarded; control-plane rerun: container-manager 22 suites, 973 passed, 3 skipped, build 0. Not deployed; the deploy is STAGING-DEPLOY-SMOKE-02. Checkpoint: docs/BROWSER-SMOKE-02-CHECKPOINT.md. FOLLOWUPS: 3 registered (STAGING-DEPLOY-SMOKE-02; CM-CLEANUP-02; PREVIEW-STATE-01) / 1 superseded (a static-preview case, by BROWSER-SMOKE-LIVE-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-01 LOCK — not admitted.
 **Task ID:** BROWSER-SMOKE-02
 **Title:** Browser smoke for static previews, and preview clean-up when a session ends
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -89312,6 +89312,78 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the BROWSER-SMOKE-01 worker: static HTML previews have nothing listening, so browser smoke still answers Preview target not available for them (needs another target, for example a small static server or a file URL); ending a session keeps its preview and registry entry (as before BROWSER-SMOKE-01); the internal register route POST /api/internal/sessions/:id/previews is now redundant and could be removed. Decide each; tests.
+
+### PREVIEW-STATE-01 — Preview state survives a container-manager restart
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-STATE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
+**Task ID:** PREVIEW-STATE-01
+**Title:** Preview state survives a container-manager restart
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional; design first.
+**Depends on:** BROWSER-SMOKE-02.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/preview/ and previews/ and their specs.
+**Mutexes / resources:** CONTAINER-MANAGER (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the BROWSER-SMOKE-02 worker (unchanged from before BROWSER-SMOKE-02): the preview entries, port pool and browser-smoke registry are in memory, so a container-manager restart (for example a deploy) forgets running previews; a dev server may keep running in its container, unknown to the service, and the user must start the preview again. Decide whether to rebuild the state at start-up (for example from running containers) or accept it; tests.
+
+### CM-CLEANUP-02 — Remove the uncalled internal route DELETE /api/internal/sessions/:id/container
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-CLEANUP-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
+**Task ID:** CM-CLEANUP-02
+**Title:** Remove the uncalled internal route DELETE /api/internal/sessions/:id/container
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Optional.
+**Depends on:** BROWSER-SMOKE-02.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/sessions/internal-sessions.controller.ts and its spec, services/container-manager/src/__tests__/internal-key.http.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the BROWSER-SMOKE-02 worker, confirmed by the control plane: no service calls DELETE /api/internal/sessions/:id/container (searches of the gateway client and ai-service found none). Remove the route as CM-CLEANUP-01 and BROWSER-SMOKE-02 did (404 with and without the key; inventory counts updated; no guard change). SessionsService.removeSessionContainer stays if anything else uses it; otherwise decide. Tests.
+
+### STAGING-DEPLOY-SMOKE-02 — Deploy BROWSER-SMOKE-02 (and later locked work)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SMOKE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SMOKE-02
+**Title:** Deploy BROWSER-SMOKE-02 (and later locked work)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
+**Depends on:** BROWSER-SMOKE-02.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with BROWSER-SMOKE-02 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-SMOKE-01, keyed checks before the header file is removed; the build contains STATIC_PREVIEW_ORIGIN and onSessionEnded; POST /api/internal/sessions/<id>/previews answers 404 with the key and without it; container-manager starts (unit active, keyed stats 200)).
 
 ### STAGING-DEPLOY-SMOKE-01 — Deploy the browser-smoke preview fix (and later locked work)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89359,7 +89431,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** no code change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** From BROWSER-SMOKE-01 and STAGING-DEPLOY-SMOKE-01: in a session on the browser-capable image (Playwright at /opt/browser-smoke), start a Vite preview, then an Agent-mode run calls browser smoke: expect a structured result whose url is http://<container ip>:<port>/; stop the preview and call again: expect Preview target not available: No preview port registered. Runs on only for the window; env files back to the baselines. Whether a browser-image session can be started from the host for this check is part of the stage-start.
+**Scope:** From BROWSER-SMOKE-01 and STAGING-DEPLOY-SMOKE-01: in a session on the browser-capable image (Playwright at /opt/browser-smoke), start a Vite preview, then an Agent-mode run calls browser smoke: expect a structured result whose url is http://<container ip>:<port>/; stop the preview and call again: expect Preview target not available: No preview port registered. Runs on only for the window; env files back to the baselines. Whether a browser-image session can be started from the host for this check is part of the stage-start. (Added 2026-11-12 by the BROWSER-SMOKE-02 LOCK) Also a static HTML preview: start one, call browser smoke, expect success with url http://static-preview.invalid/ and the page title; a path outside the app root answers 403.
 
 ### CM-DEPS-01 — Remove container-manager's unused jsonwebtoken packages
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
