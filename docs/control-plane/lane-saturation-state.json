@@ -23,7 +23,8 @@
         "services/api-gateway/src/chat/chat-link.controller.spec.ts",
         "services/api-gateway/src/chat/chat-switch.ts",
         "services/api-gateway/src/chat/chat-switch.spec.ts",
-        "services/api-gateway/src/app.module.ts"
+        "services/api-gateway/src/app.module.ts",
+        "services/api-gateway/src/migrations/__tests__/1807000000000-AddUserAgentApprovalColumns.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -6010,7 +6011,8 @@
         "services/api-gateway/src/chat/chat-link.controller.spec.ts",
         "services/api-gateway/src/chat/chat-switch.ts",
         "services/api-gateway/src/chat/chat-switch.spec.ts",
-        "services/api-gateway/src/app.module.ts"
+        "services/api-gateway/src/app.module.ts",
+        "services/api-gateway/src/migrations/__tests__/1807000000000-AddUserAgentApprovalColumns.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
