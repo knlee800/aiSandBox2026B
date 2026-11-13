@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import type OpenAI from 'openai';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../agent-harness/tools/tool-registry';
 import type { AgentHarnessToolRegistryDefinitionV1 } from '../../agent-harness/tools/tool-registry.contracts';
 import type {
@@ -417,8 +418,24 @@ export function mapCanonicalTranscriptToOpenAIMessages(
   return messages;
 }
 
-export const RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE =
-  'Responses tool continuation requires providerState { kind: "responses", responseId } from the last assistant turn';
+/**
+ * ACCESS-01J: OpenAI and xAI tool runs are stateless (store: false, no
+ * previous_response_id). Every continuation step replays the whole
+ * conversation, so each earlier assistant turn must carry the output items the
+ * provider returned. Anything missing or malformed fails closed with this
+ * message (plus a short detail with no content); a partial history is never
+ * sent.
+ */
+export const RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE =
+  'Responses tool continuation requires providerState { kind: "responses", outputItems } on every earlier assistant turn, each function_call paired with its function_call_output';
+
+/**
+ * Requested on every stateless Responses call so reasoning items come back
+ * with encrypted_content and can be replayed on the next step.
+ */
+export const RESPONSES_STATELESS_INCLUDE = Object.freeze([
+  'reasoning.encrypted_content',
+] as const);
 
 export interface ResponsesUserMessageInput {
   readonly role: 'user';
@@ -431,14 +448,47 @@ export interface ResponsesFunctionCallOutputInput {
   readonly output: string;
 }
 
+/** A function_call output item, replayed exactly as the provider returned it. */
+export interface ResponsesReplayFunctionCallItem {
+  readonly type: 'function_call';
+  readonly call_id: string;
+  readonly name: string;
+  readonly arguments: string;
+}
+
+/** An assistant message output item, replayed exactly as returned. */
+export interface ResponsesReplayMessageItem {
+  readonly type: 'message';
+  readonly role: 'assistant';
+  readonly content: readonly unknown[];
+}
+
+/** A reasoning output item (with encrypted_content when present), replayed exactly as returned. */
+export interface ResponsesReplayReasoningItem {
+  readonly type: 'reasoning';
+  readonly summary: readonly unknown[];
+  readonly encrypted_content?: string | null;
+}
+
+export type ResponsesReplayOutputItem =
+  | ResponsesReplayFunctionCallItem
+  | ResponsesReplayMessageItem
+  | ResponsesReplayReasoningItem;
+
 export type ResponsesToolInputItem =
   | ResponsesUserMessageInput
+  | ResponsesReplayOutputItem
   | ResponsesFunctionCallOutputInput;
+
+/** Adapter-owned providerState for one Responses assistant turn (opaque to the loop). */
+export interface ResponsesProviderState {
+  readonly kind: 'responses';
+  readonly outputItems: readonly unknown[];
+}
 
 export interface ResponsesToolRequest {
   readonly input: readonly ResponsesToolInputItem[];
   readonly instructions?: string;
-  readonly previous_response_id?: string;
 }
 
 export interface ResponsesToolRequestSource {
@@ -472,22 +522,172 @@ export function buildResponsesToolRequest(
     };
   }
 
-  const responseId = readLastResponsesResponseId(transcript);
-  if (responseId === undefined) {
-    throw new InternalServerErrorException(
-      RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE,
-    );
-  }
-
   return {
-    previous_response_id: responseId,
-    input: latestToolResults(transcript).map((result) => ({
-      type: 'function_call_output',
-      call_id: result.callId,
-      output: serializeToolResultContent(result),
-    })),
+    input: [
+      { role: 'user', content: source.prompt },
+      ...replayResponsesTranscript(transcript),
+    ],
     ...(instructions !== undefined ? { instructions } : {}),
   };
+}
+
+/**
+ * Converts the mapper's input items to the SDK's Responses input items.
+ * Replayed output items are the provider's own output items
+ * (ResponseOutputMessage | ResponseFunctionToolCall | ResponseReasoningItem),
+ * which the Responses API accepts back as input. They were checked by type
+ * and key fields in replayResponsesTranscript and are passed on verbatim, so
+ * the one narrow assertion below only widens their nested content arrays.
+ */
+export function toResponsesSdkInput(
+  items: readonly ResponsesToolInputItem[],
+): OpenAI.Responses.ResponseInputItem[] {
+  return items.map((item): OpenAI.Responses.ResponseInputItem => {
+    if ('role' in item && item.role === 'user') {
+      return { role: 'user', content: item.content };
+    }
+    if (item.type === 'function_call_output') {
+      return {
+        type: 'function_call_output',
+        call_id: item.call_id,
+        output: item.output,
+      };
+    }
+    // Narrow assertion: a validated provider output item replayed unchanged.
+    return item as OpenAI.Responses.ResponseInputItem;
+  });
+}
+
+function failResponsesContinuation(detail: string): never {
+  throw new InternalServerErrorException(
+    `${RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE} (${detail})`,
+  );
+}
+
+function replayResponsesTranscript(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
+): ResponsesToolInputItem[] {
+  if (transcript.length % 2 !== 0) {
+    failResponsesContinuation('transcript does not end with tool results');
+  }
+
+  const replay: ResponsesToolInputItem[] = [];
+  for (let index = 0; index < transcript.length; index += 2) {
+    const assistantTurn = transcript[index];
+    const resultTurn = transcript[index + 1];
+    if (assistantTurn.kind !== 'assistant_tool_turn') {
+      failResponsesContinuation(`turn ${index} is not an assistant turn`);
+    }
+    if (resultTurn.kind !== 'tool_result_turn') {
+      failResponsesContinuation(`turn ${index + 1} is not a tool result turn`);
+    }
+
+    const outputItems = readResponsesReplayItems(assistantTurn.providerState, index);
+    const callIds = outputItems.flatMap((item) =>
+      item.type === 'function_call' ? [item.call_id] : [],
+    );
+    if (callIds.length === 0) {
+      failResponsesContinuation(`turn ${index} has no function_call item`);
+    }
+    if (new Set(callIds).size !== callIds.length) {
+      failResponsesContinuation(`turn ${index} repeats a call_id`);
+    }
+    const canonicalIds = assistantTurn.toolCalls.map((call) =>
+      call.status === 'missing_id' ? undefined : call.callId,
+    );
+    if (
+      canonicalIds.length !== callIds.length ||
+      canonicalIds.some((callId, position) => callId !== callIds[position])
+    ) {
+      failResponsesContinuation(
+        `turn ${index} providerState does not match its tool calls`,
+      );
+    }
+    const resultIds = resultTurn.results.map((result) => result.callId);
+    const callIdSet = new Set(callIds);
+    if (
+      resultIds.length !== callIds.length ||
+      new Set(resultIds).size !== resultIds.length ||
+      resultIds.some((callId) => !callIdSet.has(callId))
+    ) {
+      failResponsesContinuation(
+        `turn ${index + 1} results are not paired one to one with the function calls`,
+      );
+    }
+
+    replay.push(...outputItems);
+    for (const result of resultTurn.results) {
+      replay.push({
+        type: 'function_call_output',
+        call_id: result.callId,
+        output: serializeToolResultContent(result),
+      });
+    }
+  }
+  return replay;
+}
+
+function readResponsesReplayItems(
+  providerState: unknown,
+  turnIndex: number,
+): readonly ResponsesReplayOutputItem[] {
+  if (
+    !isRecord(providerState) ||
+    providerState.kind !== 'responses' ||
+    !Array.isArray(providerState.outputItems) ||
+    providerState.outputItems.length === 0
+  ) {
+    failResponsesContinuation(`turn ${turnIndex} has no Responses providerState`);
+  }
+  return providerState.outputItems.map(
+    (item: unknown, position: number): ResponsesReplayOutputItem => {
+      if (!isResponsesReplayItem(item)) {
+        failResponsesContinuation(
+          `turn ${turnIndex} output item ${position} is malformed or unsupported`,
+        );
+      }
+      return item;
+    },
+  );
+}
+
+function isResponsesReplayItem(item: unknown): item is ResponsesReplayOutputItem {
+  if (!isRecord(item)) {
+    return false;
+  }
+  switch (item.type) {
+    case 'function_call':
+      return (
+        typeof item.call_id === 'string' &&
+        item.call_id.trim().length > 0 &&
+        typeof item.name === 'string' &&
+        typeof item.arguments === 'string'
+      );
+    case 'message':
+      return item.role === 'assistant' && Array.isArray(item.content);
+    case 'reasoning':
+      return (
+        Array.isArray(item.summary) &&
+        (item.encrypted_content === undefined ||
+          item.encrypted_content === null ||
+          typeof item.encrypted_content === 'string')
+      );
+    default:
+      return false;
+  }
+}
+
+/**
+ * A JSON copy of every output item the provider returned, kept so the next
+ * step can replay them. Nothing is dropped here: an item that cannot be
+ * replayed makes the next step fail closed instead of sending a partial history.
+ */
+function copyResponsesOutputItems(
+  outputItems: readonly unknown[],
+): readonly unknown[] {
+  return outputItems.map((item): unknown =>
+    item === undefined ? null : (JSON.parse(JSON.stringify(item)) as unknown),
+  );
 }
 
 export type ResponsesToolFailureProviderName = 'OpenAI' | 'xAI';
@@ -565,47 +765,11 @@ export function parseResponsesToolUseResponse(
       ? {
           providerState: {
             kind: 'responses',
-            responseId: typeof response.id === 'string' ? response.id : '',
-          },
+            outputItems: copyResponsesOutputItems(outputItems),
+          } satisfies ResponsesProviderState,
         }
       : {}),
   };
-}
-
-function readLastResponsesResponseId(
-  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
-): string | undefined {
-  for (let index = transcript.length - 1; index >= 0; index -= 1) {
-    const turn = transcript[index];
-    if (turn.kind !== 'assistant_tool_turn') {
-      continue;
-    }
-    return readResponsesResponseId(turn.providerState);
-  }
-  return undefined;
-}
-
-function readResponsesResponseId(providerState: unknown): string | undefined {
-  if (!isRecord(providerState) || providerState.kind !== 'responses') {
-    return undefined;
-  }
-  if (typeof providerState.responseId !== 'string') {
-    return undefined;
-  }
-  const responseId = providerState.responseId.trim();
-  return responseId.length > 0 ? responseId : undefined;
-}
-
-function latestToolResults(
-  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
-): readonly AIAdapterToolResultPayload[] {
-  for (let index = transcript.length - 1; index >= 0; index -= 1) {
-    const turn = transcript[index];
-    if (turn.kind === 'tool_result_turn') {
-      return turn.results;
-    }
-  }
-  return [];
 }
 
 function appendResponsesFunctionCall(

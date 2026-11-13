@@ -17,6 +17,8 @@ import {
   mapAdapterToolDeclarationsToResponsesTools,
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   parseResponsesToolUseResponse,
+  RESPONSES_STATELESS_INCLUDE,
+  toResponsesSdkInput,
 } from './adapter-tool-use.mapper';
 import type {
   AIAdapterToolUseRequestOptions,
@@ -216,26 +218,15 @@ export class XAIAdapter implements AIAdapter {
     const responsesRequest: OpenAI.Responses.ResponseCreateParamsNonStreaming = {
       model,
       max_output_tokens: 16000,
-      store: true,
-      input: built.input.map((item) =>
-        'type' in item
-          ? {
-              type: 'function_call_output' as const,
-              call_id: item.call_id,
-              output: item.output,
-            }
-          : {
-              role: 'user' as const,
-              content: item.content,
-            },
-      ),
+      // ACCESS-01J: stateless. The provider keeps no response; each step
+      // replays the full history in input and never sends previous_response_id.
+      store: false,
+      include: [...RESPONSES_STATELESS_INCLUDE],
+      input: toResponsesSdkInput(built.input),
     };
     responsesRequest.instructions = appendHarnessEnvFileInstruction(
       built.instructions,
     );
-    if (built.previous_response_id !== undefined) {
-      responsesRequest.previous_response_id = built.previous_response_id;
-    }
     if (responsesTools.length > 0) {
       responsesRequest.tools = responsesTools.map((tool) => ({
         type: 'function' as const,

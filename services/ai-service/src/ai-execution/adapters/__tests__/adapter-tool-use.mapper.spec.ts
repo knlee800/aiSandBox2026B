@@ -6,7 +6,8 @@ import {
 } from '../../../agent-harness/tools/tool-registry';
 import {
   HARNESS_ADVERTISABLE_TOOL_IDS,
-  RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE,
+  RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE,
+  RESPONSES_STATELESS_INCLUDE,
   buildResponsesToolRequest,
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   mapAgentHarnessToolDefinitionsToAnthropicTools,
@@ -17,6 +18,7 @@ import {
   parseResponsesToolUseResponse,
   parseToolArgumentsToObject,
   selectAdvertisedAgentHarnessTools,
+  toResponsesSdkInput,
   tryParseToolArgumentsToObject,
 } from '../adapter-tool-use.mapper';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
@@ -1143,139 +1145,365 @@ describe('Responses API tool helpers', () => {
     });
   });
 
-  it('continues from the last response id and sends only the latest tool results', () => {
-    const request = buildResponsesToolRequest({
-      prompt: 'List then read README.md',
-      systemPrompt: 'Follow platform contract.',
-      transcript: [
-        {
-          kind: 'assistant_tool_turn',
-          content: 'Earlier.',
-          toolCalls: [],
-          providerState: { kind: 'responses', responseId: 'resp_old' },
-        },
-        {
-          kind: 'tool_result_turn',
-          results: [
-            {
-              callId: 'call_old',
-              toolName: 'list_files',
-              success: true,
-              content: { entries: ['stale.txt'] },
-            },
-          ],
-        },
-        {
-          kind: 'assistant_tool_turn',
-          content: 'I will look those up.',
-          toolCalls: [],
-          providerState: { kind: 'responses', responseId: '  resp_latest  ' },
-        },
-        {
-          kind: 'tool_result_turn',
-          results: [
-            {
-              callId: 'call_aaa',
-              toolName: 'list_files',
-              success: true,
-              content: { entries: ['README.md'] },
-            },
-            {
-              callId: 'call_bbb',
-              toolName: 'read_file',
-              success: true,
-              content: { content: '# Title' },
-            },
-            {
-              callId: 'call_ccc',
-              toolName: 'read_file',
-              success: false,
-              errorMessage: 'read failed',
-            },
-          ],
-        },
-      ],
-    });
-
-    expect(request).toEqual({
-      previous_response_id: 'resp_latest',
-      instructions: 'Follow platform contract.',
-      input: [
-        {
-          type: 'function_call_output',
-          call_id: 'call_aaa',
-          output: JSON.stringify({ entries: ['README.md'] }),
-        },
-        {
-          type: 'function_call_output',
-          call_id: 'call_bbb',
-          output: JSON.stringify({ content: '# Title' }),
-        },
-        {
-          type: 'function_call_output',
-          call_id: 'call_ccc',
-          output: 'read failed',
-        },
-      ],
-    });
-    expect(JSON.stringify(request)).not.toContain('resp_old');
-    expect(JSON.stringify(request)).not.toContain('call_old');
-    expect(JSON.stringify(request)).not.toContain('stale.txt');
-    expect(JSON.stringify(request)).not.toContain('List then read README.md');
-  });
-
-  it('throws when a later step has no usable response id', () => {
-    const latestResults: AIAdapterCanonicalTranscriptTurn = {
-      kind: 'tool_result_turn',
-      results: [
-        {
-          callId: 'call_aaa',
-          toolName: 'list_files',
-          success: true,
-          content: { entries: ['README.md'] },
-        },
-      ],
+  describe('ACCESS-01J stateless continuation (store: false)', () => {
+    const reasoningStep1 = {
+      id: 'rs_step1',
+      type: 'reasoning',
+      summary: [{ type: 'summary_text', text: 'Plan: list, then read.' }],
+      encrypted_content: 'gAAAA-encrypted-reasoning-step-1',
     };
-    const cases: readonly AIAdapterCanonicalTranscriptTurn[][] = [
-      [
-        { kind: 'assistant_tool_turn', content: '', toolCalls: [] },
-        latestResults,
-      ],
-      [
-        {
-          kind: 'assistant_tool_turn',
-          content: '',
-          toolCalls: [],
-          providerState: { kind: 'anthropic-content', content: [] },
-        },
-        latestResults,
-      ],
-      [
-        {
-          kind: 'assistant_tool_turn',
-          content: '',
-          toolCalls: [],
-          providerState: { kind: 'responses', responseId: '   ' },
-        },
-        latestResults,
-      ],
-      [latestResults],
+    const messageStep1 = {
+      id: 'msg_step1',
+      type: 'message',
+      role: 'assistant',
+      status: 'completed',
+      content: [{ type: 'output_text', text: 'Looking around.', annotations: [] }],
+    };
+    const callA = {
+      id: 'fc_a',
+      type: 'function_call',
+      status: 'completed',
+      call_id: 'call_a',
+      name: 'list_files',
+      arguments: '{"path":"."}',
+    };
+    const callB = {
+      id: 'fc_b',
+      type: 'function_call',
+      status: 'completed',
+      call_id: 'call_b',
+      name: 'read_file',
+      arguments: '{"path":"README.md"}',
+    };
+    const callC = {
+      id: 'fc_c',
+      type: 'function_call',
+      status: 'completed',
+      call_id: 'call_c',
+      name: 'read_file',
+      arguments: '{"path":"docs/a.md"}',
+    };
+    const messageStep2 = {
+      id: 'msg_step2',
+      type: 'message',
+      role: 'assistant',
+      status: 'completed',
+      content: [{ type: 'output_text', text: 'One more file.', annotations: [] }],
+    };
+    const step1Response = {
+      id: 'resp_step1',
+      status: 'completed',
+      model: 'gpt-6.1-sol',
+      output: [reasoningStep1, messageStep1, callA, callB],
+      usage: { total_tokens: 40 },
+    };
+    const step2Response = {
+      id: 'resp_step2',
+      status: 'completed',
+      model: 'gpt-6.1-sol',
+      output: [messageStep2, callC],
+      usage: { total_tokens: 30 },
+    };
+    const resultsStep1 = [
+      {
+        callId: 'call_a',
+        toolName: 'list_files',
+        success: true,
+        content: { entries: ['README.md', 'docs'] },
+      },
+      {
+        callId: 'call_b',
+        toolName: 'read_file',
+        success: false,
+        errorMessage: 'read failed',
+      },
+    ];
+    const resultsStep2 = [
+      {
+        callId: 'call_c',
+        toolName: 'read_file',
+        success: true,
+        content: { content: '# A' },
+      },
     ];
 
-    for (const transcript of cases) {
+    const transcriptFromParsedSteps = (): AIAdapterCanonicalTranscriptTurn[] => {
+      const first = parseResponsesToolUseResponse(step1Response, 'gpt-6.1-sol');
+      const second = parseResponsesToolUseResponse(step2Response, 'gpt-6.1-sol');
+      return [
+        {
+          kind: 'assistant_tool_turn',
+          content: first.output,
+          toolCalls: first.canonicalToolCalls ?? [],
+          providerState: first.providerState,
+        },
+        { kind: 'tool_result_turn', results: resultsStep1 },
+        {
+          kind: 'assistant_tool_turn',
+          content: second.output,
+          toolCalls: second.canonicalToolCalls ?? [],
+          providerState: second.providerState,
+        },
+        { kind: 'tool_result_turn', results: resultsStep2 },
+      ];
+    };
+
+    it('requests reasoning.encrypted_content through include', () => {
+      expect([...RESPONSES_STATELESS_INCLUDE]).toEqual(['reasoning.encrypted_content']);
+    });
+
+    it('keeps every output item verbatim in providerState and no response id', () => {
+      const result = parseResponsesToolUseResponse(step1Response, 'gpt-6.1-sol');
+
+      expect(result.providerState).toEqual({
+        kind: 'responses',
+        outputItems: [reasoningStep1, messageStep1, callA, callB],
+      });
+      expect(JSON.stringify(result.providerState)).not.toContain('resp_step1');
+      const state = result.providerState as { outputItems: unknown[] };
+      expect(state.outputItems[0]).not.toBe(reasoningStep1);
+      expect(state.outputItems[0]).toEqual(reasoningStep1);
+    });
+
+    it('keeps an unsupported output item so the next step fails closed instead of dropping it', () => {
+      const parsed = parseResponsesToolUseResponse(
+        {
+          ...step1Response,
+          output: [{ type: 'web_search_call', id: 'ws_1' }, 'junk', callA, callB],
+        },
+        'gpt-6.1-sol',
+      );
+      expect(parsed.providerState).toEqual({
+        kind: 'responses',
+        outputItems: [{ type: 'web_search_call', id: 'ws_1' }, 'junk', callA, callB],
+      });
+
       expect(() =>
         buildResponsesToolRequest({
           prompt: 'continue',
-          transcript,
+          transcript: [
+            {
+              kind: 'assistant_tool_turn',
+              content: parsed.output,
+              toolCalls: parsed.canonicalToolCalls ?? [],
+              providerState: parsed.providerState,
+            },
+            { kind: 'tool_result_turn', results: resultsStep1 },
+          ],
         }),
-      ).toThrow(InternalServerErrorException);
-      expect(() =>
-        buildResponsesToolRequest({
-          prompt: 'continue',
-          transcript,
-        }),
-      ).toThrow(RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE);
-    }
+      ).toThrow(RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE);
+    });
+
+    it('sends the prompt only on the first step', () => {
+      const request = buildResponsesToolRequest({
+        prompt: 'List then read README.md',
+        systemPrompt: 'Follow platform contract.',
+      });
+
+      expect(request).toEqual({
+        input: [{ role: 'user', content: 'List then read README.md' }],
+        instructions: 'Follow platform contract.',
+      });
+      expect(request).not.toHaveProperty('previous_response_id');
+    });
+
+    it('replays the full ordered history on step 3 with every call_id paired to its output', () => {
+      const transcript = transcriptFromParsedSteps();
+      const transcriptSnapshot = JSON.stringify(transcript);
+
+      const request = buildResponsesToolRequest({
+        prompt: 'List then read README.md',
+        systemPrompt: 'Follow platform contract.',
+        transcript,
+      });
+
+      expect(request).toEqual({
+        instructions: 'Follow platform contract.',
+        input: [
+          { role: 'user', content: 'List then read README.md' },
+          reasoningStep1,
+          messageStep1,
+          callA,
+          callB,
+          {
+            type: 'function_call_output',
+            call_id: 'call_a',
+            output: JSON.stringify({ entries: ['README.md', 'docs'] }),
+          },
+          {
+            type: 'function_call_output',
+            call_id: 'call_b',
+            output: 'read failed',
+          },
+          messageStep2,
+          callC,
+          {
+            type: 'function_call_output',
+            call_id: 'call_c',
+            output: JSON.stringify({ content: '# A' }),
+          },
+        ],
+      });
+      expect(request).not.toHaveProperty('previous_response_id');
+      expect(JSON.stringify(request)).not.toContain('resp_step');
+
+      const callIds = request.input.flatMap((item) =>
+        'type' in item && item.type === 'function_call' ? [item.call_id] : [],
+      );
+      const outputIds = request.input.flatMap((item) =>
+        'type' in item && item.type === 'function_call_output' ? [item.call_id] : [],
+      );
+      expect(callIds).toEqual(['call_a', 'call_b', 'call_c']);
+      expect(outputIds).toEqual(['call_a', 'call_b', 'call_c']);
+      for (const callId of callIds) {
+        const callIndex = request.input.findIndex(
+          (item) => 'type' in item && item.type === 'function_call' && item.call_id === callId,
+        );
+        const outputIndex = request.input.findIndex(
+          (item) =>
+            'type' in item && item.type === 'function_call_output' && item.call_id === callId,
+        );
+        expect(outputIndex).toBeGreaterThan(callIndex);
+      }
+      expect(JSON.stringify(transcript)).toBe(transcriptSnapshot);
+    });
+
+    it('replays an earlier reasoning item unchanged, including encrypted_content', () => {
+      const request = buildResponsesToolRequest({
+        prompt: 'continue',
+        transcript: transcriptFromParsedSteps(),
+      });
+
+      const reasoning = request.input.filter(
+        (item) => 'type' in item && item.type === 'reasoning',
+      );
+      expect(reasoning).toEqual([reasoningStep1]);
+      expect(reasoning[0]).toHaveProperty(
+        'encrypted_content',
+        'gAAAA-encrypted-reasoning-step-1',
+      );
+    });
+
+    it('passes replayed items to the SDK input unchanged', () => {
+      const built = buildResponsesToolRequest({
+        prompt: 'continue',
+        transcript: transcriptFromParsedSteps(),
+      });
+
+      expect(toResponsesSdkInput(built.input)).toEqual(built.input);
+    });
+
+    describe('fails closed, never a partial history', () => {
+      const goodAssistant = (): AIAdapterCanonicalTranscriptTurn =>
+        transcriptFromParsedSteps()[0];
+      const goodResults: AIAdapterCanonicalTranscriptTurn = {
+        kind: 'tool_result_turn',
+        results: resultsStep1,
+      };
+      const withProviderState = (providerState: unknown): AIAdapterCanonicalTranscriptTurn => {
+        const turn = goodAssistant();
+        if (turn.kind !== 'assistant_tool_turn') {
+          throw new Error('fixture');
+        }
+        return { ...turn, providerState };
+      };
+      const withItems = (outputItems: unknown[]): AIAdapterCanonicalTranscriptTurn =>
+        withProviderState({ kind: 'responses', outputItems });
+
+      const cases: Array<[string, AIAdapterCanonicalTranscriptTurn[]]> = [
+        ['missing providerState', [withProviderState(undefined), goodResults]],
+        [
+          'another provider kind',
+          [withProviderState({ kind: 'anthropic-content', content: [] }), goodResults],
+        ],
+        [
+          'the old response-id state',
+          [withProviderState({ kind: 'responses', responseId: 'resp_old' }), goodResults],
+        ],
+        [
+          'outputItems not an array',
+          [withProviderState({ kind: 'responses', outputItems: 'x' }), goodResults],
+        ],
+        ['empty outputItems', [withItems([]), goodResults]],
+        ['a non-object item', [withItems([callA, callB, 'oops']), goodResults]],
+        [
+          'a function_call without call_id',
+          [withItems([callA, { ...callB, call_id: ' ' }]), goodResults],
+        ],
+        [
+          'a function_call with object arguments',
+          [withItems([callA, { ...callB, arguments: { path: 'README.md' } }]), goodResults],
+        ],
+        [
+          'a message without the assistant role',
+          [withItems([{ ...messageStep1, role: 'user' }, callA, callB]), goodResults],
+        ],
+        [
+          'a reasoning item with a bad encrypted_content',
+          [withItems([{ ...reasoningStep1, encrypted_content: 42 }, callA, callB]), goodResults],
+        ],
+        [
+          'an unsupported item type',
+          [withItems([{ type: 'web_search_call', id: 'ws_1' }, callA, callB]), goodResults],
+        ],
+        ['providerState calls that differ from the turn', [withItems([callA]), goodResults]],
+        [
+          'a missing tool result',
+          [goodAssistant(), { kind: 'tool_result_turn', results: [resultsStep1[0]] }],
+        ],
+        [
+          'an extra tool result',
+          [
+            goodAssistant(),
+            { kind: 'tool_result_turn', results: [...resultsStep1, resultsStep2[0]] },
+          ],
+        ],
+        [
+          'a duplicated tool result',
+          [
+            goodAssistant(),
+            { kind: 'tool_result_turn', results: [resultsStep1[0], resultsStep1[0]] },
+          ],
+        ],
+        ['a transcript ending with an assistant turn', [goodAssistant()]],
+        ['a transcript starting with tool results', [goodResults, goodAssistant()]],
+        [
+          'a malformed earlier turn before a good later turn',
+          [withProviderState(undefined), goodResults, ...transcriptFromParsedSteps().slice(2)],
+        ],
+      ];
+
+      it.each(cases)('throws for %s', (_label, transcript) => {
+        expect(() =>
+          buildResponsesToolRequest({ prompt: 'continue', transcript }),
+        ).toThrow(InternalServerErrorException);
+        expect(() =>
+          buildResponsesToolRequest({ prompt: 'continue', transcript }),
+        ).toThrow(RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE);
+      });
+
+      it('keeps prompt and tool content out of the error message', () => {
+        let message = '';
+        try {
+          buildResponsesToolRequest({
+            prompt: 'secret prompt text',
+            transcript: [
+              withItems([callA, { ...callB, call_id: '' }]),
+              {
+                kind: 'tool_result_turn',
+                results: [{ ...resultsStep1[0], content: { secret: 'classified' } }],
+              },
+            ],
+          });
+        } catch (error) {
+          message = (error as Error).message;
+        }
+        expect(message).toContain(RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE);
+        expect(message).not.toContain('classified');
+        expect(message).not.toContain('secret prompt text');
+        expect(message).not.toContain('README.md');
+      });
+    });
   });
 
   it('parses text-only Responses output and joins output_text parts', () => {
@@ -1374,7 +1602,18 @@ describe('Responses API tool helpers', () => {
     ]);
     expect(result.providerState).toEqual({
       kind: 'responses',
-      responseId: 'resp_calls',
+      outputItems: [
+        {
+          type: 'message',
+          content: [{ type: 'output_text', text: 'Reading.' }],
+        },
+        {
+          type: 'function_call',
+          call_id: 'call_123',
+          name: 'read_file',
+          arguments: '{"path":"README.md"}',
+        },
+      ],
     });
   });
 
@@ -1426,7 +1665,20 @@ describe('Responses API tool helpers', () => {
     );
     expect(result.providerState).toEqual({
       kind: 'responses',
-      responseId: 'resp_bad',
+      outputItems: [
+        {
+          type: 'function_call',
+          call_id: 'call_bad_json',
+          name: 'read_file',
+          arguments: '{not-json',
+        },
+        {
+          type: 'function_call',
+          call_id: '   ',
+          name: 'list_files',
+          arguments: '{"path":"."}',
+        },
+      ],
     });
   });
 

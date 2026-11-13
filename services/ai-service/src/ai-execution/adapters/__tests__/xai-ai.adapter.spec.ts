@@ -10,6 +10,7 @@ import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/
 import * as modelProfiles from '../../../agent-harness/model-profiles/model-profile.registry';
 import { HARNESS_ENV_FILE_INSTRUCTION } from '../../../agent-harness/prompts/harness-instructions';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
+import { RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE } from '../adapter-tool-use.mapper';
 
 describe('XAIAdapter', () => {
   describe('constructor', () => {
@@ -730,7 +731,8 @@ describe('XAIAdapter', () => {
           {
             model: 'grok-4.5',
             max_output_tokens: 16000,
-            store: true,
+            store: false,
+            include: ['reasoning.encrypted_content'],
             instructions: `Follow platform contract.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
             input: [{ role: 'user', content: 'Read README.md' }],
             tools: [
@@ -752,109 +754,308 @@ describe('XAIAdapter', () => {
         expect(recordedBody.instructions).not.toContain('fileActions');
       });
 
-      it('passes the first response id into the second step', async () => {
+      describe('ACCESS-01J stateless multi-step continuation', () => {
+        const reasoningItem = {
+          id: 'rs_1',
+          type: 'reasoning',
+          summary: [],
+          encrypted_content: 'enc-reasoning-step-1',
+        };
+        const messageItem = {
+          id: 'msg_1',
+          type: 'message',
+          role: 'assistant',
+          status: 'completed',
+          content: [{ type: 'output_text', text: 'Checking two files.', annotations: [] }],
+        };
+        const callA = {
+          id: 'fc_a',
+          type: 'function_call',
+          status: 'completed',
+          call_id: 'call_a',
+          name: 'list_files',
+          arguments: '{"path":"."}',
+        };
+        const callB = {
+          id: 'fc_b',
+          type: 'function_call',
+          status: 'completed',
+          call_id: 'call_b',
+          name: 'read_file',
+          arguments: '{"path":"README.md"}',
+        };
+        const callC = {
+          id: 'fc_c',
+          type: 'function_call',
+          status: 'completed',
+          call_id: 'call_c',
+          name: 'read_file',
+          arguments: '{"path":"docs/a.md"}',
+        };
         const tools = [
           AGENT_HARNESS_TOOL_DEFINITIONS_V1[0],
           AGENT_HARNESS_TOOL_DEFINITIONS_V1[1],
         ];
-        mockClient.responses.create
-          .mockResolvedValueOnce({
-            id: 'resp_xai_1',
-            status: 'completed',
-            output: [
-              {
-                type: 'function_call',
-                call_id: 'call_aaa',
-                name: 'list_files',
-                arguments: '{"path":"."}',
-              },
-              {
-                type: 'function_call',
-                call_id: 'call_bbb',
-                name: 'read_file',
-                arguments: '{"path":"README.md"}',
-              },
-            ],
-            usage: { total_tokens: 15 },
-            model: 'grok-4.5',
-          })
-          .mockResolvedValueOnce(responsesText('done', 9));
         const request: AIExecutionRequest = {
           sessionId: 'session-1',
           conversationId: 'conv-1',
           userId: 'user-1',
-          prompt: 'List then read README.md',
+          prompt: 'List then read two files',
+          systemPrompt: 'Follow platform contract.',
           provider: 'xai',
           model: 'grok-4.5',
         };
-
-        const first = await adapter.executeWithTools(request, { tools });
-        const transcript: AIAdapterCanonicalTranscriptTurn[] = [
+        const resultsStep1 = [
           {
-            kind: 'assistant_tool_turn',
-            content: first.output,
-            toolCalls: first.canonicalToolCalls ?? [],
-            providerState: first.providerState,
+            callId: 'call_a',
+            toolName: 'list_files',
+            success: true,
+            content: { entries: ['README.md', 'docs'] },
           },
           {
-            kind: 'tool_result_turn',
-            results: [
-              {
-                callId: 'call_old',
-                toolName: 'list_files',
-                success: true,
-                content: { entries: ['stale.txt'] },
-              },
-            ],
-          },
-          {
-            kind: 'assistant_tool_turn',
-            content: first.output,
-            toolCalls: first.canonicalToolCalls ?? [],
-            providerState: first.providerState,
-          },
-          {
-            kind: 'tool_result_turn',
-            results: [
-              {
-                callId: 'call_aaa',
-                toolName: 'list_files',
-                success: true,
-                content: { entries: ['README.md'] },
-              },
-              {
-                callId: 'call_bbb',
-                toolName: 'read_file',
-                success: true,
-                content: { content: '# Title' },
-              },
-            ],
+            callId: 'call_b',
+            toolName: 'read_file',
+            success: true,
+            content: { content: '# Title' },
           },
         ];
-        await adapter.executeWithTools(request, { tools, transcript });
+        const resultsStep2 = [
+          {
+            callId: 'call_c',
+            toolName: 'read_file',
+            success: false,
+            errorMessage: 'read failed',
+          },
+        ];
+        const stepBodyKeys = [
+          'include',
+          'input',
+          'instructions',
+          'max_output_tokens',
+          'model',
+          'store',
+          'tools',
+        ];
 
-        expect(first.providerState).toEqual({
-          kind: 'responses',
-          responseId: 'resp_xai_1',
+        const runThreeSteps = async () => {
+          mockClient.responses.create
+            .mockResolvedValueOnce({
+              id: 'resp_1',
+              status: 'completed',
+              model: 'grok-4.5',
+              output: [reasoningItem, messageItem, callA, callB],
+              usage: { total_tokens: 20 },
+            })
+            .mockResolvedValueOnce({
+              id: 'resp_2',
+              status: 'completed',
+              model: 'grok-4.5',
+              output: [callC],
+              usage: { total_tokens: 15 },
+            })
+            .mockResolvedValueOnce(responsesText('All done.', 9));
+
+          const transcript: AIAdapterCanonicalTranscriptTurn[] = [];
+          const first = await adapter.executeWithTools(request, { tools });
+          transcript.push(
+            {
+              kind: 'assistant_tool_turn',
+              content: first.output,
+              toolCalls: first.canonicalToolCalls ?? [],
+              providerState: first.providerState,
+            },
+            { kind: 'tool_result_turn', results: resultsStep1 },
+          );
+          const second = await adapter.executeWithTools(request, {
+            tools,
+            toolResults: resultsStep1,
+            transcript: transcript.slice(),
+          });
+          transcript.push(
+            {
+              kind: 'assistant_tool_turn',
+              content: second.output,
+              toolCalls: second.canonicalToolCalls ?? [],
+              providerState: second.providerState,
+            },
+            { kind: 'tool_result_turn', results: resultsStep2 },
+          );
+          const third = await adapter.executeWithTools(request, {
+            tools,
+            toolResults: resultsStep2,
+            transcript: transcript.slice(),
+          });
+          return { first, second, third, transcript };
+        };
+
+        it('sends store: false, include and the prompt only on step 1', async () => {
+          await runThreeSteps();
+
+          const firstBody = mockClient.responses.create.mock.calls[0][0];
+          expect(firstBody.store).toBe(false);
+          expect(firstBody.include).toEqual(['reasoning.encrypted_content']);
+          expect(firstBody).not.toHaveProperty('previous_response_id');
+          expect(firstBody.input).toEqual([
+            { role: 'user', content: 'List then read two files' },
+          ]);
+          expect(Object.keys(firstBody).sort()).toEqual(stepBodyKeys);
         });
-        const secondBody = mockClient.responses.create.mock.calls[1][0];
-        expect(secondBody.previous_response_id).toBe('resp_xai_1');
-        expect(secondBody.input).toEqual([
-          {
-            type: 'function_call_output',
-            call_id: 'call_aaa',
-            output: JSON.stringify({ entries: ['README.md'] }),
-          },
-          {
-            type: 'function_call_output',
-            call_id: 'call_bbb',
-            output: JSON.stringify({ content: '# Title' }),
-          },
-        ]);
-        expect(secondBody).not.toHaveProperty('response_format');
-        expect(secondBody).not.toHaveProperty('temperature');
-        expect(JSON.stringify(secondBody.input)).not.toContain('call_old');
-        expect(mockClient.chat.completions.create).not.toHaveBeenCalled();
+
+        it('replays the full ordered history on step 3, two calls in one turn, every call_id paired', async () => {
+          const { first, third } = await runThreeSteps();
+
+          expect(first.providerState).toEqual({
+            kind: 'responses',
+            outputItems: [reasoningItem, messageItem, callA, callB],
+          });
+          expect(third.output).toBe('All done.');
+          expect(mockClient.responses.create).toHaveBeenCalledTimes(3);
+          for (const call of mockClient.responses.create.mock.calls) {
+            expect(call[0].store).toBe(false);
+            expect(call[0]).not.toHaveProperty('previous_response_id');
+            expect(call[0].include).toEqual(['reasoning.encrypted_content']);
+            expect(Object.keys(call[0]).sort()).toEqual(stepBodyKeys);
+          }
+
+          const secondBody = mockClient.responses.create.mock.calls[1][0];
+          expect(secondBody.input).toEqual([
+            { role: 'user', content: 'List then read two files' },
+            reasoningItem,
+            messageItem,
+            callA,
+            callB,
+            {
+              type: 'function_call_output',
+              call_id: 'call_a',
+              output: JSON.stringify({ entries: ['README.md', 'docs'] }),
+            },
+            {
+              type: 'function_call_output',
+              call_id: 'call_b',
+              output: JSON.stringify({ content: '# Title' }),
+            },
+          ]);
+
+          const thirdBody = mockClient.responses.create.mock.calls[2][0];
+          expect(thirdBody.instructions).toBe(
+            `Follow platform contract.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+          );
+          expect(thirdBody.input).toEqual([
+            { role: 'user', content: 'List then read two files' },
+            reasoningItem,
+            messageItem,
+            callA,
+            callB,
+            {
+              type: 'function_call_output',
+              call_id: 'call_a',
+              output: JSON.stringify({ entries: ['README.md', 'docs'] }),
+            },
+            {
+              type: 'function_call_output',
+              call_id: 'call_b',
+              output: JSON.stringify({ content: '# Title' }),
+            },
+            callC,
+            {
+              type: 'function_call_output',
+              call_id: 'call_c',
+              output: 'read failed',
+            },
+          ]);
+          const callIds = thirdBody.input
+            .filter((item: { type?: string }) => item.type === 'function_call')
+            .map((item: { call_id: string }) => item.call_id);
+          const outputIds = thirdBody.input
+            .filter((item: { type?: string }) => item.type === 'function_call_output')
+            .map((item: { call_id: string }) => item.call_id);
+          expect(callIds).toEqual(['call_a', 'call_b', 'call_c']);
+          expect(outputIds).toEqual(callIds);
+          expect(JSON.stringify(thirdBody)).not.toContain('resp_1');
+          expect(JSON.stringify(thirdBody)).not.toContain('resp_2');
+        });
+
+        it('replays the earlier reasoning item unchanged', async () => {
+          await runThreeSteps();
+
+          const thirdBody = mockClient.responses.create.mock.calls[2][0];
+          const reasoning = thirdBody.input.filter(
+            (item: { type?: string }) => item.type === 'reasoning',
+          );
+          expect(reasoning).toEqual([reasoningItem]);
+          expect(reasoning[0].encrypted_content).toBe('enc-reasoning-step-1');
+        });
+
+        it('fails closed on a malformed providerState and sends nothing', async () => {
+          const malformedStates: unknown[] = [
+            undefined,
+            { kind: 'responses', responseId: 'resp_1' },
+            { kind: 'responses', outputItems: [callA, { ...callB, call_id: undefined }] },
+            { kind: 'responses', outputItems: [{ type: 'mystery' }, callA, callB] },
+          ];
+
+          for (const providerState of malformedStates) {
+            mockClient.responses.create.mockClear();
+            const transcript: AIAdapterCanonicalTranscriptTurn[] = [
+              {
+                kind: 'assistant_tool_turn',
+                content: '',
+                toolCalls: [
+                  {
+                    status: 'valid',
+                    callId: 'call_a',
+                    toolName: 'list_files',
+                    arguments: { path: '.' },
+                    rawArguments: '{"path":"."}',
+                    providerKind: 'openai-function_call',
+                  },
+                  {
+                    status: 'valid',
+                    callId: 'call_b',
+                    toolName: 'read_file',
+                    arguments: { path: 'README.md' },
+                    rawArguments: '{"path":"README.md"}',
+                    providerKind: 'openai-function_call',
+                  },
+                ],
+                providerState,
+              },
+              { kind: 'tool_result_turn', results: resultsStep1 },
+            ];
+
+            await expect(
+              adapter.executeWithTools(request, { tools, transcript }),
+            ).rejects.toThrow(InternalServerErrorException);
+            await expect(
+              adapter.executeWithTools(request, { tools, transcript }),
+            ).rejects.toThrow(RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE);
+            expect(mockClient.responses.create).not.toHaveBeenCalled();
+          }
+        });
+
+        it('adds no field that carries keys or environment content', async () => {
+          const sentinel = 'env-sentinel-value-access-01j';
+          const envName = 'XAI_API_KEY';
+          const previous = process.env[envName];
+          process.env[envName] = sentinel;
+          try {
+            await runThreeSteps();
+          } finally {
+            if (previous === undefined) {
+              delete process.env[envName];
+            } else {
+              process.env[envName] = previous;
+            }
+          }
+
+          for (const call of mockClient.responses.create.mock.calls) {
+            const serialized = JSON.stringify(call[0]);
+            expect(Object.keys(call[0]).sort()).toEqual(stepBodyKeys);
+            expect(serialized).not.toContain('xai-test-key-123');
+            expect(serialized).not.toContain(sentinel);
+            expect(call[1]).toEqual({});
+          }
+        });
       });
 
       it('forwards the abort signal and keeps xAI error handling', async () => {
