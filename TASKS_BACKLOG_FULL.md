@@ -84440,13 +84440,13 @@ taskId=STAGING-DEPLOY-BACKUP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-13 by the BACKUP-RETENTION-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-13 — Keith approved the install ("Yes, install it"). Was: READY — registered 2026-11-13 by the BACKUP-RETENTION-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-BACKUP-01
 **Title:** Install the backup retention change on staging
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the install.
+**Start condition:** READY (Keith, 2026-11-13, "Yes, install it"). Was: NOT_READY. Ready when: Keith approves the install.
 **Depends on:** BACKUP-RETENTION-01.
 **Primary write scope:** records; host state (two ops files).
 **Mutexes / resources:** STAGING.
