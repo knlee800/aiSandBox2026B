@@ -7,5 +7,90 @@
     "passwordRequired": "Password is required",
     "loginSuccess": "Login successful",
     "serverError": "Internal server error"
+  },
+  "chat": {
+    "commands": {
+      "link": {
+        "name": "link",
+        "description": "Link this Discord account with the code from the platform",
+        "options": {
+          "code": {
+            "name": "code",
+            "description": "The code from the Connections page, for example ABCD-EFGH"
+          }
+        }
+      },
+      "unlink": {
+        "name": "unlink",
+        "description": "Remove the link between this Discord account and the platform"
+      },
+      "status": {
+        "name": "status",
+        "description": "Show the link and whether runs are switched on"
+      },
+      "language": {
+        "name": "language",
+        "description": "Choose the language of the bot's replies",
+        "options": {
+          "language": {
+            "name": "language",
+            "description": "The reply language"
+          }
+        }
+      },
+      "help": {
+        "name": "help",
+        "description": "Show what the bot can do"
+      },
+      "ask": {
+        "name": "ask",
+        "description": "Ask the Chief of Staff or one of your workflows",
+        "options": {
+          "text": {
+            "name": "text",
+            "description": "Your question or task"
+          },
+          "agent": {
+            "name": "agent",
+            "description": "The name of one of your workflows (optional)"
+          }
+        }
+      }
+    },
+    "languageNames": {
+      "en": "English",
+      "zh-TW": "繁體中文",
+      "zh-CN": "简体中文"
+    },
+    "replies": {
+      "help": "Commands in this direct message:\n/link code: link this Discord account with the code from the Connections page on the platform.\n/unlink: remove the link.\n/status: show the link and whether runs are switched on.\n/language: choose the language of these replies.\n/ask: ask the Chief of Staff (not available yet).",
+      "notAvailable": "The chat channel is not available right now.",
+      "useDirectMessage": "Use these commands in a direct message with the bot.",
+      "unknownCommand": "Unknown command. Use /help to see the commands.",
+      "error": "Something went wrong. Try again later.",
+      "linkFirst": "This Discord account is not linked. Make a code on the Connections page on the platform, then use /link here.",
+      "notEntitled": "This account cannot use the chat channel.",
+      "link": {
+        "claimed": "Code accepted. Go back to the Connections page on the platform and press Confirm to finish linking.",
+        "invalid": "That code did not work. Make a new code on the Connections page and try again.",
+        "alreadyLinked": "This Discord account is already linked. Use /unlink first to link it to another account.",
+        "paused": "Linking is paused for now. Try again later."
+      },
+      "unlink": {
+        "done": "The link is removed. This Discord account no longer receives anything from the platform."
+      },
+      "status": {
+        "summary": "Linked: yes.\nRuns: {{runs}}.\nReply language: {{language}}.",
+        "runsOn": "switched on",
+        "runsOff": "switched off"
+      },
+      "language": {
+        "set": "Replies are now in {{language}}."
+      },
+      "ask": {
+        "runsOff": "Runs are switched off on the platform. Nothing was started.",
+        "notBuilt": "Asking from Discord is not available yet. Nothing was started."
+      }
+    }
   }
 }

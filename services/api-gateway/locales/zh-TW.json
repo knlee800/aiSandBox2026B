@@ -7,5 +7,90 @@
     "passwordRequired": "密碼為必填項目",
     "loginSuccess": "登入成功",
     "serverError": "內部伺服器錯誤"
+  },
+  "chat": {
+    "commands": {
+      "link": {
+        "name": "連結",
+        "description": "用平台上的代碼連結這個 Discord 帳號",
+        "options": {
+          "code": {
+            "name": "代碼",
+            "description": "連線頁面上的代碼，例如 ABCD-EFGH"
+          }
+        }
+      },
+      "unlink": {
+        "name": "解除連結",
+        "description": "解除這個 Discord 帳號與平台的連結"
+      },
+      "status": {
+        "name": "狀態",
+        "description": "顯示連結狀態，以及執行是否已開啟"
+      },
+      "language": {
+        "name": "語言",
+        "description": "選擇機器人回覆的語言",
+        "options": {
+          "language": {
+            "name": "語言",
+            "description": "回覆語言"
+          }
+        }
+      },
+      "help": {
+        "name": "說明",
+        "description": "顯示機器人可以做什麼"
+      },
+      "ask": {
+        "name": "提問",
+        "description": "向幕僚長或你的工作流程提問",
+        "options": {
+          "text": {
+            "name": "內容",
+            "description": "你的問題或任務"
+          },
+          "agent": {
+            "name": "代理",
+            "description": "你的工作流程名稱（選填）"
+          }
+        }
+      }
+    },
+    "languageNames": {
+      "en": "English",
+      "zh-TW": "繁體中文",
+      "zh-CN": "简体中文"
+    },
+    "replies": {
+      "help": "可在這個私訊中使用的指令（中文版 Discord 顯示中文指令名稱）：\n/連結（/link）代碼：用平台連線頁面上的代碼連結這個 Discord 帳號。\n/解除連結（/unlink）：解除連結。\n/狀態（/status）：顯示連結狀態，以及執行是否已開啟。\n/語言（/language）：選擇這些回覆的語言。\n/提問（/ask）：向幕僚長提問（尚未開放）。",
+      "notAvailable": "聊天頻道目前無法使用。",
+      "useDirectMessage": "請在與機器人的私訊中使用這些指令。",
+      "unknownCommand": "未知的指令。請使用 /說明（/help）查看指令。",
+      "error": "發生錯誤，請稍後再試。",
+      "linkFirst": "這個 Discord 帳號尚未連結。請先在平台的連線頁面產生代碼，再在這裡使用 /連結（/link）。",
+      "notEntitled": "這個帳號無法使用聊天頻道。",
+      "link": {
+        "claimed": "已收到代碼。請回到平台的連線頁面按「確認」完成連結。",
+        "invalid": "這個代碼無法使用。請在連線頁面產生新代碼後再試一次。",
+        "alreadyLinked": "這個 Discord 帳號已經連結。若要連結到其他帳號，請先使用 /解除連結（/unlink）。",
+        "paused": "連結功能暫時停用，請稍後再試。"
+      },
+      "unlink": {
+        "done": "已解除連結。這個 Discord 帳號不會再收到平台的任何訊息。"
+      },
+      "status": {
+        "summary": "已連結：是。\n執行：{{runs}}。\n回覆語言：{{language}}。",
+        "runsOn": "已開啟",
+        "runsOff": "已關閉"
+      },
+      "language": {
+        "set": "之後的回覆會使用{{language}}。"
+      },
+      "ask": {
+        "runsOff": "平台上的執行目前已關閉，沒有啟動任何工作。",
+        "notBuilt": "目前還不能從 Discord 提問，沒有啟動任何工作。"
+      }
+    }
   }
 }

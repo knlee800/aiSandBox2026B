@@ -155,6 +155,13 @@ export interface ChatLinkRemoved {
   removed: boolean;
 }
 
+/** Slice B: what a chat command needs from the link. Never holds the outside user id. */
+export interface ChatLinkUse {
+  linkId: string;
+  userId: string;
+  locale: ChatLinkLocale;
+}
+
 /**
  * Maps a page or Discord interaction locale to the three reply languages
  * (stage-start section 8): en-US, en-GB and other en-* to en; zh-TW; zh-CN;
@@ -206,6 +213,10 @@ export function formatChatLinkCode(normalizedCode: string): string {
 }
 
 const EXTERNAL_USER_ID_PATTERN = /^[0-9]{1,32}$/;
+
+function isExternalUserId(value: unknown): value is string {
+  return typeof value === 'string' && EXTERNAL_USER_ID_PATTERN.test(value);
+}
 
 function isInvisibleCodePoint(codePoint: number): boolean {
   return (
@@ -594,6 +605,79 @@ export class ChatLinkService {
       this.logger.log(`chat link removed userId=${userId} linkId=${result.linkId}`);
     }
     return { channel: CHAT_CHANNEL_DISCORD, removed: result.linkId !== null };
+  }
+
+  /**
+   * Slice B: the link of an outside user, for a chat command. Updates
+   * last_used_at. Switch off, a malformed id or no link: null, and nothing
+   * is written.
+   */
+  async useLinkByExternalUser(channel: ChatChannel, externalUserId: unknown): Promise<ChatLinkUse | null> {
+    if (!isChatDiscordEnabled() || !isExternalUserId(externalUserId)) {
+      return null;
+    }
+    const link = await this.links.findOne({ where: { channel, externalUserId } });
+    if (!link) {
+      return null;
+    }
+    await this.links.update({ id: link.id }, { lastUsedAt: new Date() });
+    return { linkId: link.id, userId: link.userId, locale: normalizeChatLocale(link.locale) };
+  }
+
+  /**
+   * Slice B: /language stores the reply language on the link and updates
+   * last_used_at. False when there is no link (or the switch is off).
+   */
+  async setLinkLocaleByExternalUser(
+    channel: ChatChannel,
+    externalUserId: unknown,
+    locale: ChatLinkLocale,
+  ): Promise<boolean> {
+    if (!isChatDiscordEnabled() || !isExternalUserId(externalUserId)) {
+      return false;
+    }
+    if (!(CHAT_LINK_LOCALES as readonly string[]).includes(locale)) {
+      return false;
+    }
+    const result = await this.links.update(
+      { channel, externalUserId },
+      { locale, lastUsedAt: new Date() },
+    );
+    return (result.affected ?? 0) === 1;
+  }
+
+  /**
+   * Slice B: /unlink in the chat. Deletes the link and every code of its
+   * owner, like DELETE /api/chat-links/discord, with one link_removed audit
+   * row (ids and counts only; source chat_command). Switch off or no link:
+   * removed false, nothing written.
+   */
+  async unlinkByExternalUser(channel: ChatChannel, externalUserId: unknown): Promise<ChatLinkRemoved> {
+    if (!isChatDiscordEnabled() || !isExternalUserId(externalUserId)) {
+      return { channel, removed: false };
+    }
+    const result = await this.links.manager.transaction(async (manager: EntityManager) => {
+      const links = manager.getRepository(ChatLink);
+      const link = await links.findOne({ where: { channel, externalUserId } });
+      if (!link) {
+        return null;
+      }
+      const codes = await manager.getRepository(ChatLinkCode).delete({ userId: link.userId, channel });
+      await links.delete({ id: link.id });
+      const removedCodes = codes.affected ?? 0;
+      await this.audit(manager, CHAT_AUDIT_EVENTS.removed, 'chat_link', link.id, link.userId, {
+        channel,
+        linkId: link.id,
+        removedCodes,
+        source: 'chat_command',
+      });
+      return { linkId: link.id, userId: link.userId };
+    });
+    if (!result) {
+      return { channel, removed: false };
+    }
+    this.logger.log(`chat link removed userId=${result.userId} linkId=${result.linkId} source=chat_command`);
+    return { channel, removed: true };
   }
 
   private assertEnabled(): void {

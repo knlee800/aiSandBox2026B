@@ -18,6 +18,9 @@
     "migration:create": "typeorm migration:create"
   },
   "dependencies": {
+    "@discordjs/core": "2.7.0",
+    "@discordjs/rest": "2.6.3",
+    "@discordjs/ws": "2.0.4",
     "@modelcontextprotocol/sdk": "1.32.2",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^4.0.3",

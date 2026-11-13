@@ -409,6 +409,84 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
     });
   });
 
+  describe('by outside user (slice B commands)', () => {
+    it('useLinkByExternalUser returns the owner and language, and updates last_used_at', async () => {
+      await linkOwner();
+      await service.setLinkLocaleByExternalUser('discord', DISCORD_ID, 'zh-TW');
+      store.links.rows[0].lastUsedAt = null;
+      advance(MINUTE);
+
+      const use = await service.useLinkByExternalUser('discord', DISCORD_ID);
+      expect(use).toEqual({ linkId: store.links.rows[0].id, userId: OWNER, locale: 'zh-TW' });
+      expect(JSON.stringify(use)).not.toContain(DISCORD_ID);
+      expect(store.links.rows[0].lastUsedAt?.getTime()).toBe(START + MINUTE);
+    });
+
+    it('useLinkByExternalUser: no link, a malformed id or the switch off gives null and writes nothing', async () => {
+      await linkOwner();
+      store.resetCalls();
+      expect(await service.useLinkByExternalUser('discord', DISCORD_OTHER)).toBeNull();
+      expect(await service.useLinkByExternalUser('discord', 'abc')).toBeNull();
+      expect(await service.useLinkByExternalUser('discord', 42)).toBeNull();
+      expect(store.calls).toEqual(['links.findOne']);
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      store.resetCalls();
+      expect(await service.useLinkByExternalUser('discord', DISCORD_ID)).toBeNull();
+      expect(store.calls).toEqual([]);
+    });
+
+    it('setLinkLocaleByExternalUser stores only the three languages, only on an existing link', async () => {
+      expect(await service.setLinkLocaleByExternalUser('discord', DISCORD_ID, 'zh-CN')).toBe(false);
+      await linkOwner();
+      expect(await service.setLinkLocaleByExternalUser('discord', DISCORD_ID, 'zh-CN')).toBe(true);
+      expect(store.links.rows[0].locale).toBe('zh-CN');
+      expect(store.links.rows[0].lastUsedAt).toBeInstanceOf(Date);
+      expect(await service.setLinkLocaleByExternalUser('discord', DISCORD_ID, 'fr' as never)).toBe(false);
+      expect(store.links.rows[0].locale).toBe('zh-CN');
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      expect(await service.setLinkLocaleByExternalUser('discord', DISCORD_ID, 'en')).toBe(false);
+      expect(store.links.rows[0].locale).toBe('zh-CN');
+    });
+
+    it('unlinkByExternalUser deletes the link and every code of that owner, with one audit row', async () => {
+      await linkOwner();
+      store.codes.rows.push(codeRow('stray', OWNER));
+      store.codes.rows.push(codeRow('other', OTHER));
+      store.links.rows.push(linkRow('b', THIRD, DISCORD_OTHER));
+
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: true });
+      expect(store.links.rows.map((row) => row.userId)).toEqual([THIRD]);
+      expect(store.codes.rows.map((row) => row.userId)).toEqual([OTHER]);
+      const removed = store.audit.rows.filter((row) => row.eventType === 'link_removed');
+      expect(removed).toHaveLength(1);
+      expect(removed[0]).toMatchObject({ category: 'chat', subjectType: 'chat_link', userId: OWNER });
+      expect(removed[0].payload).toEqual({
+        channel: 'discord',
+        linkId: removed[0].subjectId,
+        removedCodes: 1,
+        source: 'chat_command',
+      });
+      expect(JSON.stringify(store.audit.rows)).not.toContain(DISCORD_ID);
+      expect(logs.join('\n')).not.toContain(DISCORD_ID);
+
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: false });
+      expect(store.audit.rows.filter((row) => row.eventType === 'link_removed')).toHaveLength(1);
+    });
+
+    it('unlinkByExternalUser: switch off or a malformed id writes nothing', async () => {
+      await linkOwner();
+      store.resetCalls();
+      expect(await service.unlinkByExternalUser('discord', 'not-a-number')).toEqual({
+        channel: 'discord',
+        removed: false,
+      });
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: false });
+      expect(store.calls).toEqual([]);
+      expect(store.links.rows).toHaveLength(1);
+    });
+  });
+
   describe('limits', () => {
     it('5 code creations per owner per hour, then 429 until the hour has passed', async () => {
       for (let i = 0; i < 5; i += 1) {

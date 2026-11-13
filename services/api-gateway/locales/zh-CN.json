@@ -7,5 +7,90 @@
     "passwordRequired": "密码为必填项",
     "loginSuccess": "登录成功",
     "serverError": "内部服务器错误"
+  },
+  "chat": {
+    "commands": {
+      "link": {
+        "name": "关联",
+        "description": "用平台上的代码关联这个 Discord 账户",
+        "options": {
+          "code": {
+            "name": "代码",
+            "description": "连接页面上的代码，例如 ABCD-EFGH"
+          }
+        }
+      },
+      "unlink": {
+        "name": "取消关联",
+        "description": "取消这个 Discord 账户与平台的关联"
+      },
+      "status": {
+        "name": "状态",
+        "description": "显示关联状态，以及运行是否已开启"
+      },
+      "language": {
+        "name": "语言",
+        "description": "选择机器人回复的语言",
+        "options": {
+          "language": {
+            "name": "语言",
+            "description": "回复语言"
+          }
+        }
+      },
+      "help": {
+        "name": "帮助",
+        "description": "显示机器人可以做什么"
+      },
+      "ask": {
+        "name": "提问",
+        "description": "向幕僚长或你的工作流提问",
+        "options": {
+          "text": {
+            "name": "内容",
+            "description": "你的问题或任务"
+          },
+          "agent": {
+            "name": "智能体",
+            "description": "你的工作流名称（可选）"
+          }
+        }
+      }
+    },
+    "languageNames": {
+      "en": "English",
+      "zh-TW": "繁體中文",
+      "zh-CN": "简体中文"
+    },
+    "replies": {
+      "help": "可在这个私信中使用的命令（中文版 Discord 显示中文命令名称）：\n/关联（/link）代码：用平台连接页面上的代码关联这个 Discord 账户。\n/取消关联（/unlink）：取消关联。\n/状态（/status）：显示关联状态，以及运行是否已开启。\n/语言（/language）：选择这些回复的语言。\n/提问（/ask）：向幕僚长提问（尚未开放）。",
+      "notAvailable": "聊天渠道目前无法使用。",
+      "useDirectMessage": "请在与机器人的私信中使用这些命令。",
+      "unknownCommand": "未知的命令。请使用 /帮助（/help）查看命令。",
+      "error": "出现错误，请稍后再试。",
+      "linkFirst": "这个 Discord 账户尚未关联。请先在平台的连接页面生成代码，再在这里使用 /关联（/link）。",
+      "notEntitled": "这个账户无法使用聊天渠道。",
+      "link": {
+        "claimed": "已收到代码。请回到平台的连接页面点击“确认”完成关联。",
+        "invalid": "这个代码无法使用。请在连接页面生成新代码后再试一次。",
+        "alreadyLinked": "这个 Discord 账户已经关联。若要关联到其他账户，请先使用 /取消关联（/unlink）。",
+        "paused": "关联功能暂时停用，请稍后再试。"
+      },
+      "unlink": {
+        "done": "已取消关联。这个 Discord 账户不会再收到平台的任何消息。"
+      },
+      "status": {
+        "summary": "已关联：是。\n运行：{{runs}}。\n回复语言：{{language}}。",
+        "runsOn": "已开启",
+        "runsOff": "已关闭"
+      },
+      "language": {
+        "set": "之后的回复将使用{{language}}。"
+      },
+      "ask": {
+        "runsOff": "平台上的运行目前已关闭，没有启动任何工作。",
+        "notBuilt": "目前还不能从 Discord 提问，没有启动任何工作。"
+      }
+    }
   }
 }
