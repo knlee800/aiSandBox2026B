@@ -84,7 +84,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 49 | ACCESS-01G | Admin settings store with audit |
 | 50 | ACCESS-01H | Limits page |
 | 51 | ACCESS-01I | Plan entitlements; knowledge upload charges |
-| 52 | ACCESS-01J | OpenAI and xAI tool-loop continuation fix (stateless, store: false; Keith 2026-11-13: before the first outside user) |
+| 52 | ACCESS-01J | OpenAI and xAI tool-loop continuation fix (stateless, store: false; Keith 2026-11-13: before the first outside user); admitted 2026-11-13, Lane 1, opus worker; live check registered at LOCK |
 | 53 | LIMITS-PER-USER-01 | Per-user limit overrides |
 | 54 | KNOW-04 | Knowledge upload summaries; needs Keith's charging decision |
 

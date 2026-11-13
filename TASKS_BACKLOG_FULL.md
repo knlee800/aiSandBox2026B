@@ -84338,6 +84338,29 @@ nature=IMPLEMENTATION
 
 **Also (added 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK; docs/PRIVACY-DATA-INVENTORY.md):** data retention covers these findings: (a) correction: the usage ledger does keep AI answer text and proposed file changes in usage_records.metadata (services/ai-service/src/worker/worker.processor.ts:2274-2284), although the entity comment and docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md section 4.1 say it stores no response content; Keith decides whether the ledger keeps it; (b) failed AI jobs stay in Redis with prompt, files and the connector grant token (removeOnFail false, services/api-gateway/src/queue/queue.service.ts:43); (c) the backup script never prunes the encrypted off-host bundles, and docs/backup/postgresql-backup-procedure.md states a different policy; (d) token_usage uses RESTRICT on its session relation and several tables have no cascade from users, which would block an account deletion; (e) the old ai-service SQLite conversation store and its routes still exist. (Corrected 2026-11-12 by PRIVACY-HOST-CHECK-01: on staging /opt/aisandbox/database/aisandbox.db is container-manager's file with checkpoints, governance_events and sessions tables and no conversations table; the ai-service conversation code and routes remain in the repository.)
 
+### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01J
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 1 — 2026-11-13 — by the control plane on Keith's "Start ACCESS-01J". Was: READY, registered 2026-11-05 by GOV-ACCESS-PLAN-01 as plan S10 (docs/ACCESS-READY-01-PLAN.md), not admitted; this body is written at admission because the plan row was its only record.
+**Task ID:** ACCESS-01J
+**Title:** Stateless OpenAI and xAI tool continuation (store: false)
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (Keith, 2026-11-13, "Start ACCESS-01J"). Keith on 2026-11-13 (ACCESS-READY-01 Q4): wanted before the first outside user, not only before paid launch. D3 (2026-11-06) still withholds OpenAI and xAI runs from anyone but Keith until this task is COMPLETE AND LOCKED.
+**Depends on:** none.
+**Primary write scope:** services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts, services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts, services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts, services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts, services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts, services/ai-service/src/ai-execution/adapters/__tests__/xai-ai.adapter.spec.ts.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none (providerState is opaque and adapter-owned; the harness loop carries it unchanged).
+**Evidence class:** LOCAL-TESTS (mocked request shapes). The live check against the real OpenAI API is a separate PROVIDER-LIVE task registered at LOCK, because replaying history may change reasoning behaviour and mocks cannot prove it.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Plan S10 option A (item 5). Today the OpenAI and xAI adapters send store: true and continue a tool loop with previous_response_id, so each response is kept by the provider. Change both to store: false and replay the conversation in input at every step: the user prompt, each earlier response's output items (function_call items, message items and reasoning items carried with their encrypted content, requested through include where the API offers it) and the function_call_output items for each tool result. The adapter keeps what it needs in providerState (opaque to the loop). previous_response_id is no longer sent. Anthropic, DeepSeek, Groq and the stubs are unchanged. The transcript stays in memory in the loop (not persisted).
+**Acceptance:** (1) no OpenAI or xAI request sets store: true or previous_response_id; (2) a first step sends the prompt only; a later step sends the full ordered history with every call_id paired to its output; (3) a reasoning item from an earlier response is replayed unchanged when present; (4) a missing or malformed providerState fails closed with a clear error, never a partial history; (5) mocked tests for both adapters and the mapper; the ai-service suite and build pass; (6) no change outside the write scope.
+
 ### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=PRIVACY-INVENTORY-01

@@ -7,13 +7,20 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "ACCESS-01J",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
+        "services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts",
+        "services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/xai-ai.adapter.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -8428,14 +8435,21 @@
       "taskId": "ACCESS-01J",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
+        "services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts",
+        "services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/xai-ai.adapter.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -8443,8 +8457,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "ACCESS-LIVE-01",
