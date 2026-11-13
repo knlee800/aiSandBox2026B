@@ -25,7 +25,9 @@
         "services/api-gateway/src/ai/ai-execution.controller.ts",
         "services/api-gateway/src/ai/__tests__/provider-availability.spec.ts",
         "services/api-gateway/src/ai/__tests__/execution-error.spec.ts",
-        "services/api-gateway/src/ai/ai-execution.controller.spec.ts"
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts",
+        "services/ai-service/src/__tests__/internal-key.http.spec.ts",
+        "services/ai-service/src/ai-execution/__tests__/ai-execution.phase30c.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -3316,7 +3318,9 @@
         "services/api-gateway/src/ai/ai-execution.controller.ts",
         "services/api-gateway/src/ai/__tests__/provider-availability.spec.ts",
         "services/api-gateway/src/ai/__tests__/execution-error.spec.ts",
-        "services/api-gateway/src/ai/ai-execution.controller.spec.ts"
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts",
+        "services/ai-service/src/__tests__/internal-key.http.spec.ts",
+        "services/ai-service/src/ai-execution/__tests__/ai-execution.phase30c.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
