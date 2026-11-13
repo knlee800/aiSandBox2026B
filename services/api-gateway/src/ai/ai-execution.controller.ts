@@ -19,12 +19,20 @@ import {
   InternalServerErrorException,
   Sse,
   MessageEvent,
+  ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import {
   AIExecutionRequest,
+  AIServiceHttpClient,
 } from '../clients/ai-service-http.client';
+import { readAllowListedExecutionError } from './execution-error';
+import {
+  ProviderAvailabilityAnswer,
+  ProviderAvailabilityCache,
+} from './provider-availability';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { ExecutionResultDto, FileActionDto } from './dto/execution-result.dto';
 import { ConfirmBuildApplyDto } from './dto/confirm-build-apply.dto';
@@ -241,7 +249,12 @@ export class AIExecutionController {
     private readonly userAgentService?: UserAgentService,
     @Optional()
     private readonly entitlementService?: EntitlementService,
+    @Optional()
+    private readonly aiServiceHttpClient?: AIServiceHttpClient,
   ) {}
+
+  /** PROVIDER-KEY-01: one cache per controller instance (60 seconds). */
+  private providerAvailabilityCache?: ProviderAvailabilityCache;
 
   private normalizeGlobalInstructions(
     globalInstructions: string | null | undefined,
@@ -1152,9 +1165,50 @@ export class AIExecutionController {
       if (typeof execution.provider === 'string') {
         response.provider = execution.provider;
       }
+      // PROVIDER-KEY-01 (C2): only allow-listed failures, with the gateway's own text.
+      if (status === 'failed') {
+        const error = readAllowListedExecutionError(execution.metadata);
+        if (error) {
+          response.error = error;
+        }
+      }
     }
 
     return response;
+  }
+
+  /**
+   * Which AI providers can run (PROVIDER-KEY-01, contract C4)
+   *
+   * GET /api/ai/providers
+   *
+   * Signed in (session or API key). Asks the AI service, the only service
+   * that knows which keys it has; booleans only, fixed order, stub never
+   * listed. 503 when the AI service cannot answer.
+   */
+  @Get('providers')
+  @UseGuards(SessionOrApiKeyAuthGuard)
+  async listProviders(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+  ): Promise<ProviderAvailabilityAnswer> {
+    if (!identity?.userId) {
+      throw new UnauthorizedException('Unauthorized');
+    }
+    const client = this.aiServiceHttpClient;
+    if (!client) {
+      throw new ServiceUnavailableException('AI providers are unavailable');
+    }
+    if (!this.providerAvailabilityCache) {
+      this.providerAvailabilityCache = new ProviderAvailabilityCache(() =>
+        client.getProviderAvailability(),
+      );
+    }
+    const answer = await this.providerAvailabilityCache.read();
+    if (!answer) {
+      this.logger.warn('Provider availability could not be read from the AI service');
+      throw new ServiceUnavailableException('AI providers are unavailable');
+    }
+    return answer;
   }
 
   /**

@@ -1,4 +1,12 @@
-import { Logger } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
+import { AIExecutionService } from '../ai-execution/ai-execution.service';
+import type { AIExecutionRequest } from '../ai-execution/types';
+import { AI_PROVIDER_USAGE_LIMIT_REACHED } from '../ai-execution/adapters/anthropic-ai.adapter';
+import {
+  PROVIDER_KEY_MISSING_CODE,
+  PROVIDER_KEY_MISSING_MESSAGE,
+  ProviderKeyMissingError,
+} from '../ai-execution/provider-key-missing.error';
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import {
   buildAIExecutionRequest,
@@ -6866,6 +6874,147 @@ describe('RUN-ERROR-01: stored execution failure reason', () => {
     expect(stored.message).not.toContain('worker.processor.ts');
     expect(stored.metadata.keepMe).toBe('unrelated-value');
     await worker.onModuleDestroy();
+  });
+
+  describe('PROVIDER-KEY-01: provider_key_missing', () => {
+    const noKeyConfig = { get: jest.fn().mockReturnValue(undefined) } as never;
+
+    it('stores exactly the fixed pair when the real service has no key for the provider', async () => {
+      const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+      const service = new AIExecutionService(noKeyConfig);
+      const execute = jest.fn((request: AIExecutionRequest) => service.execute(request));
+      const { worker, processJob } = await startWorker({ query: ledger.query, execute });
+
+      await expect(processJob(plainJob('exec-key-missing'))).rejects.toBeInstanceOf(
+        ProviderKeyMissingError,
+      );
+
+      const stored = storedError(generalFailure(ledger.queries));
+      expect(stored.metadata.executionError).toEqual({
+        code: 'provider_key_missing',
+        message: 'AI provider is not configured',
+      });
+      expect(stored.metadata.keepMe).toBe('unrelated-value');
+      const json = JSON.stringify(stored.metadata);
+      expect(json).not.toContain('XAI_API_KEY');
+      expect(json).not.toMatch(/api[_ -]?key/i);
+      expect(ledger.status.value).toBe('failed');
+      await worker.onModuleDestroy();
+    });
+
+    it('stores the fixed pair for the typed error even when its text was replaced', async () => {
+      const ledger = createLedgerMock();
+      const error = new ProviderKeyMissingError();
+      error.message = 'XAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz missing\n    at x (y.ts:1:2)';
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockRejectedValue(error),
+      });
+
+      await expect(processJob(plainJob('exec-key-typed'))).rejects.toBe(error);
+
+      const stored = storedError(generalFailure(ledger.queries));
+      expect({ code: stored.code, message: stored.message }).toEqual({
+        code: PROVIDER_KEY_MISSING_CODE,
+        message: PROVIDER_KEY_MISSING_MESSAGE,
+      });
+      expect(JSON.stringify(stored.metadata)).not.toContain('sk-');
+      await worker.onModuleDestroy();
+    });
+
+    it('decides by type: a typed error with safe replaced text still stores the fixed pair', async () => {
+      const ledger = createLedgerMock();
+      const error = new ProviderKeyMissingError();
+      error.message = 'The provider could not start';
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockRejectedValue(error),
+      });
+
+      await expect(processJob(plainJob('exec-key-typed-safe'))).rejects.toBe(error);
+
+      const stored = storedError(generalFailure(ledger.queries));
+      expect({ code: stored.code, message: stored.message }).toEqual({
+        code: 'provider_key_missing',
+        message: 'AI provider is not configured',
+      });
+      await worker.onModuleDestroy();
+    });
+
+    it('decides by type: an untyped error with the same sentence is not given the code', async () => {
+      const ledger = createLedgerMock();
+      const error = new Error('AI provider is not configured');
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockRejectedValue(error),
+      });
+
+      await expect(processJob(plainJob('exec-key-untyped'))).rejects.toBe(error);
+
+      const stored = storedError(generalFailure(ledger.queries));
+      expect(stored.code).toBe('execution_failed');
+      await worker.onModuleDestroy();
+    });
+
+    it('stores only the fixed sentence when another error carries the code with unsafe text', async () => {
+      const unsafe = [
+        'provider failed api_key=sk-abcdefghijklmnopqrstuvwxyz',
+        'the api key was refused',
+        'boom\n    at Worker.process (worker.processor.ts:2100:15)',
+      ];
+      for (const [index, message] of unsafe.entries()) {
+        const ledger = createLedgerMock();
+        const error = new Error(message);
+        (error as Error & { code: string }).code = 'provider_key_missing';
+        const { worker, processJob } = await startWorker({
+          query: ledger.query,
+          execute: jest.fn().mockRejectedValue(error),
+        });
+        await expect(processJob(plainJob(`exec-key-coded-${index}`))).rejects.toBe(error);
+        const stored = storedError(generalFailure(ledger.queries));
+        expect(stored.code).toBe('provider_key_missing');
+        expect(stored.message).toBe('AI provider is not configured');
+        expect(JSON.stringify(stored.metadata)).not.toContain('sk-');
+        expect(JSON.stringify(stored.metadata)).not.toContain('worker.processor.ts');
+        await worker.onModuleDestroy();
+      }
+    });
+
+    it('still stores execution_failed / This step failed. for a plain error that mentions a key', async () => {
+      const ledger = createLedgerMock();
+      const error = new Error(
+        'XAI_API_KEY environment variable is required when provider is "xai"',
+      );
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockRejectedValue(error),
+      });
+
+      await expect(processJob(plainJob('exec-plain-key'))).rejects.toBe(error);
+
+      const stored = storedError(generalFailure(ledger.queries));
+      expect(stored.code).toBe('execution_failed');
+      expect(stored.message).toBe('This step failed.');
+      await worker.onModuleDestroy();
+    });
+
+    it('keeps the usage-limit sentence stored as execution_failed (what the gateway matches)', async () => {
+      const ledger = createLedgerMock();
+      const error = new BadRequestException(AI_PROVIDER_USAGE_LIMIT_REACHED);
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockRejectedValue(error),
+      });
+
+      await expect(processJob(plainJob('exec-usage-limit'))).rejects.toBe(error);
+
+      const stored = storedError(generalFailure(ledger.queries));
+      expect({ code: stored.code, message: stored.message }).toEqual({
+        code: 'execution_failed',
+        message: 'AI provider usage limit reached',
+      });
+      await worker.onModuleDestroy();
+    });
   });
 
   it('leaves a successful conversation job without an executionError', async () => {

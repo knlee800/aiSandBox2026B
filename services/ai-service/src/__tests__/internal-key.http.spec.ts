@@ -37,7 +37,7 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
   let app: INestApplication;
   let baseUrl: string;
 
-  const aiExecutionService = { execute: jest.fn() };
+  const aiExecutionService = { execute: jest.fn(), getProviderKeyAvailability: jest.fn() };
   const conversationsService = {
     getConversation: jest.fn(),
     getMessages: jest.fn(),
@@ -93,6 +93,12 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
       mock: () => worker.getMetrics,
     },
     {
+      name: 'GET /api/internal/provider-availability',
+      method: 'GET',
+      path: '/api/internal/provider-availability',
+      mock: () => aiExecutionService.getProviderKeyAvailability,
+    },
+    {
       name: 'GET /api/internal/queue/stats',
       method: 'GET',
       path: '/api/internal/queue/stats',
@@ -118,6 +124,13 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
   function resetMocks() {
     jest.clearAllMocks();
     aiExecutionService.execute.mockResolvedValue({ output: 'ok', tokensUsed: 1, model: 'stub' });
+    aiExecutionService.getProviderKeyAvailability.mockReturnValue({
+      xai: false,
+      groq: false,
+      deepseek: false,
+      openai: false,
+      anthropic: false,
+    });
     conversationsService.getConversation.mockResolvedValue({ id: 'c1' });
     conversationsService.getMessages.mockResolvedValue([]);
     conversationsService.clearConversation.mockResolvedValue({ cleared: true });
@@ -378,6 +391,7 @@ describe('ai-service route inventory (AI-SERVICE-AUTH-01)', () => {
         'GET /api/conversations/:sessionId/quota-status',
         'GET /api/conversations/:sessionId/usage',
         'GET /api/internal/metrics',
+        'GET /api/internal/provider-availability',
         'GET /api/internal/queue/stats',
         'POST /api/execute',
       ].sort((a, b) => a.localeCompare(b)),

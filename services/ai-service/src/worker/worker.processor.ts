@@ -8,6 +8,11 @@ import { Worker, Job, Queue, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { AIExecutionService } from '../ai-execution/ai-execution.service';
+import {
+  PROVIDER_KEY_MISSING_CODE,
+  PROVIDER_KEY_MISSING_MESSAGE,
+  ProviderKeyMissingError,
+} from '../ai-execution/provider-key-missing.error';
 import { ExecutionStreamPublisher } from '../streaming/execution-stream.publisher';
 import {
   incExecutionStarted,
@@ -681,6 +686,8 @@ function knownHarnessMessages(code: string): readonly string[] {
       return [KNOWLEDGE_SCOPES_INVALID_MESSAGE];
     case KNOWLEDGE_SCOPES_PROFILE_CONFLICT:
       return [KNOWLEDGE_SCOPES_PROFILE_CONFLICT_MESSAGE];
+    case PROVIDER_KEY_MISSING_CODE:
+      return [PROVIDER_KEY_MISSING_MESSAGE];
     default:
       if (HARNESS_ENTITLEMENT_FAILURE_CODES.includes(code)) {
         return [harnessEntitlementFailureMessage(code)];
@@ -799,6 +806,10 @@ function resolveStoredExecutionError(
   error: unknown,
   prompt?: string,
 ): { code: string; message: string } {
+  // PROVIDER-KEY-01: the type decides, not the text.
+  if (error instanceof ProviderKeyMissingError) {
+    return { code: PROVIDER_KEY_MISSING_CODE, message: PROVIDER_KEY_MISSING_MESSAGE };
+  }
   const code = readShortErrorCode(error);
   const raw = readRawErrorMessage(error);
   const known = knownHarnessMessages(code);

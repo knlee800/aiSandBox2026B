@@ -1,6 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { AIExecutionService } from '../ai-execution.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  AIExecutionService,
+  KEYED_PROVIDER_IDS,
+  KeyedProviderId,
+} from '../ai-execution.service';
+import { ProviderKeyMissingError } from '../provider-key-missing.error';
+import { StubAIAdapter } from '../adapters/stub-ai.adapter';
+import { AnthropicAdapter } from '../adapters/anthropic-ai.adapter';
+import { OpenAIAdapter } from '../adapters/openai-ai.adapter';
+import { GroqAdapter } from '../adapters/groq-ai.adapter';
+import { XAIAdapter } from '../adapters/xai-ai.adapter';
+import { DeepSeekAdapter } from '../adapters/deepseek-ai.adapter';
 import { AIExecutionModule } from '../ai-execution.module';
 import { AIExecutionRequest } from '../types';
 
@@ -99,5 +110,101 @@ describe('AIExecutionService (Stage C2-E Verification)', () => {
       expect(result1.tokensUsed).toBe(0);
       expect(result2.tokensUsed).toBe(0);
     });
+  });
+});
+
+describe('AIExecutionService provider keys (PROVIDER-KEY-01)', () => {
+  const keyed: Array<{ provider: KeyedProviderId; variable: string; adapter: Function }> = [
+    { provider: 'xai', variable: 'XAI_API_KEY', adapter: XAIAdapter },
+    { provider: 'groq', variable: 'GROQ_API_KEY', adapter: GroqAdapter },
+    { provider: 'deepseek', variable: 'DEEPSEEK_API_KEY', adapter: DeepSeekAdapter },
+    { provider: 'openai', variable: 'OPENAI_API_KEY', adapter: OpenAIAdapter },
+    { provider: 'anthropic', variable: 'ANTHROPIC_API_KEY', adapter: AnthropicAdapter },
+  ];
+  const marker = 'provider-key-01-marker-value-zzz';
+
+  function serviceWith(values: Record<string, unknown>): AIExecutionService {
+    // The Anthropic default model comes from ANTHROPIC_MODEL; it is not a key.
+    const all: Record<string, unknown> = { ANTHROPIC_MODEL: 'claude-test-model', ...values };
+    const config = { get: jest.fn((name: string) => all[name]) } as unknown as ConfigService;
+    return new AIExecutionService(config);
+  }
+
+  describe.each(keyed)('$provider', ({ provider, variable, adapter }) => {
+    it.each([
+      ['no key', undefined],
+      ['an empty key', ''],
+      ['a blank key', '   '],
+      ['a non-string key', 42],
+    ])('throws ProviderKeyMissingError with %s', (_label, value) => {
+      const service = serviceWith(value === undefined ? {} : { [variable]: value });
+      let thrown: unknown;
+      try {
+        service.getAdapter(provider);
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown).toBeInstanceOf(ProviderKeyMissingError);
+      const typed = thrown as ProviderKeyMissingError;
+      expect(typed.code).toBe('provider_key_missing');
+      expect(typed.message).toBe('AI provider is not configured');
+      expect(typed.message).not.toContain(variable);
+      expect(typed.message).not.toMatch(/key/i);
+    });
+
+    it('fails before any provider call when execute names it without a key', async () => {
+      const service = serviceWith({});
+      await expect(
+        service.execute({
+          sessionId: 's',
+          conversationId: 'c',
+          userId: 'u',
+          prompt: 'p',
+          provider,
+        }),
+      ).rejects.toBeInstanceOf(ProviderKeyMissingError);
+    });
+
+    it('builds the adapter as before when the key is set', () => {
+      const service = serviceWith({ [variable]: marker });
+      expect(service.getAdapter(provider)).toBeInstanceOf(adapter);
+    });
+  });
+
+  it('builds the stub adapter with no keys at all', () => {
+    expect(serviceWith({}).getAdapter('stub')).toBeInstanceOf(StubAIAdapter);
+  });
+
+  it('answers availability as booleans that follow the configured keys, in fixed order', () => {
+    const service = serviceWith({
+      XAI_API_KEY: marker,
+      GROQ_API_KEY: '',
+      DEEPSEEK_API_KEY: '   ',
+      ANTHROPIC_API_KEY: marker,
+    });
+    const availability = service.getProviderKeyAvailability();
+    expect(availability).toEqual({
+      xai: true,
+      groq: false,
+      deepseek: false,
+      openai: false,
+      anthropic: true,
+    });
+    expect(Object.keys(availability)).toEqual([...KEYED_PROVIDER_IDS]);
+    expect(Object.keys(availability)).not.toContain('stub');
+    for (const value of Object.values(availability)) {
+      expect(typeof value).toBe('boolean');
+    }
+    expect(JSON.stringify(availability)).not.toContain(marker);
+  });
+
+  it('answers all false with no keys', () => {
+    expect(Object.values(serviceWith({}).getProviderKeyAvailability())).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
   });
 });

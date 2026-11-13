@@ -6,7 +6,11 @@ import {
   Logger,
   NotFoundException,
   Provider,
+  RequestMethod,
+  ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { GUARDS_METADATA, METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { createHash } from 'crypto';
 import {
   AIExecutionController,
@@ -19,7 +23,7 @@ import {
 import { EntitlementService } from '../auth/entitlement.service';
 import { AuthModule } from '../auth/auth.module';
 import { AIModule } from './ai.module';
-import { AIExecutionRequest } from '../clients/ai-service-http.client';
+import { AIExecutionRequest, AIServiceHttpClient } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
@@ -3932,6 +3936,267 @@ describe('ACCESS-01C signed Agent tool profile', () => {
       'design:paramtypes',
       AIExecutionController,
     ) as unknown[];
-    expect(paramtypes[paramtypes.length - 1]).toBe(EntitlementService);
+    // PROVIDER-KEY-01: AIServiceHttpClient is now the last (optional) parameter.
+    expect(paramtypes[paramtypes.length - 2]).toBe(EntitlementService);
+    expect(paramtypes[paramtypes.length - 1]).toBe(AIServiceHttpClient);
+  });
+});
+
+describe('AIExecutionController — PROVIDER-KEY-01 status error (C2)', () => {
+  const owner: ApiKeyIdentity = { userId: 'user-1', apiKeyId: 'browser-session', scopes: ['ai:execute'] };
+
+  function controllerFor(row: Record<string, unknown> | null): AIExecutionController {
+    return new AIExecutionController(
+      {} as any,
+      {} as any,
+      {} as any,
+      { getExecution: jest.fn().mockResolvedValue(row) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+  }
+
+  function failedRow(metadata: unknown, status = 'failed'): Record<string, unknown> {
+    return {
+      execution_id: 'exec-failed',
+      user_id: 'user-1',
+      execution_status: status,
+      provider: 'xai',
+      model: 'grok-4.5',
+      tokens_used: 0,
+      metadata,
+    };
+  }
+
+  it('returns C2 for a failed run with stored provider_key_missing', async () => {
+    const result = await controllerFor(
+      failedRow({
+        executionError: { code: 'provider_key_missing', message: 'AI provider is not configured' },
+      }),
+    ).getExecution('exec-failed', owner);
+
+    expect(result).toEqual({
+      executionId: 'exec-failed',
+      status: 'failed',
+      provider: 'xai',
+      model: 'grok-4.5',
+      error: { code: 'provider_key_missing', message: 'AI provider is not configured' },
+    });
+  });
+
+  it('answers with the gateway constant even when the stored message differs', async () => {
+    const result = await controllerFor(
+      failedRow({
+        executionError: { code: 'provider_key_missing', message: 'XAI_API_KEY=sk-abcdefghijklmnop' },
+      }),
+    ).getExecution('exec-failed', owner);
+
+    expect(result.error).toEqual({
+      code: 'provider_key_missing',
+      message: 'AI provider is not configured',
+    });
+    expect(JSON.stringify(result)).not.toContain('sk-');
+    expect(JSON.stringify(result)).not.toContain('XAI_API_KEY');
+  });
+
+  it('returns the usage-limit sentence for execution_failed with exactly that stored sentence', async () => {
+    const result = await controllerFor(
+      failedRow({
+        executionError: { code: 'execution_failed', message: 'AI provider usage limit reached' },
+      }),
+    ).getExecution('exec-failed', owner);
+
+    expect(result).toEqual({
+      executionId: 'exec-failed',
+      status: 'failed',
+      provider: 'xai',
+      model: 'grok-4.5',
+      error: { code: 'execution_failed', message: 'AI provider usage limit reached' },
+    });
+  });
+
+  it('answers exactly as today for any other failure', async () => {
+    const today = {
+      executionId: 'exec-failed',
+      status: 'failed',
+      provider: 'xai',
+      model: 'grok-4.5',
+    };
+    for (const metadata of [
+      { executionError: { code: 'execution_failed', message: 'This step failed.' } },
+      { executionError: { code: 'execution_failed', message: 'AI provider usage limit reached.' } },
+      { executionError: { code: 'provider_unavailable', message: 'AI provider usage limit reached' } },
+      {
+        executionError: {
+          code: 'harness_tool_loop_disabled',
+          message: 'Requested Harness execution cannot proceed (tool_loop_disabled)',
+        },
+      },
+      { keepMe: 'x' },
+      null,
+    ]) {
+      const result = await controllerFor(failedRow(metadata)).getExecution('exec-failed', owner);
+      expect(result).toEqual(today);
+      expect(result).not.toHaveProperty('error');
+    }
+  });
+
+  it('leaves completed, queued, running, cancelled and timeout answers unchanged', async () => {
+    const stored = {
+      executionError: { code: 'provider_key_missing', message: 'AI provider is not configured' },
+    };
+    for (const status of ['pending', 'running', 'cancelled', 'cancel_requested', 'timeout']) {
+      const result = await controllerFor(failedRow(stored, status)).getExecution('exec-failed', owner);
+      expect(result).toEqual({
+        executionId: 'exec-failed',
+        status: expect.any(String),
+        provider: 'xai',
+        model: 'grok-4.5',
+      });
+      expect(result).not.toHaveProperty('error');
+    }
+    const completed = await controllerFor(
+      failedRow({ ...stored, aiExecutionResult: { output: 'done' } }, 'completed'),
+    ).getExecution('exec-failed', owner);
+    expect(completed).toEqual({
+      executionId: 'exec-failed',
+      status: 'completed',
+      tokensUsed: 0,
+      output: 'done',
+      provider: 'xai',
+      model: 'grok-4.5',
+      fileActions: [],
+    });
+  });
+
+  it("keeps another user's failed run a 404", async () => {
+    const controller = controllerFor(
+      failedRow({
+        executionError: { code: 'provider_key_missing', message: 'AI provider is not configured' },
+      }),
+    );
+    await expect(
+      controller.getExecution('exec-failed', { ...owner, userId: 'user-2' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(controller.getExecution('exec-failed', undefined as any)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+});
+
+describe('AIExecutionController — GET /api/ai/providers (PROVIDER-KEY-01 C4)', () => {
+  const identity: ApiKeyIdentity = { userId: 'user-1', apiKeyId: 'browser-session', scopes: [] };
+  const c3 = {
+    providers: { xai: false, groq: true, deepseek: false, openai: true, anthropic: false },
+  };
+
+  async function build(getProviderAvailability: jest.Mock): Promise<AIExecutionController> {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: {} },
+        { provide: GlobalSafetyLimitService, useValue: {} },
+        { provide: QueueService, useValue: {} },
+        { provide: ExecutionResultService, useValue: {} },
+        { provide: ExecutionStreamService, useValue: {} },
+        { provide: UserAiInstructionsService, useValue: {} },
+        { provide: ProjectAiContextService, useValue: {} },
+        { provide: SessionService, useValue: {} },
+        { provide: AIServiceHttpClient, useValue: { getProviderAvailability } },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(AuthorizationGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(QuotaGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(TokenQuotaGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(CreditBalanceGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
+    return module.get(AIExecutionController);
+  }
+
+  it('is GET providers behind SessionOrApiKeyAuthGuard', () => {
+    const handler = AIExecutionController.prototype.listProviders;
+    expect(Reflect.getMetadata(PATH_METADATA, AIExecutionController)).toBe('ai');
+    expect(Reflect.getMetadata(PATH_METADATA, handler)).toBe('providers');
+    expect(Reflect.getMetadata(METHOD_METADATA, handler)).toBe(RequestMethod.GET);
+    expect(Reflect.getMetadata(GUARDS_METADATA, handler)).toEqual([SessionOrApiKeyAuthGuard]);
+  });
+
+  it('answers C4 in the fixed order with booleans only', async () => {
+    const controller = await build(jest.fn().mockResolvedValue(c3));
+    const answer = await controller.listProviders(identity);
+    expect(answer).toEqual({
+      providers: [
+        { id: 'xai', usable: false },
+        { id: 'groq', usable: true },
+        { id: 'deepseek', usable: false },
+        { id: 'openai', usable: true },
+        { id: 'anthropic', usable: false },
+      ],
+    });
+  });
+
+  it('is 401 without an identity and never asks the AI service', async () => {
+    const fetch = jest.fn().mockResolvedValue(c3);
+    const controller = await build(fetch);
+    await expect(controller.listProviders(undefined as any)).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+    await expect(controller.listProviders({ ...identity, userId: '' })).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('is 503 for a malformed or partial answer, and for a failure', async () => {
+    for (const fetch of [
+      jest.fn().mockResolvedValue({ providers: { xai: true } }),
+      jest.fn().mockResolvedValue({ providers: [] }),
+      jest.fn().mockResolvedValue(null),
+      jest.fn().mockRejectedValue(new Error('connect ECONNREFUSED')),
+    ]) {
+      const controller = await build(fetch);
+      await expect(controller.listProviders(identity)).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
+    }
+  });
+
+  it('does not ask again inside 60 seconds and does not cache a failure', async () => {
+    const fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('timeout of 3000ms exceeded'))
+      .mockResolvedValue(c3);
+    const controller = await build(fetch);
+
+    await expect(controller.listProviders(identity)).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
+    await controller.listProviders(identity);
+    await controller.listProviders(identity);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('is 503 when no AI service client is bound', async () => {
+    const controller = new AIExecutionController(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    await expect(controller.listProviders(identity)).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
   });
 });

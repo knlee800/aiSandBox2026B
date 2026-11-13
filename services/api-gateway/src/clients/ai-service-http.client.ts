@@ -83,6 +83,9 @@ export interface FileAction {
   content: string;
 }
 
+/** PROVIDER-KEY-01: timeout for the provider-availability read. */
+export const PROVIDER_AVAILABILITY_TIMEOUT_MS = 3000;
+
 /**
  * AIServiceHttpClient
  *
@@ -149,5 +152,19 @@ export class AIServiceHttpClient implements OnModuleInit {
       // Network or unknown errors
       throw error;
     }
+  }
+
+  /**
+   * PROVIDER-KEY-01 (C3): GET /api/internal/provider-availability.
+   * Returns the raw answer; the caller parses it strictly. 3-second timeout.
+   * Errors propagate; callers must not log the error object (its request
+   * config holds the internal key header).
+   */
+  async getProviderAvailability(): Promise<unknown> {
+    const response = await this.axiosInstance.get<unknown>(
+      '/api/internal/provider-availability',
+      { timeout: PROVIDER_AVAILABILITY_TIMEOUT_MS },
+    );
+    return response.data;
   }
 }

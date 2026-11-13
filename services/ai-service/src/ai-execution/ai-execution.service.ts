@@ -21,6 +21,28 @@ import {
   ProviderModelValidationError,
   resolveProviderModelSelection,
 } from './provider-model.catalogue';
+import { ProviderKeyMissingError } from './provider-key-missing.error';
+
+/**
+ * PROVIDER-KEY-01: providers that need a key, in the fixed order the
+ * availability route answers with. Stub and test-harness-stub need none.
+ */
+export const KEYED_PROVIDER_IDS = [
+  'xai',
+  'groq',
+  'deepseek',
+  'openai',
+  'anthropic',
+] as const;
+export type KeyedProviderId = (typeof KEYED_PROVIDER_IDS)[number];
+
+const PROVIDER_KEY_ENV: Readonly<Record<KeyedProviderId, string>> = {
+  xai: 'XAI_API_KEY',
+  groq: 'GROQ_API_KEY',
+  deepseek: 'DEEPSEEK_API_KEY',
+  openai: 'OPENAI_API_KEY',
+  anthropic: 'ANTHROPIC_API_KEY',
+};
 
 /**
  * AIExecutionService
@@ -182,7 +204,7 @@ export class AIExecutionService {
    * @param provider - Provider name from request
    * @returns Adapter instance
    * @throws ServiceUnavailableException if provider unknown
-   * @throws Error if API key missing for non-stub provider
+   * @throws ProviderKeyMissingError if the provider's key is missing or blank
    */
   getAdapter(
     provider: AIExecutionRequest['provider'] | string,
@@ -195,60 +217,35 @@ export class AIExecutionService {
         return new StubAIAdapter();
 
       case 'anthropic': {
-        const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
-        if (!apiKey || apiKey.trim().length === 0) {
-          throw new Error(
-            'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
-          );
-        }
+        const apiKey = this.requireProviderKey('anthropic');
         return new AnthropicAdapter(apiKey, {
           model: selection.model,
         });
       }
 
       case 'openai': {
-        const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-        if (!apiKey || apiKey.trim().length === 0) {
-          throw new Error(
-            'OPENAI_API_KEY environment variable is required when provider is "openai"',
-          );
-        }
+        const apiKey = this.requireProviderKey('openai');
         return new OpenAIAdapter(apiKey, {
           model: selection.model,
         });
       }
 
       case 'groq': {
-        const apiKey = this.configService.get<string>('GROQ_API_KEY');
-        if (!apiKey || apiKey.trim().length === 0) {
-          throw new Error(
-            'GROQ_API_KEY environment variable is required when provider is "groq"',
-          );
-        }
+        const apiKey = this.requireProviderKey('groq');
         return new GroqAdapter(apiKey, {
           model: selection.model,
         });
       }
 
       case 'xai': {
-        const apiKey = this.configService.get<string>('XAI_API_KEY');
-        if (!apiKey || apiKey.trim().length === 0) {
-          throw new Error(
-            'XAI_API_KEY environment variable is required when provider is "xai"',
-          );
-        }
+        const apiKey = this.requireProviderKey('xai');
         return new XAIAdapter(apiKey, {
           model: selection.model,
         });
       }
 
       case 'deepseek': {
-        const apiKey = this.configService.get<string>('DEEPSEEK_API_KEY');
-        if (!apiKey || apiKey.trim().length === 0) {
-          throw new Error(
-            'DEEPSEEK_API_KEY environment variable is required when provider is "deepseek"',
-          );
-        }
+        const apiKey = this.requireProviderKey('deepseek');
         return new DeepSeekAdapter(apiKey, {
           model: selection.model,
         });
@@ -262,6 +259,38 @@ export class AIExecutionService {
           `Unknown AI provider: ${provider}. Supported providers: stub, anthropic, openai, groq, xai, deepseek, test-harness-stub`,
         );
     }
+  }
+
+  /**
+   * PROVIDER-KEY-01: which keyed providers have a non-empty key. Booleans
+   * only; uses the same read as getAdapter so the two cannot drift.
+   */
+  getProviderKeyAvailability(): Record<KeyedProviderId, boolean> {
+    const availability = {} as Record<KeyedProviderId, boolean>;
+    for (const provider of KEYED_PROVIDER_IDS) {
+      availability[provider] = this.readProviderKey(provider) !== undefined;
+    }
+    return availability;
+  }
+
+  private readProviderKey(provider: KeyedProviderId): string | undefined {
+    const value = this.configService.get<unknown>(PROVIDER_KEY_ENV[provider]);
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      return undefined;
+    }
+    return value;
+  }
+
+  private requireProviderKey(provider: KeyedProviderId): string {
+    const apiKey = this.readProviderKey(provider);
+    if (apiKey === undefined) {
+      // Names only (provider and variable), never the value.
+      this.logger.warn(
+        `AI provider key missing: provider=${provider} variable=${PROVIDER_KEY_ENV[provider]}`,
+      );
+      throw new ProviderKeyMissingError();
+    }
+    return apiKey;
   }
 
   private resolveProviderModelOrThrow(

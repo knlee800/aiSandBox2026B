@@ -4,6 +4,10 @@ import { AIExecutionService } from '../ai-execution.service';
 import { AIExecutionRequest } from '../types';
 import { BadRequestException } from '@nestjs/common';
 import { AnthropicAdapter } from '../adapters/anthropic-ai.adapter';
+import {
+  PROVIDER_KEY_MISSING_MESSAGE,
+  ProviderKeyMissingError,
+} from '../provider-key-missing.error';
 import Anthropic from '@anthropic-ai/sdk';
 
 jest.mock('@anthropic-ai/sdk');
@@ -80,9 +84,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'OPENAI_API_KEY environment variable is required when provider is "openai"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should fail fast when OPENAI_API_KEY is empty string', async () => {
@@ -94,9 +98,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'OPENAI_API_KEY environment variable is required when provider is "openai"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should fail fast when OPENAI_API_KEY is whitespace only', async () => {
@@ -108,9 +112,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'OPENAI_API_KEY environment variable is required when provider is "openai"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should select OpenAI adapter when provider is "openai"', async () => {
@@ -146,9 +150,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
       expect(executeSpy).not.toHaveBeenCalled();
       expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
@@ -164,9 +168,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
       expect(executeSpy).not.toHaveBeenCalled();
       expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
@@ -182,9 +186,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
       expect(executeSpy).not.toHaveBeenCalled();
       expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
@@ -279,9 +283,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'DEEPSEEK_API_KEY environment variable is required when provider is "deepseek"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should fail fast when DEEPSEEK_API_KEY is empty string', async () => {
@@ -293,9 +297,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'DEEPSEEK_API_KEY environment variable is required when provider is "deepseek"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should fail fast when DEEPSEEK_API_KEY is whitespace only', async () => {
@@ -307,9 +311,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'DEEPSEEK_API_KEY environment variable is required when provider is "deepseek"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should select DeepSeek adapter when provider is "deepseek"', async () => {
@@ -349,9 +353,9 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       };
 
       // Act & Assert
-      await expect(service.execute(request)).rejects.toThrow(
-        'XAI_API_KEY environment variable is required when provider is "xai"',
-      );
+      const failure = service.execute(request);
+      await expect(failure).rejects.toBeInstanceOf(ProviderKeyMissingError);
+      await expect(failure).rejects.toThrow(PROVIDER_KEY_MISSING_MESSAGE);
     });
 
     it('should select xAI adapter when provider is "xai"', async () => {

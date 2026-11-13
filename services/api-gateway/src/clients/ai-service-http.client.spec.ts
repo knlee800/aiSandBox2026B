@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from './ai-service-http.client';
+import {
+  AIServiceHttpClient,
+  AIExecutionRequest,
+  AIExecutionResult,
+  PROVIDER_AVAILABILITY_TIMEOUT_MS,
+} from './ai-service-http.client';
 import axios from 'axios';
 
 // Mock axios
@@ -28,6 +33,7 @@ describe('AIServiceHttpClient (Phase 18A)', () => {
     // Create mock axios instance
     mockAxiosInstance = {
       post: jest.fn(),
+      get: jest.fn(),
     };
 
     mockedAxios.create.mockReturnValue(mockAxiosInstance);
@@ -262,6 +268,46 @@ describe('AIServiceHttpClient (Phase 18A)', () => {
 
       // Verify no retry - only one call
       expect(mockAxiosInstance.post).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getProviderAvailability (PROVIDER-KEY-01 C3)', () => {
+    it('GETs the internal route with a 3-second timeout and returns the body', async () => {
+      const body = {
+        providers: { xai: true, groq: false, deepseek: false, openai: false, anthropic: true },
+      };
+      mockAxiosInstance.get.mockResolvedValue({ data: body });
+
+      await expect(client.getProviderAvailability()).resolves.toEqual(body);
+
+      expect(PROVIDER_AVAILABILITY_TIMEOUT_MS).toBe(3000);
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/internal/provider-availability', {
+        timeout: 3000,
+      });
+      expect(mockAxiosInstance.post).not.toHaveBeenCalled();
+    });
+
+    it('uses the keyed axios instance', async () => {
+      process.env.INTERNAL_SERVICE_KEY = 'provider-key-01-client-key';
+      const keyed = { post: jest.fn(), get: jest.fn().mockResolvedValue({ data: {} }) };
+      mockedAxios.create.mockReturnValue(keyed as any);
+
+      await new AIServiceHttpClient().getProviderAvailability();
+
+      expect(keyed.get).toHaveBeenCalledWith('/api/internal/provider-availability', {
+        timeout: 3000,
+      });
+      const config = mockedAxios.create.mock.calls.at(-1)[0] as { headers: Record<string, string> };
+      expect(config.headers['X-Internal-Service-Key']).toBe('provider-key-01-client-key');
+      delete process.env.INTERNAL_SERVICE_KEY;
+    });
+
+    it('propagates a failure without retrying', async () => {
+      mockAxiosInstance.get.mockRejectedValue(new Error('timeout of 3000ms exceeded'));
+
+      await expect(client.getProviderAvailability()).rejects.toThrow('timeout of 3000ms exceeded');
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
     });
   });
 });
