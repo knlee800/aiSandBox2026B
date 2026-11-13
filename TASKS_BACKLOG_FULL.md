@@ -84383,7 +84383,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3). Deploy done 2026-11-13 by STAGING-DEPLOY-PKEY-01 (staging runs 6f6b8e8); only the live check remains.
+**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3). Deploy done 2026-11-13 by STAGING-DEPLOY-PKEY-01 (staging runs 6f6b8e8); only the live check remains. Also from PROVIDER-SWITCH-01 (2026-11-13): every PROVIDER_*_ENABLED is false on staging, so the run window must set PROVIDER_<X>_ENABLED=true for each provider it uses (a gateway restart; the switches are read at start), and it checks the chosen-provider switch live: a chat run naming a provider whose switch is off is refused with 503 before any write, and the provider picker offers only providers with a key and the switch on.
 
 ### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -84553,7 +84553,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From PREVIEW-ORIGIN-01: the /driver developer page now keeps an API key in memory only. Keith decides whether the page stays (developer tool) or is deleted.
+**Scope:** From PREVIEW-ORIGIN-01: the /driver developer page now keeps an API key in memory only. Keith decides whether the page stays (developer tool) or is deleted. Also from PROVIDER-SWITCH-01 (2026-11-13): the driver page sends provider 'xai' fixed (frontend/app/[locale]/driver/page.tsx:259), so it gets the 503 while the xai switch is off.
 
 ### PREVIEW-ORIGIN-02 — One preview origin per session, or a separate registrable domain
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85059,7 +85059,7 @@ taskId=PROVIDER-SWITCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 — 2026-11-13. Keith approved the stage-start on 2026-11-13 ("Yes, approve all three"): (1) the guard checks only the chosen provider's switch (the AI_PROVIDER switch check is replaced) on the chat route and POST /api/v1/ai/execute; (2) GET /api/ai/providers counts a provider usable only with a key and its switch on; (3) the per-provider rate-limit counter stays on AI_PROVIDER, a follow-up. Was: ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/PROVIDER-SWITCH-01-STAGE-START.md (fable subagent, Fable 5.2, aa64e0d and b1c382f, fast-forwarded; facts checked by the control plane against the code). Confirmed: ExecutionSafetyGuard checks the switch for AI_PROVIDER (execution-safety.guard.ts:45, :55-59); the same guard and gap are on POST /api/v1/ai/execute (public-ai.controller.ts); PROVIDER_*_ENABLED are read once at process load (kill-switch.config.ts); the guard spec pins the old behaviour. Recommended: one gateway slice (GATEWAY; opus; 11 files): the guard resolves the request's provider through one shared catalogue function and checks that provider's switch instead of AI_PROVIDER (refusal 503 as on the Team page; an unsupported provider gets the existing 400), and GET /api/ai/providers counts a provider usable only with a key and its switch on. Waiting for Keith's approval and three answers (check only the chosen provider; usable needs the switch too; the rate-limit counter stays as a follow-up). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-SWITCH-01". Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-13. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. ExecutionSafetyGuard now checks the switch of the provider the request runs on (resolved by the new shared resolveGatewayProvider in provider-model.catalogue.ts, the function both execute controllers use) instead of AI_PROVIDER, on POST /api/ai/execute and POST /api/v1/ai/execute; a switched-off provider gets 503 'Provider <id> temporarily unavailable' before any write or queue job; an unsupported provider gets the controllers' existing 400 from the guard; the per-provider rate-limit counter stays on AI_PROVIDER. GET /api/ai/providers counts a provider usable only with a key and its switch on (applyProviderSwitches; the cache keeps the AI service's answer). opus subagent 401b2fd (main 401b2fd). Control-plane gates on main: see the checkpoint. Not deployed. Checkpoint: docs/PROVIDER-SWITCH-01-CHECKPOINT.md. FOLLOWUPS: 3 registered (STAGING-DEPLOY-PSWITCH-01; RATE-LIMIT-PROVIDER-01; ORCH-DEAD-01) / 8 superseded (the run-window live check by ACCESS-01J-LIVE; translated 503 refusals by CHAT-FAILURE-REASONS-01; the empty-state wording by PROVIDER-KEY-02; the driver page's fixed xai by DRIVER-PAGE-01; the ARCHITECTURE.md note by GOV-ARCH-PKEY-01; no switch in the AI service by the checkpoint note, by design, no work; the 400 message carrying the request text by acceptance, the controllers' existing message; the AI_PROVIDER case change by the checkpoint note) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 — 2026-11-13. Keith approved the stage-start on 2026-11-13 ("Yes, approve all three"): (1) the guard checks only the chosen provider's switch (the AI_PROVIDER switch check is replaced) on the chat route and POST /api/v1/ai/execute; (2) GET /api/ai/providers counts a provider usable only with a key and its switch on; (3) the per-provider rate-limit counter stays on AI_PROVIDER, a follow-up. Was: ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/PROVIDER-SWITCH-01-STAGE-START.md (fable subagent, Fable 5.2, aa64e0d and b1c382f, fast-forwarded; facts checked by the control plane against the code). Confirmed: ExecutionSafetyGuard checks the switch for AI_PROVIDER (execution-safety.guard.ts:45, :55-59); the same guard and gap are on POST /api/v1/ai/execute (public-ai.controller.ts); PROVIDER_*_ENABLED are read once at process load (kill-switch.config.ts); the guard spec pins the old behaviour. Recommended: one gateway slice (GATEWAY; opus; 11 files): the guard resolves the request's provider through one shared catalogue function and checks that provider's switch instead of AI_PROVIDER (refusal 503 as on the Team page; an unsupported provider gets the existing 400), and GET /api/ai/providers counts a provider usable only with a key and its switch on. Waiting for Keith's approval and three answers (check only the chosen provider; usable needs the switch too; the rate-limit counter stays as a follow-up). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-SWITCH-01". Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
 **Task ID:** PROVIDER-SWITCH-01
 **Title:** Check the chosen provider switch on the chat route
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85076,6 +85076,78 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** From PROVIDER-KEY-01 (stage-start section 1.2): on POST /api/ai/execute, ExecutionSafetyGuard checks PROVIDER_*_ENABLED for AI_PROVIDER, not for the provider named in the request, so with AI_PROVIDER=stub the per-provider switch is never enforced on the chat route (the Team page path does check it). A guard change, so 4-step with a stage-start. Afterwards 'usable' in GET /api/ai/providers may also include the switch (Keith decided key-only for now).
+
+### STAGING-DEPLOY-PSWITCH-01 — Deploy PROVIDER-SWITCH-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-PSWITCH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-SWITCH-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-PSWITCH-01
+**Title:** Deploy PROVIDER-SWITCH-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** PROVIDER-SWITCH-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV (held, not changed).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main to staging (PROVIDER-SWITCH-01), no migration, configuration unchanged, runs off; the earlier deploy checks; GET /api/ai/providers still answers all usable false (no key in ai.env) and agrees with the key counts; a build marker for resolveGatewayProvider and applyProviderSwitches in the gateway dist. The refusal itself cannot be seen over HTTP while GLOBAL_EXECUTION_ENABLED is false; it is carried by ACCESS-01J-LIVE's run window.
+
+### RATE-LIMIT-PROVIDER-01 — Count chat runs under the chosen provider for the per-provider rate limit
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RATE-LIMIT-PROVIDER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-SWITCH-01 LOCK — not admitted.
+**Task ID:** RATE-LIMIT-PROVIDER-01
+**Title:** Count chat runs under the chosen provider for the per-provider rate limit
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** PROVIDER-SWITCH-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/safety/execution-safety.guard.ts and its specs.
+**Mutexes / resources:** GATEWAY (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PROVIDER-SWITCH-01 (Keith, 2026-11-13, question 3: not in that task): the guard's per-provider rate-limit counter still uses AI_PROVIDER (stub on staging, default 1,000 a minute) instead of the chosen provider (3,000 to 10,000 a minute); moving it changes the effective limits and two pinned integration tests (execution-safety.integration.spec.ts).
+
+### ORCH-DEAD-01 — Confirm and remove the uncalled createAndStartReferral
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ORCH-DEAD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-SWITCH-01 LOCK — not admitted.
+**Task ID:** ORCH-DEAD-01
+**Title:** Confirm and remove the uncalled createAndStartReferral
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** PROVIDER-SWITCH-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ and its specs.
+**Mutexes / resources:** GATEWAY (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PROVIDER-SWITCH-01 (stage-start section 1.1): createAndStartReferral in the orchestration service appears to have no caller in non-test source; it would start a run without assertHandoffAllowed. Confirm with a full search (tests included) and remove it with its tests, or record why it stays.
 
 ### CHAT-FAILURE-REASONS-01 — Translated failure reasons in the workspace chat
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85099,7 +85171,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From PROVIDER-KEY-01: the workspace chat still shows the hardcoded English 'Execution ended with status: failed.' (frontend/components/workspace/workspace-run-cancel.logic.ts:62) for every failed run other than the two allow-listed ones. Decide which stored failure codes may reach the chat (each with the gateway's own text), translate them and the fallback in en, zh-TW and zh-CN. BUILDER-POLISH-01 holds related hardcoded-English items; check for overlap at admission.
+**Scope:** From PROVIDER-KEY-01: the workspace chat still shows the hardcoded English 'Execution ended with status: failed.' (frontend/components/workspace/workspace-run-cancel.logic.ts:62) for every failed run other than the two allow-listed ones. Decide which stored failure codes may reach the chat (each with the gateway's own text), translate them and the fallback in en, zh-TW and zh-CN. BUILDER-POLISH-01 holds related hardcoded-English items; check for overlap at admission. Also from PROVIDER-SWITCH-01 (2026-11-13): the synchronous 503 refusals on POST /api/ai/execute ('Provider <id> temporarily unavailable', 'AI execution temporarily disabled for maintenance') are shown in English as the server sends them; translate them in the same task.
 
 ### PROVIDER-KEY-02 — Remaining provider-key message sites
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85123,7 +85195,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From PROVIDER-KEY-01: (1) the orchestration-step failure site in page.tsx ('Step N ended with status', about :4790) still passes only the terminal output, so a keyless provider or the usage limit in orchestration mode shows the generic step text; (2) the Team page shows the stored English 'AI provider is not configured' untranslated: add collaboration.providerKeyMissing beside the usage-limit mapping (frontend/lib/collaboration/logic.ts:37-45); (3) the comment 'Same text getAdapter throws' in services/ai-service/src/agent-harness/eval/live/live-adapter.ts:11-15 is stale.
+**Scope:** From PROVIDER-KEY-01: (1) the orchestration-step failure site in page.tsx ('Step N ended with status', about :4790) still passes only the terminal output, so a keyless provider or the usage limit in orchestration mode shows the generic step text; (2) the Team page shows the stored English 'AI provider is not configured' untranslated: add collaboration.providerKeyMissing beside the usage-limit mapping (frontend/lib/collaboration/logic.ts:37-45); (3) the comment 'Same text getAdapter throws' in services/ai-service/src/agent-harness/eval/live/live-adapter.ts:11-15 is stale. (4) From PROVIDER-SWITCH-01 (2026-11-13): the empty-state line 'Ask an admin to add a provider key' (frontend/messages/en.json ai.noProviderAvailable) is slightly off when a key exists but the switch is off; reword in all three languages.
 
 ### PROVIDER-REMEMBER-01 — Remember the chosen chat provider and model
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85164,7 +85236,7 @@ nature=GOVERNANCE
 **Depends on:** PROVIDER-KEY-01.
 **Primary write scope:** ARCHITECTURE.md (one short note).
 **Mutexes / resources:** GOVERNANCE.
-**Scope:** From PROVIDER-KEY-01 (stage-start section 9 item 6): a short TECHNICAL HOW note on GET /api/ai/providers (signed in) and GET /api/internal/provider-availability (internal key, booleans only), the provider_key_missing run error code, and the allow-listed error field on GET /api/ai/executions/:id.
+**Scope:** From PROVIDER-KEY-01 (stage-start section 9 item 6): a short TECHNICAL HOW note on GET /api/ai/providers (signed in) and GET /api/internal/provider-availability (internal key, booleans only), the provider_key_missing run error code, and the allow-listed error field on GET /api/ai/executions/:id. Also from PROVIDER-SWITCH-01 (2026-11-13): the per-provider switches (checked for the chosen provider on the chat and public API routes) and usable meaning key and switch on.
 
 ### BUILDER-POLISH-01 — Builder polish: History labels, error detail, preview and history behaviour
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
