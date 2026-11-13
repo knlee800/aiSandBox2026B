@@ -8,9 +8,12 @@ import { chatLanguageName, chatLocaleText } from '../chat-replies';
  * - Global commands, usable only in the direct message with the bot
  *   (contexts = [BOT_DM]); installed with the bot into Keith's private server
  *   (integration_types = [GUILD_INSTALL]).
- * - Names, descriptions and option texts come from the gateway locale files;
- *   zh-TW and zh-CN go to Discord as name and description localizations. A
- *   localized name equal to the English one is left out.
+ * - Command and option names are English in every client (no
+ *   name_localizations), so /link, /unlink, /status, /language, /help and
+ *   /ask match the Connections page and the bot's replies everywhere.
+ *   Descriptions come from the gateway locale files; zh-TW and zh-CN go to
+ *   Discord as description localizations. The language choices carry the
+ *   languages' own names.
  * - Every option is a string. Discord sends the default (English) command and
  *   option names in the interaction whatever the user's client language.
  *
@@ -52,8 +55,7 @@ export interface DiscordCommandOption {
   type: typeof DISCORD_OPTION_TYPE_STRING;
   name: string;
   description: string;
-  name_localizations?: DiscordLocalizations;
-  description_localizations?: DiscordLocalizations;
+  description_localizations: DiscordLocalizations;
   required: boolean;
   min_length?: number;
   max_length?: number;
@@ -64,7 +66,6 @@ export interface DiscordCommandDefinition {
   type: typeof DISCORD_COMMAND_TYPE_CHAT_INPUT;
   name: ChatCommandName;
   description: string;
-  name_localizations?: DiscordLocalizations;
   description_localizations: DiscordLocalizations;
   contexts: number[];
   integration_types: number[];
@@ -111,34 +112,24 @@ function requireText(locale: ChatLinkLocale, path: string): string {
   return text;
 }
 
-function localizations(path: string, english: string, skipSame: boolean): DiscordLocalizations | undefined {
+/** Description localizations only. */
+function descriptionLocalizations(path: string): DiscordLocalizations {
   const map: DiscordLocalizations = {};
   for (const locale of LOCALIZED) {
-    const text = requireText(locale, path);
-    if (!(skipSame && text === english)) {
-      map[locale] = text;
-    }
+    map[locale] = requireText(locale, path);
   }
-  return Object.keys(map).length > 0 ? map : undefined;
+  return map;
 }
 
 function buildOption(command: ChatCommandName, spec: OptionSpec): DiscordCommandOption {
-  const base = `commands.${command}.options.${spec.name}`;
-  const name = requireText('en', `${base}.name`);
-  if (name !== spec.name) {
-    throw new Error(`chat option name mismatch ${command} ${spec.name}`);
-  }
-  const description = requireText('en', `${base}.description`);
+  const path = `commands.${command}.options.${spec.name}.description`;
   const option: DiscordCommandOption = {
     type: DISCORD_OPTION_TYPE_STRING,
-    name,
-    description,
+    name: spec.name,
+    description: requireText('en', path),
+    description_localizations: descriptionLocalizations(path),
     required: spec.required,
   };
-  const names = localizations(`${base}.name`, name, true);
-  if (names) option.name_localizations = names;
-  const descriptions = localizations(`${base}.description`, description, false);
-  if (descriptions) option.description_localizations = descriptions;
   if (spec.minLength !== undefined) option.min_length = spec.minLength;
   if (spec.maxLength !== undefined) option.max_length = spec.maxLength;
   if (spec.languageChoices) {
@@ -150,21 +141,15 @@ function buildOption(command: ChatCommandName, spec: OptionSpec): DiscordCommand
 /** The full command list sent to PUT /applications/{id}/commands. */
 export function buildDiscordCommands(): DiscordCommandDefinition[] {
   return CHAT_COMMAND_NAMES.map((command) => {
-    const name = requireText('en', `commands.${command}.name`);
-    if (name !== command) {
-      throw new Error(`chat command name mismatch ${command}`);
-    }
-    const description = requireText('en', `commands.${command}.description`);
+    const path = `commands.${command}.description`;
     const definition: DiscordCommandDefinition = {
       type: DISCORD_COMMAND_TYPE_CHAT_INPUT,
       name: command,
-      description,
-      description_localizations: localizations(`commands.${command}.description`, description, false) ?? {},
+      description: requireText('en', path),
+      description_localizations: descriptionLocalizations(path),
       contexts: [DISCORD_CONTEXT_BOT_DM],
       integration_types: [DISCORD_INTEGRATION_GUILD_INSTALL],
     };
-    const names = localizations(`commands.${command}.name`, name, true);
-    if (names) definition.name_localizations = names;
     const options = OPTION_SPECS[command].map((spec) => buildOption(command, spec));
     if (options.length > 0) definition.options = options;
     return definition;

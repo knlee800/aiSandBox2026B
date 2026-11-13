@@ -48,26 +48,45 @@ describe('Discord commands (CHAT-DISCORD-01 B)', () => {
     }
   });
 
-  it('carries zh-TW and zh-CN localizations for every name and description', () => {
+  it('keeps English command and option names in every client: no name_localizations anywhere', () => {
+    const json = JSON.stringify(commands);
+    expect(json).not.toContain('name_localizations');
     for (const command of commands) {
-      expect(Object.keys(command.description_localizations).sort()).toEqual(['zh-CN', 'zh-TW']);
-      expect(Object.keys(command.name_localizations ?? {}).sort()).toEqual(['zh-CN', 'zh-TW']);
+      expect(command).not.toHaveProperty('name_localizations');
       for (const option of command.options ?? []) {
-        expect(Object.keys(option.description_localizations ?? {}).sort()).toEqual(['zh-CN', 'zh-TW']);
-        expect(Object.keys(option.name_localizations ?? {}).sort()).toEqual(['zh-CN', 'zh-TW']);
+        expect(option).not.toHaveProperty('name_localizations');
+      }
+    }
+  });
+
+  it('translates every command and option description into zh-TW and zh-CN', () => {
+    const translated = (map: Record<string, string>, english: string): void => {
+      expect(Object.keys(map).sort()).toEqual(['zh-CN', 'zh-TW']);
+      for (const text of Object.values(map)) {
+        expect(text).not.toBe(english);
+        expect(text).toMatch(/[一-鿿]/);
+      }
+    };
+    for (const command of commands) {
+      translated(command.description_localizations, command.description);
+      for (const option of command.options ?? []) {
+        translated(option.description_localizations, option.description);
       }
     }
     const link = commands.find((command) => command.name === 'link');
-    expect(link?.name_localizations).toEqual({ 'zh-TW': '連結', 'zh-CN': '关联' });
+    expect(link?.description_localizations).toEqual({
+      'zh-TW': '用平台上的代碼連結這個 Discord 帳號',
+      'zh-CN': '用平台上的代码关联这个 Discord 账户',
+    });
   });
 
   it('keeps names and descriptions within Discord limits', () => {
     for (const command of commands) {
-      const names = [command.name, ...Object.values(command.name_localizations ?? {})];
+      const names: string[] = [command.name];
       const descriptions = [command.description, ...Object.values(command.description_localizations)];
       for (const option of command.options ?? []) {
-        names.push(option.name, ...Object.values(option.name_localizations ?? {}));
-        descriptions.push(option.description, ...Object.values(option.description_localizations ?? {}));
+        names.push(option.name);
+        descriptions.push(option.description, ...Object.values(option.description_localizations));
         for (const choice of option.choices ?? []) {
           expect(choice.name.length).toBeGreaterThan(0);
           expect(choice.name.length).toBeLessThanOrEqual(100);
@@ -75,6 +94,7 @@ describe('Discord commands (CHAT-DISCORD-01 B)', () => {
       }
       for (const name of names) {
         expect(name).toMatch(NAME_RULE);
+        expect(name).toMatch(/^[a-z]+$/);
         expect(name).toBe(name.toLowerCase());
       }
       for (const description of descriptions) {

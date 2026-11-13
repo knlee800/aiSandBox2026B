@@ -11,47 +11,37 @@
   "chat": {
     "commands": {
       "link": {
-        "name": "link",
         "description": "Link this Discord account with the code from the platform",
         "options": {
           "code": {
-            "name": "code",
             "description": "The code from the Connections page, for example ABCD-EFGH"
           }
         }
       },
       "unlink": {
-        "name": "unlink",
         "description": "Remove the link between this Discord account and the platform"
       },
       "status": {
-        "name": "status",
         "description": "Show the link and whether runs are switched on"
       },
       "language": {
-        "name": "language",
         "description": "Choose the language of the bot's replies",
         "options": {
           "language": {
-            "name": "language",
             "description": "The reply language"
           }
         }
       },
       "help": {
-        "name": "help",
         "description": "Show what the bot can do"
       },
       "ask": {
-        "name": "ask",
         "description": "Ask the Chief of Staff or one of your workflows",
         "options": {
           "text": {
-            "name": "text",
             "description": "Your question or task"
           },
           "agent": {
-            "name": "agent",
             "description": "The name of one of your workflows (optional)"
           }
         }

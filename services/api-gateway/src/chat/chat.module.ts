@@ -1,8 +1,15 @@
-import { Logger, Module, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
-import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  Module,
+  OnApplicationBootstrap,
+  OnModuleDestroy,
+  Optional,
+  Provider,
+} from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
-import { EntitlementService } from '../auth/entitlement.service';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
@@ -10,23 +17,53 @@ import { User } from '../entities/user.entity';
 import { ChatCommandService } from './chat-commands';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
-import type { ChatTransport } from './chat-transport';
+import { CHAT_TRANSPORT, ChatTransport } from './chat-transport';
 import { DiscordTransport } from './discord/discord-transport';
 
 /**
- * Starts and stops the chat transports with the gateway (slice B). Under Jest
- * it does nothing unless a test passes testEnvironment false with a fake
- * transport; the Discord transport refuses its real library under Jest too.
+ * Optional provider token. Only tests provide it (true) to run the runner
+ * under Jest with a fake transport.
  */
-export class ChatChannelRunner {
+export const CHAT_RUNNER_ALLOW_UNDER_JEST = Symbol('CHAT_RUNNER_ALLOW_UNDER_JEST');
+
+/** The app's transport: the Discord transport. Tests override CHAT_TRANSPORT with a fake. */
+export function createChatTransport(): ChatTransport {
+  return new DiscordTransport();
+}
+
+export const CHAT_TRANSPORT_PROVIDER: Provider = {
+  provide: CHAT_TRANSPORT,
+  useFactory: createChatTransport,
+};
+
+/**
+ * Starts the chat transport when the app has booted and stops it when the
+ * module is destroyed (slice B). Under Jest it does nothing unless
+ * CHAT_RUNNER_ALLOW_UNDER_JEST is provided; the Discord transport refuses its
+ * real library under Jest too. connect() never blocks on the network, so the
+ * gateway boot never waits for Discord.
+ */
+@Injectable()
+export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger('ChatChannelRunner');
+  private readonly testEnvironment: boolean;
   private started = false;
 
   constructor(
-    private readonly transport: ChatTransport,
+    @Inject(CHAT_TRANSPORT) private readonly transport: ChatTransport,
     private readonly commands: ChatCommandService,
-    private readonly testEnvironment: boolean = process.env.JEST_WORKER_ID !== undefined,
-  ) {}
+    @Optional() @Inject(CHAT_RUNNER_ALLOW_UNDER_JEST) allowUnderJest?: boolean,
+  ) {
+    this.testEnvironment = process.env.JEST_WORKER_ID !== undefined && allowUnderJest !== true;
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.start();
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.stop();
+  }
 
   /** True when the transport started a connection. Never throws: the gateway always boots. */
   async start(): Promise<boolean> {
@@ -59,38 +96,12 @@ export class ChatChannelRunner {
  * CHAT-DISCORD-01: chat channels. Slice A1: the account link (tables, codes,
  * routes, audit). Slice B: the Discord bot connection (outbound only, intents
  * 0, CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN) and the slash commands
- * without runs.
- *
- * The command service and the transport are built here, not registered as
- * providers: the module keeps its frozen A1 shape (one controller, one
- * provider, one export) and the bot has no injectable surface for other
- * modules.
+ * without runs. Only ChatLinkService is exported.
  */
 @Module({
   imports: [TypeOrmModule.forFeature([ChatLink, ChatLinkCode, AuditEventEntity, User]), AuthModule],
   controllers: [ChatLinkController],
-  providers: [ChatLinkService],
+  providers: [ChatLinkService, ChatCommandService, CHAT_TRANSPORT_PROVIDER, ChatChannelRunner],
   exports: [ChatLinkService],
 })
-export class ChatModule implements OnApplicationBootstrap, OnModuleDestroy {
-  private readonly runner: ChatChannelRunner;
-
-  constructor(
-    links: ChatLinkService,
-    entitlements: EntitlementService,
-    @InjectRepository(User) users: Repository<User>,
-  ) {
-    this.runner = new ChatChannelRunner(
-      new DiscordTransport(),
-      new ChatCommandService(links, entitlements, users),
-    );
-  }
-
-  async onApplicationBootstrap(): Promise<void> {
-    await this.runner.start();
-  }
-
-  async onModuleDestroy(): Promise<void> {
-    await this.runner.stop();
-  }
-}
+export class ChatModule {}

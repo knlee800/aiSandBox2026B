@@ -18,7 +18,7 @@ function placeholders(text: string): string[] {
 describe('chat replies (CHAT-DISCORD-01 B)', () => {
   it('every chat text in en.json exists in zh-TW.json and zh-CN.json, non-empty, with the same placeholders', () => {
     const paths = chatLocalePaths();
-    expect(paths.length).toBeGreaterThan(40);
+    expect(paths.length).toBeGreaterThan(25);
     for (const path of paths) {
       const english = chatLocaleText('en', path);
       expect(english).toBeTruthy();

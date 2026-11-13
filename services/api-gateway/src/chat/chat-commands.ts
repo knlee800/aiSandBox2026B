@@ -1,4 +1,5 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EntitlementService } from '../auth/entitlement.service';
 import { User } from '../entities/user.entity';
@@ -55,12 +56,14 @@ const CLAIM_REPLIES: Readonly<Record<ChatLinkClaimOutcome, ChatReplyKey | null>>
   unavailable: 'notAvailable',
 };
 
+@Injectable()
 export class ChatCommandService {
   private readonly logger = new Logger('ChatCommands');
 
   constructor(
     private readonly links: ChatLinkService,
     private readonly entitlements: EntitlementService,
+    @InjectRepository(User)
     private readonly users: Repository<User>,
   ) {}
 

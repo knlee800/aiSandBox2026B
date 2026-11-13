@@ -11,6 +11,9 @@ import type { ChatChannel } from './chat-link.service';
  * the design says so.
  */
 
+/** Nest provider token for the chat transport (the Discord transport in the app, a fake in tests). */
+export const CHAT_TRANSPORT = Symbol('CHAT_TRANSPORT');
+
 /** One slash command as the transport received it. */
 export interface ChatCommandInvocation {
   readonly channel: ChatChannel;

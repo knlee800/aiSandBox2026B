@@ -1,15 +1,24 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { Logger } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { FindOperator } from 'typeorm';
+import { EntitlementService } from '../auth/entitlement.service';
 import { AuditEventEntity } from '../entities/audit-event.entity';
+import { User } from '../entities/user.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatCommandService } from './chat-commands';
 import { ChatLinkService } from './chat-link.service';
 import { chatReply } from './chat-replies';
-import { ChatCommandInvocation, FakeChatTransport } from './chat-transport';
-import { ChatChannelRunner, ChatModule } from './chat.module';
+import { CHAT_TRANSPORT, ChatCommandInvocation, FakeChatTransport } from './chat-transport';
+import {
+  CHAT_RUNNER_ALLOW_UNDER_JEST,
+  CHAT_TRANSPORT_PROVIDER,
+  ChatChannelRunner,
+  ChatModule,
+  createChatTransport,
+} from './chat.module';
+import { DiscordTransport } from './discord/discord-transport';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const DISCORD_ID = '987654321098765432';
@@ -34,6 +43,8 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
   let users: Map<string, { id: string; isActive: boolean }>;
   let transport: FakeChatTransport;
   let commands: ChatCommandService;
+  let entitlements: { resolveHarnessEntitled: jest.Mock };
+  let userRepo: { findOne: jest.Mock };
   let logs: string[];
   let restoreLogs: () => void;
 
@@ -44,13 +55,13 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
     links = new ChatLinkService(store.links as never, store.codes as never);
     entitled = new Set([OWNER]);
     users = new Map([[OWNER, { id: OWNER, isActive: true }]]);
-    const entitlements = { resolveHarnessEntitled: jest.fn(async (id: string) => entitled.has(id)) };
-    const userRepo = {
+    entitlements = { resolveHarnessEntitled: jest.fn(async (id: string) => entitled.has(id)) };
+    userRepo = {
       findOne: jest.fn(async (options: { where: { id: string } }) => users.get(options.where.id) ?? null),
     };
     commands = new ChatCommandService(links, entitlements as never, userRepo as never);
     transport = new FakeChatTransport();
-    await new ChatChannelRunner(transport, commands, false).start();
+    await new ChatChannelRunner(transport, commands, true).start();
     logs = [];
     restoreLogs = watchLogs(logs);
   });
@@ -91,7 +102,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
       expect(idle.disconnectCalls).toBe(0);
 
       const started = new FakeChatTransport();
-      const live = new ChatChannelRunner(started, commands, false);
+      const live = new ChatChannelRunner(started, commands, true);
       expect(await live.start()).toBe(true);
       expect(await live.start()).toBe(false);
       expect(started.connectCalls).toBe(1);
@@ -101,20 +112,70 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
 
     it('a transport that refuses to connect leaves the gateway booting', async () => {
       const refusing = new FakeChatTransport(false);
-      expect(await new ChatChannelRunner(refusing, commands, false).start()).toBe(false);
+      expect(await new ChatChannelRunner(refusing, commands, true).start()).toBe(false);
       const throwing = new FakeChatTransport();
       throwing.connect = async () => {
         throw new Error('boom');
       };
-      expect(await new ChatChannelRunner(throwing, commands, false).start()).toBe(false);
+      expect(await new ChatChannelRunner(throwing, commands, true).start()).toBe(false);
     });
 
-    it('ChatModule keeps its A1 providers and builds the runner itself', () => {
-      expect(Reflect.getMetadata('providers', ChatModule)).toEqual([ChatLinkService]);
-      const source = readFileSync(join(__dirname, 'chat.module.ts'), 'utf8');
-      expect(source).toContain('new DiscordTransport()');
-      expect(source).toContain('onApplicationBootstrap');
-      expect(source).toContain('onModuleDestroy');
+    it('ChatModule registers the commands, the transport token and the runner as providers', () => {
+      expect(Reflect.getMetadata('providers', ChatModule)).toEqual([
+        ChatLinkService,
+        ChatCommandService,
+        CHAT_TRANSPORT_PROVIDER,
+        ChatChannelRunner,
+      ]);
+      expect(Reflect.getMetadata('exports', ChatModule)).toEqual([ChatLinkService]);
+      expect(CHAT_TRANSPORT_PROVIDER).toEqual({ provide: CHAT_TRANSPORT, useFactory: createChatTransport });
+      // The app's transport is the Discord transport (it does not connect here: nothing calls connect).
+      expect(createChatTransport()).toBeInstanceOf(DiscordTransport);
+    });
+
+    it('Nest injects the transport by token: a fake connects on bootstrap and disconnects on close', async () => {
+      const fake = new FakeChatTransport();
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          ChatCommandService,
+          CHAT_TRANSPORT_PROVIDER,
+          ChatChannelRunner,
+          { provide: ChatLinkService, useValue: links },
+          { provide: EntitlementService, useValue: entitlements },
+          { provide: getRepositoryToken(User), useValue: userRepo },
+          { provide: CHAT_RUNNER_ALLOW_UNDER_JEST, useValue: true },
+        ],
+      })
+        .overrideProvider(CHAT_TRANSPORT)
+        .useValue(fake)
+        .compile();
+      const app = await moduleRef.init();
+      expect(fake.connectCalls).toBe(1);
+      expect(fake.registeredCommands).toBe(1);
+      expect(await fake.invoke(dm('help', {}, STRANGER))).toEqual({ text: chatReply('en', 'help') });
+      await app.close();
+      expect(fake.disconnectCalls).toBe(1);
+    });
+
+    it('under Jest the runner provider does not connect unless a test allows it', async () => {
+      const fake = new FakeChatTransport();
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          ChatCommandService,
+          CHAT_TRANSPORT_PROVIDER,
+          ChatChannelRunner,
+          { provide: ChatLinkService, useValue: links },
+          { provide: EntitlementService, useValue: entitlements },
+          { provide: getRepositoryToken(User), useValue: userRepo },
+        ],
+      })
+        .overrideProvider(CHAT_TRANSPORT)
+        .useValue(fake)
+        .compile();
+      const app = await moduleRef.init();
+      await app.close();
+      expect(fake.connectCalls).toBe(0);
+      expect(fake.disconnectCalls).toBe(0);
     });
   });
 
