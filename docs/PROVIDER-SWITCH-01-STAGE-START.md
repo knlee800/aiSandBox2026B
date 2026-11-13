@@ -24,7 +24,7 @@
 | # | Path | Guard or check | Provider value checked against the switch | Evidence |
 |---|---|---|---|---|
 | 1 | `POST /api/ai/execute` (workspace chat: Ask, Build, step loop) | `ExecutionSafetyGuard` in the route's guard list | `AI_PROVIDER` (wrong) | GW `ai/ai-execution.controller.ts:734-736`; guard `:45`, `:55-59`; page `:4665-4683`, `:5062-5084` |
-| 2 | Agent mode / harness | The same route and guard; only extra body fields | `AI_PROVIDER` (wrong) | page `:5073-5074`; `FE/components/workspace/workspace-agent-mode.logic.ts:75`; GW `ai/ai-execution.controller.ts:751-760` |
+| 2 | Agent mode / harness | The same route and guard; only extra body fields | `AI_PROVIDER` (wrong) | page `:5073-5074`; `FE/components/workspace/workspace-agent-mode.logic.ts:75`; GW `ai/ai-execution.controller.ts:755-764` |
 | 3 | `POST /api/v1/ai/execute` (public API, API key) | The same guard | `AI_PROVIDER` (wrong) | GW `public-api/public-ai.controller.ts:45-46`, `:84-95`, `:138-142` |
 | 4 | Driver page | Calls path 1 with `provider: 'xai'` fixed | `AI_PROVIDER` (wrong) | `FE/app/[locale]/driver/page.tsx:64`, `:251-263` |
 | 5 | Team page start, `POST /api/collaboration/runs` | Starts nothing: it creates a hand-off waiting for approval | none needed here | GW `orchestration/collaboration.controller.ts:264`, `:306` |
@@ -93,7 +93,7 @@ After the fix the id in the message is always one of the six catalogue ids, and 
 | The guard checks `AI_PROVIDER`, not the request's provider | Correct (guard `:45`, `:55`) |
 | With `AI_PROVIDER=stub` the switch is never enforced on the chat route | Correct |
 | The Team page path checks the chosen provider (`collaboration-workflow.ts:290`, `orchestration.service.ts:1904`) | Correct. Note: a team run's provider is the server's `AI_PROVIDER`, not a request field; only workflows on a platform model differ (1.1 rows 7-8) |
-| Controller resolution at `ai-execution.controller.ts:461-476` | Correct content; the lines are now `:474-499` |
+| Controller resolution at `ai-execution.controller.ts:461-476` | Correct content; the lines are now `:474-501` |
 | Only the chat route is affected | **Incomplete.** The public API route `POST /api/v1/ai/execute` has the same gap (1.1 row 3), and the rate-limit counter uses the same wrong value (1.4) |
 | The existing guard tests | They state the old behaviour on purpose: "The guard reads provider from process.env.AI_PROVIDER, NOT from request body" (GW `safety/execution-safety.guard.spec.ts:69`). They change with this task |
 
