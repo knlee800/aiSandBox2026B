@@ -1691,6 +1691,71 @@
       "connectFailed": "无法连接，请重试。",
       "disconnectFailed": "无法断开连接，请重试。",
       "network": "无法连接服务器。请检查网络后重试。"
+    },
+    "chat": {
+      "title": "聊天（Discord）",
+      "intro": "关联你的 Discord 账号，即可在与机器人的私信中启动代理工作并接收结果。",
+      "loading": "正在加载聊天关联…",
+      "retry": "重试",
+      "unavailable": "聊天关联目前不可用。",
+      "status": {
+        "linked": "已关联",
+        "notLinked": "尚未关联"
+      },
+      "consent": {
+        "title": "关联前请注意",
+        "sent": "你的代理生成的结果会发送到 Discord，这是一家位于新加坡以外的公司。",
+        "kept": "Discord 会按其自己的条款保存这些内容，本平台无法从 Discord 删除。",
+        "unlink": "取消关联后即不再发送。",
+        "checkbox": "我已了解并同意结果会发送到 Discord。"
+      },
+      "createCode": "生成代码",
+      "creating": "生成中…",
+      "paused": "关联功能暂时停用，请稍后再试。",
+      "code": {
+        "title": "你的关联代码",
+        "instruction": "在 Discord 中私信机器人，输入 /link 并附上这个代码。",
+        "expires": "过期时间：{time}。代码只会显示一次。",
+        "waiting": "正在等你在 Discord 中使用 /link…",
+        "hidden": "已生成代码，但无法再次显示。请生成新代码来替换。"
+      },
+      "claim": {
+        "title": "有 Discord 账号请求关联",
+        "named": "Discord 账号 {name}（ID 末位 {last4}）请求关联到你的账户。",
+        "unnamed": "有一个 Discord 账号（ID 末位 {last4}）请求关联到你的账户。",
+        "warning": "只有在你刚刚自己输入了 /link 时才确认。"
+      },
+      "confirm": "确认",
+      "confirming": "确认中…",
+      "cancel": "取消",
+      "cancelling": "取消中…",
+      "linked": {
+        "since": "关联时间",
+        "lastUsed": "最近使用",
+        "neverUsed": "尚未使用",
+        "idEnding": "Discord ID 末位",
+        "notice": "Discord 已关联。"
+      },
+      "unlink": "取消关联",
+      "unlinkConfirm": "要取消 Discord 关联吗？机器人将不再发送结果。已在 Discord 中的消息会保留。",
+      "unlinkYes": "是，取消关联",
+      "unlinkNo": "保留关联",
+      "unlinking": "取消中…",
+      "notice": {
+        "unlinked": "已取消 Discord 关联。",
+        "cancelled": "已取消请求。",
+        "expired": "代码已过期，请生成新代码。"
+      },
+      "errors": {
+        "paused": "关联功能暂时停用，请稍后再试。",
+        "rateLimited": "生成代码的次数过多，请在 {minutes} 分钟后再试。",
+        "taken": "这个 Discord 账号已关联到其他账户。",
+        "exists": "已有关联的 Discord 账号，请先取消关联。",
+        "noPending": "没有可确认的 Discord 请求，请生成新代码。",
+        "unavailable": "聊天关联目前不可用。",
+        "generic": "出错了，请重试。",
+        "network": "无法连接到服务器，请检查网络后重试。"
+      }
     }
   },
   "results": {

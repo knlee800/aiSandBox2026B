@@ -15,6 +15,7 @@ import {
   LinkSlashIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from '@/hooks/useTranslations';
+import ChatLinkSection from '@/components/connections/chat-link-section';
 import { fillKnowledgeTemplate } from '@/components/knowledge/knowledge-limits';
 import {
   CONNECTION_PRESETS,
@@ -65,6 +66,8 @@ export interface ConnectionsScreenViewProps {
   onAskDisconnect: (kind: ConnectionKind) => void;
   onCancelDisconnect: (kind: ConnectionKind) => void;
   onConfirmDisconnect: (kind: ConnectionKind) => void;
+  /** Optional extra card below the mail and calendar cards (the Chat link section). */
+  chatSlot?: React.ReactNode;
 }
 
 const QUIET_BUTTON =
@@ -268,6 +271,7 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
     onAskDisconnect,
     onCancelDisconnect,
     onConfirmDisconnect,
+    chatSlot,
   } = props;
 
   if (phase === 'loading') {
@@ -672,6 +676,7 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
                   )}
                 </section>
               </div>
+              {chatSlot ?? null}
             </>
           ) : null}
         </div>
@@ -861,6 +866,7 @@ export default function ConnectionsScreen({ locale }: ConnectionsScreenProps): R
       onConfirmDisconnect={(kind) => {
         void runDisconnect(kind);
       }}
+      chatSlot={<ChatLinkSection t={t} locale={locale} />}
     />
   );
 }

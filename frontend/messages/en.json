@@ -1691,6 +1691,71 @@
       "connectFailed": "Could not connect. Try again.",
       "disconnectFailed": "Could not disconnect. Try again.",
       "network": "Could not reach the server. Check your network and try again."
+    },
+    "chat": {
+      "title": "Chat (Discord)",
+      "intro": "Link your Discord account to start agent work and receive results in a direct message with the bot.",
+      "loading": "Loading chat link…",
+      "retry": "Try again",
+      "unavailable": "Chat link is not available right now.",
+      "status": {
+        "linked": "Linked",
+        "notLinked": "Not linked"
+      },
+      "consent": {
+        "title": "Before you link",
+        "sent": "Results from your agents are sent to Discord, a company outside Singapore.",
+        "kept": "Discord keeps them under its own terms. This platform cannot delete them from Discord.",
+        "unlink": "Unlinking stops further sending.",
+        "checkbox": "I understand and agree that results are sent to Discord."
+      },
+      "createCode": "Create code",
+      "creating": "Creating…",
+      "paused": "Linking is paused for now. Try again later.",
+      "code": {
+        "title": "Your link code",
+        "instruction": "In Discord, send a direct message to the bot and type /link with this code.",
+        "expires": "Expires {time}. It is shown only once.",
+        "waiting": "Waiting for you to use /link in Discord…",
+        "hidden": "A code was made but cannot be shown again. Create a new code to replace it."
+      },
+      "claim": {
+        "title": "A Discord account asks to link",
+        "named": "Discord account {name} (id ending {last4}) asks to link to your account.",
+        "unnamed": "A Discord account (id ending {last4}) asks to link to your account.",
+        "warning": "Only confirm if you just typed /link yourself."
+      },
+      "confirm": "Confirm",
+      "confirming": "Confirming…",
+      "cancel": "Cancel",
+      "cancelling": "Cancelling…",
+      "linked": {
+        "since": "Linked since",
+        "lastUsed": "Last used",
+        "neverUsed": "Not used yet",
+        "idEnding": "Discord id ending",
+        "notice": "Discord is linked."
+      },
+      "unlink": "Unlink",
+      "unlinkConfirm": "Unlink Discord? The bot will stop sending results to it. Messages already in Discord stay there.",
+      "unlinkYes": "Yes, unlink",
+      "unlinkNo": "Keep linked",
+      "unlinking": "Unlinking…",
+      "notice": {
+        "unlinked": "Discord is unlinked.",
+        "cancelled": "The request was cancelled.",
+        "expired": "The code expired. Create a new one."
+      },
+      "errors": {
+        "paused": "Linking is paused for now. Try again later.",
+        "rateLimited": "Too many codes were made. Try again in {minutes} min.",
+        "taken": "That Discord account is already linked to another account.",
+        "exists": "A Discord account is already linked. Unlink it first.",
+        "noPending": "There is no Discord request to confirm. Create a new code.",
+        "unavailable": "Chat link is not available right now.",
+        "generic": "Something went wrong. Try again.",
+        "network": "Could not reach the server. Check your network and try again."
+      }
     }
   },
   "results": {

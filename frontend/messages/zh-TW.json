@@ -1691,6 +1691,71 @@
       "connectFailed": "無法連線，請再試一次。",
       "disconnectFailed": "無法中斷連線，請再試一次。",
       "network": "無法連上伺服器。請檢查網路後再試一次。"
+    },
+    "chat": {
+      "title": "聊天（Discord）",
+      "intro": "連結你的 Discord 帳號，即可在與機器人的私訊中啟動代理工作並接收結果。",
+      "loading": "正在載入聊天連結…",
+      "retry": "再試一次",
+      "unavailable": "聊天連結目前無法使用。",
+      "status": {
+        "linked": "已連結",
+        "notLinked": "尚未連結"
+      },
+      "consent": {
+        "title": "連結前請注意",
+        "sent": "你的代理產生的結果會傳送到 Discord，這是一家位於新加坡以外的公司。",
+        "kept": "Discord 會依其自己的條款保存這些內容，本平台無法從 Discord 刪除。",
+        "unlink": "解除連結後即不再傳送。",
+        "checkbox": "我了解並同意結果會傳送到 Discord。"
+      },
+      "createCode": "產生代碼",
+      "creating": "產生中…",
+      "paused": "連結功能暫時停用，請稍後再試。",
+      "code": {
+        "title": "你的連結代碼",
+        "instruction": "在 Discord 私訊機器人，輸入 /link 並附上這個代碼。",
+        "expires": "到期時間：{time}。代碼只會顯示一次。",
+        "waiting": "正在等你在 Discord 使用 /link…",
+        "hidden": "已產生代碼，但無法再次顯示。請產生新代碼以取代。"
+      },
+      "claim": {
+        "title": "有 Discord 帳號要求連結",
+        "named": "Discord 帳號 {name}（ID 末碼 {last4}）要求連結到你的帳戶。",
+        "unnamed": "有一個 Discord 帳號（ID 末碼 {last4}）要求連結到你的帳戶。",
+        "warning": "只有在你剛剛自己輸入 /link 時才確認。"
+      },
+      "confirm": "確認",
+      "confirming": "確認中…",
+      "cancel": "取消",
+      "cancelling": "取消中…",
+      "linked": {
+        "since": "連結時間",
+        "lastUsed": "最後使用",
+        "neverUsed": "尚未使用",
+        "idEnding": "Discord ID 末碼",
+        "notice": "Discord 已連結。"
+      },
+      "unlink": "解除連結",
+      "unlinkConfirm": "要解除 Discord 連結嗎？機器人將不再傳送結果。已在 Discord 的訊息會保留。",
+      "unlinkYes": "是，解除連結",
+      "unlinkNo": "保留連結",
+      "unlinking": "解除中…",
+      "notice": {
+        "unlinked": "已解除 Discord 連結。",
+        "cancelled": "已取消要求。",
+        "expired": "代碼已過期，請產生新代碼。"
+      },
+      "errors": {
+        "paused": "連結功能暫時停用，請稍後再試。",
+        "rateLimited": "產生代碼的次數過多，請在 {minutes} 分鐘後再試。",
+        "taken": "這個 Discord 帳號已連結到其他帳戶。",
+        "exists": "已有連結的 Discord 帳號，請先解除連結。",
+        "noPending": "沒有可確認的 Discord 要求，請產生新代碼。",
+        "unavailable": "聊天連結目前無法使用。",
+        "generic": "發生錯誤，請再試一次。",
+        "network": "無法連線到伺服器，請檢查網路後再試。"
+      }
     }
   },
   "results": {

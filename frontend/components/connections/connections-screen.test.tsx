@@ -490,6 +490,18 @@ describe('connections api', () => {
   });
 });
 
+describe('connections chat slot', () => {
+  test('the chat slot shows below the cards when ready and never while loading', () => {
+    const slot = <section data-testid="chat-slot-probe">chat</section>;
+    const ready = render({ chatSlot: slot });
+    assert.equal(ready.includes('data-testid="chat-slot-probe"'), true);
+    assert.ok(ready.indexOf('data-testid="chat-slot-probe"') > ready.indexOf('data-testid="connections-calendar-card"'));
+    assert.equal(render({ chatSlot: slot, phase: 'loading' }).includes('chat-slot-probe'), false);
+    assert.equal(render({ chatSlot: slot, phase: 'forbidden' }).includes('chat-slot-probe'), false);
+    assert.equal(render().includes('chat-slot-probe'), false);
+  });
+});
+
 describe('connections locale catalog', () => {
   test('every connections key exists and is non-empty in en, zh-TW and zh-CN', () => {
     const keySets = LOCALES.map(({ code, messages }) => ({
