@@ -124,6 +124,7 @@ import {
   type RunCancelKind,
 } from '@/components/workspace/workspace-run-cancel.logic';
 import {
+  readExecutionStatusError,
   shouldRefreshDashboardForChatStatus,
   toQuotaRateLimitGuidance,
   type QuotaRateLimitGuidanceCopies,
@@ -177,10 +178,12 @@ import { AUTH_TEMPLATES_V1 } from '@/lib/auth-module/auth-template-registry';
 import {
   FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION,
   getSelectableFrontendModelEntriesForProvider,
-  getSelectableFrontendProviderEntries,
+  getUsableFrontendProviderEntries,
   resolveFrontendProviderModelPayload,
   resolveFrontendProviderModelSelection,
+  resolveFrontendProviderModelSelectionWithinUsable,
 } from '@/lib/ai/provider-model.catalogue';
+import { parseProviderAvailability } from '@/lib/ai/provider-availability';
 import { isNetworkFailure } from '@/lib/network-error';
 import { readCsrfCookie } from '@/lib/csrf-cookie';
 import enMessages from '@/messages/en.json';
@@ -789,6 +792,8 @@ interface WorkspaceChatExecutionResponse {
   provider?: string;
   model?: string;
   fileActions?: WorkspaceFileAction[];
+  /** PROVIDER-KEY-01 (C2): an allow-listed { code, message } on a failed run. */
+  error?: unknown;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -893,6 +898,7 @@ function toChatAssistantFailureMessage(input: {
   retryAfterHeader?: string | null;
   payload?: unknown;
   locale?: string;
+  errorCode?: string;
   copies: QuotaRateLimitGuidanceCopies;
 }): string {
   return toQuotaRateLimitGuidance(input);
@@ -1153,6 +1159,7 @@ export default function AppPage() {
     quota: aiMessages.quotaLimitGuidance,
     accessRules: aiMessages.accessRulesGuidance,
     providerUsageLimit: aiMessages.providerUsageLimit,
+    providerKeyMissing: aiMessages.providerKeyMissing,
   };
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
@@ -1182,6 +1189,8 @@ export default function AppPage() {
   const [selectedChatModelId, setSelectedChatModelId] = useState<string>(
     FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION.modelId,
   );
+  // PROVIDER-KEY-01: usable provider ids from GET /api/ai/providers; null = unknown (offer all).
+  const [usableChatProviderIds, setUsableChatProviderIds] = useState<string[] | null>(null);
   const [isChatOrchestrationEnabled, setIsChatOrchestrationEnabled] = useState(false);
   const [chatExecutionIntent, setChatExecutionIntent] = useState<WorkspaceExecutionIntent>(
     DEFAULT_WORKSPACE_EXECUTION_INTENT,
@@ -1242,24 +1251,36 @@ export default function AppPage() {
   const harnessProgressByExecutionIdRef = useRef<Record<string, HarnessProgressItem[]>>({});
   const activeHarnessProgressExecutionIdRef = useRef<string | null>(null);
 
-  const resolvedChatModelSelection = resolveFrontendProviderModelSelection({
-    providerId: selectedChatProviderId,
-    modelId: selectedChatModelId,
-  });
+  const usableChatModelSelection = resolveFrontendProviderModelSelectionWithinUsable(
+    {
+      providerId: selectedChatProviderId,
+      modelId: selectedChatModelId,
+    },
+    usableChatProviderIds,
+  );
+  const noChatProviderAvailable = usableChatModelSelection === null;
+  const resolvedChatModelSelection =
+    usableChatModelSelection ??
+    resolveFrontendProviderModelSelection({
+      providerId: selectedChatProviderId,
+      modelId: selectedChatModelId,
+    });
   const selectedChatModelProviderId = resolvedChatModelSelection.providerId;
   const selectedResolvedChatModelId = resolvedChatModelSelection.modelId;
   const providerOptionLabels = aiMessages.providerOptionLabels as Record<string, string>;
   const modelOptionLabels = aiMessages.modelOptionLabels as Record<string, Record<string, string>>;
-  const availableChatProviderOptions = getSelectableFrontendProviderEntries().map((provider) => ({
-    value: provider.providerId,
-    label: providerOptionLabels[provider.labelKey] ?? provider.providerId,
-  }));
-  const availableChatModelOptions = getSelectableFrontendModelEntriesForProvider(
-    selectedChatModelProviderId,
-  ).map((model) => ({
-    value: model.modelId,
-    label: modelOptionLabels[model.providerId]?.[model.labelKey] ?? model.modelId,
-  }));
+  const availableChatProviderOptions = getUsableFrontendProviderEntries(usableChatProviderIds).map(
+    (provider) => ({
+      value: provider.providerId,
+      label: providerOptionLabels[provider.labelKey] ?? provider.providerId,
+    }),
+  );
+  const availableChatModelOptions = noChatProviderAvailable
+    ? []
+    : getSelectableFrontendModelEntriesForProvider(selectedChatModelProviderId).map((model) => ({
+        value: model.modelId,
+        label: modelOptionLabels[model.providerId]?.[model.labelKey] ?? model.modelId,
+      }));
 
   useEffect(() => {
     if (
@@ -1295,9 +1316,11 @@ export default function AppPage() {
   }
 
   function handleSelectedChatProviderOptionChange(nextProviderId: string): void {
-    const resolvedSelection = resolveFrontendProviderModelSelection({
-      providerId: nextProviderId,
-    });
+    const resolvedSelection =
+      resolveFrontendProviderModelSelectionWithinUsable(
+        { providerId: nextProviderId },
+        usableChatProviderIds,
+      ) ?? resolveFrontendProviderModelSelection({ providerId: nextProviderId });
     setSelectedChatProviderId(resolvedSelection.providerId);
     setSelectedChatModelId(resolvedSelection.modelId);
   }
@@ -1496,6 +1519,7 @@ export default function AppPage() {
         void loadDashboardSlice();
         void loadWorkspacesForUser();
         void loadPublicWorkspaceProjectsList();
+        void loadUsableChatProviders();
       } catch {
         router.push(`/${locale}/login`);
       }
@@ -2021,6 +2045,23 @@ export default function AppPage() {
 
     void loadWorkspaceFilesForSession(selectedSessionId);
   }, [selectedSessionId, userId]);
+
+  // PROVIDER-KEY-01 (C4): which providers have a key. On any failure the list
+  // stays unknown (null) and the picker offers every provider, as before.
+  async function loadUsableChatProviders(): Promise<void> {
+    try {
+      const response = await fetch('/api/ai/providers');
+      if (response.status !== 200) {
+        return;
+      }
+      const usable = parseProviderAvailability(await response.json());
+      if (usable !== null) {
+        setUsableChatProviderIds(usable);
+      }
+    } catch {
+      // Unknown: keep offering every provider.
+    }
+  }
 
   async function loadSessions(): Promise<WorkspaceShellSession[]> {
     setIsLoadingSessions(true);
@@ -4463,10 +4504,12 @@ export default function AppPage() {
           output: nextOutput,
           runStoppedMessage: aiMessages.runStopped,
         });
+        const statusError = readExecutionStatusError(data.error);
         const failureMessage = toChatAssistantFailureMessage(
           {
-            rawMessage: terminalCopy.rawMessage,
+            rawMessage: terminalCopy.rawMessage || statusError?.message,
             fallbackMessage: terminalCopy.fallbackMessage,
+            errorCode: statusError?.code,
             copies: quotaRateLimitCopies,
           },
         );
@@ -4923,6 +4966,12 @@ export default function AppPage() {
       await handleInstallAuthModule();
       return;
     }
+    if (noChatProviderAvailable) {
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError(aiMessages.noProviderAvailable);
+      return;
+    }
     const promptWithSelectedPreviewElement = buildPromptWithSelectedPreviewElement(
       trimmedPrompt,
       selectedPreviewElement,
@@ -5182,9 +5231,11 @@ export default function AppPage() {
           output: nextOutput,
           runStoppedMessage: aiMessages.runStopped,
         });
+        const statusError = readExecutionStatusError(data.error);
         const failureMessage = toChatAssistantFailureMessage({
-          rawMessage: terminalCopy.rawMessage,
+          rawMessage: terminalCopy.rawMessage || statusError?.message,
           fallbackMessage: terminalCopy.fallbackMessage,
+          errorCode: statusError?.code,
           copies: quotaRateLimitCopies,
         });
         setChatError(failureMessage);
@@ -6675,6 +6726,7 @@ export default function AppPage() {
       onCreateProjectFromPrompt={handleCreateProjectFromPrompt}
       selectedModelProvider={selectedChatModelProviderId}
       onSelectedModelProviderChange={handleSelectedChatProviderOptionChange}
+      noModelProviderAvailable={noChatProviderAvailable}
       availableModelProviders={availableChatProviderOptions}
       selectedModelOption={selectedResolvedChatModelId}
       onSelectedModelOptionChange={handleSelectedChatModelOptionChange}

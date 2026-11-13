@@ -655,6 +655,8 @@ interface WorkspaceShellProps {
   onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
   selectedModelProvider?: string;
   onSelectedModelProviderChange?: (value: string) => void;
+  /** PROVIDER-KEY-01: the usable list is known and no provider is usable. */
+  noModelProviderAvailable?: boolean;
   availableModelProviders?: Array<{
     value: string;
     label: string;
@@ -1879,6 +1881,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             onDismissBoundUserAgentAsk={props.onDismissBoundUserAgentAsk}
             selectedModelProvider={props.selectedModelProvider ?? ''}
             onSelectedModelProviderChange={props.onSelectedModelProviderChange}
+            noModelProviderAvailable={props.noModelProviderAvailable === true}
             availableModelProviders={props.availableModelProviders ?? []}
             selectedModelOption={props.selectedModelOption ?? ''}
             onSelectedModelOptionChange={props.onSelectedModelOptionChange}
@@ -4087,6 +4090,7 @@ function WorkspaceChatPanel(props: {
   onDismissBoundUserAgentAsk?: () => void;
   selectedModelProvider: string;
   onSelectedModelProviderChange?: (value: string) => void;
+  noModelProviderAvailable?: boolean;
   availableModelProviders: Array<{
     value: string;
     label: string;
@@ -4164,12 +4168,15 @@ function WorkspaceChatPanel(props: {
   }, [isSending]);
 
   const visualEditExecutionIdSet = new Set(props.visualEditExecutionIds);
+  const noModelProviderAvailable = props.noModelProviderAvailable === true;
   const canSubmit =
     Boolean(props.selectedSessionId) &&
     Boolean(props.onSubmitPrompt) &&
     Boolean(props.onPromptInputChange) &&
     props.promptInput.trim().length > 0 &&
     !isSending;
+  // PROVIDER-KEY-01: no run is sent while no provider is usable.
+  const canSendPrompt = canSubmit && !noModelProviderAvailable;
   const showStopButton = shouldShowChatStopButton({
     requestState: props.requestState,
     executionId: props.executionId,
@@ -4185,7 +4192,7 @@ function WorkspaceChatPanel(props: {
   };
 
   const submitPromptAndRefocus = () => {
-    if (!canSubmit || !props.onSubmitPrompt) {
+    if (!canSendPrompt || !props.onSubmitPrompt) {
       return;
     }
     void props.onSubmitPrompt();
@@ -4545,7 +4552,7 @@ function WorkspaceChatPanel(props: {
               <button
                 type="submit"
                 data-testid="workspace-chat-submit"
-                disabled={!canSubmit}
+                disabled={!canSendPrompt}
                 className="shrink-0 rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSending ? props.aiMessages.sending : props.commonMessages.send}
@@ -4562,11 +4569,12 @@ function WorkspaceChatPanel(props: {
             <select
               id="workspace-chat-provider-selector"
               data-testid="workspace-chat-provider-selector"
-              value={props.selectedModelProvider}
+              value={noModelProviderAvailable ? '' : props.selectedModelProvider}
               onChange={(event) =>
                 props.onSelectedModelProviderChange?.(event.target.value)
               }
               disabled={
+                noModelProviderAvailable ||
                 !props.selectedSessionId ||
                 !props.onSelectedModelProviderChange ||
                 props.availableModelProviders.length === 0 ||
@@ -4574,11 +4582,17 @@ function WorkspaceChatPanel(props: {
               }
               className="max-w-full rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 disabled:bg-gray-100 disabled:text-gray-400"
             >
-              {props.availableModelProviders.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+              {noModelProviderAvailable ? (
+                <option value="" disabled>
+                  {props.aiMessages.noProviderOption}
                 </option>
-              ))}
+              ) : (
+                props.availableModelProviders.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              )}
             </select>
             <label htmlFor="workspace-chat-model-selector" className="sr-only">
               {props.aiMessages.modelLabel}
@@ -4591,6 +4605,7 @@ function WorkspaceChatPanel(props: {
                 props.onSelectedModelOptionChange?.(event.target.value)
               }
               disabled={
+                noModelProviderAvailable ||
                 !props.selectedSessionId ||
                 !props.onSelectedModelOptionChange ||
                 props.availableModelOptions.length === 0 ||
@@ -4617,9 +4632,11 @@ function WorkspaceChatPanel(props: {
             </label>
           </div>
           <p className="mt-1.5 text-xs text-gray-400" data-testid="workspace-chat-session-hint">
-            {props.selectedSessionId
-              ? recoveryCopy.workspace.chatReady
-              : recoveryCopy.workspace.openProjectToSendPrompts}
+            {noModelProviderAvailable
+              ? props.aiMessages.noProviderAvailable
+              : props.selectedSessionId
+                ? recoveryCopy.workspace.chatReady
+                : recoveryCopy.workspace.openProjectToSendPrompts}
           </p>
         </form>
       </div>

@@ -8,6 +8,8 @@ export interface QuotaRateLimitGuidanceCopies {
   quota: string;
   accessRules: string;
   providerUsageLimit?: string;
+  /** PROVIDER-KEY-01: translated ai.providerKeyMissing. */
+  providerKeyMissing?: string;
 }
 
 export interface QuotaRateLimitGuidanceInput {
@@ -17,7 +19,36 @@ export interface QuotaRateLimitGuidanceInput {
   retryAfterHeader?: string | null;
   payload?: unknown;
   locale?: string;
+  /** PROVIDER-KEY-01: the allow-listed error.code from the run status answer (C2). */
+  errorCode?: string;
   copies: QuotaRateLimitGuidanceCopies;
+}
+
+/** PROVIDER-KEY-01 (C2): the code the gateway returns for a run whose provider has no key. */
+export const PROVIDER_KEY_MISSING_ERROR_CODE = 'provider_key_missing';
+
+export interface ExecutionStatusError {
+  code: string;
+  message: string;
+}
+
+/**
+ * PROVIDER-KEY-01 (C2): reads the `error` field of a run status answer.
+ * Only `{ code: string, message: string }` counts; anything else is null.
+ */
+export function readExecutionStatusError(value: unknown): ExecutionStatusError | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.code !== 'string' || typeof record.message !== 'string') {
+    return null;
+  }
+  const code = record.code.trim();
+  if (!code) {
+    return null;
+  }
+  return { code, message: record.message.trim() };
 }
 
 const DAILY_TOKEN_QUOTA_TYPE = 'max_tokens_per_24h';
@@ -147,6 +178,10 @@ export function toQuotaRateLimitGuidance(input: QuotaRateLimitGuidanceInput): st
   const retryAfterSeconds = parseRetryAfterSeconds(input.retryAfterHeader);
   const statusCode = input.statusCode ?? null;
   const copies = input.copies;
+
+  if (input.errorCode === PROVIDER_KEY_MISSING_ERROR_CODE) {
+    return copies.providerKeyMissing ?? input.fallbackMessage;
+  }
 
   if (trimmedRawMessage === 'AI provider usage limit reached') {
     return copies.providerUsageLimit ?? trimmedRawMessage;

@@ -9,8 +9,10 @@ import {
   FRONTEND_PROVIDER_MODEL_CATALOGUE_ENTRIES,
   getSelectableFrontendModelEntriesForProvider,
   getSelectableFrontendProviderEntries,
+  getUsableFrontendProviderEntries,
   resolveFrontendProviderModelPayload,
   resolveFrontendProviderModelSelection,
+  resolveFrontendProviderModelSelectionWithinUsable,
 } from './provider-model.catalogue';
 
 function catalogueModelIds(providerId: string): string[] {
@@ -300,5 +302,121 @@ describe('frontend provider/model catalogue hardening', () => {
     const providerIds = FRONTEND_PROVIDER_MODEL_CATALOGUE_ENTRIES.map((entry) => entry.providerId);
     assert.equal(providerIds.includes('anthropic'), true);
     assert.equal(providerIds.includes('stub'), true);
+  });
+});
+
+describe('PROVIDER-KEY-01 usable provider filter and selection', () => {
+  function usableIds(list: readonly string[] | null): string[] {
+    return getUsableFrontendProviderEntries(list).map((provider) => provider.providerId);
+  }
+
+  test('a null list means no filter: the providers and default of today', () => {
+    assert.deepEqual(usableIds(null), ['xai', 'groq', 'deepseek', 'openai', 'anthropic']);
+    assert.deepEqual(
+      getUsableFrontendProviderEntries(null),
+      getSelectableFrontendProviderEntries(),
+    );
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable({}, null),
+      FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION,
+    );
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable(
+        { providerId: 'openai', modelId: 'gpt-6-luna' },
+        null,
+      ),
+      resolveFrontendProviderModelSelection({ providerId: 'openai', modelId: 'gpt-6-luna' }),
+    );
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable({ providerId: 'stub' }, null),
+      resolveFrontendProviderModelSelection({ providerId: 'stub' }),
+    );
+  });
+
+  test('the filter keeps catalogue order and offers only usable providers', () => {
+    assert.deepEqual(usableIds(['anthropic', 'groq']), ['groq', 'anthropic']);
+    assert.deepEqual(usableIds(['openai']), ['openai']);
+  });
+
+  test('an empty list offers no provider and resolves to null', () => {
+    assert.deepEqual(usableIds([]), []);
+    assert.equal(resolveFrontendProviderModelSelectionWithinUsable({}, []), null);
+    assert.equal(
+      resolveFrontendProviderModelSelectionWithinUsable({ providerId: 'xai', modelId: 'grok-4.5' }, []),
+      null,
+    );
+  });
+
+  test('stub is never offered, even when listed as usable', () => {
+    assert.deepEqual(usableIds(['stub']), []);
+    assert.deepEqual(usableIds(['stub', 'deepseek']), ['deepseek']);
+    assert.equal(resolveFrontendProviderModelSelectionWithinUsable({ providerId: 'stub' }, ['stub']), null);
+  });
+
+  test('a list with xai keeps the xai default', () => {
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable(
+        {
+          providerId: FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION.providerId,
+          modelId: FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION.modelId,
+        },
+        ['xai', 'anthropic'],
+      ),
+      { providerId: 'xai', modelId: 'grok-4.5', optionValue: 'xai:grok-4.5' },
+    );
+  });
+
+  test('a list without xai moves the default to the first usable provider and its default model', () => {
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable(
+        { providerId: 'xai', modelId: 'grok-4.5' },
+        ['anthropic', 'groq'],
+      ),
+      {
+        providerId: 'groq',
+        modelId: 'openai/gpt-oss-120b',
+        optionValue: 'groq:openai/gpt-oss-120b',
+      },
+    );
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable(
+        { providerId: 'xai', modelId: 'grok-4.7' },
+        ['anthropic'],
+      ),
+      {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-5-5',
+        optionValue: 'anthropic:claude-sonnet-5-5',
+      },
+    );
+  });
+
+  test('a chosen usable provider and model are kept', () => {
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable(
+        { providerId: 'anthropic', modelId: 'claude-opus-5-5' },
+        ['groq', 'anthropic'],
+      ),
+      {
+        providerId: 'anthropic',
+        modelId: 'claude-opus-5-5',
+        optionValue: 'anthropic:claude-opus-5-5',
+      },
+    );
+    assert.deepEqual(
+      resolveFrontendProviderModelSelectionWithinUsable(
+        { optionValue: 'openai:gpt-6-luna' },
+        ['xai', 'openai'],
+      ),
+      { providerId: 'openai', modelId: 'gpt-6-luna', optionValue: 'openai:gpt-6-luna' },
+    );
+  });
+
+  test('the existing default selection is unchanged', () => {
+    assert.deepEqual(FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION, {
+      providerId: 'xai',
+      modelId: 'grok-4.5',
+      optionValue: 'xai:grok-4.5',
+    });
   });
 });

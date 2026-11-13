@@ -11697,3 +11697,159 @@ describe('CM-DIFF-NOTICE-01: a checkpoint diff that was cut', () => {
     );
   });
 });
+
+describe('PROVIDER-KEY-01 chat picker with no usable provider', () => {
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
+  }
+
+  function selectMarkup(html: string, testId: string): { attrs: string; body: string } {
+    const match = new RegExp(`<select([^>]*data-testid="${testId}"[^>]*)>([^]*?)</select>`).exec(
+      html,
+    );
+    assert.ok(match, `select ${testId} not found`);
+    return { attrs: match[1], body: match[2] };
+  }
+
+  function hintText(html: string): string {
+    const match = /<p[^>]*data-testid="workspace-chat-session-hint"[^>]*>([\s\S]*?)<\/p>/.exec(html);
+    assert.ok(match, 'session hint not found');
+    return match[1];
+  }
+
+  const sendReadyOverrides = {
+    selectedSessionId: session.id,
+    chatPromptInput: 'hello',
+    onChatPromptInputChange: () => {},
+    onSubmitChatPrompt: async () => {},
+  };
+
+  const noProviderOverrides = {
+    ...sendReadyOverrides,
+    noModelProviderAvailable: true,
+    availableModelProviders: [],
+    availableModelOptions: [],
+  };
+
+  test('shows one disabled option, disables both selects and Send, and shows the hint', () => {
+    for (const [locale, messages] of [
+      ['en', enMessages],
+      ['zh-TW', zhTwMessages],
+      ['zh-CN', zhCnMessages],
+    ] as const) {
+      const html = renderWorkspaceShell({ ...noProviderOverrides, locale });
+      const provider = selectMarkup(html, 'workspace-chat-provider-selector');
+      assert.match(provider.attrs, /\sdisabled=""/);
+      const options = provider.body.match(/<option\b[^>]*>[\s\S]*?<\/option>/g) ?? [];
+      assert.equal(options.length, 1, locale);
+      assert.match(options[0], /<option[^>]*value=""[^>]*disabled=""/);
+      assert.ok(options[0].includes(escapeHtml(messages.ai.noProviderOption)), locale);
+      assert.doesNotMatch(provider.body, /xAI|OpenAI/);
+
+      const model = selectMarkup(html, 'workspace-chat-model-selector');
+      assert.match(model.attrs, /\sdisabled=""/);
+
+      assert.equal(hintText(html), escapeHtml(messages.ai.noProviderAvailable), locale);
+      assert.match(html, /data-testid="workspace-chat-submit"[^>]*disabled=""/);
+    }
+  });
+
+  test('Send stays disabled with a prompt and a session when no provider is usable', () => {
+    const submit = renderWorkspaceShellElementByTestId('workspace-chat-submit', noProviderOverrides);
+    assert.equal(submit?.props.disabled, true);
+    const providerSelect = renderWorkspaceShellElementByTestId(
+      'workspace-chat-provider-selector',
+      noProviderOverrides,
+    );
+    assert.equal(providerSelect?.props.disabled, true);
+    const modelSelect = renderWorkspaceShellElementByTestId(
+      'workspace-chat-model-selector',
+      noProviderOverrides,
+    );
+    assert.equal(modelSelect?.props.disabled, true);
+  });
+
+  test('otherwise the picker, Send and hint are as before', () => {
+    for (const noModelProviderAvailable of [undefined, false]) {
+      const overrides = {
+        ...sendReadyOverrides,
+        ...(noModelProviderAvailable === undefined ? {} : { noModelProviderAvailable }),
+      };
+      const html = renderWorkspaceShell(overrides);
+      const provider = selectMarkup(html, 'workspace-chat-provider-selector');
+      assert.doesNotMatch(provider.attrs, /\sdisabled=""/);
+      const options = provider.body.match(/<option\b[^>]*>[\s\S]*?<\/option>/g) ?? [];
+      assert.equal(options.length, 2);
+      assert.match(options[0], /value="xai"[^>]*>xAI</);
+      assert.match(options[1], /value="openai"[^>]*>OpenAI</);
+      assert.doesNotMatch(provider.body, new RegExp(escapeHtml(enMessages.ai.noProviderOption)));
+      const model = selectMarkup(html, 'workspace-chat-model-selector');
+      assert.doesNotMatch(model.attrs, /\sdisabled=""/);
+      assert.notEqual(hintText(html), escapeHtml(enMessages.ai.noProviderAvailable));
+      const submit = renderWorkspaceShellElementByTestId('workspace-chat-submit', overrides);
+      assert.equal(submit?.props.disabled, false);
+    }
+  });
+
+  test('keeps the four chat test ids in both states', () => {
+    for (const overrides of [noProviderOverrides, { selectedSessionId: session.id }]) {
+      const html = renderWorkspaceShell(overrides);
+      for (const testId of [
+        'workspace-chat-provider-selector',
+        'workspace-chat-model-selector',
+        'workspace-chat-submit',
+        'workspace-chat-session-hint',
+      ]) {
+        assert.match(html, new RegExp(`data-testid="${testId}"`));
+      }
+    }
+  });
+
+  test('Enter and form submit go through the same no-provider check as Send', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /const canSendPrompt = canSubmit && !noModelProviderAvailable;/);
+    assert.match(shellSource, /if \(!canSendPrompt \|\| !props\.onSubmitPrompt\) \{/);
+    assert.match(shellSource, /data-testid="workspace-chat-submit"\s+disabled=\{!canSendPrompt\}/);
+  });
+
+  test('the workspace page wires availability, the empty state and the status error', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+    // One fetch of C4 after /api/auth/me succeeds; failure leaves the list unknown.
+    assert.equal(pageSource.match(/fetch\('\/api\/ai\/providers'\)/g)?.length, 1);
+    assert.match(pageSource, /void loadPublicWorkspaceProjectsList\(\);\s+void loadUsableChatProviders\(\);/);
+    assert.match(pageSource, /if \(response\.status !== 200\) \{\s+return;\s+\}/);
+    assert.match(pageSource, /parseProviderAvailability\(await response\.json\(\)\)/);
+    // Filtered options and the empty state.
+    assert.match(pageSource, /getUsableFrontendProviderEntries\(usableChatProviderIds\)/);
+    assert.match(pageSource, /noModelProviderAvailable=\{noChatProviderAvailable\}/);
+    assert.doesNotMatch(pageSource, /getSelectableFrontendProviderEntries\(\)/);
+    // No run is sent while no provider is usable.
+    const submitStart = pageSource.indexOf('async function handleSubmitChatPrompt');
+    const executeAt = pageSource.indexOf("fetch('/api/ai/execute'", submitStart);
+    const guardAt = pageSource.indexOf('if (noChatProviderAvailable) {', submitStart);
+    assert.ok(
+      guardAt > submitStart && guardAt < executeAt,
+      'handleSubmitChatPrompt must check noChatProviderAvailable before /api/ai/execute',
+    );
+    assert.match(
+      pageSource.slice(guardAt, guardAt + 300),
+      /setChatError\(aiMessages\.noProviderAvailable\);\s+return;/,
+    );
+    // Both terminal-failure sites pass the status error code and message.
+    assert.equal(pageSource.match(/readExecutionStatusError\(data\.error\)/g)?.length, 2);
+    assert.equal(
+      pageSource.match(/rawMessage: terminalCopy\.rawMessage \|\| statusError\?\.message,/g)?.length,
+      2,
+    );
+    assert.equal(pageSource.match(/errorCode: statusError\?\.code,/g)?.length, 2);
+    assert.match(pageSource, /providerKeyMissing: aiMessages\.providerKeyMissing,/);
+  });
+});

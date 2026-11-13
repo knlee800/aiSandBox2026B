@@ -4,7 +4,9 @@ import enMessages from '../../messages/en.json';
 import zhCnMessages from '../../messages/zh-CN.json';
 import zhTwMessages from '../../messages/zh-TW.json';
 import {
+  PROVIDER_KEY_MISSING_ERROR_CODE,
   parseRetryAfterSeconds,
+  readExecutionStatusError,
   shouldRefreshDashboardForChatStatus,
   toQuotaRateLimitGuidance,
   type QuotaRateLimitGuidanceCopies,
@@ -20,6 +22,7 @@ const copies: QuotaRateLimitGuidanceCopies = {
   quota: enMessages.ai.quotaLimitGuidance,
   accessRules: enMessages.ai.accessRulesGuidance,
   providerUsageLimit: enMessages.ai.providerUsageLimit,
+  providerKeyMissing: enMessages.ai.providerKeyMissing,
 };
 
 const base = {
@@ -426,5 +429,133 @@ describe('limit message keys', () => {
       zhTwMessages.collaboration.refusalDailyCredits,
       zhCnMessages.collaboration.refusalDailyCredits,
     );
+  });
+});
+
+describe('PROVIDER-KEY-01 provider_key_missing failure copy', () => {
+  const catalogs = [
+    ['en', enMessages],
+    ['zh-TW', zhTwMessages],
+    ['zh-CN', zhCnMessages],
+  ] as const;
+
+  function copiesFor(messages: typeof enMessages): QuotaRateLimitGuidanceCopies {
+    return {
+      dailyCreditOwn: messages.ai.dailyCreditLimitOwn,
+      dailyCreditPlatform: messages.ai.dailyCreditLimitPlatform,
+      dailyTokenWithTime: messages.ai.dailyTokenLimitWithTime,
+      dailyTokenTomorrow: messages.ai.dailyTokenLimitTomorrow,
+      rateLimitWithSeconds: messages.ai.rateLimitRetrySeconds,
+      rateLimitShortly: messages.ai.rateLimitRetryShortly,
+      quota: messages.ai.quotaLimitGuidance,
+      accessRules: messages.ai.accessRulesGuidance,
+      providerUsageLimit: messages.ai.providerUsageLimit,
+      providerKeyMissing: messages.ai.providerKeyMissing,
+    };
+  }
+
+  test('the code gives the translated sentence in each language', () => {
+    for (const [, messages] of catalogs) {
+      const message = toQuotaRateLimitGuidance({
+        rawMessage: '',
+        fallbackMessage: 'Execution ended with status: failed.',
+        errorCode: 'provider_key_missing',
+        copies: copiesFor(messages),
+      });
+      assert.equal(message, messages.ai.providerKeyMissing);
+    }
+    assert.equal(PROVIDER_KEY_MISSING_ERROR_CODE, 'provider_key_missing');
+  });
+
+  test('the code is checked before the usage-limit, quota and rate-limit checks', () => {
+    const cases = [
+      { rawMessage: 'AI provider usage limit reached', statusCode: 400 },
+      { rawMessage: 'quota exceeded', statusCode: 429, retryAfterHeader: '30' },
+      { rawMessage: 'rate limit', statusCode: 500 },
+      { rawMessage: 'Forbidden by policy', statusCode: 403 },
+      { rawMessage: 'AI provider is not configured' },
+    ];
+    for (const input of cases) {
+      assert.equal(
+        toQuotaRateLimitGuidance({ ...base, ...input, errorCode: 'provider_key_missing' }),
+        enMessages.ai.providerKeyMissing,
+      );
+    }
+  });
+
+  test('without the code, results are as before', () => {
+    assert.equal(
+      toQuotaRateLimitGuidance({ ...base, rawMessage: '', fallbackMessage: 'Execution ended with status: failed.' }),
+      'Execution ended with status: failed.',
+    );
+    assert.equal(
+      toQuotaRateLimitGuidance({ ...base, rawMessage: 'AI provider is not configured' }),
+      'AI provider is not configured',
+    );
+    assert.equal(
+      toQuotaRateLimitGuidance({ ...base, rawMessage: 'quota exceeded', errorCode: 'execution_failed' }),
+      copies.quota,
+    );
+    assert.equal(
+      toQuotaRateLimitGuidance({ ...base, rawMessage: '', errorCode: 'Provider_Key_Missing' }),
+      base.fallbackMessage,
+    );
+  });
+
+  test('the usage-limit sentence from the status error still maps to its copy', () => {
+    const error = readExecutionStatusError({
+      code: 'execution_failed',
+      message: 'AI provider usage limit reached',
+    });
+    assert.ok(error);
+    assert.equal(
+      toQuotaRateLimitGuidance({
+        ...base,
+        rawMessage: error.message,
+        errorCode: error.code,
+      }),
+      enMessages.ai.providerUsageLimit,
+    );
+  });
+
+  test('with no providerKeyMissing copy the fallback is used, never the raw text', () => {
+    const { providerKeyMissing: _unused, ...withoutCopy } = copies;
+    void _unused;
+    assert.equal(
+      toQuotaRateLimitGuidance({
+        rawMessage: 'AI provider is not configured',
+        fallbackMessage: 'Chat execution failed.',
+        errorCode: 'provider_key_missing',
+        copies: withoutCopy,
+      }),
+      'Chat execution failed.',
+    );
+  });
+
+  test('readExecutionStatusError accepts only a code and message pair', () => {
+    assert.deepEqual(
+      readExecutionStatusError({ code: 'provider_key_missing', message: 'AI provider is not configured' }),
+      { code: 'provider_key_missing', message: 'AI provider is not configured' },
+    );
+    assert.equal(readExecutionStatusError(undefined), null);
+    assert.equal(readExecutionStatusError(null), null);
+    assert.equal(readExecutionStatusError('provider_key_missing'), null);
+    assert.equal(readExecutionStatusError(['provider_key_missing']), null);
+    assert.equal(readExecutionStatusError({ code: 'provider_key_missing' }), null);
+    assert.equal(readExecutionStatusError({ code: 7, message: 'x' }), null);
+    assert.equal(readExecutionStatusError({ code: '  ', message: 'x' }), null);
+  });
+
+  test('the three new keys exist and zh-TW and zh-CN differ from en and from each other', () => {
+    for (const key of ['providerKeyMissing', 'noProviderAvailable', 'noProviderOption'] as const) {
+      for (const [lang, messages] of catalogs) {
+        const value = messages.ai[key];
+        assert.equal(typeof value, 'string', `${lang} ai.${key}`);
+        assert.ok(value.trim().length > 0, `${lang} ai.${key} empty`);
+      }
+      assert.notEqual(zhTwMessages.ai[key], enMessages.ai[key], `zh-TW ai.${key} equals en`);
+      assert.notEqual(zhCnMessages.ai[key], enMessages.ai[key], `zh-CN ai.${key} equals en`);
+      assert.notEqual(zhTwMessages.ai[key], zhCnMessages.ai[key], `zh-TW ai.${key} equals zh-CN`);
+    }
   });
 });

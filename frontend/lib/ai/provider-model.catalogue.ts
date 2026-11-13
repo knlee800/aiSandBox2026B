@@ -350,6 +350,58 @@ export function getSelectableFrontendModelEntriesForProvider(
   return providerEntry.models.filter((model) => model.enabled && model.selectable);
 }
 
+/**
+ * PROVIDER-KEY-01: the selectable providers that are also usable (the AI
+ * service has a key), in catalogue order. `null` means the usable list is
+ * unknown: no filter, today's selectable list. An empty list gives none.
+ */
+export function getUsableFrontendProviderEntries(
+  usableProviderIds: readonly string[] | null,
+): readonly FrontendProviderModelCatalogueProviderEntry[] {
+  if (usableProviderIds === null) {
+    return SELECTABLE_FRONTEND_PROVIDERS;
+  }
+  const usable = new Set(usableProviderIds);
+  return SELECTABLE_FRONTEND_PROVIDERS.filter((provider) => usable.has(provider.providerId));
+}
+
+/**
+ * PROVIDER-KEY-01: resolve a selection within the usable providers.
+ *
+ * - `null` list (unknown): exactly resolveFrontendProviderModelSelection.
+ * - The chosen provider is usable: kept, with its model resolved as today.
+ * - Otherwise: the first usable provider in catalogue order, with its
+ *   default model.
+ * - No usable provider: null.
+ */
+export function resolveFrontendProviderModelSelectionWithinUsable(
+  input: {
+    providerId?: unknown;
+    modelId?: unknown;
+    optionValue?: unknown;
+  },
+  usableProviderIds: readonly string[] | null,
+): ResolvedFrontendProviderModelSelection | null {
+  if (usableProviderIds === null) {
+    return resolveFrontendProviderModelSelection(input);
+  }
+  const usableProviders = getUsableFrontendProviderEntries(usableProviderIds);
+  const firstUsableProvider = usableProviders[0];
+  if (!firstUsableProvider) {
+    return null;
+  }
+  const requestedProviderId =
+    normalizeCatalogueIdentifier(input.providerId) ??
+    parseProviderModelOptionValue(input.optionValue).providerId;
+  if (
+    requestedProviderId !== undefined &&
+    usableProviders.some((provider) => provider.providerId === requestedProviderId)
+  ) {
+    return resolveFrontendProviderModelSelection(input);
+  }
+  return resolveFrontendProviderModelSelection({ providerId: firstUsableProvider.providerId });
+}
+
 export const FRONTEND_PROVIDER_MODEL_CATALOGUE_ENTRIES = FRONTEND_PROVIDER_MODEL_CATALOGUE;
 
 export const FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION = resolveFrontendProviderModelSelection({
