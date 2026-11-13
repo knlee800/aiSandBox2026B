@@ -1,4 +1,4 @@
-import { INestApplication, Logger, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, INestApplication, Logger, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -12,6 +12,7 @@ import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthService } from '../auth/auth.service';
 import { EntitlementService } from '../auth/entitlement.service';
 import { platformCookieNames } from '../auth/platform-cookies';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
@@ -25,6 +26,7 @@ const OWNER = '11111111-1111-4111-8111-111111111111';
 const NOT_ENTITLED = '22222222-2222-4222-8222-222222222222';
 const DISCORD_ID = '987654321098765432';
 const APP_ORIGIN = 'http://localhost:3000';
+const VALID_API_KEY = 'test-harness-api-key';
 
 const TOKENS: Record<string, string> = {
   'owner-token': OWNER,
@@ -51,14 +53,28 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       controllers: [ChatLinkController],
       providers: [
         ChatLinkService,
+        SessionCookieGuard,
+        // Not used by the controller. Provided so that the API-key tests run
+        // against a key the API-key path accepts (with harness scope): if the
+        // routes ever went back to SessionOrApiKeyAuthGuard, those tests fail.
         SessionOrApiKeyAuthGuard,
         { provide: getRepositoryToken(ChatLink), useValue: store.links },
         { provide: getRepositoryToken(ChatLinkCode), useValue: store.codes },
         {
           provide: ApiKeyAuthGuard,
           useValue: {
-            canActivate: () => {
-              throw new UnauthorizedException('Invalid API key');
+            canActivate: (context: ExecutionContext) => {
+              const req = context.switchToHttp().getRequest();
+              if (req.headers['authorization'] !== `Bearer ${VALID_API_KEY}`) {
+                throw new UnauthorizedException('Invalid API key');
+              }
+              req.apiKeyIdentity = {
+                userId: OWNER,
+                apiKeyId: 'key-1',
+                scopes: ['ai:execute', 'ai:harness'],
+                harnessEntitled: true,
+              };
+              return true;
             },
           },
         },
@@ -112,9 +128,11 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     ['delete', '/api/chat-links/discord'],
   ];
 
-  it('uses SessionOrApiKeyAuthGuard on the whole controller', () => {
+  it('uses SessionCookieGuard (session only) on the whole controller, as the API key routes do', () => {
     const guards = Reflect.getMetadata('__guards__', ChatLinkController);
-    expect(guards).toEqual([SessionOrApiKeyAuthGuard]);
+    expect(guards).toEqual([SessionCookieGuard]);
+    const apiKeyController = readFileSync(join(__dirname, '..', 'auth', 'api-key.controller.ts'), 'utf8');
+    expect(apiKeyController).toContain('@UseGuards(SessionCookieGuard)');
   });
 
   describe('401 without a session', () => {
@@ -122,21 +140,54 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       '%s %s',
       async (method, path) => {
         const response = await as()[method](path).expect(401);
-        expect(response.body.message).toBe('Missing authentication credentials');
+        expect(response.body.message).toBe('Authentication required');
+        expect(store.calls).toEqual([]);
       },
     );
 
     it('an unknown session token is 401 too', async () => {
-      await as('stale-token').get('/api/chat-links').expect(401);
+      const read = await as('stale-token').get('/api/chat-links').expect(401);
+      expect(read.body.message).toBe('Invalid or expired session');
       await as('stale-token').post('/api/chat-links/discord/code').expect(401);
       expect(store.calls).toEqual([]);
     });
+  });
 
-    it('a Bearer header goes to the API key check, which refuses here', async () => {
-      await request(app.getHttpServer())
+  describe('an API key alone is refused (session only)', () => {
+    it.each([['get', '/api/chat-links'] as ['get', string], ...WRITES])(
+      '%s %s with a valid harness API key and no session is 401 and touches nothing',
+      async (method, path) => {
+        const server = request(app.getHttpServer());
+        const response = await server[method](path)
+          .set('Authorization', `Bearer ${VALID_API_KEY}`)
+          .send({ locale: 'en' })
+          .expect(401);
+        expect(response.body.message).toBe('Authentication required');
+        expect(store.calls).toEqual([]);
+        expect(store.links.rows).toHaveLength(0);
+        expect(store.codes.rows).toHaveLength(0);
+        expect(store.audit.rows).toHaveLength(0);
+      },
+    );
+
+    it('a valid session with harness access works, and a Bearer header beside it changes nothing', async () => {
+      const server = request(app.getHttpServer());
+      const cookie = [`${platformCookieNames().session}=owner-token`];
+      const state = await server
         .get('/api/chat-links')
-        .set('Authorization', 'Bearer not-a-key')
-        .expect(401);
+        .set('Cookie', cookie)
+        .set('Authorization', `Bearer ${VALID_API_KEY}`)
+        .expect(200);
+      expect(state.body).toEqual({ enabled: true, paused: false, discord: { link: null, pending: null } });
+
+      const created = await request(app.getHttpServer())
+        .post('/api/chat-links/discord/code')
+        .set('Cookie', cookie)
+        .set('Origin', APP_ORIGIN)
+        .expect(201);
+      expect(created.body.channel).toBe('discord');
+      expect(store.codes.rows).toHaveLength(1);
+      expect(store.codes.rows[0].userId).toBe(OWNER);
     });
   });
 
