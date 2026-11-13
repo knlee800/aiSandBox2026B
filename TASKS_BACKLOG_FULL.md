@@ -85059,7 +85059,7 @@ taskId=PROVIDER-SWITCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-SWITCH-01". Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/PROVIDER-SWITCH-01-STAGE-START.md (fable subagent, Fable 5.2, aa64e0d and b1c382f, fast-forwarded; facts checked by the control plane against the code). Confirmed: ExecutionSafetyGuard checks the switch for AI_PROVIDER (execution-safety.guard.ts:45, :55-59); the same guard and gap are on POST /api/v1/ai/execute (public-ai.controller.ts); PROVIDER_*_ENABLED are read once at process load (kill-switch.config.ts); the guard spec pins the old behaviour. Recommended: one gateway slice (GATEWAY; opus; 11 files): the guard resolves the request's provider through one shared catalogue function and checks that provider's switch instead of AI_PROVIDER (refusal 503 as on the Team page; an unsupported provider gets the existing 400), and GET /api/ai/providers counts a provider usable only with a key and its switch on. Waiting for Keith's approval and three answers (check only the chosen provider; usable needs the switch too; the rate-limit counter stays as a follow-up). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-SWITCH-01". Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
 **Task ID:** PROVIDER-SWITCH-01
 **Title:** Check the chosen provider switch on the chat route
 **Workstream:** AGENT (taxonomy only; zero admission weight)
