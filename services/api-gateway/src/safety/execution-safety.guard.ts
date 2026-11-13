@@ -12,6 +12,11 @@ import {
 import { KillSwitchConfig } from './kill-switch.config';
 import { GlobalSafetyLimitService } from './global-safety-limit.service';
 import { DailyCreditCapService } from './daily-credit-cap.service';
+import {
+  GatewayAIProvider,
+  GatewayProviderModelValidationError,
+  resolveGatewayProvider,
+} from '../ai/provider-model.catalogue';
 
 /**
  * Execution Safety Guard
@@ -42,7 +47,9 @@ export class ExecutionSafetyGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const body = request?.body || {};
-    const provider = (process.env.AI_PROVIDER || 'stub').toLowerCase();
+    // The per-provider rate-limit counter stays keyed on AI_PROVIDER
+    // (PROVIDER-SWITCH-01 decision 3; moving it is a named follow-up).
+    const rateLimitProvider = (process.env.AI_PROVIDER || 'stub').toLowerCase();
     const maxTokens = body.max_tokens;
 
     try {
@@ -52,6 +59,9 @@ export class ExecutionSafetyGuard implements CanActivate {
         );
       }
 
+      // PROVIDER-SWITCH-01: check the switch of the provider this request
+      // will run on, resolved exactly as the execute controllers resolve it.
+      const provider = this.resolveRequestProvider(body);
       if (!KillSwitchConfig.isProviderEnabled(provider)) {
         throw new ServiceUnavailableException(
           `Provider ${provider} temporarily unavailable`,
@@ -60,18 +70,39 @@ export class ExecutionSafetyGuard implements CanActivate {
 
       if (!this.dailyCreditCapService) {
         this.warnMissingDailyCreditCapOnce();
-        this.applyInMemoryLimits(provider, maxTokens);
+        this.applyInMemoryLimits(rateLimitProvider, maxTokens);
         return true;
       }
 
       return this.applyDailyCreditCap(
         this.dailyCreditCapService,
         request,
-        provider,
+        rateLimitProvider,
         maxTokens,
       );
     } catch (error) {
       this.mapSafetyError(error);
+    }
+  }
+
+  /**
+   * Returns one of the catalogue ids, never raw request text. A provider the
+   * catalogue does not know gets the same 400 the controllers give (fail
+   * closed); a missing or non-string provider uses AI_PROVIDER, then stub.
+   */
+  private resolveRequestProvider(body: {
+    provider?: unknown;
+  }): GatewayAIProvider {
+    try {
+      return resolveGatewayProvider({
+        provider: body.provider,
+        fallbackProviderEnv: process.env.AI_PROVIDER,
+      });
+    } catch (error) {
+      if (error instanceof GatewayProviderModelValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
   }
 

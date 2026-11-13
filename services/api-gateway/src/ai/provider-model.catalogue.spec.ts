@@ -1,6 +1,8 @@
 import {
   GatewayProviderModelValidationError,
+  SUPPORTED_GATEWAY_AI_PROVIDERS,
   XAI_RECOGNIZED_MODELS,
+  resolveGatewayProvider,
   resolveGatewayProviderModelSelection,
 } from './provider-model.catalogue';
 
@@ -282,5 +284,81 @@ describe('Gateway provider/model catalogue', () => {
 
     expect(selection.provider).toBe('xai');
     expect(selection.model).toBe('grok-4.5');
+  });
+});
+
+describe('resolveGatewayProvider (PROVIDER-SWITCH-01 shared resolver)', () => {
+  it('lets the request provider win over the fallback', () => {
+    expect(resolveGatewayProvider({ provider: 'xai', fallbackProviderEnv: 'anthropic' })).toBe('xai');
+    expect(resolveGatewayProvider({ provider: ' openai ', fallbackProviderEnv: 'stub' })).toBe('openai');
+    expect(resolveGatewayProvider({ provider: 'stub', fallbackProviderEnv: 'xai' })).toBe('stub');
+  });
+
+  it('uses the fallback for a missing, empty, blank or non-string provider', () => {
+    for (const provider of [undefined, null, '', '   ', 42, true, { id: 'xai' }, ['xai']]) {
+      expect(resolveGatewayProvider({ provider, fallbackProviderEnv: 'groq' })).toBe('groq');
+    }
+  });
+
+  it('gives stub when the fallback is missing or not a supported id', () => {
+    for (const fallbackProviderEnv of [undefined, null, '', 'not-real', 'XAI', ' ']) {
+      expect(resolveGatewayProvider({ provider: undefined, fallbackProviderEnv })).toBe('stub');
+    }
+  });
+
+  it('throws the existing unsupported_provider error for an unknown request provider', () => {
+    for (const provider of ['not-a-provider', 'Anthropic', '__proto__', 'constructor']) {
+      let caught: unknown;
+      try {
+        resolveGatewayProvider({ provider, fallbackProviderEnv: 'stub' });
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBeInstanceOf(GatewayProviderModelValidationError);
+      expect((caught as GatewayProviderModelValidationError).code).toBe('unsupported_provider');
+      expect((caught as GatewayProviderModelValidationError).provider).toBe(provider);
+      expect((caught as Error).message).toBe(
+        `Unsupported provider "${provider}". Supported providers: stub, anthropic, openai, groq, xai, deepseek`,
+      );
+    }
+  });
+
+  it('always returns a catalogue id', () => {
+    const inputs: Array<[unknown, string | undefined]> = [
+      ['xai', undefined],
+      [undefined, 'deepseek'],
+      [undefined, 'nope'],
+      [7, 'anthropic'],
+    ];
+    for (const [provider, fallbackProviderEnv] of inputs) {
+      expect(SUPPORTED_GATEWAY_AI_PROVIDERS).toContain(
+        resolveGatewayProvider({ provider, fallbackProviderEnv }),
+      );
+    }
+  });
+
+  it('is the provider resolveGatewayProviderModelSelection picks', () => {
+    const inputs: Array<[unknown, string | undefined]> = [
+      ['xai', 'stub'],
+      ['groq', 'anthropic'],
+      [undefined, 'openai'],
+      [undefined, 'not-real'],
+      [undefined, undefined],
+      [' deepseek ', 'xai'],
+      [123, 'anthropic'],
+    ];
+    for (const [provider, fallbackProviderEnv] of inputs) {
+      expect(resolveGatewayProvider({ provider, fallbackProviderEnv })).toBe(
+        resolveGatewayProviderModelSelection({
+          provider,
+          model: undefined,
+          fallbackProviderEnv,
+          anthropicModel: 'claude-opus-5-5',
+        }).provider,
+      );
+    }
+    expect(() =>
+      resolveGatewayProviderModelSelection({ provider: 'nope', model: undefined }),
+    ).toThrow('Unsupported provider "nope". Supported providers: stub, anthropic, openai, groq, xai, deepseek');
   });
 });

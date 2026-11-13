@@ -15,7 +15,7 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext, ForbiddenException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ExecutionContext, ForbiddenException, ServiceUnavailableException } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { LaunchGuard } from '../../launch/launch.guard';
@@ -329,9 +329,11 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
       });
 
       it('should block unknown provider by default', () => {
-        process.env.AI_PROVIDER = 'unknown-provider';
+        // PROVIDER-SWITCH-01: the guard checks the provider the request names;
+        // one outside the catalogue gets the controllers' 400 (fail closed).
+        mockRequest.body.provider = 'unknown-provider';
 
-        expect(() => executionSafetyGuard.canActivate(mockContext)).toThrow(ServiceUnavailableException);
+        expect(() => executionSafetyGuard.canActivate(mockContext)).toThrow(BadRequestException);
       });
     });
   });

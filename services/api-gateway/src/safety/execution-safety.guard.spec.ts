@@ -5,6 +5,7 @@ import { GlobalSafetyLimitService } from './global-safety-limit.service';
 import { DailyCreditCapService } from './daily-credit-cap.service';
 import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { KillSwitchConfig } from './kill-switch.config';
+import { resolveGatewayProviderModelSelection } from '../ai/provider-model.catalogue';
 
 type CapQuery = {
   select: () => CapQuery;
@@ -66,8 +67,10 @@ describe('ExecutionSafetyGuard', () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
   });
 
-  // The guard reads provider from process.env.AI_PROVIDER, NOT from request body.
-  // All provider assertions must use the actual runtime provider.
+  // PROVIDER-SWITCH-01: the provider switch is checked for the provider the
+  // request names (resolved like the controllers do). The per-provider
+  // rate-limit counter still uses process.env.AI_PROVIDER, so rate-limit
+  // assertions use the runtime AI_PROVIDER value.
   const testProvider = (process.env.AI_PROVIDER || 'stub').toLowerCase();
 
   it('should be defined', () => {
@@ -175,21 +178,21 @@ describe('ExecutionSafetyGuard', () => {
       }).toThrow(`Provider ${testProvider} temporarily unavailable`);
     });
 
-    it('should normalize provider name when checking kill switch', () => {
+    it('should check the switch of the provider named in the body', () => {
       const isProviderEnabledSpy = jest.spyOn(
         KillSwitchConfig,
         'isProviderEnabled',
       );
 
       const context = createMockExecutionContext({
-        provider: 'Anthropic', // body.provider is ignored by the guard
+        provider: ' anthropic ', // trimmed, as the controllers resolve it
         max_tokens: 1000,
       });
 
       guard.canActivate(context);
 
-      // Guard uses process.env.AI_PROVIDER (already normalized to lowercase)
-      expect(isProviderEnabledSpy).toHaveBeenCalledWith(testProvider);
+      expect(isProviderEnabledSpy).toHaveBeenCalledTimes(1);
+      expect(isProviderEnabledSpy).toHaveBeenCalledWith('anthropic');
     });
 
     it('should handle missing provider gracefully', () => {
@@ -198,7 +201,7 @@ describe('ExecutionSafetyGuard', () => {
         // No provider field
       });
 
-      // Should use 'unknown' as default
+      // Falls back to AI_PROVIDER, then stub, as the controllers do
       expect(() => {
         guard.canActivate(context);
       }).not.toThrow();
@@ -238,7 +241,7 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
+        provider: 'anthropic', // the rate-limit counter still uses process.env.AI_PROVIDER
         max_tokens: 5000,
       });
 
@@ -281,7 +284,7 @@ describe('ExecutionSafetyGuard', () => {
       const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
 
       const context = createMockExecutionContext({
-        provider: 'anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
+        provider: 'anthropic', // the rate-limit counter still uses process.env.AI_PROVIDER
         max_tokens: 1000,
       });
 
@@ -311,11 +314,11 @@ describe('ExecutionSafetyGuard', () => {
       expect(recordSpy).not.toHaveBeenCalled();
     });
 
-    it('should call recordExecution with normalized provider name', () => {
+    it('should call recordExecution with the AI_PROVIDER counter, not the body provider', () => {
       const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
 
       const context = createMockExecutionContext({
-        provider: 'Anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
+        provider: 'xai', // the rate-limit counter still uses process.env.AI_PROVIDER
         max_tokens: 1000,
       });
 
@@ -390,7 +393,7 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'openai', // body.provider is ignored; guard uses process.env.AI_PROVIDER
+        provider: 'openai', // the rate-limit counter still uses process.env.AI_PROVIDER
         max_tokens: 2000,
       });
 
@@ -406,7 +409,7 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
+        provider: 'anthropic', // the rate-limit counter still uses process.env.AI_PROVIDER
         max_tokens: 50000,
       });
 
@@ -709,6 +712,258 @@ describe('ExecutionSafetyGuard', () => {
       expect(guard.canActivate(context)).toBe(true);
       expect(guard.canActivate(context)).toBe(true);
       expect(warnSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("PROVIDER-SWITCH-01: the chosen provider's switch", () => {
+    const savedAiProvider = process.env.AI_PROVIDER;
+    const SUPPORTED_IDS = ['stub', 'anthropic', 'openai', 'groq', 'xai', 'deepseek'];
+
+    afterEach(() => {
+      if (savedAiProvider === undefined) {
+        delete process.env.AI_PROVIDER;
+      } else {
+        process.env.AI_PROVIDER = savedAiProvider;
+      }
+    });
+
+    function switchesOffFor(...off: string[]): jest.SpyInstance {
+      return jest
+        .spyOn(KillSwitchConfig, 'isProviderEnabled')
+        .mockImplementation((id: string) => !off.includes(id));
+    }
+
+    function refusalOf(run: () => unknown): HttpException {
+      try {
+        run();
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        return error as HttpException;
+      }
+      throw new Error('expected a refusal');
+    }
+
+    it('refuses a switched-off body provider when AI_PROVIDER=stub (the gap), before cap and limits', () => {
+      process.env.AI_PROVIDER = 'stub';
+      switchesOffFor('xai');
+      const checkSpy = jest.spyOn(globalSafetyLimitService, 'checkExecutionAllowed');
+      const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
+      const capService = new DailyCreditCapService(ledgerReturning('0') as never);
+      const capSpy = jest.spyOn(capService, 'assertWithinDailyCap');
+      const capped = new ExecutionSafetyGuard(globalSafetyLimitService, capService);
+
+      for (const subject of [guard, capped]) {
+        const error = refusalOf(() =>
+          subject.canActivate(createMockExecutionContext({ provider: 'xai', max_tokens: 1000 })),
+        );
+        expect(error).toBeInstanceOf(ServiceUnavailableException);
+        expect(error.getStatus()).toBe(503);
+        expect(error.getResponse()).toEqual({
+          statusCode: 503,
+          message: 'Provider xai temporarily unavailable',
+          error: 'Service Unavailable',
+        });
+      }
+      expect(capSpy).not.toHaveBeenCalled();
+      expect(checkSpy).not.toHaveBeenCalled();
+      expect(recordSpy).not.toHaveBeenCalled();
+    });
+
+    it('allows a switched-on body provider even when the AI_PROVIDER provider is off', () => {
+      process.env.AI_PROVIDER = 'anthropic';
+      const spy = switchesOffFor('anthropic');
+
+      expect(
+        guard.canActivate(createMockExecutionContext({ provider: 'xai', max_tokens: 1000 })),
+      ).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('xai');
+    });
+
+    it('always allows stub, even with every real provider switched off', () => {
+      process.env.AI_PROVIDER = 'anthropic';
+      jest
+        .spyOn(KillSwitchConfig, 'isProviderEnabled')
+        .mockImplementation((id: string) => id === 'stub');
+
+      expect(guard.canActivate(createMockExecutionContext({ provider: 'stub' }))).toBe(true);
+      // And through the real KillSwitchConfig stub rule
+      jest.restoreAllMocks();
+      expect(KillSwitchConfig.isProviderEnabled('stub')).toBe(true);
+      expect(guard.canActivate(createMockExecutionContext({ provider: 'stub' }))).toBe(true);
+    });
+
+    it('with no body provider and AI_PROVIDER=stub, checks stub and allows', () => {
+      process.env.AI_PROVIDER = 'stub';
+      const spy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+
+      expect(guard.canActivate(createMockExecutionContext({ max_tokens: 10 }))).toBe(true);
+      expect(spy).toHaveBeenCalledWith('stub');
+    });
+
+    it('with no body provider, falls back to AI_PROVIDER and refuses it when off (as before)', () => {
+      process.env.AI_PROVIDER = 'anthropic';
+      switchesOffFor('anthropic');
+
+      const error = refusalOf(() => guard.canActivate(createMockExecutionContext({})));
+      expect(error.getStatus()).toBe(503);
+      expect(error.message).toBe('Provider anthropic temporarily unavailable');
+    });
+
+    it('with a misspelt AI_PROVIDER and no body provider, resolves to stub like the controllers', () => {
+      process.env.AI_PROVIDER = 'anthropicc';
+      const spy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+
+      expect(guard.canActivate(createMockExecutionContext({}))).toBe(true);
+      expect(spy).toHaveBeenCalledWith('stub');
+    });
+
+    it('treats a number, object, array, boolean, null or blank provider as not given', () => {
+      process.env.AI_PROVIDER = 'anthropic';
+      const spy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+
+      for (const provider of [42, { id: 'xai' }, ['xai'], true, null, '', '   ']) {
+        spy.mockClear();
+        expect(guard.canActivate(createMockExecutionContext({ provider }))).toBe(true);
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith('anthropic');
+      }
+    });
+
+    it("answers an unsupported provider with the controllers' 400 and passes no raw text on", () => {
+      process.env.AI_PROVIDER = 'stub';
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+      const checkSpy = jest.spyOn(globalSafetyLimitService, 'checkExecutionAllowed');
+      const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
+      const errorLog = jest.spyOn(guard['logger'], 'error').mockImplementation(() => undefined);
+
+      for (const provider of ['not-a-provider', 'Anthropic', 'XAI', '__proto__']) {
+        const error = refusalOf(() =>
+          guard.canActivate(createMockExecutionContext({ provider, max_tokens: 1000 })),
+        );
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.getStatus()).toBe(400);
+        let controllerMessage = '';
+        try {
+          resolveGatewayProviderModelSelection({
+            provider,
+            model: undefined,
+            fallbackProviderEnv: 'stub',
+          });
+        } catch (catalogueError) {
+          controllerMessage = (catalogueError as Error).message;
+        }
+        expect(controllerMessage).toBe(
+          `Unsupported provider "${provider}". Supported providers: stub, anthropic, openai, groq, xai, deepseek`,
+        );
+        expect(error.message).toBe(controllerMessage);
+      }
+      expect(switchSpy).not.toHaveBeenCalled();
+      expect(checkSpy).not.toHaveBeenCalled();
+      expect(recordSpy).not.toHaveBeenCalled();
+      expect(errorLog).not.toHaveBeenCalled();
+    });
+
+    it('only ever passes catalogue ids to the switch and AI_PROVIDER to the rate limit', () => {
+      process.env.AI_PROVIDER = 'stub';
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+      const checkSpy = jest.spyOn(globalSafetyLimitService, 'checkExecutionAllowed');
+      const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
+
+      const providers: unknown[] = [
+        'xai',
+        ' openai ',
+        'groq',
+        'deepseek',
+        'anthropic',
+        'stub',
+        'evil<script>',
+        'x'.repeat(500),
+        7,
+        undefined,
+      ];
+      for (const provider of providers) {
+        try {
+          guard.canActivate(createMockExecutionContext({ provider }));
+        } catch {
+          // unsupported providers are refused; covered above
+        }
+      }
+      for (const [id] of switchSpy.mock.calls) {
+        expect(SUPPORTED_IDS).toContain(id);
+      }
+      for (const [id] of checkSpy.mock.calls) {
+        expect(id).toBe('stub');
+      }
+      for (const [id] of recordSpy.mock.calls) {
+        expect(id).toBe('stub');
+      }
+      expect(switchSpy.mock.calls.map(([id]) => id)).toEqual([
+        'xai',
+        'openai',
+        'groq',
+        'deepseek',
+        'anthropic',
+        'stub',
+        'stub',
+        'stub',
+      ]);
+    });
+
+    it('keeps the rate-limit counter on AI_PROVIDER while checking the body provider switch', () => {
+      process.env.AI_PROVIDER = 'stub';
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+      const checkSpy = jest.spyOn(globalSafetyLimitService, 'checkExecutionAllowed');
+      const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
+
+      expect(
+        guard.canActivate(createMockExecutionContext({ provider: 'xai', max_tokens: 300 })),
+      ).toBe(true);
+      expect(switchSpy).toHaveBeenCalledWith('xai');
+      expect(checkSpy).toHaveBeenCalledWith('stub', 300);
+      expect(recordSpy).toHaveBeenCalledWith('stub');
+    });
+
+    it('still checks the global switch first, whatever the provider', () => {
+      jest.spyOn(KillSwitchConfig, 'GLOBAL_EXECUTION_ENABLED', 'get').mockReturnValue(false);
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+
+      for (const provider of ['xai', 'not-a-provider', undefined]) {
+        const error = refusalOf(() => guard.canActivate(createMockExecutionContext({ provider })));
+        expect(error.getStatus()).toBe(503);
+        expect(error.message).toBe('AI execution temporarily disabled for maintenance');
+      }
+      expect(switchSpy).not.toHaveBeenCalled();
+    });
+
+    it('checks the same provider the controllers resolve (one shared resolver)', () => {
+      const cases: Array<[unknown, string | undefined]> = [
+        ['xai', 'stub'],
+        ['openai', 'anthropic'],
+        [undefined, 'groq'],
+        [undefined, 'not-real'],
+        [undefined, undefined],
+        [' deepseek ', 'stub'],
+        [123, 'xai'],
+      ];
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+      for (const [provider, aiProvider] of cases) {
+        if (aiProvider === undefined) {
+          delete process.env.AI_PROVIDER;
+        } else {
+          process.env.AI_PROVIDER = aiProvider;
+        }
+        switchSpy.mockClear();
+        guard.canActivate(createMockExecutionContext({ provider }));
+        const expected = resolveGatewayProviderModelSelection({
+          provider,
+          model: undefined,
+          fallbackProviderEnv: process.env.AI_PROVIDER,
+          anthropicModel: 'claude-opus-5-5',
+        }).provider;
+        expect(switchSpy).toHaveBeenCalledTimes(1);
+        expect(switchSpy).toHaveBeenCalledWith(expected);
+      }
     });
   });
 });

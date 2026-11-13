@@ -33,6 +33,7 @@ import { TokenQuotaGuard } from '../quota/token-quota.guard';
 import { CreditBalanceGuard } from '../billing/credit-balance.guard';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
+import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from './execution-result.service';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
@@ -4140,6 +4141,45 @@ describe('AIExecutionController — GET /api/ai/providers (PROVIDER-KEY-01 C4)',
         { id: 'openai', usable: true },
         { id: 'anthropic', usable: false },
       ],
+    });
+  });
+
+  describe('PROVIDER-SWITCH-01: usable needs the key and the gateway switch', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('is usable only for a provider with a key and its switch on; shape and order unchanged', async () => {
+      // c3 keys: groq and openai have keys; xai, deepseek and anthropic do not
+      const switchSpy = jest
+        .spyOn(KillSwitchConfig, 'isProviderEnabled')
+        .mockImplementation((id: string) => id !== 'openai' && id !== 'deepseek');
+      const controller = await build(jest.fn().mockResolvedValue(c3));
+      const answer = await controller.listProviders(identity);
+      expect(answer).toEqual({
+        providers: [
+          { id: 'xai', usable: false }, // no key, switch on
+          { id: 'groq', usable: true }, // key, switch on
+          { id: 'deepseek', usable: false }, // no key, switch off
+          { id: 'openai', usable: false }, // key, switch off
+          { id: 'anthropic', usable: false },
+        ],
+      });
+      expect(switchSpy).toHaveBeenCalledWith('openai');
+    });
+
+    it('caches only the AI service answer and applies the switch on each reply', async () => {
+      const fetch = jest.fn().mockResolvedValue(c3);
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled').mockReturnValue(false);
+      const controller = await build(fetch);
+
+      const off = await controller.listProviders(identity);
+      expect(off.providers.every((entry) => entry.usable === false)).toBe(true);
+
+      switchSpy.mockReturnValue(true);
+      const on = await controller.listProviders(identity);
+      expect(on.providers.map((entry) => entry.usable)).toEqual([false, true, false, true, false]);
+      expect(fetch).toHaveBeenCalledTimes(1);
     });
   });
 

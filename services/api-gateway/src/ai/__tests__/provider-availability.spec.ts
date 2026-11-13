@@ -2,8 +2,10 @@ import {
   PROVIDER_AVAILABILITY_CACHE_MS,
   PROVIDER_AVAILABILITY_IDS,
   ProviderAvailabilityCache,
+  applyProviderSwitches,
   parseProviderAvailability,
 } from '../provider-availability';
+import { KillSwitchConfig } from '../../safety/kill-switch.config';
 
 const allTrue = {
   providers: { xai: true, groq: true, deepseek: true, openai: true, anthropic: true },
@@ -103,5 +105,57 @@ describe('ProviderAvailabilityCache (PROVIDER-KEY-01)', () => {
     const second = await cache.read();
     expect(second?.providers).toHaveLength(5);
     expect(second?.providers[0]).toEqual({ id: 'xai', usable: true });
+  });
+});
+
+describe('applyProviderSwitches (PROVIDER-SWITCH-01: usable needs key and switch)', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const keys = parseProviderAvailability({
+    providers: { xai: true, groq: true, deepseek: false, openai: false, anthropic: true },
+  })!;
+
+  it('is usable only with a key and the switch on; shape and order unchanged', () => {
+    const switchOn = (id: string) => id !== 'groq' && id !== 'openai';
+    expect(applyProviderSwitches(keys, switchOn)).toEqual({
+      providers: [
+        { id: 'xai', usable: true }, // key, switch on
+        { id: 'groq', usable: false }, // key, switch off
+        { id: 'deepseek', usable: false }, // no key, switch on
+        { id: 'openai', usable: false }, // no key, switch off
+        { id: 'anthropic', usable: true },
+      ],
+    });
+    for (const entry of applyProviderSwitches(keys, switchOn).providers) {
+      expect(Object.keys(entry)).toEqual(['id', 'usable']);
+      expect(typeof entry.usable).toBe('boolean');
+    }
+  });
+
+  it('reads KillSwitchConfig.isProviderEnabled by default, for each provider with a key', () => {
+    const spy = jest
+      .spyOn(KillSwitchConfig, 'isProviderEnabled')
+      .mockImplementation((id: string) => id === 'anthropic');
+    expect(applyProviderSwitches(keys).providers.map((entry) => entry.usable)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      true,
+    ]);
+    expect(spy.mock.calls.map(([id]) => id)).toEqual(['xai', 'groq', 'anthropic']);
+  });
+
+  it('counts a non-true switch answer as off', () => {
+    const odd = jest.fn((id: string) => (id === 'xai' ? (1 as unknown as boolean) : true));
+    expect(applyProviderSwitches(keys, odd).providers[0]).toEqual({ id: 'xai', usable: false });
+  });
+
+  it('does not change the answer passed in', () => {
+    const before = JSON.parse(JSON.stringify(keys));
+    applyProviderSwitches(keys, () => false);
+    expect(keys).toEqual(before);
   });
 });

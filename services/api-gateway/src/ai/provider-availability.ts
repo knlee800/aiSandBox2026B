@@ -10,6 +10,8 @@
  * passed on. Stub is never listed.
  */
 
+import { KillSwitchConfig } from '../safety/kill-switch.config';
+
 export const PROVIDER_AVAILABILITY_IDS = [
   'xai',
   'groq',
@@ -50,6 +52,26 @@ export function parseProviderAvailability(raw: unknown): ProviderAvailabilityAns
     list.push({ id, usable: providers[id] === true });
   }
   return { providers: list };
+}
+
+/**
+ * PROVIDER-SWITCH-01: a provider is usable only when the AI service has its
+ * key AND the gateway's switch for it is on (KillSwitchConfig), so the picker
+ * never offers a provider ExecutionSafetyGuard would refuse. Shape and order
+ * of C4 are unchanged; only `usable` narrows. Returns a new answer and never
+ * changes the one passed in (the cache keeps the AI service's answer).
+ */
+export function applyProviderSwitches(
+  answer: ProviderAvailabilityAnswer,
+  isProviderEnabled: (id: ProviderAvailabilityId) => boolean = (id) =>
+    KillSwitchConfig.isProviderEnabled(id),
+): ProviderAvailabilityAnswer {
+  return {
+    providers: answer.providers.map((entry) => ({
+      id: entry.id,
+      usable: entry.usable === true && isProviderEnabled(entry.id) === true,
+    })),
+  };
 }
 
 function copyAnswer(answer: ProviderAvailabilityAnswer): ProviderAvailabilityAnswer {

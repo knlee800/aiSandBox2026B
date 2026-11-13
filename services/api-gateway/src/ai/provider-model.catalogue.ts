@@ -133,12 +133,21 @@ export function normalizeModelInput(model: unknown): string | undefined {
   return trimmedModel.length > 0 ? trimmedModel : undefined;
 }
 
-export function resolveGatewayProviderModelSelection(input: {
+/**
+ * PROVIDER-SWITCH-01: the one place that decides which provider a request
+ * runs on. The request's provider wins when it is a non-empty string (trimmed,
+ * case kept); otherwise the fallback (AI_PROVIDER) when it is a supported id;
+ * otherwise stub. A named provider outside the catalogue throws
+ * `unsupported_provider`. The result is always one of the catalogue ids.
+ *
+ * Used by ExecutionSafetyGuard and, through
+ * resolveGatewayProviderModelSelection, by both execute controllers, so the
+ * provider whose switch is checked is the provider that runs.
+ */
+export function resolveGatewayProvider(input: {
   provider: unknown;
-  model: unknown;
   fallbackProviderEnv?: string | null | undefined;
-  anthropicModel?: string | null | undefined;
-}): ResolvedGatewayProviderModelSelection {
+}): GatewayAIProvider {
   const normalizedProviderInput = normalizeProviderInput(input.provider);
   const normalizedFallbackProvider = normalizeProviderInput(
     input.fallbackProviderEnv,
@@ -159,6 +168,20 @@ export function resolveGatewayProviderModelSelection(input: {
       rejectedProvider,
     );
   }
+
+  return providerToUse;
+}
+
+export function resolveGatewayProviderModelSelection(input: {
+  provider: unknown;
+  model: unknown;
+  fallbackProviderEnv?: string | null | undefined;
+  anthropicModel?: string | null | undefined;
+}): ResolvedGatewayProviderModelSelection {
+  const providerToUse = resolveGatewayProvider({
+    provider: input.provider,
+    fallbackProviderEnv: input.fallbackProviderEnv,
+  });
 
   const entry = CATALOGUE_BY_PROVIDER[providerToUse];
   const normalizedModelInput = normalizeModelInput(input.model);

@@ -362,6 +362,80 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
     });
   });
 
+  describe("PROVIDER-SWITCH-01: the chosen provider's switch over HTTP", () => {
+    const savedAiProvider = process.env.AI_PROVIDER;
+
+    beforeEach(() => {
+      process.env.AI_PROVIDER = 'stub';
+    });
+
+    afterEach(() => {
+      if (savedAiProvider === undefined) {
+        delete process.env.AI_PROVIDER;
+      } else {
+        process.env.AI_PROVIDER = savedAiProvider;
+      }
+    });
+
+    it('refuses a switched-off provider with 503 while AI_PROVIDER=stub, writing and queueing nothing', async () => {
+      const switchSpy = jest
+        .spyOn(KillSwitchConfig, 'isProviderEnabled')
+        .mockImplementation((id: string) => id !== 'xai');
+
+      const response = await request(app.getHttpServer())
+        .post('/ai/execute')
+        .set('Idempotency-Key', 'test-switch-off-1')
+        .send(currentExecuteBody({ provider: 'xai' }))
+        .expect(HttpStatus.SERVICE_UNAVAILABLE);
+
+      expect(response.body).toEqual({
+        statusCode: 503,
+        message: 'Provider xai temporarily unavailable',
+        error: 'Service Unavailable',
+      });
+      expect(switchSpy).toHaveBeenCalledWith('xai');
+      expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+      expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    });
+
+    it('queues the same request when that provider is switched on', async () => {
+      jest
+        .spyOn(KillSwitchConfig, 'isProviderEnabled')
+        .mockImplementation((id: string) => id === 'xai' || id === 'stub');
+
+      await request(app.getHttpServer())
+        .post('/ai/execute')
+        .set('Idempotency-Key', 'test-switch-on-1')
+        .send(currentExecuteBody({ provider: 'xai' }))
+        .expect(HttpStatus.ACCEPTED);
+
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'xai', model: 'grok-4.5' }),
+      );
+    });
+
+    it('refuses an unsupported provider with the existing 400 before any write', async () => {
+      const switchSpy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled');
+
+      const response = await request(app.getHttpServer())
+        .post('/ai/execute')
+        .set('Idempotency-Key', 'test-switch-unsupported-1')
+        .send(currentExecuteBody({ provider: 'not-a-provider' }))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body).toEqual({
+        statusCode: 400,
+        message:
+          'Unsupported provider "not-a-provider". Supported providers: stub, anthropic, openai, groq, xai, deepseek',
+        error: 'Bad Request',
+      });
+      expect(switchSpy).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+      expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Max tokens enforcement', () => {
     it('should return 400 when max_tokens exceeds limit', async () => {
       const response = await request(app.getHttpServer())

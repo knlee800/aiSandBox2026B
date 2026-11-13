@@ -32,6 +32,7 @@ import { readAllowListedExecutionError } from './execution-error';
 import {
   ProviderAvailabilityAnswer,
   ProviderAvailabilityCache,
+  applyProviderSwitches,
 } from './provider-availability';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { ExecutionResultDto, FileActionDto } from './dto/execution-result.dto';
@@ -1185,6 +1186,10 @@ export class AIExecutionController {
    * Signed in (session or API key). Asks the AI service, the only service
    * that knows which keys it has; booleans only, fixed order, stub never
    * listed. 503 when the AI service cannot answer.
+   *
+   * PROVIDER-SWITCH-01: usable = the AI service has the key AND the gateway's
+   * switch for that provider is on. The cache holds only the AI service's
+   * answer; the switches are applied on each reply.
    */
   @Get('providers')
   @UseGuards(SessionOrApiKeyAuthGuard)
@@ -1208,7 +1213,7 @@ export class AIExecutionController {
       this.logger.warn('Provider availability could not be read from the AI service');
       throw new ServiceUnavailableException('AI providers are unavailable');
     }
-    return answer;
+    return applyProviderSwitches(answer);
   }
 
   /**
