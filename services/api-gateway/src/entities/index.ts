@@ -55,6 +55,8 @@ export {
 export type {
   UserAgentStatus,
 } from './user-agent.entity';
+export { ChatLink } from './chat-link.entity';
+export { ChatLinkCode } from './chat-link-code.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';
