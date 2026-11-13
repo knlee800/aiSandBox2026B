@@ -84344,7 +84344,7 @@ taskId=ACCESS-01J
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-13 — by the control plane on Keith's "Start ACCESS-01J". Was: READY, registered 2026-11-05 by GOV-ACCESS-PLAN-01 as plan S10 (docs/ACCESS-READY-01-PLAN.md), not admitted; this body is written at admission because the plan row was its only record.
+**Status:** COMPLETE AND LOCKED — 2026-11-13. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. OpenAI and xAI Agent runs are stateless: store: false on every Responses call, previous_response_id never sent, and each step replays the whole conversation (the prompt, every earlier response's output items as returned, each call's function_call_output) from providerState { kind: responses, outputItems }; a missing or malformed history fails closed with no content in the error; include reasoning.encrypted_content for xAI and for OpenAI models other than gpt-4* (gpt-4o, the default, is not a reasoning model); Anthropic, DeepSeek, Groq, the stubs and the loop unchanged. opus subagent d0a4bb5 plus one review fix 29a2b62, fast-forwarded; control-plane rerun on the branch and on main: ai-service 65 suites, 1331 passed, 1 skipped (baseline 1297), tsc and build rc 0. Not deployed; not checked against the real APIs: ACCESS-01J-LIVE. Checkpoint: docs/ACCESS-01J-CHECKPOINT.md. FOLLOWUPS: 1 registered (ACCESS-01J-LIVE) / 3 superseded (model-gated include by 29a2b62; the store: true rows in the locked docs/PRIVACY-DATA-INVENTORY.md by this checkpoint and ACCESS-01J-LIVE; a function_call without call_id failing closed by acceptance item 4) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-13 — by the control plane on Keith's "Start ACCESS-01J". Was: READY, registered 2026-11-05 by GOV-ACCESS-PLAN-01 as plan S10 (docs/ACCESS-READY-01-PLAN.md), not admitted; this body is written at admission because the plan row was its only record.
 **Task ID:** ACCESS-01J
 **Title:** Stateless OpenAI and xAI tool continuation (store: false)
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
@@ -84360,6 +84360,30 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Plan S10 option A (item 5). Today the OpenAI and xAI adapters send store: true and continue a tool loop with previous_response_id, so each response is kept by the provider. Change both to store: false and replay the conversation in input at every step: the user prompt, each earlier response's output items (function_call items, message items and reasoning items carried with their encrypted content, requested through include where the API offers it) and the function_call_output items for each tool result. The adapter keeps what it needs in providerState (opaque to the loop). previous_response_id is no longer sent. Anthropic, DeepSeek, Groq and the stubs are unchanged. The transcript stays in memory in the loop (not persisted).
 **Acceptance:** (1) no OpenAI or xAI request sets store: true or previous_response_id; (2) a first step sends the prompt only; a later step sends the full ordered history with every call_id paired to its output; (3) a reasoning item from an earlier response is replayed unchanged when present; (4) a missing or malformed providerState fails closed with a clear error, never a partial history; (5) mocked tests for both adapters and the mapper; the ai-service suite and build pass; (6) no change outside the write scope.
+
+### ACCESS-01J-LIVE — Deploy the stateless OpenAI and xAI continuation and check it live
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01J-LIVE
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the ACCESS-01J LOCK — not admitted.
+**Task ID:** ACCESS-01J-LIVE
+**Title:** Deploy the stateless OpenAI and xAI continuation and check it live
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides to use OpenAI or xAI Agent runs and adds a real OpenAI key (and an xAI key, if xAI is checked) on staging himself at a hidden prompt. Keith decides.
+**Depends on:** ACCESS-01J.
+**Primary write scope:** records; host state (deploy; provider switches and keys in gateway.env during the window).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3).
 
 ### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
