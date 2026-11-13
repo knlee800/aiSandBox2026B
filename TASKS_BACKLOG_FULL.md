@@ -85059,22 +85059,22 @@ taskId=PROVIDER-SWITCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-SWITCH-01". Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
 **Task ID:** PROVIDER-SWITCH-01
 **Title:** Check the chosen provider switch on the chat route
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY for Step 2 (Keith, 2026-11-13, "Start PROVIDER-SWITCH-01"). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** PROVIDER-KEY-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/safety/execution-safety.guard.ts and its tests.
-**Mutexes / resources:** GATEWAY (expected).
+**Mutexes / resources:** Step 2: none (write set docs/PROVIDER-SWITCH-01-STAGE-START.md, set 2026-11-13). Step 3: set when the stage-start is approved; GATEWAY expected.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** From PROVIDER-KEY-01 (stage-start section 1.2): on POST /api/ai/execute, ExecutionSafetyGuard checks PROVIDER_*_ENABLED for AI_PROVIDER, not for the provider named in the request, so with AI_PROVIDER=stub the per-provider switch is never enforced on the chat route (the Team page path does check it). A guard change, so 4-step with a stage-start. Afterwards 'usable' in GET /api/ai/providers may also include the switch (Keith decided key-only for now).
 
 ### CHAT-FAILURE-REASONS-01 — Translated failure reasons in the workspace chat
