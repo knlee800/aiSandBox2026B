@@ -84383,7 +84383,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3).
+**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3). Deploy done 2026-11-13 by STAGING-DEPLOY-PKEY-01 (staging runs 6f6b8e8); only the live check remains.
 
 ### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85035,7 +85035,7 @@ taskId=STAGING-DEPLOY-PKEY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-13 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-13. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed aa0b32a to 6f6b8e8 with runs off (rc 0, 2026-11-13T07:26:03Z): PROVIDER-KEY-01 and ACCESS-01J; no migration (hash 9cfde25f); configuration unchanged at the baselines e0767286 and 205770cf; all units active; every earlier check passes. Provider checks: GET /api/ai/providers 401 without credentials and 200 with a temporary admin API key (revoked); the internal AI service route 401 without or with a wrong key, 200 with it; both answers say no provider is usable and agree with the key presence counts in /etc/aisandbox/ai.env (all 0); no key text in the answers; the adapters carry store: false and no store: true. Keith's browser check passed: 'No provider available', both dropdowns and Send disabled, the translated hint in en, zh-TW and zh-CN. Checkpoint: docs/STAGING-DEPLOY-PKEY-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-13 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-PKEY-01
 **Title:** Deploy PROVIDER-KEY-01 and ACCESS-01J and check the provider picker
 **Workstream:** AGENT (taxonomy only; zero admission weight)
