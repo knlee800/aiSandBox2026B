@@ -85009,7 +85009,7 @@ taskId=PROVIDER-KEY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice 3B (frontend) — 2026-11-13. Slice 3A done 2026-11-13: opus subagent 7160a29, cherry-picked to main as f4af7ec (17 files): typed ProviderKeyMissingError raised in getAdapter before any provider call, stored as provider_key_missing / 'AI provider is not configured' by type; the gateway status answer carries an allow-listed error (provider_key_missing, and execution_failed only with the exact usage-limit sentence) with its own text; GET /api/ai/providers (signed in) from the new internal AI service route, booleans only, 60-second cache, 503 when unanswered. Control-plane rerun on the branch: ai-service 66 suites, 1381 passed, 1 skipped (baseline 1331); gateway 4265 passed, 7 skipped, only the 14 known smoke.integration failures (baseline 4236); both builds rc 0. Was: ADMITTED — Lane 1 — Step 3 slice 3A (backend) — 2026-11-13. Keith approved the stage-start on 2026-11-13 ("Yes, approve all three"): (1) usable means the AI service has a key (the provider switch is not part of it; the switch gap is a follow-up); (2) the gateway allow-list also returns the usage-limit sentence 'AI provider usage limit reached' to the workspace chat; (3) remembering the chosen provider is not in this task. Contracts C1 to C4 (docs/PROVIDER-KEY-01-STAGE-START.md section 3) are frozen for Step 3. Was: ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/PROVIDER-KEY-01-STAGE-START.md (fable subagent, Fable 5.2, 6f1e164, fast-forwarded; facts checked by the control plane against the code). Finding: the gateway status route never returns a stored failure reason (ai-execution.controller.ts getExecution; the DTO error field is never filled), so a sanitiser-only fix would show nothing; the workspace chat also cannot show the PROVIDER-LIMIT-MSG-01 sentence for a failed run. Recommended: slice 3A backend (AI-SERVICE, GATEWAY; opus): a typed ProviderKeyMissingError (provider_key_missing, 'AI provider is not configured') raised before any provider call, passed by the sanitiser by type, returned by the gateway status answer through an allow-list, and GET /api/ai/providers (signed in) asking a new internal AI service route, booleans only; slice 3B frontend (FRONTEND, I18N; sonnet): the translated sentence, keyless providers not offered, the first usable provider as default, a translated empty state with Send disabled. Contracts C1 to C4 frozen at approval. Waiting for Keith's approval and three answers (usable = key only; the usage-limit sentence in the chat too; remembering the choice later). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-KEY-01". Was: READY — registered 2026-11-10 by the HARNESS-FIXES-01C narrowing (Keith, "Yes, both") — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-13. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. A run on a provider with no key now stops before any provider call with a typed ProviderKeyMissingError, stored as provider_key_missing / 'AI provider is not configured' (by type; looksLikeCredential unchanged); the gateway status answer carries allow-listed errors with its own text (provider_key_missing; execution_failed only with the exact usage-limit sentence, so that message now reaches the workspace chat); GET /api/ai/providers (signed in) answers which providers have a key, booleans only, from a new internal AI service route under the internal key, cached 60 seconds; the workspace chat shows the translated sentence in en, zh-TW and zh-CN, offers only providers with a key, defaults to the first usable one, and with none usable shows a translated notice and disables Send; when the list cannot be loaded the page behaves as before. Slice 3A opus subagent 7160a29 (main f4af7ec), slice 3B opus subagent f5c3428 (main f5c3428). Control-plane gates on main: see the checkpoint. Not deployed. Checkpoint: docs/PROVIDER-KEY-01-CHECKPOINT.md. FOLLOWUPS: 6 registered (STAGING-DEPLOY-PKEY-01; PROVIDER-SWITCH-01; CHAT-FAILURE-REASONS-01; PROVIDER-KEY-02, which takes the orchestration-step site, the Team page mapping and the stale live-adapter comment; PROVIDER-REMEMBER-01; GOV-ARCH-PKEY-01) / 4 superseded (the two tests missing from the stage-start's 3A write set, by the b7236ca widening; the dead adapter constructor key checks, by the checkpoint note, no work; the submit guard reusing ai.noProviderAvailable, by acceptance as designed; the changed EntitlementService constructor assertion, by the review in the checkpoint) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice 3B (frontend) — 2026-11-13. Slice 3A done 2026-11-13: opus subagent 7160a29, cherry-picked to main as f4af7ec (17 files): typed ProviderKeyMissingError raised in getAdapter before any provider call, stored as provider_key_missing / 'AI provider is not configured' by type; the gateway status answer carries an allow-listed error (provider_key_missing, and execution_failed only with the exact usage-limit sentence) with its own text; GET /api/ai/providers (signed in) from the new internal AI service route, booleans only, 60-second cache, 503 when unanswered. Control-plane rerun on the branch: ai-service 66 suites, 1381 passed, 1 skipped (baseline 1331); gateway 4265 passed, 7 skipped, only the 14 known smoke.integration failures (baseline 4236); both builds rc 0. Was: ADMITTED — Lane 1 — Step 3 slice 3A (backend) — 2026-11-13. Keith approved the stage-start on 2026-11-13 ("Yes, approve all three"): (1) usable means the AI service has a key (the provider switch is not part of it; the switch gap is a follow-up); (2) the gateway allow-list also returns the usage-limit sentence 'AI provider usage limit reached' to the workspace chat; (3) remembering the chosen provider is not in this task. Contracts C1 to C4 (docs/PROVIDER-KEY-01-STAGE-START.md section 3) are frozen for Step 3. Was: ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/PROVIDER-KEY-01-STAGE-START.md (fable subagent, Fable 5.2, 6f1e164, fast-forwarded; facts checked by the control plane against the code). Finding: the gateway status route never returns a stored failure reason (ai-execution.controller.ts getExecution; the DTO error field is never filled), so a sanitiser-only fix would show nothing; the workspace chat also cannot show the PROVIDER-LIMIT-MSG-01 sentence for a failed run. Recommended: slice 3A backend (AI-SERVICE, GATEWAY; opus): a typed ProviderKeyMissingError (provider_key_missing, 'AI provider is not configured') raised before any provider call, passed by the sanitiser by type, returned by the gateway status answer through an allow-list, and GET /api/ai/providers (signed in) asking a new internal AI service route, booleans only; slice 3B frontend (FRONTEND, I18N; sonnet): the translated sentence, keyless providers not offered, the first usable provider as default, a translated empty state with Send disabled. Contracts C1 to C4 frozen at approval. Waiting for Keith's approval and three answers (usable = key only; the usage-limit sentence in the chat too; remembering the choice later). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-KEY-01". Was: READY — registered 2026-11-10 by the HARNESS-FIXES-01C narrowing (Keith, "Yes, both") — not admitted.
 **Task ID:** PROVIDER-KEY-01
 **Title:** Keyless provider: a safe missing-key message and a working default
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85028,6 +85028,143 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** HARNESS-FIXES-01 item 6, moved here 2026-11-10. Found by the HARNESS-FIXES-01C worker and checked by the control plane: frontend/lib/ai/provider-model.catalogue.ts lists every provider as selectable and nothing tells the frontend which providers have a key; the selection is not stored, every load starts at FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION (xai); a missing key throws a plain error in ai-execution.service.ts, and looksLikeCredential in worker.processor.ts turns any text with "key" into the generic "This step failed." with execution_failed, so the chat shows only "Execution ended with status: failed.". Wanted: a safe provider_key_missing code with a fixed safe sentence (like the provider usage limit message), shown translated in en, zh-TW and zh-CN; the default provider and model chosen from those that have a key; keyless providers not offered. The sanitiser keeps hiding real secrets.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
+
+### STAGING-DEPLOY-PKEY-01 — Deploy PROVIDER-KEY-01 and ACCESS-01J and check the provider picker
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-PKEY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-PKEY-01
+**Title:** Deploy PROVIDER-KEY-01 and ACCESS-01J and check the provider picker
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** PROVIDER-KEY-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV (held, not changed).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main to staging (PROVIDER-KEY-01 and the not-yet-deployed ACCESS-01J), no migration, configuration unchanged, runs off. Host checks from docs/PROVIDER-KEY-01-STAGE-START.md section 7: GET /api/ai/providers 401 without credentials and 200 with the stored key, five booleans in the fixed order that agree with a presence-only count of keys in the AI service env file, no key text in the answer, the internal route 401 without the internal key. Keith's short browser check: the picker lists only usable providers with the first selected (or the translated empty state with Send disabled), in en, zh-TW and zh-CN.
+
+### PROVIDER-SWITCH-01 — Check the chosen provider switch on the chat route
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PROVIDER-SWITCH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Task ID:** PROVIDER-SWITCH-01
+**Title:** Check the chosen provider switch on the chat route
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** PROVIDER-KEY-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/safety/execution-safety.guard.ts and its tests.
+**Mutexes / resources:** GATEWAY (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PROVIDER-KEY-01 (stage-start section 1.2): on POST /api/ai/execute, ExecutionSafetyGuard checks PROVIDER_*_ENABLED for AI_PROVIDER, not for the provider named in the request, so with AI_PROVIDER=stub the per-provider switch is never enforced on the chat route (the Team page path does check it). A guard change, so 4-step with a stage-start. Afterwards 'usable' in GET /api/ai/providers may also include the switch (Keith decided key-only for now).
+
+### CHAT-FAILURE-REASONS-01 — Translated failure reasons in the workspace chat
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-FAILURE-REASONS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Task ID:** CHAT-FAILURE-REASONS-01
+**Title:** Translated failure reasons in the workspace chat
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** PROVIDER-KEY-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/ai/execution-error.ts, frontend/components/workspace/, frontend/app/, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PROVIDER-KEY-01: the workspace chat still shows the hardcoded English 'Execution ended with status: failed.' (frontend/components/workspace/workspace-run-cancel.logic.ts:62) for every failed run other than the two allow-listed ones. Decide which stored failure codes may reach the chat (each with the gateway's own text), translate them and the fallback in en, zh-TW and zh-CN. BUILDER-POLISH-01 holds related hardcoded-English items; check for overlap at admission.
+
+### PROVIDER-KEY-02 — Remaining provider-key message sites
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PROVIDER-KEY-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Task ID:** PROVIDER-KEY-02
+**Title:** Remaining provider-key message sites
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** PROVIDER-KEY-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx orchestration step failure), frontend/lib/collaboration/logic.ts, the three message files, services/ai-service/src/agent-harness/eval/live/live-adapter.ts (comment).
+**Mutexes / resources:** set at admission (FRONTEND, I18N, AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PROVIDER-KEY-01: (1) the orchestration-step failure site in page.tsx ('Step N ended with status', about :4790) still passes only the terminal output, so a keyless provider or the usage limit in orchestration mode shows the generic step text; (2) the Team page shows the stored English 'AI provider is not configured' untranslated: add collaboration.providerKeyMissing beside the usage-limit mapping (frontend/lib/collaboration/logic.ts:37-45); (3) the comment 'Same text getAdapter throws' in services/ai-service/src/agent-harness/eval/live/live-adapter.ts:11-15 is stale.
+
+### PROVIDER-REMEMBER-01 — Remember the chosen chat provider and model
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PROVIDER-REMEMBER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Task ID:** PROVIDER-REMEMBER-01
+**Title:** Remember the chosen chat provider and model
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** PROVIDER-KEY-01.
+**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx), frontend/lib/ai/.
+**Mutexes / resources:** set at admission (FRONTEND expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From PROVIDER-KEY-01 (Keith, 2026-11-13, question 3: not in that task): remember the last chosen provider and model per browser, within the usable list.
+
+### GOV-ARCH-PKEY-01 — ARCHITECTURE.md note for the provider availability routes and the run error field
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ARCH-PKEY-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Task ID:** GOV-ARCH-PKEY-01
+**Title:** ARCHITECTURE.md note for the provider availability routes and the run error field
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the wording. Keith decides.
+**Depends on:** PROVIDER-KEY-01.
+**Primary write scope:** ARCHITECTURE.md (one short note).
+**Mutexes / resources:** GOVERNANCE.
+**Scope:** From PROVIDER-KEY-01 (stage-start section 9 item 6): a short TECHNICAL HOW note on GET /api/ai/providers (signed in) and GET /api/internal/provider-availability (internal key, booleans only), the provider_key_missing run error code, and the allow-listed error field on GET /api/ai/executions/:id.
 
 ### BUILDER-POLISH-01 — Builder polish: History labels, error detail, preview and history behaviour
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
