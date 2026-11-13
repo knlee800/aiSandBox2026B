@@ -17,7 +17,7 @@ import {
   mapAdapterToolDeclarationsToResponsesTools,
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   parseResponsesToolUseResponse,
-  RESPONSES_STATELESS_INCLUDE,
+  responsesStatelessIncludeFor,
   toResponsesSdkInput,
 } from './adapter-tool-use.mapper';
 import type {
@@ -221,9 +221,12 @@ export class XAIAdapter implements AIAdapter {
       // ACCESS-01J: stateless. The provider keeps no response; each step
       // replays the full history in input and never sends previous_response_id.
       store: false,
-      include: [...RESPONSES_STATELESS_INCLUDE],
       input: toResponsesSdkInput(built.input),
     };
+    const include = responsesStatelessIncludeFor('xAI', model);
+    if (include !== undefined) {
+      responsesRequest.include = [...include];
+    }
     responsesRequest.instructions = appendHarnessEnvFileInstruction(
       built.instructions,
     );

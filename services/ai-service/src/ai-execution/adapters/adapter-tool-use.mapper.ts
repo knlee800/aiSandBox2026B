@@ -437,6 +437,25 @@ export const RESPONSES_STATELESS_INCLUDE = Object.freeze([
   'reasoning.encrypted_content',
 ] as const);
 
+/**
+ * The include list for one stateless Responses call, or undefined to omit the
+ * field. OpenAI gpt-4* models are not reasoning models and reject
+ * reasoning.encrypted_content, so they get none. Every other OpenAI model and
+ * every xAI model gets RESPONSES_STATELESS_INCLUDE.
+ */
+export function responsesStatelessIncludeFor(
+  provider: ResponsesToolFailureProviderName,
+  model: string,
+): typeof RESPONSES_STATELESS_INCLUDE | undefined {
+  if (
+    provider === 'OpenAI' &&
+    model.trim().toLowerCase().startsWith('gpt-4')
+  ) {
+    return undefined;
+  }
+  return RESPONSES_STATELESS_INCLUDE;
+}
+
 export interface ResponsesUserMessageInput {
   readonly role: 'user';
   readonly content: string;

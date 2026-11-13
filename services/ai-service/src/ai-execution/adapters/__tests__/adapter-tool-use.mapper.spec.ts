@@ -9,6 +9,7 @@ import {
   RESPONSES_CONTINUATION_INVALID_HISTORY_MESSAGE,
   RESPONSES_STATELESS_INCLUDE,
   buildResponsesToolRequest,
+  responsesStatelessIncludeFor,
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   mapAgentHarnessToolDefinitionsToAnthropicTools,
   mapAgentHarnessToolDefinitionsToOpenAITools,
@@ -1250,6 +1251,22 @@ describe('Responses API tool helpers', () => {
 
     it('requests reasoning.encrypted_content through include', () => {
       expect([...RESPONSES_STATELESS_INCLUDE]).toEqual(['reasoning.encrypted_content']);
+    });
+
+    it('omits include for OpenAI gpt-4* models only', () => {
+      for (const model of ['gpt-4o', 'GPT-4o-mini', '  gpt-4.1  ']) {
+        expect(responsesStatelessIncludeFor('OpenAI', model)).toBeUndefined();
+      }
+      for (const model of ['gpt-6.1-sol', 'gpt-6-luna', 'gpt-6-astra', 'some-future-model']) {
+        expect(responsesStatelessIncludeFor('OpenAI', model)).toEqual([
+          'reasoning.encrypted_content',
+        ]);
+      }
+      for (const model of ['grok-4.5', 'grok-4.7', 'gpt-4o', 'anything']) {
+        expect(responsesStatelessIncludeFor('xAI', model)).toEqual([
+          'reasoning.encrypted_content',
+        ]);
+      }
     });
 
     it('keeps every output item verbatim in providerState and no response id', () => {

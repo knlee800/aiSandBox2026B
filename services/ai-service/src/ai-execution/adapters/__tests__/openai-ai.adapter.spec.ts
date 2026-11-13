@@ -692,7 +692,6 @@ describe('OpenAIAdapter', () => {
             model: 'gpt-4o',
             max_output_tokens: 16000,
             store: false,
-            include: ['reasoning.encrypted_content'],
             instructions: HARNESS_ENV_FILE_INSTRUCTION,
             input: [{ role: 'user', content: 'Test prompt' }],
             tools: [
@@ -710,6 +709,8 @@ describe('OpenAIAdapter', () => {
         const recordedBody = mockClient.responses.create.mock.calls[0][0];
         expect(recordedBody).not.toHaveProperty('temperature');
         expect(recordedBody).not.toHaveProperty('tool_choice');
+        expect(recordedBody).not.toHaveProperty('include');
+        expect(recordedBody).not.toHaveProperty('previous_response_id');
       });
 
       it('should parse function_call metadata without executing tools', async () => {
@@ -873,7 +874,8 @@ describe('OpenAIAdapter', () => {
         expect(recordedBody).not.toHaveProperty('temperature');
         expect(recordedBody.max_output_tokens).toBe(16000);
         expect(recordedBody.store).toBe(false);
-        expect(recordedBody.include).toEqual(['reasoning.encrypted_content']);
+        expect(recordedBody.model).toBe('gpt-4o');
+        expect(recordedBody).not.toHaveProperty('include');
         expect(tools).toHaveLength(2);
       });
 
@@ -919,7 +921,7 @@ describe('OpenAIAdapter', () => {
           AGENT_HARNESS_TOOL_DEFINITIONS_V1[0],
           AGENT_HARNESS_TOOL_DEFINITIONS_V1[1],
         ];
-        const request: AIExecutionRequest = {
+        const baseRequest: AIExecutionRequest = {
           sessionId: 'session-1',
           conversationId: 'conv-1',
           userId: 'user-1',
@@ -928,6 +930,7 @@ describe('OpenAIAdapter', () => {
           provider: 'openai',
           model: 'gpt-6.1-sol',
         };
+        const request = baseRequest;
         const resultsStep1 = [
           {
             callId: 'call_a',
@@ -960,7 +963,12 @@ describe('OpenAIAdapter', () => {
           'tools',
         ];
 
-        const runThreeSteps = async () => {
+        const stepBodyKeysWithoutInclude = stepBodyKeys.filter(
+          (key) => key !== 'include',
+        );
+
+        const runThreeSteps = async (model = 'gpt-6.1-sol') => {
+          const request = { ...baseRequest, model };
           mockClient.responses.create
             .mockResolvedValueOnce({
               id: 'resp_1',
@@ -1156,13 +1164,16 @@ describe('OpenAIAdapter', () => {
           }
         });
 
-        it('adds no field that carries keys or environment content', async () => {
+        it.each([
+          ['gpt-6.1-sol', true],
+          ['gpt-4o', false],
+        ])('adds no field that carries keys or environment content (%s)', async (model, withInclude) => {
           const sentinel = 'env-sentinel-value-access-01j';
           const envName = 'OPENAI_API_KEY';
           const previous = process.env[envName];
           process.env[envName] = sentinel;
           try {
-            await runThreeSteps();
+            await runThreeSteps(model);
           } finally {
             if (previous === undefined) {
               delete process.env[envName];
@@ -1171,13 +1182,44 @@ describe('OpenAIAdapter', () => {
             }
           }
 
+          expect(mockClient.responses.create).toHaveBeenCalledTimes(3);
           for (const call of mockClient.responses.create.mock.calls) {
             const serialized = JSON.stringify(call[0]);
-            expect(Object.keys(call[0]).sort()).toEqual(stepBodyKeys);
+            expect(Object.keys(call[0]).sort()).toEqual(
+              withInclude ? stepBodyKeys : stepBodyKeysWithoutInclude,
+            );
             expect(serialized).not.toContain('sk-test-key-123');
             expect(serialized).not.toContain(sentinel);
             expect(call[1]).toEqual({});
           }
+        });
+
+        it('omits include for gpt-4o but keeps store: false and the full replay', async () => {
+          await runThreeSteps('gpt-4o');
+
+          expect(mockClient.responses.create).toHaveBeenCalledTimes(3);
+          for (const call of mockClient.responses.create.mock.calls) {
+            expect(call[0].model).toBe('gpt-4o');
+            expect(call[0].store).toBe(false);
+            expect(call[0]).not.toHaveProperty('include');
+            expect(call[0]).not.toHaveProperty('previous_response_id');
+          }
+          const thirdBody = mockClient.responses.create.mock.calls[2][0];
+          expect(
+            thirdBody.input.map(
+              (item: { type?: string; role?: string }) => item.type ?? item.role,
+            ),
+          ).toEqual([
+            'user',
+            'reasoning',
+            'message',
+            'function_call',
+            'function_call',
+            'function_call_output',
+            'function_call_output',
+            'function_call',
+            'function_call_output',
+          ]);
         });
       });
 
@@ -1353,6 +1395,7 @@ describe('OpenAIAdapter', () => {
         expect(recordedBody.model).toBe('gpt-6.1-sol');
         expect(recordedBody.max_output_tokens).toBe(16000);
         expect(recordedBody.store).toBe(false);
+        expect(recordedBody.include).toEqual(['reasoning.encrypted_content']);
         expect(recordedBody).not.toHaveProperty('temperature');
         expect(recordedBody).not.toHaveProperty('max_completion_tokens');
         expect(mockClient.responses.create.mock.calls[0][1]).toEqual({ signal });
