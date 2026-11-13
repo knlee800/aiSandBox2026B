@@ -31,7 +31,8 @@
         "services/api-gateway/locales/zh-CN.json",
         "ops/clean-baseline/env/gateway.env.template",
         "services/api-gateway/src/startup/configuration.validator.ts",
-        "services/api-gateway/src/startup/configuration.validator.spec.ts"
+        "services/api-gateway/src/startup/configuration.validator.spec.ts",
+        "services/api-gateway/src/chat/chat-link.controller.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -6030,7 +6031,8 @@
         "services/api-gateway/locales/zh-CN.json",
         "ops/clean-baseline/env/gateway.env.template",
         "services/api-gateway/src/startup/configuration.validator.ts",
-        "services/api-gateway/src/startup/configuration.validator.spec.ts"
+        "services/api-gateway/src/startup/configuration.validator.spec.ts",
+        "services/api-gateway/src/chat/chat-link.controller.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
