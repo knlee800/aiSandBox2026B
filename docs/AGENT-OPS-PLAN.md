@@ -61,7 +61,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 39 | CHAT-DISCORD-01 | Discord |
+| 39 | CHAT-DISCORD-01 | Discord (Keith chose Phase 3 2026-11-13; admitted for its stage-start, Lane 1) |
 | 40 | STAGING-DEPLOY-CHAT-01, CHAT-LIVE-01 | Deploy; live check in Discord |
 | 41 | CHAT-LINE-01, CHAT-WHATSAPP-01, CHAT-WECOM-01, CHAT-SLACK-01 | Later channels |
 

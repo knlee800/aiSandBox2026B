@@ -88169,23 +88169,23 @@ taskId=CHAT-DISCORD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start Discord (Stage 5)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** CHAT-DISCORD-01
 **Title:** Discord chat channel
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: Keith chooses Phase 3. Keith decides.
+**Start condition:** READY for Step 2 (Keith chose Phase 3, 2026-11-13, "Start Discord (Stage 5)"). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith chooses Phase 3. Keith decides.
 **Depends on:** COS-FRONTDOOR-01.
 **Primary write scope:** set at admission (new gateway module or services/chat-discord/).
-**Mutexes / resources:** set at admission.
+**Mutexes / resources:** Step 2: none (write set docs/CHAT-DISCORD-01-STAGE-START.md, set 2026-11-13). Step 3: set when the stage-start is approved (a new dependency would take PACKAGE).
 **Hot-file leases:** set at admission.
 **Shared contracts:** set at admission.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** Discord first (A7, E1-E3): an outbound bot gateway, two-way (start a workflow, receive results), account link by a one-time code, every message treated as untrusted data, and @name routes to an agent.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.3
 
