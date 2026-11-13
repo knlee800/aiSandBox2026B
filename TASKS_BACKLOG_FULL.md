@@ -85009,23 +85009,23 @@ taskId=PROVIDER-KEY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the HARNESS-FIXES-01C narrowing (Keith, "Yes, both") — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start PROVIDER-KEY-01". Was: READY — registered 2026-11-10 by the HARNESS-FIXES-01C narrowing (Keith, "Yes, both") — not admitted.
 **Task ID:** PROVIDER-KEY-01
 **Title:** Keyless provider: a safe missing-key message and a working default
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (changes how the worker sanitises run errors).
-**Start condition:** NOT_READY. Ready when: CONN-03 and HARNESS-FIXES-01C are LOCKED (AI-SERVICE and FRONTEND free) and a stage-start is approved. Keith decides.
+**Start condition:** READY for Step 2 (Keith, 2026-11-13, "Start PROVIDER-KEY-01"; CONN-03 and HARNESS-FIXES-01C are LOCKED). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: CONN-03 and HARNESS-FIXES-01C are LOCKED (AI-SERVICE and FRONTEND free) and a stage-start is approved. Keith decides.
 **Depends on:** HARNESS-FIXES-01C.
 **Primary write scope:** PROVISIONAL, set at the stage-start: likely services/ai-service/src/ai-execution/, services/ai-service/src/worker/ (the error sanitiser), a read-only providers-available field or route in services/api-gateway/src/, frontend/app/, frontend/components/workspace/, frontend/lib/ai/ and the three message files.
-**Mutexes / resources:** set at admission; likely AI-SERVICE, GATEWAY, FRONTEND, I18N.
+**Mutexes / resources:** Step 2: none (write set docs/PROVIDER-KEY-01-STAGE-START.md, set 2026-11-13). Step 3: set when the stage-start is approved; likely AI-SERVICE, GATEWAY, FRONTEND, I18N.
 **Hot-file leases:** none known.
 **Shared contracts:** none frozen; the run error code set is checked at the stage-start.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** the error code, the default choice and the message are separate changes.
 **saturationClass:** OPTIONAL (inherited from HARNESS-FIXES-01, as for HARNESS-FIXES-01C; Keith may change it).
 **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** HARNESS-FIXES-01 item 6, moved here 2026-11-10. Found by the HARNESS-FIXES-01C worker and checked by the control plane: frontend/lib/ai/provider-model.catalogue.ts lists every provider as selectable and nothing tells the frontend which providers have a key; the selection is not stored, every load starts at FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION (xai); a missing key throws a plain error in ai-execution.service.ts, and looksLikeCredential in worker.processor.ts turns any text with "key" into the generic "This step failed." with execution_failed, so the chat shows only "Execution ended with status: failed.". Wanted: a safe provider_key_missing code with a fixed safe sentence (like the provider usage limit message), shown translated in en, zh-TW and zh-CN; the default provider and model chosen from those that have a key; keyless providers not offered. The sanitiser keeps hiding real secrets.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
 
