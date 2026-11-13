@@ -85083,7 +85083,7 @@ taskId=STAGING-DEPLOY-PSWITCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-13 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-13 by the PROVIDER-SWITCH-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-13. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 6f6b8e8 to 5c67466 with runs off (rc 0, 2026-11-13T09:09:43Z): PROVIDER-SWITCH-01; no migration (hash 9cfde25f); configuration unchanged at the baselines e0767286 and 205770cf; units active; every earlier check and the provider checks pass (GET /api/ai/providers 401 without credentials, 200 with a temporary admin key, revoked; all usable false, agreeing with the ai.env key counts, all 0); build markers resolveGatewayProvider, applyProviderSwitches and resolveRequestProvider present. The refusal itself is checked in ACCESS-01J-LIVE's run window. Checkpoint: docs/STAGING-DEPLOY-PSWITCH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-13 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-13 by the PROVIDER-SWITCH-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-PSWITCH-01
 **Title:** Deploy PROVIDER-SWITCH-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
