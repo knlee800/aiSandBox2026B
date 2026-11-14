@@ -61,8 +61,8 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 39 | CHAT-DISCORD-01 | Discord (Keith chose Phase 3 2026-11-13; admitted for its stage-start, Lane 1) |
-| 40 | STAGING-DEPLOY-CHAT-01, CHAT-LIVE-01 | Deploy; live check in Discord |
+| 39 | CHAT-DISCORD-01 | Discord (done 2026-11-14, not deployed: link by a one-time code, direct-message slash commands, /ask runs as the owner, results and read-only approvals by direct message; follow-ups CHAT-DISCORD-DM-01, CHAT-NOTIFY-ONLY-01, CHAT-SESSION-01, CHAT-RESULTS-OTHER-01, CHAT-SERVICE-SPLIT-01, CHAT-EVAL-01, CHAT-LINK-NOTICE-01 (before a second user links), CHAT-PRUNE-01, CHAT-STATE-PERSIST-01, CHAT-TIDY-01; also WS-UPGRADE-01 and GW-I18N-LOADER-01) |
+| 40 | STAGING-DEPLOY-CHAT-01, CHAT-LIVE-01 | Deploy with live check 1 (Keith creates the Discord app and bot and types the token on the host; link, commands, the runs-off refusal); then a real answer and an approval in a run window shared with ACCESS-01J-LIVE |
 | 41 | CHAT-LINE-01, CHAT-WHATSAPP-01, CHAT-WECOM-01, CHAT-SLACK-01 | Later channels |
 
 **Stage 6 — triggers (phase 4)**

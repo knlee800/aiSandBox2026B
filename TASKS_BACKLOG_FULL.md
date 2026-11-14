@@ -84338,6 +84338,8 @@ nature=IMPLEMENTATION
 
 **Also (added 2026-11-12 by the PRIVACY-INVENTORY-01 LOCK; docs/PRIVACY-DATA-INVENTORY.md):** data retention covers these findings: (a) correction: the usage ledger does keep AI answer text and proposed file changes in usage_records.metadata (services/ai-service/src/worker/worker.processor.ts:2274-2284), although the entity comment and docs/OFFICE-VOICE-PRIVACY-DISCUSSION-2026-11-12.md section 4.1 say it stores no response content; Keith decides whether the ledger keeps it; (b) failed AI jobs stay in Redis with prompt, files and the connector grant token (removeOnFail false, services/api-gateway/src/queue/queue.service.ts:43); (c) the backup script never prunes the encrypted off-host bundles, and docs/backup/postgresql-backup-procedure.md states a different policy; (d) token_usage uses RESTRICT on its session relation and several tables have no cascade from users, which would block an account deletion; (e) the old ai-service SQLite conversation store and its routes still exist. (Corrected 2026-11-12 by PRIVACY-HOST-CHECK-01: on staging /opt/aisandbox/database/aisandbox.db is container-manager's file with checkpoints, governance_events and sessions tables and no conversations table; the ai-service conversation code and routes remain in the repository.)
 
+Note (CHAT-DISCORD-01 LOCK, 2026-11-14, F3): Discord joins the outside services in the privacy inventory and the future privacy page before any second user links a chat account.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -85264,6 +85266,8 @@ nature=IMPLEMENTATION
 
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
+
+Note (CHAT-DISCORD-01 LOCK, 2026-11-14): share the Connections page button class constants between the screen and the Chat section, and a small DOM test harness for the Chat section's polling and visibility.
 
 ### USAGE-DATA-01 — Usage data: execution duration and the SQLite quota and billing readers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88169,7 +88173,7 @@ taskId=CHAT-DISCORD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice C2 (approvals in Discord) — 2026-11-14. Slice C1 done 2026-11-14: opus subagent a5d5e34 and faa6408, cherry-picked to main (fbeb1eb; 28 files): the Team page's start and approve code extracted into CollaborationStartService (the controller's spec byte-for-byte unchanged and green; orchestration.service.ts and ai-execution.controller.ts untouched); /ask and @name start a Chief of Staff run or the owner's own workflow as the linked owner with the session guard's identity, never with a sessionId, and approve the first step through approveReferral so every check runs (global and provider switches, daily caps, credits, token quota, workflow checks, tests gate); refusals translated, a refused run cancelled; /cancel registered (seven commands); chat_run_deliveries (migration 1809, cascade from chat_links) and a 10-second poller sending the final answer by direct message in at most 5 parts of 1900 characters, mentions off, retries, rows pruned after 30 days and deleted on unlink; no task or answer text or Discord id in logs or audit; one reply key list. Control-plane gates: on the branch gateway 4559 passed, 7 skipped, only the 14 known smoke.integration failures, build rc 0; on main after the cherry-pick gateway 4559 passed, 7 skipped, the same 14, build rc 0. Was: ADMITTED — Lane 1 — Step 3 slice C1 (runs and results) — 2026-11-14. Slice B done 2026-11-14: opus subagent ed5f711 and d375be1, cherry-picked to main as e1fe19a and ce7746b (19 files): the approved @discordjs/core 2.7.0, ws 2.0.4 and rest 2.6.3 pinned (12 packages added to the root lockfile, nothing else changed; npm audit unchanged at 34, none on a new package); the Discord transport behind a ChatTransport token with intents 0, connecting only with CHAT_DISCORD_ENABLED=true and DISCORD_BOT_TOKEN set, never under Jest, never blocking boot, stopping after 20 failed identifies or a fatal close, the token in no log line, mentions off; direct-message slash commands /link, /unlink, /status, /language, /help and /ask (fixed refusal, creates nothing), English names in every client with translated descriptions; replies from the gateway locale files; CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN in the env template. The worker's npm install was refused; Keith's install through the worktree links replaced them with real folders and, through the gateway link, removed two packages from the main checkout's gateway node_modules and left 49 temporary folders; the control plane ran npm ci in the main checkout (Keith's request) and it is whole again. Control-plane gates: on the branch after the install, gateway 4475 passed, 7 skipped, only the 14 known smoke.integration failures (one run had a timing failure in execution-safety.integration that passed alone and on a full rerun); on main after npm ci: gateway 4475 passed, 7 skipped, the same 14; ai-service 1381 passed, 1 skipped; frontend tsc rc 0, 1915 of 1915; all builds rc 0. Was: ADMITTED — Lane 1 — Step 3 slice B (bot connection) — 2026-11-13. Slice A2 done 2026-11-13: sonnet subagent dc51ae7, fast-forwarded (10 files): the Chat (Discord) section on the Connections page (not available, the data statement to tick before a code, the code shown once and never stored in the browser, the pending claim with the Discord name and id ending and Confirm or Cancel, polling every 4 s only while a code is live and the page visible, linked with Unlink after a confirm, translated errors), 59 keys under connections.chat in en, zh-TW and zh-CN. Control-plane rerun on the branch, which is main: tsc rc 0, frontend 1915 of 1915 (baseline 1877), build rc 0. Was: ADMITTED — Lane 1 — Step 3 slice A2 (link page) — 2026-11-13. Slice A1 done 2026-11-13: opus subagent 58781da and 45359dd, cherry-picked to main as 33adf2d and b9f037c (14 files): migration 1808 creates chat_links (unique channel and Discord id; unique owner and channel) and chat_link_codes (SHA-256 hash only, checked hex; cascade on users), up and down tested; one-time codes of 8 characters from 32 letters, 10 minutes, single use, replaced by a new one; one answer for any invalid claim; a claim alone links nothing, the owner confirms; limits 5 codes per owner per hour, 5 claims per Discord user per hour, a pause after 100 failures an hour; unlink deletes link and codes; audit rows hold no Discord id or code; the five routes use the session-only SessionCookieGuard and the harness entitlement; switch off: GET says disabled, writes answer 503 chat_link_unavailable and write nothing. Control-plane rerun on the branch: gateway 4396 passed, 7 skipped, only the 14 known smoke.integration failures (baseline 4294); build rc 0. Was: ADMITTED — Lane 1 — Step 3 slice A1 (link backend) — 2026-11-13. Keith approved the stage-start on 2026-11-13 ("Yes, approve all eleven"): all eleven recommendations of docs/CHAT-DISCORD-01-STAGE-START.md section 12 (gateway module; the @discordjs core, ws and rest packages, exact pins; link code made on the platform, typed in Discord, confirmed on the platform; direct messages only; no free text for now; approvals in Discord for read-only steps; /ask approves the first step; full answer text in Discord after a data statement; only accounts with harness access may link; two migrations; live check 2 shares ACCESS-01J-LIVE's run window). The route shapes of section 5 are frozen for Step 3. Was: ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/CHAT-DISCORD-01-STAGE-START.md (fable subagent, Fable 5.2, ae30cef, fast-forwarded; facts checked by the control plane against the code). Recommended: the bot as a gateway module (services/api-gateway/src/chat/), not a new service; the @discordjs/core, ws and rest packages (exact pins, Apache-2.0; PACKAGE, Keith approves); direct-message slash commands only, no intents, no Message Content intent; link by a code made on the platform, typed in Discord and confirmed on the platform (reverses the plan's direction to avoid the device-code phishing shape); runs started as the linked owner through the Team page's start and approve code, read-only, every safety check still applies; results sent by direct message after a data statement the owner ticks; CHAT_DISCORD_ENABLED default false never turns runs on. Slices A1 link backend (GATEWAY, MIGRATION; opus), A2 link section on the Connections page (FRONTEND, I18N; sonnet), B bot connection and commands without runs (PACKAGE, GATEWAY, ENV; opus), C1 runs and results (GATEWAY, MIGRATION; opus), C2 approvals for read-only steps (GATEWAY; opus), D1 deploy with live check 1, D2 CHAT-LIVE-01. Waiting for Keith's approval and eleven answers (stage-start section 12). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start Discord (Stage 5)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-14. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Discord is built as a gateway module (not deployed): link by a one-time code made on the platform, typed as /link in a direct message with the bot and confirmed on the Connections page (migration 1808; session-only link routes with harness access; hashed codes with limits); the bot behind CHAT_DISCORD_ENABLED (default false) with intents 0 and the approved @discordjs packages; direct-message slash commands /link, /unlink, /status, /language, /help, /ask and /cancel; /ask starts a Chief of Staff run or the owner's own workflow as the linked owner, read-only, and approves the first step through approveReferral so every check runs; results by direct message in at most 5 parts (migration 1809, a poller); Approve and Reject buttons for read-only steps with server-mapped random tokens; translated in en, zh-TW and zh-CN; no task, answer or request text and no Discord id in logs or audit. Slices A1, A2, B, C1, C2 (opus, sonnet, opus, opus, opus); control-plane gates on main ddf8d06: gateway 4623 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0; frontend 1915 of 1915; ai-service 1381 passed. Packages installed through worktree links damaged the main checkout's gateway node_modules; npm ci in the main checkout restored it. Checkpoint: docs/CHAT-DISCORD-01-CHECKPOINT.md. FOLLOWUPS: 12 registered (CHAT-DISCORD-DM-01; CHAT-NOTIFY-ONLY-01; CHAT-SESSION-01; CHAT-RESULTS-OTHER-01; CHAT-SERVICE-SPLIT-01; CHAT-EVAL-01; CHAT-LINK-NOTICE-01; CHAT-PRUNE-01; CHAT-STATE-PERSIST-01; CHAT-TIDY-01; WS-UPGRADE-01; GW-I18N-LOADER-01) / 10 superseded (F3 by ACCESS-READY-01; F8 by the STAGING-DEPLOY-CHAT-01 and CHAT-LIVE-01 bodies; the /status counts by C1; the command names by the English names; unlink while off by A1 acceptance 8; the hidden-tab code by design; the A2 class sharing and DOM harness by BUILDER-POLISH-01; the optional delivery repository by the review; the Chief of Staff read-only extension by the review; the leftover worktree folders by Keith's step) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice C2 (approvals in Discord) — 2026-11-14. Slice C1 done 2026-11-14: opus subagent a5d5e34 and faa6408, cherry-picked to main (fbeb1eb; 28 files): the Team page's start and approve code extracted into CollaborationStartService (the controller's spec byte-for-byte unchanged and green; orchestration.service.ts and ai-execution.controller.ts untouched); /ask and @name start a Chief of Staff run or the owner's own workflow as the linked owner with the session guard's identity, never with a sessionId, and approve the first step through approveReferral so every check runs (global and provider switches, daily caps, credits, token quota, workflow checks, tests gate); refusals translated, a refused run cancelled; /cancel registered (seven commands); chat_run_deliveries (migration 1809, cascade from chat_links) and a 10-second poller sending the final answer by direct message in at most 5 parts of 1900 characters, mentions off, retries, rows pruned after 30 days and deleted on unlink; no task or answer text or Discord id in logs or audit; one reply key list. Control-plane gates: on the branch gateway 4559 passed, 7 skipped, only the 14 known smoke.integration failures, build rc 0; on main after the cherry-pick gateway 4559 passed, 7 skipped, the same 14, build rc 0. Was: ADMITTED — Lane 1 — Step 3 slice C1 (runs and results) — 2026-11-14. Slice B done 2026-11-14: opus subagent ed5f711 and d375be1, cherry-picked to main as e1fe19a and ce7746b (19 files): the approved @discordjs/core 2.7.0, ws 2.0.4 and rest 2.6.3 pinned (12 packages added to the root lockfile, nothing else changed; npm audit unchanged at 34, none on a new package); the Discord transport behind a ChatTransport token with intents 0, connecting only with CHAT_DISCORD_ENABLED=true and DISCORD_BOT_TOKEN set, never under Jest, never blocking boot, stopping after 20 failed identifies or a fatal close, the token in no log line, mentions off; direct-message slash commands /link, /unlink, /status, /language, /help and /ask (fixed refusal, creates nothing), English names in every client with translated descriptions; replies from the gateway locale files; CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN in the env template. The worker's npm install was refused; Keith's install through the worktree links replaced them with real folders and, through the gateway link, removed two packages from the main checkout's gateway node_modules and left 49 temporary folders; the control plane ran npm ci in the main checkout (Keith's request) and it is whole again. Control-plane gates: on the branch after the install, gateway 4475 passed, 7 skipped, only the 14 known smoke.integration failures (one run had a timing failure in execution-safety.integration that passed alone and on a full rerun); on main after npm ci: gateway 4475 passed, 7 skipped, the same 14; ai-service 1381 passed, 1 skipped; frontend tsc rc 0, 1915 of 1915; all builds rc 0. Was: ADMITTED — Lane 1 — Step 3 slice B (bot connection) — 2026-11-13. Slice A2 done 2026-11-13: sonnet subagent dc51ae7, fast-forwarded (10 files): the Chat (Discord) section on the Connections page (not available, the data statement to tick before a code, the code shown once and never stored in the browser, the pending claim with the Discord name and id ending and Confirm or Cancel, polling every 4 s only while a code is live and the page visible, linked with Unlink after a confirm, translated errors), 59 keys under connections.chat in en, zh-TW and zh-CN. Control-plane rerun on the branch, which is main: tsc rc 0, frontend 1915 of 1915 (baseline 1877), build rc 0. Was: ADMITTED — Lane 1 — Step 3 slice A2 (link page) — 2026-11-13. Slice A1 done 2026-11-13: opus subagent 58781da and 45359dd, cherry-picked to main as 33adf2d and b9f037c (14 files): migration 1808 creates chat_links (unique channel and Discord id; unique owner and channel) and chat_link_codes (SHA-256 hash only, checked hex; cascade on users), up and down tested; one-time codes of 8 characters from 32 letters, 10 minutes, single use, replaced by a new one; one answer for any invalid claim; a claim alone links nothing, the owner confirms; limits 5 codes per owner per hour, 5 claims per Discord user per hour, a pause after 100 failures an hour; unlink deletes link and codes; audit rows hold no Discord id or code; the five routes use the session-only SessionCookieGuard and the harness entitlement; switch off: GET says disabled, writes answer 503 chat_link_unavailable and write nothing. Control-plane rerun on the branch: gateway 4396 passed, 7 skipped, only the 14 known smoke.integration failures (baseline 4294); build rc 0. Was: ADMITTED — Lane 1 — Step 3 slice A1 (link backend) — 2026-11-13. Keith approved the stage-start on 2026-11-13 ("Yes, approve all eleven"): all eleven recommendations of docs/CHAT-DISCORD-01-STAGE-START.md section 12 (gateway module; the @discordjs core, ws and rest packages, exact pins; link code made on the platform, typed in Discord, confirmed on the platform; direct messages only; no free text for now; approvals in Discord for read-only steps; /ask approves the first step; full answer text in Discord after a data statement; only accounts with harness access may link; two migrations; live check 2 shares ACCESS-01J-LIVE's run window). The route shapes of section 5 are frozen for Step 3. Was: ADMITTED — Lane 1 — Step 2 drafted 2026-11-13, waiting for Keith's approval. Step 2 drafted 2026-11-13: docs/CHAT-DISCORD-01-STAGE-START.md (fable subagent, Fable 5.2, ae30cef, fast-forwarded; facts checked by the control plane against the code). Recommended: the bot as a gateway module (services/api-gateway/src/chat/), not a new service; the @discordjs/core, ws and rest packages (exact pins, Apache-2.0; PACKAGE, Keith approves); direct-message slash commands only, no intents, no Message Content intent; link by a code made on the platform, typed in Discord and confirmed on the platform (reverses the plan's direction to avoid the device-code phishing shape); runs started as the linked owner through the Team page's start and approve code, read-only, every safety check still applies; results sent by direct message after a data statement the owner ticks; CHAT_DISCORD_ENABLED default false never turns runs on. Slices A1 link backend (GATEWAY, MIGRATION; opus), A2 link section on the Connections page (FRONTEND, I18N; sonnet), B bot connection and commands without runs (PACKAGE, GATEWAY, ENV; opus), C1 runs and results (GATEWAY, MIGRATION; opus), C2 approvals for read-only steps (GATEWAY; opus), D1 deploy with live check 1, D2 CHAT-LIVE-01. Waiting for Keith's approval and eleven answers (stage-start section 12). Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-13 — by the control plane on Keith's "Start Discord (Stage 5)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** CHAT-DISCORD-01
 **Title:** Discord chat channel
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88188,6 +88192,342 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** Discord first (A7, E1-E3): an outbound bot gateway, two-way (start a workflow, receive results), account link by a one-time code, every message treated as untrusted data, and @name routes to an agent.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.3
+
+### STAGING-DEPLOY-CHAT-01 — Deploy the Discord chat channel and run live check 1
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CHAT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CHAT-01
+**Title:** Deploy the Discord chat channel and run live check 1
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy and is ready to create the Discord application and bot (stage-start section 4).
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** records; host state (deploy; gateway.env gains CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN, a new baseline).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Live check 1 of docs/CHAT-DISCORD-01-STAGE-START.md section 10, with no runs, provider key or credits: deploy main (migrations 1808 and 1809) with CHAT_DISCORD_ENABLED=false and the earlier deploy checks; Keith creates the Discord application and bot (Public Bot off, all privileged intents off), a private server with only him, installs the bot (scopes bot and applications.commands, no permissions), resets the token and types it at a hidden prompt on the host into gateway.env; switch on, restart the gateway, one ready line, no new listening port, the token absent from the journal; on the Connections page tick the statement and create a code, /link in Discord, Confirm; /status, /help, /language zh-TW, /ask with a marker word gets the translated runs-off refusal with no run row; the host checks tables, audit rows (no Discord id) and that the marker is absent from logs; /unlink then /ask gives link first and the rows are gone; record the new gateway.env baseline hash.
+
+### CHAT-LIVE-01 — Discord live check with a real answer and an approval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-LIVE-01
+**Title:** Discord live check with a real answer and an approval
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHAT-01 is locked and Keith opens a run window with a provider key he types on the host (recommended: the same window as ACCESS-01J-LIVE).
+**Depends on:** STAGING-DEPLOY-CHAT-01.
+**Primary write scope:** records; host state during the window (provider switch, GLOBAL_EXECUTION_ENABLED, key), restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Live check 2 of docs/CHAT-DISCORD-01-STAGE-START.md section 10: in a run window (tester window closed), /ask the Chief of Staff in Discord gets the real answer by direct message within the part limits; a waiting read-only step shows Approve and Reject and Approve continues the run; a non-read-only step points to the Team page; credits and the daily cap apply; a prompt-injection probe in the task stays data; runs switched off again afterwards. Lands the PRD.md section 11 GATED row, the section 8 narrowing and ARCHITECTURE.md 13.6 Chat channels as drafted in stage-start section 11, in Keith's words.
+
+### CHAT-DISCORD-DM-01 — Free-text direct messages to the bot
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-DISCORD-DM-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-DISCORD-DM-01
+**Title:** Free-text direct messages to the bot
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (Q5: not for now).
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F1, Q5): plain messages without a slash command, which needs the DIRECT_MESSAGES gateway intent (not privileged) and more parsing of untrusted text.
+
+### CHAT-NOTIFY-ONLY-01 — A notice-only setting for Discord results
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-NOTIFY-ONLY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-NOTIFY-ONLY-01
+**Title:** A notice-only setting for Discord results
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (Q8 chose the full answer).
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, frontend/components/connections/, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F2): a per-owner setting to send only "your result is ready" so no answer text leaves the platform.
+
+### CHAT-SESSION-01 — Start coding and advisors team runs from Discord
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-SESSION-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-SESSION-01
+**Title:** Start coding and advisors team runs from Discord
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, services/api-gateway/src/orchestration/collaboration-start.service.ts.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F4): teams that need a project session cannot start from Discord today (runs from Discord never carry a sessionId); needs a safe way to choose the project and a decision on write access.
+
+### CHAT-RESULTS-OTHER-01 — Send results of platform-started runs to the linked chat
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-RESULTS-OTHER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-RESULTS-OTHER-01
+**Title:** Send results of platform-started runs to the linked chat
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, frontend/components/connections/.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F5): an opt-in to receive results of runs started on the Team page (and later triggers) in the linked Discord.
+
+### CHAT-SERVICE-SPLIT-01 — Move the chat transport to its own service
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-SERVICE-SPLIT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-SERVICE-SPLIT-01
+**Title:** Move the chat transport to its own service
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: a second channel or load makes it worth the ops change. Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: a new service, ops/clean-baseline/, services/api-gateway/src/chat/.
+**Mutexes / resources:** set at admission (GATEWAY, COMPOSE, ENV expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F6, Q1 chose a gateway module): a separate service and unit with a narrow internal key.
+
+### CHAT-EVAL-01 — Injection eval cases for chat-started tasks
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-EVAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-EVAL-01
+**Title:** Injection eval cases for chat-started tasks
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/.
+**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F7): fixed prompt-injection cases for tasks that arrive from Discord, beyond the one live probe in CHAT-LIVE-01.
+
+### CHAT-LINK-NOTICE-01 — Notices when a chat account is linked or unlinked
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-LINK-NOTICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-LINK-NOTICE-01
+**Title:** Notices when a chat account is linked or unlinked
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides; before a second user links.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, the mailer, frontend/components/connections/, the three message files.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F9 and slice A2): an e-mail to the owner through the platform mailer at link and unlink, and a notice of each new link on the Connections page, as a takeover signal.
+
+### CHAT-PRUNE-01 — Prune chat codes and delivery rows with the switch off
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-PRUNE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-PRUNE-01
+**Title:** Prune chat codes and delivery rows with the switch off
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (F10 and slice A1): expired chat_link_codes rows, including the claimed display name, are deleted only on the next link call, and the delivery prune runs only while the switch is on; a prune that runs regardless.
+
+### CHAT-STATE-PERSIST-01 — Keep chat limits, retries and button tokens across restarts
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-STATE-PERSIST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-STATE-PERSIST-01
+**Title:** Keep chat limits, retries and button tokens across restarts
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides; before more than one gateway process.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, a migration.
+**Mutexes / resources:** set at admission (GATEWAY, MIGRATION expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (slices A1, C1, C2): the link rate limits and pause, the delivery retry state and the approval button tokens are held in memory, so a restart resets limits, may resend parts and makes old buttons stop working; waiting steps are not re-sent with fresh buttons; a multi-process gateway would break them.
+
+### CHAT-TIDY-01 — Small Discord chat fixes
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-TIDY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** CHAT-TIDY-01
+**Title:** Small Discord chat fixes
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, the gateway locale files.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01: agent-name autocomplete for /ask (needs autocomplete interactions); the per-minute limit covers only /ask and /cancel; /help does not mention the approval buttons; Reject from Discord always stores the fixed 'omitted' reason; four no-explicit-any lint errors in chat/discord/discord-transport.ts.
+
+### WS-UPGRADE-01 — Upgrade the ws package past its advisories
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=WS-UPGRADE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** WS-UPGRADE-01
+**Title:** Upgrade the ws package past its advisories
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** PROVISIONAL: package.json files and package-lock.json.
+**Mutexes / resources:** PACKAGE (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-DISCORD-01 (slice B): the root lockfile's ws 8.18.3 has two high advisories (GHSA-58qx-3vcg-4xpx, GHSA-96hv-2xvq-fx4p; fixed in 8.20.2 and later); the Discord connection now uses it too. npm audit --omit=dev counts 34 findings in total, unchanged by CHAT-DISCORD-01. No npm command through linked node_modules.
+
+### GW-I18N-LOADER-01 — Check the gateway translation loader
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GW-I18N-LOADER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Task ID:** GW-I18N-LOADER-01
+**Title:** Check the gateway translation loader
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** none.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/config/i18n.ts and its spec.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Noticed in CHAT-DISCORD-01 slice B: config/i18n.ts loads ../locales relative to dist/src/config and uses the namespace auth over a file nested under auth; it looks broken at run time (the chat replies use their own loader). Confirm and fix or record why it is fine.
 
 ### CHAT-LINE-01 — LINE chat channel
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
