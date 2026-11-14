@@ -1,9 +1,12 @@
 import { HttpException, Logger } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
 import { FindOperator } from 'typeorm';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
+import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import {
   CHAT_LINK_CODE_ALPHABET,
   CHAT_LINK_ERROR_CODES,
@@ -12,6 +15,7 @@ import {
   normalizeChatLinkCode,
   normalizeChatLocale,
 } from './chat-link.service';
+import { ChatModule } from './chat.module';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const OTHER = '22222222-2222-4222-8222-222222222222';
@@ -379,6 +383,86 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       });
       await store.links.insert(linkRow('d', OTHER, DISCORD_OTHER));
       expect(store.links.rows).toHaveLength(2);
+    });
+  });
+
+  describe('unlink deletes the delivery rows (C1, acceptance 7)', () => {
+    function deliveryRow(collaborationRunId: string, linkId: string, status = 'waiting'): ChatRunDelivery {
+      return {
+        collaborationRunId,
+        linkId,
+        status: status as ChatRunDelivery['status'],
+        notifiedReferralIds: [],
+        createdAt: new Date(),
+        deliveredAt: null,
+      };
+    }
+
+    beforeEach(() => {
+      service = new ChatLinkService(store.links as never, store.codes as never, store.deliveries as never);
+    });
+
+    it('the page unlink deletes the link and its delivery rows in one transaction; other links keep theirs', async () => {
+      await linkOwner();
+      await linkOwner(OTHER, DISCORD_OTHER);
+      const ownerLink = store.links.rows.find((row) => row.userId === OWNER)!.id;
+      const otherLink = store.links.rows.find((row) => row.userId === OTHER)!.id;
+      store.deliveries.rows.push(deliveryRow('run-1', ownerLink), deliveryRow('run-2', ownerLink, 'delivered'));
+      store.deliveries.rows.push(deliveryRow('run-3', otherLink));
+
+      expect(await service.unlink(OWNER)).toEqual({ channel: 'discord', removed: true });
+      expect(store.deliveries.rows.map((row) => row.collaborationRunId)).toEqual(['run-3']);
+      const removed = store.audit.rows.filter((row) => row.eventType === 'link_removed');
+      expect(removed[0].payload).toEqual({ channel: 'discord', linkId: ownerLink, removedCodes: 0, removedDeliveries: 2 });
+    });
+
+    it('/unlink in the chat deletes them too', async () => {
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
+      store.deliveries.rows.push(deliveryRow('run-1', linkId));
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: true });
+      expect(store.deliveries.rows).toEqual([]);
+      expect(store.audit.rows.find((row) => row.eventType === 'link_removed')!.payload).toMatchObject({
+        removedDeliveries: 1,
+        source: 'chat_command',
+      });
+    });
+
+    it('a failed unlink keeps the rows (rolled back with the link)', async () => {
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
+      store.deliveries.rows.push(deliveryRow('run-1', linkId));
+      store.links.delete = async () => {
+        throw new Error('boom');
+      };
+      await expect(service.unlink(OWNER)).rejects.toThrow('boom');
+      expect(store.deliveries.rows).toHaveLength(1);
+      expect(store.links.rows).toHaveLength(1);
+    });
+
+    it('Nest injects the delivery repository, and ChatModule registers it', async () => {
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          ChatLinkService,
+          { provide: getRepositoryToken(ChatLink), useValue: store.links },
+          { provide: getRepositoryToken(ChatLinkCode), useValue: store.codes },
+          { provide: getRepositoryToken(ChatRunDelivery), useValue: store.deliveries },
+        ],
+      }).compile();
+      const injected = moduleRef.get(ChatLinkService);
+      await injected.createCode(OWNER, 'en');
+      const { code } = await injected.createCode(OWNER, 'en');
+      await injected.claim(code, DISCORD_ID, DISPLAY_NAME, 'en');
+      await injected.confirm(OWNER);
+      store.deliveries.rows.push(deliveryRow('run-1', store.links.rows[0].id));
+      await injected.unlink(OWNER);
+      expect(store.deliveries.rows).toEqual([]);
+
+      const imports = Reflect.getMetadata('imports', ChatModule) as Array<{ providers?: Array<{ provide?: unknown }> }>;
+      const token = getRepositoryToken(ChatRunDelivery);
+      expect(
+        imports.some((entry) => Array.isArray(entry?.providers) && entry.providers.some((provider) => provider?.provide === token)),
+      ).toBe(true);
     });
   });
 
@@ -840,6 +924,7 @@ class MemoryManager {
     if (target === ChatLink) return this.store.links as MemoryRepository<object>;
     if (target === ChatLinkCode) return this.store.codes as MemoryRepository<object>;
     if (target === AuditEventEntity) return this.store.audit as MemoryRepository<object>;
+    if (target === ChatRunDelivery) return this.store.deliveries as MemoryRepository<object>;
     throw new Error('unknown repository');
   }
 
@@ -862,30 +947,34 @@ class MemoryStore {
   ]);
   codes = new MemoryRepository<ChatLinkCode>('codes', this.calls, [['codeHash']]);
   audit = new MemoryRepository<AuditEventEntity>('audit', this.calls);
+  deliveries = new MemoryRepository<ChatRunDelivery>('deliveries', this.calls);
   manager = new MemoryManager(this);
 
   constructor() {
     this.links.manager = this.manager;
     this.codes.manager = this.manager;
     this.audit.manager = this.manager;
+    this.deliveries.manager = this.manager;
   }
 
   resetCalls(): void {
     this.calls.length = 0;
   }
 
-  snapshot(): { links: ChatLink[]; codes: ChatLinkCode[]; audit: AuditEventEntity[] } {
+  snapshot(): { links: ChatLink[]; codes: ChatLinkCode[]; audit: AuditEventEntity[]; deliveries: ChatRunDelivery[] } {
     return {
       links: this.links.rows.map(copy),
       codes: this.codes.rows.map(copy),
       audit: this.audit.rows.map(copy),
+      deliveries: this.deliveries.rows.map(copy),
     };
   }
 
-  restore(snapshot: { links: ChatLink[]; codes: ChatLinkCode[]; audit: AuditEventEntity[] }): void {
+  restore(snapshot: { links: ChatLink[]; codes: ChatLinkCode[]; audit: AuditEventEntity[]; deliveries: ChatRunDelivery[] }): void {
     this.links.rows = snapshot.links;
     this.codes.rows = snapshot.codes;
     this.audit.rows = snapshot.audit;
+    this.deliveries.rows = snapshot.deliveries;
   }
 }
 

@@ -13,10 +13,14 @@ import { AuthModule } from '../auth/auth.module';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
+import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { User } from '../entities/user.entity';
+import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { ChatCommandService } from './chat-commands';
+import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
+import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT, ChatTransport } from './chat-transport';
 import { DiscordTransport } from './discord/discord-transport';
 
@@ -96,12 +100,26 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * CHAT-DISCORD-01: chat channels. Slice A1: the account link (tables, codes,
  * routes, audit). Slice B: the Discord bot connection (outbound only, intents
  * 0, CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN) and the slash commands
- * without runs. Only ChatLinkService is exported.
+ * without runs. Slice C1: /ask (and the /cancel logic) through the Team
+ * page's start and approve code (OrchestrationModule's CollaborationStartService), the
+ * chat_run_deliveries table and the result poller. Only ChatLinkService is
+ * exported.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatLink, ChatLinkCode, AuditEventEntity, User]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([ChatLink, ChatLinkCode, ChatRunDelivery, AuditEventEntity, User]),
+    AuthModule,
+    OrchestrationModule,
+  ],
   controllers: [ChatLinkController],
-  providers: [ChatLinkService, ChatCommandService, CHAT_TRANSPORT_PROVIDER, ChatChannelRunner],
+  providers: [
+    ChatLinkService,
+    ChatCommandService,
+    CHAT_TRANSPORT_PROVIDER,
+    ChatChannelRunner,
+    ChatRunService,
+    ChatDeliveryService,
+  ],
   exports: [ChatLinkService],
 })
 export class ChatModule {}

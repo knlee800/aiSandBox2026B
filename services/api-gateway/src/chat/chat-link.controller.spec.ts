@@ -21,6 +21,8 @@ import { SameOriginWriteGuard } from '../guards/same-origin-write.guard';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
 import { ChatCommandService } from './chat-commands';
+import { ChatDeliveryService } from './chat-delivery.service';
+import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT_PROVIDER, ChatChannelRunner, ChatModule } from './chat.module';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -377,7 +379,14 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     const providers = Reflect.getMetadata('providers', ChatModule);
     const exportsList = Reflect.getMetadata('exports', ChatModule);
     expect(controllers).toEqual([ChatLinkController]);
-    expect(providers).toEqual([ChatLinkService, ChatCommandService, CHAT_TRANSPORT_PROVIDER, ChatChannelRunner]);
+    expect(providers).toEqual([
+      ChatLinkService,
+      ChatCommandService,
+      CHAT_TRANSPORT_PROVIDER,
+      ChatChannelRunner,
+      ChatRunService,
+      ChatDeliveryService,
+    ]);
     expect(exportsList).toEqual([ChatLinkService]);
 
     const appModule = readFileSync(join(__dirname, '..', 'app.module.ts'), 'utf8');

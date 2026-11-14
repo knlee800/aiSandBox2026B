@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,7 @@ import { EntityManager, IsNull, LessThanOrEqual, MoreThan, Repository } from 'ty
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
+import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { isChatDiscordEnabled } from './chat-switch';
 
 /**
@@ -39,6 +41,10 @@ import { isChatDiscordEnabled } from './chat-switch';
  *   user id or the display name.
  * - CHAT_DISCORD_ENABLED off: every write is refused with chat_link_unavailable
  *   and nothing is read or written; the state read answers enabled false.
+ * - Unlink (C1): also deletes the link's chat_run_deliveries rows in the same
+ *   transaction (the foreign key's ON DELETE CASCADE does the same in the
+ *   database). Runs already started keep going; their results stay on the
+ *   Results page only.
  */
 
 export const CHAT_CHANNEL_DISCORD = 'discord';
@@ -327,6 +333,11 @@ export class ChatLinkService {
     private readonly links: Repository<ChatLink>,
     @InjectRepository(ChatLinkCode)
     private readonly codes: Repository<ChatLinkCode>,
+    // C1: present in ChatModule (TypeOrmModule.forFeature). Tests that build
+    // the service without it still unlink; the database cascade remains.
+    @Optional()
+    @InjectRepository(ChatRunDelivery)
+    private readonly deliveries?: Repository<ChatRunDelivery>,
   ) {}
 
   /** GET /api/chat-links. Switch off: nothing is read. */
@@ -593,11 +604,13 @@ export class ChatLinkService {
       if (!link) {
         return { linkId: null as string | null, removedCodes: codes.affected ?? 0 };
       }
+      const removedDeliveries = await this.deleteDeliveries(manager, link.id);
       await links.delete({ id: link.id });
       await this.audit(manager, CHAT_AUDIT_EVENTS.removed, 'chat_link', link.id, userId, {
         channel: CHAT_CHANNEL_DISCORD,
         linkId: link.id,
         removedCodes: codes.affected ?? 0,
+        ...(removedDeliveries === null ? {} : { removedDeliveries }),
       });
       return { linkId: link.id as string | null, removedCodes: codes.affected ?? 0 };
     });
@@ -663,12 +676,14 @@ export class ChatLinkService {
         return null;
       }
       const codes = await manager.getRepository(ChatLinkCode).delete({ userId: link.userId, channel });
+      const removedDeliveries = await this.deleteDeliveries(manager, link.id);
       await links.delete({ id: link.id });
       const removedCodes = codes.affected ?? 0;
       await this.audit(manager, CHAT_AUDIT_EVENTS.removed, 'chat_link', link.id, link.userId, {
         channel,
         linkId: link.id,
         removedCodes,
+        ...(removedDeliveries === null ? {} : { removedDeliveries }),
         source: 'chat_command',
       });
       return { linkId: link.id, userId: link.userId };
@@ -678,6 +693,15 @@ export class ChatLinkService {
     }
     this.logger.log(`chat link removed userId=${result.userId} linkId=${result.linkId} source=chat_command`);
     return { channel, removed: true };
+  }
+
+  /** C1: the link's delivery rows, in the unlink transaction. Null when the repository is not wired. */
+  private async deleteDeliveries(manager: EntityManager, linkId: string): Promise<number | null> {
+    if (!this.deliveries) {
+      return null;
+    }
+    const removed = await manager.getRepository(ChatRunDelivery).delete({ linkId });
+    return removed.affected ?? 0;
   }
 
   private assertEnabled(): void {

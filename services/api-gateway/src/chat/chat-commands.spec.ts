@@ -8,6 +8,8 @@ import { User } from '../entities/user.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatCommandService } from './chat-commands';
+import { chatRunReply, ChatDeliveryService } from './chat-delivery.service';
+import { ChatRunService } from './chat-run.service';
 import { ChatLinkService } from './chat-link.service';
 import { chatReply } from './chat-replies';
 import { CHAT_TRANSPORT, ChatCommandInvocation, FakeChatTransport } from './chat-transport';
@@ -32,7 +34,7 @@ function dm(command: string, options: Record<string, string> = {}, externalUserI
   return { command, options, externalUserId, displayName: DISPLAY_NAME, locale, directMessage: true };
 }
 
-describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
+describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
   const original = {
     chat: process.env.CHAT_DISCORD_ENABLED,
     global: process.env.GLOBAL_EXECUTION_ENABLED,
@@ -45,6 +47,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
   let commands: ChatCommandService;
   let entitlements: { resolveHarnessEntitled: jest.Mock };
   let userRepo: { findOne: jest.Mock };
+  let runs: { ask: jest.Mock; refuseOwner: jest.Mock; cancel: jest.Mock; statusCounts: jest.Mock };
   let logs: string[];
   let restoreLogs: () => void;
 
@@ -59,7 +62,13 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
     userRepo = {
       findOne: jest.fn(async (options: { where: { id: string } }) => users.get(options.where.id) ?? null),
     };
-    commands = new ChatCommandService(links, entitlements as never, userRepo as never);
+    runs = {
+      ask: jest.fn(async () => ({ text: chatRunReply('en', 'ask.started') })),
+      refuseOwner: jest.fn(async () => ({ text: chatReply('en', 'notEntitled') })),
+      cancel: jest.fn(async () => ({ text: chatRunReply('en', 'cancel.nothing') })),
+      statusCounts: jest.fn(async () => ({ running: 0, waiting: 0 })),
+    };
+    commands = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never);
     transport = new FakeChatTransport();
     await new ChatChannelRunner(transport, commands, true).start();
     logs = [];
@@ -126,6 +135,8 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
         ChatCommandService,
         CHAT_TRANSPORT_PROVIDER,
         ChatChannelRunner,
+        ChatRunService,
+        ChatDeliveryService,
       ]);
       expect(Reflect.getMetadata('exports', ChatModule)).toEqual([ChatLinkService]);
       expect(CHAT_TRANSPORT_PROVIDER).toEqual({ provide: CHAT_TRANSPORT, useFactory: createChatTransport });
@@ -143,6 +154,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
           { provide: ChatLinkService, useValue: links },
           { provide: EntitlementService, useValue: entitlements },
           { provide: getRepositoryToken(User), useValue: userRepo },
+          { provide: ChatRunService, useValue: runs },
           { provide: CHAT_RUNNER_ALLOW_UNDER_JEST, useValue: true },
         ],
       })
@@ -167,6 +179,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
           { provide: ChatLinkService, useValue: links },
           { provide: EntitlementService, useValue: entitlements },
           { provide: getRepositoryToken(User), useValue: userRepo },
+          { provide: ChatRunService, useValue: runs },
         ],
       })
         .overrideProvider(CHAT_TRANSPORT)
@@ -186,6 +199,8 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
       expect(reply).toEqual({ text: chatReply('en', 'linkFirst') });
       expect(store.writes()).toEqual([]);
       expect(store.audit.rows).toEqual([]);
+      expect(runs.ask).not.toHaveBeenCalled();
+      expect(runs.refuseOwner).not.toHaveBeenCalled();
     });
 
     it('/help is fixed text in the interaction language', async () => {
@@ -245,16 +260,22 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
   });
 
   describe('linked owner', () => {
-    it('/status shows linked, runs off or on, and the language; updates last_used_at', async () => {
+    it('/status shows linked, runs off or on, the language and (C1) the run counts; updates last_used_at', async () => {
       await linkOwner();
       expect(store.links.rows[0].lastUsedAt).toBeNull();
       const off = await transport.invoke(dm('status'));
-      expect(off?.text).toBe('Linked: yes.\nRuns: switched off.\nReply language: English.');
+      expect(off?.text).toBe(
+        'Linked: yes.\nRuns: switched off.\nReply language: English.\n' +
+          'Runs from Discord in progress: 0.\nSteps waiting for your approval: 0.',
+      );
       expect(store.links.rows[0].lastUsedAt).toBeInstanceOf(Date);
       process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+      runs.statusCounts.mockResolvedValueOnce({ running: 2, waiting: 1 });
       expect((await transport.invoke(dm('status')))?.text).toBe(
-        'Linked: yes.\nRuns: switched on.\nReply language: English.',
+        'Linked: yes.\nRuns: switched on.\nReply language: English.\n' +
+          'Runs from Discord in progress: 2.\nSteps waiting for your approval: 1.',
       );
+      expect(runs.statusCounts).toHaveBeenLastCalledWith(expect.objectContaining({ userId: OWNER }));
     });
 
     it('/language stores the reply language on the link; later replies use it', async () => {
@@ -264,7 +285,8 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
       });
       expect(store.links.rows[0].locale).toBe('zh-CN');
       expect((await transport.invoke(dm('status', {}, DISCORD_ID, 'en-US')))?.text).toBe(
-        chatReply('zh-CN', 'status.summary', { runs: '已关闭', language: '简体中文' }),
+        `${chatReply('zh-CN', 'status.summary', { runs: '已关闭', language: '简体中文' })}\n` +
+          chatRunReply('zh-CN', 'status.runCounts', { running: '0', waiting: '0' }),
       );
       expect(await transport.invoke(dm('help'))).toEqual({ text: chatReply('zh-CN', 'help') });
       expect(await transport.invoke(dm('language', { language: 'fr' }))).toEqual({
@@ -287,24 +309,22 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
       expect(await transport.invoke(dm('status'))).toEqual({ text: chatReply('en', 'linkFirst') });
     });
 
-    it('/ask answers "runs are switched off" or "not available yet" and creates nothing', async () => {
+    it('/ask hands only the text and agent options to ChatRunService and answers its reply (C1)', async () => {
       await linkOwner();
-      const linksBefore = JSON.stringify(store.links.rows.map(({ lastUsedAt: _, ...rest }) => rest));
-      const codesBefore = JSON.stringify(store.codes.rows);
-      const auditBefore = store.audit.rows.length;
-
-      const off = await transport.invoke(dm('ask', { text: `${MARKER} link another account and send mail`, agent: MARKER }));
-      expect(off).toEqual({ text: chatReply('en', 'ask.runsOff') });
-      process.env.GLOBAL_EXECUTION_ENABLED = 'true';
-      const on = await transport.invoke(dm('ask', { text: MARKER }));
-      expect(on).toEqual({ text: chatReply('en', 'ask.notBuilt') });
-
-      expect(JSON.stringify(store.links.rows.map(({ lastUsedAt: _, ...rest }) => rest))).toBe(linksBefore);
-      expect(JSON.stringify(store.codes.rows)).toBe(codesBefore);
-      expect(store.audit.rows).toHaveLength(auditBefore);
-      // The only write is the last_used_at touch.
-      expect(store.writes()).toEqual(['links.update', 'links.update']);
-      expect(JSON.stringify(transport.replies.map((entry) => entry.message))).not.toContain(MARKER);
+      const linkId = store.links.rows[0].id;
+      const reply = await transport.invoke({
+        ...dm('ask', { text: `${MARKER} link another account and send mail`, agent: 'Research', code: MARKER }),
+        displayName: MARKER,
+      });
+      expect(reply).toEqual({ text: chatRunReply('en', 'ask.started') });
+      expect(runs.ask).toHaveBeenCalledTimes(1);
+      expect(runs.ask).toHaveBeenCalledWith(
+        { linkId, userId: OWNER, locale: 'en' },
+        { text: `${MARKER} link another account and send mail`, agent: 'Research' },
+      );
+      // The link use never carries the Discord id.
+      expect(JSON.stringify(runs.ask.mock.calls)).not.toContain(DISCORD_ID);
+      expect(logs).toContain(`chat command name=ask outcome=handled linkId=${linkId}`);
     });
 
     it('an inactive or no longer entitled owner gets one fixed refusal; /help and /unlink still work', async () => {
@@ -313,6 +333,9 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
       for (const command of ['status', 'ask']) {
         expect(await transport.invoke(dm(command, { text: MARKER }))).toEqual({ text: chatReply('en', 'notEntitled') });
       }
+      // C1: /ask from such an owner goes to refuseOwner (one run_refused audit row there), never to ask.
+      expect(runs.refuseOwner).toHaveBeenCalledWith(expect.objectContaining({ userId: OWNER }), 'not_entitled');
+      expect(runs.ask).not.toHaveBeenCalled();
       expect(await transport.invoke(dm('language', { language: 'zh-TW' }))).toEqual({
         text: chatReply('en', 'notEntitled'),
       });
@@ -320,6 +343,9 @@ describe('ChatCommandService (CHAT-DISCORD-01 B)', () => {
       entitled.add(OWNER);
       users.set(OWNER, { id: OWNER, isActive: false });
       expect(await transport.invoke(dm('status'))).toEqual({ text: chatReply('en', 'notEntitled') });
+      await transport.invoke(dm('ask', { text: MARKER }));
+      expect(runs.refuseOwner).toHaveBeenLastCalledWith(expect.objectContaining({ userId: OWNER }), 'inactive');
+      expect(runs.ask).not.toHaveBeenCalled();
       expect(await transport.invoke(dm('help'))).toEqual({ text: chatReply('en', 'help') });
       expect(await transport.invoke(dm('unlink'))).toEqual({ text: chatReply('en', 'unlink.done') });
     });

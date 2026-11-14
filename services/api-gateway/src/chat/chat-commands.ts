@@ -13,22 +13,28 @@ import {
   normalizeChatLocale,
 } from './chat-link.service';
 import { chatLanguageName, chatReply, ChatReplyKey } from './chat-replies';
+import { chatRunReply } from './chat-delivery.service';
+import { ChatRunService } from './chat-run.service';
 import { isChatDiscordEnabled } from './chat-switch';
 import type { ChatCommandInvocation, ChatReplyMessage } from './chat-transport';
 import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
 
 /**
- * CHAT-DISCORD-01 slice B (stage-start sections 5, 6.1, 6.4, 6.5): what each
- * slash command does. No command starts, approves or reads a run in this
- * slice; /ask answers a fixed refusal and creates nothing.
+ * CHAT-DISCORD-01 slices B and C1 (stage-start sections 5, 6.1, 6.2, 6.4,
+ * 6.5): what each slash command does.
  *
  * - /link code: ChatLinkService.claim; one fixed reply per outcome, nothing
  *   for a silenced user. A claim alone links nothing.
  * - /unlink: removes the link of this outside account.
- * - /status: linked, runs on or off, the reply language.
+ * - /status: linked, runs on or off, the reply language, and (C1) the counts
+ *   of Discord-started runs in progress and their steps waiting for approval.
  * - /language: stores the reply language on the link.
  * - /help: fixed text.
- * - /ask: "runs are switched off" or "not available yet". Creates nothing.
+ * - /ask (C1): starts a run as the linked owner through ChatRunService (the
+ *   Team page's start and approve code); runs off: refused, nothing created.
+ * - /cancel is not registered yet: ChatRunService.cancel is built and tested,
+ *   but adding the command changes the registered count that
+ *   discord/discord-transport.spec.ts pins (outside slice C1's write set).
  *
  * An unlinked outside user gets fixed text only (/help, or "link first"). A
  * linked owner who is inactive or has lost harness access gets one fixed
@@ -36,8 +42,9 @@ import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
  *
  * Every invocation field is untrusted. Only the command name (checked against
  * the fixed list) and the declared options are read. Option values are
- * passed only to claim (the code) and to the language check; no value from
- * Discord is ever logged or put into a reply. Log lines carry the command
+ * passed only to claim (the code), to the language check and (C1) to
+ * ChatRunService as the task and the agent name; no value from Discord is
+ * ever logged or put into a reply. Log lines carry the command
  * name, an outcome code and the link's own uuid.
  */
 
@@ -65,6 +72,7 @@ export class ChatCommandService {
     private readonly entitlements: EntitlementService,
     @InjectRepository(User)
     private readonly users: Repository<User>,
+    private readonly runs: ChatRunService,
   ) {}
 
   /** The transport's handler. Never throws. */
@@ -98,16 +106,25 @@ export class ChatCommandService {
           ? this.done(command, 'removed', link, message(link.locale, 'unlink.done'))
           : this.done(command, 'not_linked', link, message(link.locale, 'linkFirst'));
       }
-      if (!(await this.ownerAllowed(link.userId))) {
+      const owner = await this.ownerState(link.userId);
+      if (owner !== 'ok') {
+        if (command === 'ask') {
+          return this.done(command, owner, link, await this.runs.refuseOwner(link, owner));
+        }
         return this.done(command, 'not_entitled', link, message(link.locale, 'notEntitled'));
       }
       switch (command) {
         case 'status':
-          return this.done(command, 'ok', link, this.status(link));
+          return this.done(command, 'ok', link, await this.status(link));
         case 'language':
           return await this.language(invocation, link);
         case 'ask':
-          return this.ask(link);
+          return this.done(
+            command,
+            'handled',
+            link,
+            await this.runs.ask(link, { text: invocation.options.text, agent: invocation.options.agent }),
+          );
         default:
           return this.done(command, 'unknown_command', link, message(link.locale, 'unknownCommand'));
       }
@@ -129,9 +146,15 @@ export class ChatCommandService {
     return this.done('link', result.outcome, null, key ? message(result.locale, key) : null);
   }
 
-  private status(link: ChatLinkUse): ChatReplyMessage {
+  private async status(link: ChatLinkUse): Promise<ChatReplyMessage> {
     const runs = chatReply(link.locale, KillSwitchConfig.GLOBAL_EXECUTION_ENABLED ? 'status.runsOn' : 'status.runsOff');
-    return message(link.locale, 'status.summary', { runs, language: chatLanguageName(link.locale) });
+    const counts = await this.runs.statusCounts(link);
+    const summary = chatReply(link.locale, 'status.summary', { runs, language: chatLanguageName(link.locale) });
+    const lines = chatRunReply(link.locale, 'status.runCounts', {
+      running: String(counts.running),
+      waiting: String(counts.waiting),
+    });
+    return { text: [summary, lines].join('\n') };
   }
 
   private async language(invocation: ChatCommandInvocation, link: ChatLinkUse): Promise<ChatReplyMessage> {
@@ -149,21 +172,13 @@ export class ChatCommandService {
     return this.done('language', 'ok', link, message(locale, 'language.set', { language: chatLanguageName(locale) }));
   }
 
-  /** Slice B: refuses and creates nothing. The text and agent options are not read. */
-  private ask(link: ChatLinkUse): ChatReplyMessage {
-    if (!KillSwitchConfig.GLOBAL_EXECUTION_ENABLED) {
-      return this.done('ask', 'runs_off', link, message(link.locale, 'ask.runsOff'));
-    }
-    return this.done('ask', 'not_built', link, message(link.locale, 'ask.notBuilt'));
-  }
-
   /** The owner must be active and harness-entitled now (read live on every command). */
-  private async ownerAllowed(userId: string): Promise<boolean> {
+  private async ownerState(userId: string): Promise<'ok' | 'inactive' | 'not_entitled'> {
     const user = await this.users.findOne({ where: { id: userId }, select: ['id', 'isActive'] });
     if (!user || user.isActive !== true) {
-      return false;
+      return 'inactive';
     }
-    return this.entitlements.resolveHarnessEntitled(userId);
+    return (await this.entitlements.resolveHarnessEntitled(userId)) ? 'ok' : 'not_entitled';
   }
 
   private done<T extends ChatReplyMessage | null>(

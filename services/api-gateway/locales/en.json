@@ -53,7 +53,7 @@
       "zh-CN": "简体中文"
     },
     "replies": {
-      "help": "Commands in this direct message:\n/link code: link this Discord account with the code from the Connections page on the platform.\n/unlink: remove the link.\n/status: show the link and whether runs are switched on.\n/language: choose the language of these replies.\n/ask: ask the Chief of Staff (not available yet).",
+      "help": "Commands in this direct message:\n/link code: link this Discord account with the code from the Connections page on the platform.\n/unlink: remove the link.\n/status: show the link, whether runs are switched on, and your runs from Discord.\n/language: choose the language of these replies.\n/ask text: ask the Chief of Staff. Add agent (or start the text with @name) to ask one of your workflows. Runs from Discord can only read, never change anything.",
       "notAvailable": "The chat channel is not available right now.",
       "useDirectMessage": "Use these commands in a direct message with the bot.",
       "unknownCommand": "Unknown command. Use /help to see the commands.",
@@ -72,14 +72,42 @@
       "status": {
         "summary": "Linked: yes.\nRuns: {{runs}}.\nReply language: {{language}}.",
         "runsOn": "switched on",
-        "runsOff": "switched off"
+        "runsOff": "switched off",
+        "runCounts": "Runs from Discord in progress: {{running}}.\nSteps waiting for your approval: {{waiting}}."
       },
       "language": {
         "set": "Replies are now in {{language}}."
       },
       "ask": {
         "runsOff": "Runs are switched off on the platform. Nothing was started.",
-        "notBuilt": "Asking from Discord is not available yet. Nothing was started."
+        "notBuilt": "Asking from Discord is not available yet. Nothing was started.",
+        "started": "Started. The answer comes here in a direct message when it is ready. You can also follow the run on the Team page.",
+        "badTask": "Write your question or task in the text option (at most 8000 characters). Nothing was started.",
+        "unknownAgent": "None of your workflows has that name. Your switched-on workflows: {{names}}. Nothing was started.",
+        "ambiguousAgent": "More than one of your workflows has that name. Rename one on the platform and try again. Your switched-on workflows: {{names}}. Nothing was started.",
+        "noAgents": "You have no switched-on workflow with that name. Leave out the agent to ask the Chief of Staff. Nothing was started.",
+        "tooMany": "Too many requests. Wait a minute and try again. Nothing was started.",
+        "tooManyRuns": "You already have 3 runs from Discord in progress. Wait for one to finish or use /cancel. Nothing was started.",
+        "providerOff": "The AI provider is switched off on the platform. The run was cancelled before it ran.",
+        "noCredits": "Your credit balance is too low for this run. The run was cancelled before it ran.",
+        "overCap": "A daily limit is reached. Try again tomorrow. The run was cancelled before it ran.",
+        "workflowOff": "That workflow is switched off. Switch it on on the platform first. Nothing was run.",
+        "workflowNotTested": "Run a test of this version of the workflow on the platform first. Nothing was run.",
+        "workflowInvalid": "That workflow cannot run from Discord as saved (runs from Discord can only read). Nothing was run.",
+        "workflowBudget": "The credit budget of that workflow is used up. Nothing was run.",
+        "refused": "The platform refused this run. Nothing was run. Try it on the Team page to see why."
+      },
+      "cancel": {
+        "done": "Your latest run from Discord is cancelled.",
+        "nothing": "You have no run from Discord in progress."
+      },
+      "result": {
+        "cut": "Cut here: read the rest on the Results page.",
+        "noAnswer": "Your run finished without an answer. See the Results page.",
+        "failed": "Your run failed. See the Results page for details.",
+        "timedOut": "Your run timed out. See the Results page for details.",
+        "cancelled": "Your run was cancelled.",
+        "waitingApproval": "A step of your run is waiting for your approval on the Team page."
       }
     }
   }
