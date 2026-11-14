@@ -4,7 +4,7 @@ import zhTW from '../../locales/zh-TW.json';
 import { CHAT_LINK_LOCALES, ChatLinkLocale } from './chat-link.service';
 
 /**
- * CHAT-DISCORD-01 slice B (stage-start section 8): the bot's own text.
+ * CHAT-DISCORD-01 slices B and C1 (stage-start section 8): the bot's own text.
  *
  * Replies and command names come from the gateway's locale files
  * (services/api-gateway/locales/{en,zh-TW,zh-CN}.json, key "chat"). The files
@@ -35,7 +35,31 @@ export const CHAT_REPLY_KEYS = [
   'status.runsOff',
   'language.set',
   'ask.runsOff',
-  'ask.notBuilt',
+  // Slice C1: runs, /cancel and results.
+  'ask.started',
+  'ask.badTask',
+  'ask.unknownAgent',
+  'ask.ambiguousAgent',
+  'ask.noAgents',
+  'ask.tooMany',
+  'ask.tooManyRuns',
+  'ask.providerOff',
+  'ask.noCredits',
+  'ask.overCap',
+  'ask.workflowOff',
+  'ask.workflowNotTested',
+  'ask.workflowInvalid',
+  'ask.workflowBudget',
+  'ask.refused',
+  'status.runCounts',
+  'cancel.done',
+  'cancel.nothing',
+  'result.cut',
+  'result.noAnswer',
+  'result.failed',
+  'result.timedOut',
+  'result.cancelled',
+  'result.waitingApproval',
 ] as const;
 
 export type ChatReplyKey = (typeof CHAT_REPLY_KEYS)[number];

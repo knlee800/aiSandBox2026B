@@ -22,7 +22,6 @@ import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { DailyCreditCapService } from '../safety/daily-credit-cap.service';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { chatReply } from '../chat/chat-replies';
-import { chatRunReply } from '../chat/chat-delivery.service';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { ConversationService } from '../conversations/conversation.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
@@ -535,14 +534,14 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     it('provider switched off: the approve check refuses, the run is cancelled', async () => {
       jest.spyOn(KillSwitchConfig, 'isProviderEnabled').mockReturnValue(false);
       const result = await refusedAsk({ text: TASK });
-      expect(result.reply).toEqual({ text: chatRunReply('en', 'ask.providerOff') });
+      expect(result.reply).toEqual({ text: chatReply('en', 'ask.providerOff') });
       expectCancelledAndDropped(result, 'provider_off');
     });
 
     it('no credits: the credit guard refuses (402), the run is cancelled, the reply is translated', async () => {
       creditBalance = 0;
       const result = await refusedAsk({ text: TASK }, 'zh-TW');
-      expect(result.reply).toEqual({ text: chatRunReply('zh-TW', 'ask.noCredits') });
+      expect(result.reply).toEqual({ text: chatReply('zh-TW', 'ask.noCredits') });
       expectCancelledAndDropped(result, 'no_credits');
     });
 
@@ -554,7 +553,7 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
         ),
       );
       const result = await refusedAsk({ text: TASK });
-      expect(result.reply).toEqual({ text: chatRunReply('en', 'ask.overCap') });
+      expect(result.reply).toEqual({ text: chatReply('en', 'ask.overCap') });
       expectCancelledAndDropped(result, 'over_cap');
       expect(capCheck).toHaveBeenCalledWith(OWNER_ID);
     });
@@ -562,14 +561,14 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     it('over the token quota: the quota guard refuses (429), the run is cancelled', async () => {
       tokensUsed = 10_000_000_000;
       const result = await refusedAsk({ text: TASK });
-      expect(result.reply).toEqual({ text: chatRunReply('en', 'ask.overCap') });
+      expect(result.reply).toEqual({ text: chatReply('en', 'ask.overCap') });
       expectCancelledAndDropped(result, 'over_cap');
     });
 
     it('a switched-off workflow is refused before any run exists', async () => {
       prepareStart.mockRejectedValueOnce(workflowRefusal(WORKFLOW_REFUSAL_CODES.disabled));
       const result = await refusedAsk({ text: TASK, agent: 'Sales Digest' });
-      expect(result.reply).toEqual({ text: chatRunReply('en', 'ask.workflowOff') });
+      expect(result.reply).toEqual({ text: chatReply('en', 'ask.workflowOff') });
       expect(result.created).toEqual([]);
       expect(result.chat.deliveries).toEqual([]);
       expect((result.chat.audit[0] as { payload: unknown }).payload).toEqual({

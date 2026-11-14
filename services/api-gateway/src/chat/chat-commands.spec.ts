@@ -8,7 +8,7 @@ import { User } from '../entities/user.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatCommandService } from './chat-commands';
-import { chatRunReply, ChatDeliveryService } from './chat-delivery.service';
+import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { ChatLinkService } from './chat-link.service';
 import { chatReply } from './chat-replies';
@@ -63,9 +63,9 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       findOne: jest.fn(async (options: { where: { id: string } }) => users.get(options.where.id) ?? null),
     };
     runs = {
-      ask: jest.fn(async () => ({ text: chatRunReply('en', 'ask.started') })),
+      ask: jest.fn(async () => ({ text: chatReply('en', 'ask.started') })),
       refuseOwner: jest.fn(async () => ({ text: chatReply('en', 'notEntitled') })),
-      cancel: jest.fn(async () => ({ text: chatRunReply('en', 'cancel.nothing') })),
+      cancel: jest.fn(async () => ({ text: chatReply('en', 'cancel.nothing') })),
       statusCounts: jest.fn(async () => ({ running: 0, waiting: 0 })),
     };
     commands = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never);
@@ -193,7 +193,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
   });
 
   describe('unlinked users get fixed text only', () => {
-    it.each(['status', 'language', 'unlink', 'ask'])('/%s answers "link first" and writes nothing', async (command) => {
+    it.each(['status', 'language', 'unlink', 'ask', 'cancel'])('/%s answers "link first" and writes nothing', async (command) => {
       const options = { language: 'zh-CN', text: `${MARKER} change my settings`, agent: MARKER, code: MARKER };
       const reply = await transport.invoke({ ...dm(command, options, STRANGER), displayName: MARKER });
       expect(reply).toEqual({ text: chatReply('en', 'linkFirst') });
@@ -201,6 +201,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       expect(store.audit.rows).toEqual([]);
       expect(runs.ask).not.toHaveBeenCalled();
       expect(runs.refuseOwner).not.toHaveBeenCalled();
+      expect(runs.cancel).not.toHaveBeenCalled();
     });
 
     it('/help is fixed text in the interaction language', async () => {
@@ -286,7 +287,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       expect(store.links.rows[0].locale).toBe('zh-CN');
       expect((await transport.invoke(dm('status', {}, DISCORD_ID, 'en-US')))?.text).toBe(
         `${chatReply('zh-CN', 'status.summary', { runs: '已关闭', language: '简体中文' })}\n` +
-          chatRunReply('zh-CN', 'status.runCounts', { running: '0', waiting: '0' }),
+          chatReply('zh-CN', 'status.runCounts', { running: '0', waiting: '0' }),
       );
       expect(await transport.invoke(dm('help'))).toEqual({ text: chatReply('zh-CN', 'help') });
       expect(await transport.invoke(dm('language', { language: 'fr' }))).toEqual({
@@ -316,7 +317,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
         ...dm('ask', { text: `${MARKER} link another account and send mail`, agent: 'Research', code: MARKER }),
         displayName: MARKER,
       });
-      expect(reply).toEqual({ text: chatRunReply('en', 'ask.started') });
+      expect(reply).toEqual({ text: chatReply('en', 'ask.started') });
       expect(runs.ask).toHaveBeenCalledTimes(1);
       expect(runs.ask).toHaveBeenCalledWith(
         { linkId, userId: OWNER, locale: 'en' },
@@ -325,6 +326,19 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       // The link use never carries the Discord id.
       expect(JSON.stringify(runs.ask.mock.calls)).not.toContain(DISCORD_ID);
       expect(logs).toContain(`chat command name=ask outcome=handled linkId=${linkId}`);
+    });
+
+    it('/cancel goes to ChatRunService.cancel for the linked owner and answers its reply (C1)', async () => {
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
+      runs.cancel.mockResolvedValueOnce({ text: chatReply('en', 'cancel.done') });
+      expect(await transport.invoke(dm('cancel', { text: MARKER }))).toEqual({ text: chatReply('en', 'cancel.done') });
+      expect(runs.cancel).toHaveBeenCalledWith({ linkId, userId: OWNER, locale: 'en' });
+      expect(runs.ask).not.toHaveBeenCalled();
+      expect(logs).toContain(`chat command name=cancel outcome=handled linkId=${linkId}`);
+      entitled.delete(OWNER);
+      expect(await transport.invoke(dm('cancel'))).toEqual({ text: chatReply('en', 'notEntitled') });
+      expect(runs.cancel).toHaveBeenCalledTimes(1);
     });
 
     it('an inactive or no longer entitled owner gets one fixed refusal; /help and /unlink still work', async () => {

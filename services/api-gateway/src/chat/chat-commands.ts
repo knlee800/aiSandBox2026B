@@ -13,7 +13,6 @@ import {
   normalizeChatLocale,
 } from './chat-link.service';
 import { chatLanguageName, chatReply, ChatReplyKey } from './chat-replies';
-import { chatRunReply } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { isChatDiscordEnabled } from './chat-switch';
 import type { ChatCommandInvocation, ChatReplyMessage } from './chat-transport';
@@ -32,9 +31,7 @@ import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
  * - /help: fixed text.
  * - /ask (C1): starts a run as the linked owner through ChatRunService (the
  *   Team page's start and approve code); runs off: refused, nothing created.
- * - /cancel is not registered yet: ChatRunService.cancel is built and tested,
- *   but adding the command changes the registered count that
- *   discord/discord-transport.spec.ts pins (outside slice C1's write set).
+ * - /cancel (C1): cancels the owner's latest Discord-started run in progress.
  *
  * An unlinked outside user gets fixed text only (/help, or "link first"). A
  * linked owner who is inactive or has lost harness access gets one fixed
@@ -125,6 +122,8 @@ export class ChatCommandService {
             link,
             await this.runs.ask(link, { text: invocation.options.text, agent: invocation.options.agent }),
           );
+        case 'cancel':
+          return this.done(command, 'handled', link, await this.runs.cancel(link));
         default:
           return this.done(command, 'unknown_command', link, message(link.locale, 'unknownCommand'));
       }
@@ -150,7 +149,7 @@ export class ChatCommandService {
     const runs = chatReply(link.locale, KillSwitchConfig.GLOBAL_EXECUTION_ENABLED ? 'status.runsOn' : 'status.runsOff');
     const counts = await this.runs.statusCounts(link);
     const summary = chatReply(link.locale, 'status.summary', { runs, language: chatLanguageName(link.locale) });
-    const lines = chatRunReply(link.locale, 'status.runCounts', {
+    const lines = chatReply(link.locale, 'status.runCounts', {
       running: String(counts.running),
       waiting: String(counts.waiting),
     });

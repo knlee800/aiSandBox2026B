@@ -45,6 +45,9 @@
             "description": "The name of one of your workflows (optional)"
           }
         }
+      },
+      "cancel": {
+        "description": "Cancel your latest run started from Discord"
       }
     },
     "languageNames": {
@@ -53,7 +56,7 @@
       "zh-CN": "简体中文"
     },
     "replies": {
-      "help": "Commands in this direct message:\n/link code: link this Discord account with the code from the Connections page on the platform.\n/unlink: remove the link.\n/status: show the link, whether runs are switched on, and your runs from Discord.\n/language: choose the language of these replies.\n/ask text: ask the Chief of Staff. Add agent (or start the text with @name) to ask one of your workflows. Runs from Discord can only read, never change anything.",
+      "help": "Commands in this direct message:\n/link code: link this Discord account with the code from the Connections page on the platform.\n/unlink: remove the link.\n/status: show the link, whether runs are switched on, and your runs from Discord.\n/language: choose the language of these replies.\n/ask text: ask the Chief of Staff. Add agent (or start the text with @name) to ask one of your workflows. Runs from Discord can only read, never change anything.\n/cancel: cancel your latest run from Discord.",
       "notAvailable": "The chat channel is not available right now.",
       "useDirectMessage": "Use these commands in a direct message with the bot.",
       "unknownCommand": "Unknown command. Use /help to see the commands.",
@@ -80,7 +83,6 @@
       },
       "ask": {
         "runsOff": "Runs are switched off on the platform. Nothing was started.",
-        "notBuilt": "Asking from Discord is not available yet. Nothing was started.",
         "started": "Started. The answer comes here in a direct message when it is ready. You can also follow the run on the Team page.",
         "badTask": "Write your question or task in the text option (at most 8000 characters). Nothing was started.",
         "unknownAgent": "None of your workflows has that name. Your switched-on workflows: {{names}}. Nothing was started.",

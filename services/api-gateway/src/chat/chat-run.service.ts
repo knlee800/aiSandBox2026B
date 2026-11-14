@@ -11,14 +11,9 @@ import {
 import { WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow';
 import { OrchestrationService } from '../orchestration/orchestration.service';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
-import {
-  CHAT_RUN_AUDIT_EVENTS,
-  chatRunReply,
-  ChatDeliveryService,
-  ChatRunReplyKey,
-} from './chat-delivery.service';
+import { CHAT_RUN_AUDIT_EVENTS, ChatDeliveryService } from './chat-delivery.service';
 import { CHAT_AUDIT_CATEGORY, CHAT_CHANNEL_DISCORD, ChatLinkUse } from './chat-link.service';
-import { chatReply } from './chat-replies';
+import { chatReply, ChatReplyKey } from './chat-replies';
 import type { ChatReplyMessage } from './chat-transport';
 
 /**
@@ -83,7 +78,7 @@ export type ChatRunRefusal =
   | 'workflow_not_found'
   | 'refused';
 
-const REFUSAL_REPLIES: Readonly<Record<ChatRunRefusal, ChatRunReplyKey | 'notEntitled'>> = {
+const REFUSAL_REPLIES: Readonly<Record<ChatRunRefusal, ChatReplyKey>> = {
   runs_off: 'ask.runsOff',
   not_entitled: 'notEntitled',
   inactive: 'notEntitled',
@@ -276,7 +271,7 @@ export class ChatRunService {
       `chat run started linkId=${link.linkId} runId=${started.collaborationRunId} target=${target.workflowId ? 'workflow' : 'chief-of-staff'}`,
     );
     this.delivery.wake();
-    return { text: chatRunReply(link.locale, 'ask.started') };
+    return { text: chatReply(link.locale, 'ask.started') };
   }
 
   /** /ask from an owner who is inactive or no longer entitled: one audit row, the fixed refusal. */
@@ -291,7 +286,7 @@ export class ChatRunService {
    */
   async cancel(link: ChatLinkUse): Promise<ChatReplyMessage> {
     if (!this.commands.take(link.userId, CHAT_RUN_LIMITS.commandsPerMinute, Date.now())) {
-      return { text: chatRunReply(link.locale, 'ask.tooMany') };
+      return { text: chatReply(link.locale, 'ask.tooMany') };
     }
     const waiting = await this.deliveries.find({
       where: { linkId: link.linkId, status: 'waiting' },
@@ -303,10 +298,10 @@ export class ChatRunService {
       if (cancelled) {
         await this.markDropped(row.collaborationRunId);
         this.logger.log(`chat run cancelled linkId=${link.linkId} runId=${row.collaborationRunId}`);
-        return { text: chatRunReply(link.locale, 'cancel.done') };
+        return { text: chatReply(link.locale, 'cancel.done') };
       }
     }
-    return { text: chatRunReply(link.locale, 'cancel.nothing') };
+    return { text: chatReply(link.locale, 'cancel.nothing') };
   }
 
   /** /status: Discord-started runs in progress and their steps waiting for approval (counts only). */
@@ -427,10 +422,7 @@ export class ChatRunService {
       `chat run refused linkId=${link.linkId} reason=${reason} stage=${stage}${collaborationRunId ? ` runId=${collaborationRunId}` : ''}`,
     );
     const key = REFUSAL_REPLIES[reason];
-    if (key === 'notEntitled') {
-      return { text: chatReply(link.locale, 'notEntitled') };
-    }
-    return { text: chatRunReply(link.locale, key, names !== undefined ? { names } : undefined) };
+    return { text: chatReply(link.locale, key, names !== undefined ? { names } : undefined) };
   }
 
   /** A run that was created and then refused is cancelled (the page's cancel with a reason code). */

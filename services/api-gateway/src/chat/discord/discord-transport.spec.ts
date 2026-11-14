@@ -269,15 +269,15 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       h.gateway.emit('ready', { application: { id: APP_ID, flags: 0 } }, 0);
       await flush();
       expect(h.transport.state).toBe('ready');
-      expect(h.calls.log).toEqual([`register ${APP_ID} 6`]);
+      expect(h.calls.log).toEqual([`register ${APP_ID} 7`]);
       h.gateway.emit('closed', 4200, 0);
       h.gateway.emit('ready', { application: { id: APP_ID, flags: 0 } }, 0);
       await flush();
-      expect(h.calls.log).toEqual([`register ${APP_ID} 6`]);
+      expect(h.calls.log).toEqual([`register ${APP_ID} 7`]);
       expect(logs).toEqual(
         expect.arrayContaining([
           'log: chat discord ready',
-          'log: chat discord commands registered count=6',
+          'log: chat discord commands registered count=7',
         ]),
       );
     });

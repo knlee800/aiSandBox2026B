@@ -60,46 +60,6 @@ export const CHAT_RUN_AUDIT_EVENTS = {
   deliveryFailed: 'delivery_failed',
 } as const;
 
-/** The reply keys of slice C1 (the gateway locale files, chat.replies.*). */
-export const CHAT_RUN_REPLY_KEYS = [
-  'ask.started',
-  'ask.runsOff',
-  'ask.badTask',
-  'ask.unknownAgent',
-  'ask.ambiguousAgent',
-  'ask.noAgents',
-  'ask.tooMany',
-  'ask.tooManyRuns',
-  'ask.providerOff',
-  'ask.noCredits',
-  'ask.overCap',
-  'ask.workflowOff',
-  'ask.workflowNotTested',
-  'ask.workflowInvalid',
-  'ask.workflowBudget',
-  'ask.refused',
-  'status.runCounts',
-  'cancel.done',
-  'cancel.nothing',
-  'result.cut',
-  'result.noAnswer',
-  'result.failed',
-  'result.timedOut',
-  'result.cancelled',
-  'result.waitingApproval',
-] as const;
-
-export type ChatRunReplyKey = (typeof CHAT_RUN_REPLY_KEYS)[number];
-
-/** A slice C1 reply in that locale, falling back to en (the same lookup as chatReply). */
-export function chatRunReply(
-  locale: ChatLinkLocale,
-  key: ChatRunReplyKey,
-  values?: Readonly<Record<string, string>>,
-): string {
-  return chatReply(locale, key as unknown as ChatReplyKey, values);
-}
-
 export const CHAT_DELIVERY_LIMITS = {
   intervalMs: 10 * 1000,
   batch: 20,
@@ -129,7 +89,7 @@ interface AttemptState {
   partsSent: number;
 }
 
-const END_LINES: Readonly<Record<Exclude<ChatDeliveryOutcome, 'completed'>, ChatRunReplyKey>> = {
+const END_LINES: Readonly<Record<Exclude<ChatDeliveryOutcome, 'completed'>, ChatReplyKey>> = {
   no_answer: 'result.noAnswer',
   failed: 'result.failed',
   timed_out: 'result.timedOut',
@@ -160,13 +120,13 @@ export function chatResultMessages(
   if (status === 'completed') {
     const answer = chatFinalAnswer(referrals);
     if (answer === null) {
-      return { outcome: 'no_answer', parts: [chatRunReply(locale, END_LINES.no_answer)], cut: false };
+      return { outcome: 'no_answer', parts: [chatReply(locale, END_LINES.no_answer)], cut: false };
     }
-    const chunks = chunkChatText(answer, chatRunReply(locale, 'result.cut'));
+    const chunks = chunkChatText(answer, chatReply(locale, 'result.cut'));
     return { outcome: 'completed', parts: chunks.parts, cut: chunks.cut };
   }
   if (status === 'failed' || status === 'timed_out' || status === 'cancelled') {
-    return { outcome: status, parts: [chatRunReply(locale, END_LINES[status])], cut: false };
+    return { outcome: status, parts: [chatReply(locale, END_LINES[status])], cut: false };
   }
   return null;
 }
@@ -377,7 +337,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
       return;
     }
     try {
-      await this.send(link, chatRunReply(locale, 'result.waitingApproval'));
+      await this.send(link, chatReply(locale, 'result.waitingApproval'));
     } catch (error) {
       this.logger.warn(
         `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,

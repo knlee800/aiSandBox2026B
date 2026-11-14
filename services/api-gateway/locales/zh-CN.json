@@ -45,6 +45,9 @@
             "description": "你的工作流名称（可选）"
           }
         }
+      },
+      "cancel": {
+        "description": "取消你最近一次从 Discord 发起的运行"
       }
     },
     "languageNames": {
@@ -53,7 +56,7 @@
       "zh-CN": "简体中文"
     },
     "replies": {
-      "help": "可在这个私信中使用的指令：\n/link 代码：用平台连接页面上的代码关联这个 Discord 账号。\n/unlink：解除关联。\n/status：显示关联状态、运行是否已开启，以及你从 Discord 发起的运行。\n/language：选择这些回复的语言。\n/ask 文字：向幕僚长提问。加上 agent（或在文字开头写 @名称）即可向你的某个工作流提问。从 Discord 发起的运行只能读取，不会更改任何内容。",
+      "help": "可在这个私信中使用的指令：\n/link 代码：用平台连接页面上的代码关联这个 Discord 账号。\n/unlink：解除关联。\n/status：显示关联状态、运行是否已开启，以及你从 Discord 发起的运行。\n/language：选择这些回复的语言。\n/ask 文字：向幕僚长提问。加上 agent（或在文字开头写 @名称）即可向你的某个工作流提问。从 Discord 发起的运行只能读取，不会更改任何内容。\n/cancel：取消你最近一次从 Discord 发起的运行。",
       "notAvailable": "聊天渠道目前无法使用。",
       "useDirectMessage": "请在与机器人的私信中使用这些命令。",
       "unknownCommand": "未知的命令。请使用 /help 查看命令。",
@@ -80,7 +83,6 @@
       },
       "ask": {
         "runsOff": "平台上的运行目前已关闭，没有启动任何工作。",
-        "notBuilt": "目前还不能从 Discord 提问，没有启动任何工作。",
         "started": "已开始。答案准备好后会以私信发送到这里，你也可以在团队页面查看进度。",
         "badTask": "请在 text 选项中写下你的问题或任务（最多 8000 个字符）。没有启动任何工作。",
         "unknownAgent": "你的工作流中没有这个名称。你已开启的工作流：{{names}}。没有启动任何工作。",

@@ -9,8 +9,8 @@ import { chatLanguageName, chatLocaleText } from '../chat-replies';
  *   (contexts = [BOT_DM]); installed with the bot into Keith's private server
  *   (integration_types = [GUILD_INSTALL]).
  * - Command and option names are English in every client (no
- *   name_localizations), so /link, /unlink, /status, /language, /help and
- *   /ask match the Connections page and the bot's replies everywhere.
+ *   name_localizations), so /link, /unlink, /status, /language, /help,
+ *   /ask and /cancel match the Connections page and the bot's replies everywhere.
  *   Descriptions come from the gateway locale files; zh-TW and zh-CN go to
  *   Discord as description localizations. The language choices carry the
  *   languages' own names.
@@ -37,7 +37,7 @@ export const CHAT_ASK_AGENT_MAX = 100;
 /** XXXX-XXXX is 9 characters; room for spaces the owner may type. */
 export const CHAT_LINK_CODE_OPTION_MAX = 16;
 
-export const CHAT_COMMAND_NAMES = ['link', 'unlink', 'status', 'language', 'help', 'ask'] as const;
+export const CHAT_COMMAND_NAMES = ['link', 'unlink', 'status', 'language', 'help', 'ask', 'cancel'] as const;
 export type ChatCommandName = (typeof CHAT_COMMAND_NAMES)[number];
 
 export function isChatCommandName(value: unknown): value is ChatCommandName {
@@ -90,6 +90,8 @@ const OPTION_SPECS: Readonly<Record<ChatCommandName, readonly OptionSpec[]>> = {
     { name: 'text', required: true, minLength: 1, maxLength: CHAT_ASK_TEXT_MAX },
     { name: 'agent', required: false, minLength: 1, maxLength: CHAT_ASK_AGENT_MAX },
   ],
+  // C1: cancels the owner's latest Discord-started run in progress.
+  cancel: [],
 };
 
 /** The string options a command reads. Anything else in an interaction is ignored. */

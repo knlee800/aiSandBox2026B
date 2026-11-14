@@ -45,6 +45,9 @@
             "description": "你的工作流程名稱（選填）"
           }
         }
+      },
+      "cancel": {
+        "description": "取消你最近一次從 Discord 發起的執行"
       }
     },
     "languageNames": {
@@ -53,7 +56,7 @@
       "zh-CN": "简体中文"
     },
     "replies": {
-      "help": "可在這個私訊中使用的指令：\n/link 代碼：用平台連線頁面上的代碼連結這個 Discord 帳號。\n/unlink：解除連結。\n/status：顯示連結狀態、執行是否已開啟，以及你從 Discord 發起的執行。\n/language：選擇這些回覆的語言。\n/ask 文字：向幕僚長提問。加上 agent（或在文字開頭寫 @名稱）即可向你的某個工作流程提問。從 Discord 發起的執行只能讀取，不會變更任何內容。",
+      "help": "可在這個私訊中使用的指令：\n/link 代碼：用平台連線頁面上的代碼連結這個 Discord 帳號。\n/unlink：解除連結。\n/status：顯示連結狀態、執行是否已開啟，以及你從 Discord 發起的執行。\n/language：選擇這些回覆的語言。\n/ask 文字：向幕僚長提問。加上 agent（或在文字開頭寫 @名稱）即可向你的某個工作流程提問。從 Discord 發起的執行只能讀取，不會變更任何內容。\n/cancel：取消你最近一次從 Discord 發起的執行。",
       "notAvailable": "聊天頻道目前無法使用。",
       "useDirectMessage": "請在與機器人的私訊中使用這些指令。",
       "unknownCommand": "未知的指令。請使用 /help 查看指令。",
@@ -80,7 +83,6 @@
       },
       "ask": {
         "runsOff": "平台上的執行目前已關閉，沒有啟動任何工作。",
-        "notBuilt": "目前還不能從 Discord 提問，沒有啟動任何工作。",
         "started": "已開始。答案準備好後會以私訊傳到這裡，你也可以在團隊頁面查看進度。",
         "badTask": "請在 text 選項中寫下你的問題或任務（最多 8000 個字元）。沒有啟動任何工作。",
         "unknownAgent": "你的工作流程中沒有這個名稱。你已開啟的工作流程：{{names}}。沒有啟動任何工作。",

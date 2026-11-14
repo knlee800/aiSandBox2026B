@@ -5,10 +5,7 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { workflowRefusal, WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow';
-import { CHAT_RUN_REPLY_KEYS, chatRunReply } from './chat-delivery.service';
 import { chatReply } from './chat-replies';
 import { CHAT_RUN_LIMITS, ChatRunService, chatRunRefusalOf } from './chat-run.service';
 
@@ -19,7 +16,6 @@ const WORKFLOW_B = '44444444-4444-4444-8444-444444444444';
 const RUN_ID = 'collab-run-1';
 const REFERRAL_ID = 'ref-1';
 const MARKER = 'MARKER-c1-task-text-do-not-log';
-const LOCALES_DIR = join(__dirname, '..', '..', 'locales');
 
 type DeliveryRow = {
   collaborationRunId: string;
@@ -128,7 +124,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
   describe('/ask starts a run as the owner', () => {
     it('Chief of Staff: the page body without a sessionId, the session identity, the first step approved by the owner', async () => {
       const reply = await service.ask(link, { text: `${MARKER} plan my week` });
-      expect(reply).toEqual({ text: chatRunReply('en', 'ask.started') });
+      expect(reply).toEqual({ text: chatReply('en', 'ask.started') });
 
       expect(starts.readStartBody).toHaveBeenCalledWith({ team: 'chief-of-staff', task: `${MARKER} plan my week` });
       expect(starts.start).toHaveBeenCalledWith(
@@ -196,7 +192,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
     it('a workflow that is off is still resolved; the start refuses it with the page code', async () => {
       starts.start.mockRejectedValueOnce(workflowRefusal(WORKFLOW_REFUSAL_CODES.disabled));
       const reply = await service.ask(link, { text: MARKER, agent: 'Draft Writer' });
-      expect(reply).toEqual({ text: chatRunReply('en', 'ask.workflowOff') });
+      expect(reply).toEqual({ text: chatReply('en', 'ask.workflowOff') });
       expect(rows).toEqual([]);
       expect(audit.map((row) => [row.eventType, row.payload.reason, row.payload.stage])).toEqual([
         ['run_refused', 'workflow_off', 'start'],
@@ -242,7 +238,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       }
       rows.length = 0;
       starts.start.mockClear();
-      expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatRunReply('en', 'ask.tooMany') });
+      expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooMany') });
       expect(starts.start).not.toHaveBeenCalled();
       expect(audit[audit.length - 1].payload.reason).toBe('rate_limited');
     });
@@ -253,13 +249,13 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       }
       expect(rows).toHaveLength(3);
       starts.start.mockClear();
-      expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatRunReply('en', 'ask.tooManyRuns') });
+      expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooManyRuns') });
       expect(starts.start).not.toHaveBeenCalled();
     });
 
     it('an unknown, ambiguous or missing agent lists only the switched-on names', async () => {
       const unknown = await service.ask(link, { text: MARKER, agent: 'Nobody' });
-      expect(unknown).toEqual({ text: chatRunReply('en', 'ask.unknownAgent', { names: 'Sales Digest' }) });
+      expect(unknown).toEqual({ text: chatReply('en', 'ask.unknownAgent', { names: 'Sales Digest' }) });
       expect(unknown.text).not.toContain('Draft Writer');
 
       starts.listOwnerWorkflows.mockResolvedValue([
@@ -267,18 +263,18 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
         { id: WORKFLOW_B, name: 'twin', status: 'active' },
       ]);
       expect(await service.ask(link, { text: MARKER, agent: 'TWIN' })).toEqual({
-        text: chatRunReply('en', 'ask.ambiguousAgent', { names: 'Twin, twin' }),
+        text: chatReply('en', 'ask.ambiguousAgent', { names: 'Twin, twin' }),
       });
 
       starts.listOwnerWorkflows.mockResolvedValue([]);
-      expect(await service.ask(link, { text: `@Ghost ${MARKER}` })).toEqual({ text: chatRunReply('en', 'ask.noAgents') });
+      expect(await service.ask(link, { text: `@Ghost ${MARKER}` })).toEqual({ text: chatReply('en', 'ask.noAgents') });
       expectNothingCreated();
       expect(audit.map((row) => row.payload.reason)).toEqual(['unknown_agent', 'ambiguous_agent', 'no_agents']);
     });
 
     it('an empty text', async () => {
-      expect(await service.ask(link, { text: '   ' })).toEqual({ text: chatRunReply('en', 'ask.badTask') });
-      expect(await service.ask(link, {})).toEqual({ text: chatRunReply('en', 'ask.badTask') });
+      expect(await service.ask(link, { text: '   ' })).toEqual({ text: chatReply('en', 'ask.badTask') });
+      expect(await service.ask(link, {})).toEqual({ text: chatReply('en', 'ask.badTask') });
       expectNothingCreated();
     });
   });
@@ -292,7 +288,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
     ] as const)('%s', async (reason, error, key) => {
       starts.approveStep.mockRejectedValueOnce(error);
       const reply = await service.ask({ ...link, locale: 'zh-TW' }, { text: MARKER });
-      expect(reply).toEqual({ text: chatRunReply('zh-TW', key) });
+      expect(reply).toEqual({ text: chatReply('zh-TW', key) });
       expect(orchestration.cancelCollaboration).toHaveBeenCalledWith({
         collaborationRunId: RUN_ID,
         cancelledByUserId: OWNER,
@@ -341,16 +337,16 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       starts.cancelOwnedActiveRun.mockImplementation(async (runId: string) =>
         runId === latest ? { collaborationRunId: runId, status: 'cancelled' } : null,
       );
-      expect(await service.cancel(link)).toEqual({ text: chatRunReply('en', 'cancel.done') });
+      expect(await service.cancel(link)).toEqual({ text: chatReply('en', 'cancel.done') });
       expect(starts.cancelOwnedActiveRun).toHaveBeenCalledWith(latest, OWNER);
       expect(rows.find((row) => row.collaborationRunId === latest)?.status).toBe('dropped');
       expect(rows.find((row) => row.collaborationRunId !== latest)?.status).toBe('waiting');
     });
 
     it('nothing in progress', async () => {
-      expect(await service.cancel(link)).toEqual({ text: chatRunReply('en', 'cancel.nothing') });
+      expect(await service.cancel(link)).toEqual({ text: chatReply('en', 'cancel.nothing') });
       await service.ask(link, { text: MARKER });
-      expect(await service.cancel(link)).toEqual({ text: chatRunReply('en', 'cancel.nothing') });
+      expect(await service.cancel(link)).toEqual({ text: chatReply('en', 'cancel.nothing') });
       expect(rows[0].status).toBe('waiting');
     });
   });
@@ -369,27 +365,6 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
     expect(await service.statusCounts(link)).toEqual({ running: 1, waiting: 1 });
     orchestration.getCollaborationRun.mockResolvedValue({ userId: 'someone-else', status: 'active', referralIds: ['b'] });
     expect(await service.statusCounts(link)).toEqual({ running: 0, waiting: 0 });
-  });
-
-  it('every C1 reply key exists in the three locale files, translated', () => {
-    const files = Object.fromEntries(
-      ['en', 'zh-TW', 'zh-CN'].map((locale) => [
-        locale,
-        JSON.parse(readFileSync(join(LOCALES_DIR, `${locale}.json`), 'utf8')) as Record<string, unknown>,
-      ]),
-    );
-    const read = (tree: unknown, path: string): unknown =>
-      path.split('.').reduce<unknown>((node, part) => (node as Record<string, unknown> | undefined)?.[part], tree);
-    for (const key of CHAT_RUN_REPLY_KEYS) {
-      const en = read(files.en, `chat.replies.${key}`);
-      expect(typeof en).toBe('string');
-      for (const locale of ['zh-TW', 'zh-CN']) {
-        const text = read(files[locale], `chat.replies.${key}`);
-        expect(typeof text).toBe('string');
-        expect(text).not.toBe(en);
-        expect(String(text).match(/\{\{\w+\}\}/g) ?? []).toEqual(String(en).match(/\{\{\w+\}\}/g) ?? []);
-      }
-    }
   });
 });
 

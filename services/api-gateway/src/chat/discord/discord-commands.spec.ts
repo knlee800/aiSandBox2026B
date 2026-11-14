@@ -28,8 +28,8 @@ describe('Discord commands (CHAT-DISCORD-01 B)', () => {
     expect(DISCORD_INTEGRATION_GUILD_INSTALL).toBe(ApplicationIntegrationType.GuildInstall);
   });
 
-  it('registers exactly link, unlink, status, language, help and ask', () => {
-    expect(commands.map((command) => command.name)).toEqual(['link', 'unlink', 'status', 'language', 'help', 'ask']);
+  it('registers exactly link, unlink, status, language, help, ask and cancel', () => {
+    expect(commands.map((command) => command.name)).toEqual(['link', 'unlink', 'status', 'language', 'help', 'ask', 'cancel']);
     expect(CHAT_COMMAND_NAMES).toEqual(commands.map((command) => command.name));
   });
 

@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events';
 import { Logger } from '@nestjs/common';
 import { FindOperator } from 'typeorm';
-import { CHAT_DELIVERY_LIMITS, ChatDeliveryService, chatRunReply } from './chat-delivery.service';
+import { CHAT_DELIVERY_LIMITS, ChatDeliveryService } from './chat-delivery.service';
+import { chatReply } from './chat-replies';
 import { FakeChatTransport } from './chat-transport';
 import { DiscordCalls, DiscordConnection, DiscordTransport } from './discord/discord-transport';
 
@@ -185,7 +186,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     for (const text of texts) {
       expect(Array.from(text).length).toBeLessThanOrEqual(1900);
     }
-    expect(texts[4].endsWith(chatRunReply('zh-TW', 'result.cut'))).toBe(true);
+    expect(texts[4].endsWith(chatReply('zh-TW', 'result.cut'))).toBe(true);
     expect(audit[0].payload).toMatchObject({ outcome: 'completed', parts: 5, cut: 1 });
     // At most one message a second per owner.
     expect(sleeps).toEqual([1000, 1000, 1000, 1000]);
@@ -239,7 +240,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     waiting();
     ended(status, `provider said ${MARKER}`);
     await service.tick();
-    expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatRunReply('zh-CN', key)]);
+    expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatReply('zh-CN', key)]);
     expect(deliveries.rows[0].status).toBe('delivered');
     expect(audit[0].payload).toMatchObject({ outcome: status, parts: 1, cut: 0 });
   });
@@ -248,7 +249,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     waiting();
     runs.set(RUN_ID, { run: { userId: OWNER, status: 'completed' }, referrals: [{ referralId: 'r1', status: 'failed', result: { summary: MARKER } }] });
     await service.tick();
-    expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatRunReply('en', 'result.noAnswer')]);
+    expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatReply('en', 'result.noAnswer')]);
     expect(audit[0].payload).toMatchObject({ outcome: 'no_answer' });
   });
 
@@ -261,7 +262,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     runs.set(RUN_ID, { run: { userId: OWNER, status: 'active' }, referrals });
     await service.tick();
     await service.tick();
-    expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatRunReply('en', 'result.waitingApproval')]);
+    expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatReply('en', 'result.waitingApproval')]);
     expect(deliveries.rows[0]).toMatchObject({ status: 'waiting', notifiedReferralIds: ['r2'] });
     referrals.push({ referralId: 'r3', status: 'pending_approval', result: null });
     await service.tick();

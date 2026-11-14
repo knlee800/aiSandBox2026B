@@ -15,7 +15,7 @@ function placeholders(text: string): string[] {
   return Array.from(text.matchAll(/\{\{(\w+)\}\}/g), (match) => match[1]).sort();
 }
 
-describe('chat replies (CHAT-DISCORD-01 B)', () => {
+describe('chat replies (CHAT-DISCORD-01 B, C1)', () => {
   it('every chat text in en.json exists in zh-TW.json and zh-CN.json, non-empty, with the same placeholders', () => {
     const paths = chatLocalePaths();
     expect(paths.length).toBeGreaterThan(25);
@@ -53,6 +53,24 @@ describe('chat replies (CHAT-DISCORD-01 B)', () => {
         });
       }
     }
+  });
+
+  it('CHAT_REPLY_KEYS is exactly the reply set in every file: no unused or missing key (C1)', () => {
+    for (const locale of LOCALES) {
+      const json = JSON.parse(readFileSync(join(LOCALES_DIR, `${locale}.json`), 'utf8'));
+      const out: string[] = [];
+      const walk = (node: Record<string, unknown>, prefix: string): void => {
+        for (const [key, value] of Object.entries(node)) {
+          const path = prefix ? `${prefix}.${key}` : key;
+          if (typeof value === 'string') out.push(path);
+          else walk(value as Record<string, unknown>, path);
+        }
+      };
+      walk(json.chat.replies, '');
+      expect({ locale, keys: out.sort() }).toEqual({ locale, keys: [...CHAT_REPLY_KEYS].sort() });
+    }
+    expect(CHAT_REPLY_KEYS).not.toContain('ask.notBuilt');
+    expect(new Set(CHAT_REPLY_KEYS).size).toBe(CHAT_REPLY_KEYS.length);
   });
 
   it('the three files have the same chat key set (no extra keys either way)', () => {
