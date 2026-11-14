@@ -35,7 +35,10 @@
         "services/api-gateway/src/chat/discord/discord-commands.spec.ts",
         "services/api-gateway/locales/en.json",
         "services/api-gateway/locales/zh-TW.json",
-        "services/api-gateway/locales/zh-CN.json"
+        "services/api-gateway/locales/zh-CN.json",
+        "services/api-gateway/src/chat/discord/discord-transport.spec.ts",
+        "services/api-gateway/src/chat/chat-replies.ts",
+        "services/api-gateway/src/chat/chat-replies.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -6034,7 +6037,10 @@
         "services/api-gateway/src/chat/discord/discord-commands.spec.ts",
         "services/api-gateway/locales/en.json",
         "services/api-gateway/locales/zh-TW.json",
-        "services/api-gateway/locales/zh-CN.json"
+        "services/api-gateway/locales/zh-CN.json",
+        "services/api-gateway/src/chat/discord/discord-transport.spec.ts",
+        "services/api-gateway/src/chat/chat-replies.ts",
+        "services/api-gateway/src/chat/chat-replies.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
