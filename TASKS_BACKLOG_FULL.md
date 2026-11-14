@@ -88199,13 +88199,13 @@ taskId=STAGING-DEPLOY-CHAT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-14 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CHAT-01
 **Title:** Deploy the Discord chat channel and run live check 1
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy and is ready to create the Discord application and bot (stage-start section 4).
+**Start condition:** READY (Keith, 2026-11-14, "Yes, deploy"). Was: NOT_READY. Ready when: Keith approves the deploy and is ready to create the Discord application and bot (stage-start section 4).
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** records; host state (deploy; gateway.env gains CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN, a new baseline).
 **Mutexes / resources:** STAGING, ENV.
