@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { Logger } from '@nestjs/common';
 import { FindOperator } from 'typeorm';
+import { CHAT_APPROVAL_CUSTOM_ID, ChatApprovalService } from './chat-approval.service';
 import { CHAT_DELIVERY_LIMITS, ChatDeliveryService } from './chat-delivery.service';
 import { chatReply } from './chat-replies';
 import { FakeChatTransport } from './chat-transport';
@@ -206,6 +207,9 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       sendDirectMessage: async (userId, body) => {
         calls.push({ userId, body: body as never });
       },
+      updateMessage: async () => undefined,
+      deferUpdate: async () => undefined,
+      followUp: async () => undefined,
     };
     const discord = new DiscordTransport({
       env: { CHAT_DISCORD_ENABLED: 'true', DISCORD_BOT_TOKEN: 'test-token-value' },
@@ -269,6 +273,157 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     expect(transport.directMessages).toHaveLength(2);
     expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2', 'r3']);
     expect(audit).toEqual([]);
+  });
+
+  describe('C2: approval messages', () => {
+    let steps: Map<string, Record<string, unknown>>;
+    let approvals: ChatApprovalService;
+
+    function step(referralId: string, target: string, prompt: string): void {
+      steps.set(referralId, {
+        referralId,
+        collaborationRunId: RUN_ID,
+        status: 'pending_approval',
+        targetBuilderProfileId: target,
+        constraintReadOnly: true,
+        constraintAllowWriteTools: false,
+        pendingJob: { prompt },
+      });
+    }
+
+    function withApprovals(target: { sendDirectMessage: unknown; state: unknown } = transport): ChatDeliveryService {
+      approvals = new ChatApprovalService(
+        {} as never,
+        {} as never,
+        {} as never,
+        {} as never,
+        {} as never,
+        {} as never,
+        { findOne: async ({ where }: { where: { referralId: string } }) => steps.get(where.referralId) ?? null } as never,
+        {} as never,
+        { now: () => now },
+      );
+      return new ChatDeliveryService(
+        target as never,
+        { getCollaborationRunWithReferrals: reads } as never,
+        deliveries as never,
+        { findOne: async ({ where }: { where: { id: string } }) => links.get(where.id) ?? null } as never,
+        { insert: async (row: (typeof audit)[number]) => audit.push(row) } as never,
+        { allowUnderJest: true, now: () => now, sleep: async (ms: number) => void (now += ms) },
+        approvals,
+      );
+    }
+
+    beforeEach(() => {
+      steps = new Map();
+      service.onModuleDestroy();
+      service = withApprovals();
+    });
+
+    it('a read-only step gets its request (cut to 1000 characters) with Approve and Reject; another step the Team page line', async () => {
+      waiting();
+      step('r2', 'product-strategy', `${'q'.repeat(1200)} ${MARKER}`);
+      const referrals: FakeReferral[] = [
+        { referralId: 'r1', status: 'completed', result: { summary: 'lead answer' } },
+        { referralId: 'r2', status: 'pending_approval', result: null },
+      ];
+      runs.set(RUN_ID, { run: { userId: OWNER, status: 'active' }, referrals });
+      await service.tick();
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      const sent = transport.directMessages[0].message;
+      const header = chatReply('en', 'approval.request', { step: '2', agent: 'Product Strategy' });
+      expect(sent.text.startsWith(`${header}\n`)).toBe(true);
+      expect(Array.from(sent.text.slice(header.length + 1))).toHaveLength(1000);
+      expect(sent.text).not.toContain(MARKER);
+      expect(sent.buttons?.map((button) => [button.style, button.label])).toEqual([
+        ['approve', 'Approve'],
+        ['reject', 'Reject'],
+      ]);
+      for (const button of sent.buttons ?? []) expect(button.customId).toMatch(CHAT_APPROVAL_CUSTOM_ID);
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
+      expect(logs).toContain(`chat delivery approval notice runId=${RUN_ID} linkId=${LINK_ID} waiting=1 buttons=1`);
+
+      step('r3', 'writer', `write files ${MARKER}`);
+      referrals.push({ referralId: 'r3', status: 'pending_approval', result: null });
+      await service.tick();
+      expect(transport.directMessages[1].message).toEqual({ text: chatReply('en', 'result.waitingApproval') });
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2', 'r3']);
+      expect(approvals.liveTokens).toBe(1);
+      expect(audit).toEqual([]);
+    });
+
+    it('a send that fails: the button is forgotten, the step is not marked, the next tick sends it again', async () => {
+      waiting();
+      step('r2', 'chief-of-staff', 'Report back');
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      const failing = {
+        state: 'ready',
+        sendDirectMessage: jest.fn(async (): Promise<void> => {
+          throw new Error(`discord said ${MARKER}`);
+        }),
+      };
+      service = withApprovals(failing);
+      await service.tick();
+      expect(failing.sendDirectMessage).toHaveBeenCalledTimes(1);
+      expect(approvals.liveTokens).toBe(0);
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
+      expect(logs).toContain(`chat delivery notice failed runId=${RUN_ID} linkId=${LINK_ID} reason=Error`);
+      failing.sendDirectMessage.mockImplementation(async () => undefined);
+      await service.tick();
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
+      expect(approvals.liveTokens).toBe(1);
+    });
+
+    it('through the Discord transport the approval message has one row of buttons and mentions off', async () => {
+      const calls: Array<{ body: Record<string, unknown> }> = [];
+      const gateway = new EventEmitter() as EventEmitter & { connect: () => Promise<void>; destroy: () => void };
+      gateway.connect = () => new Promise<void>(() => undefined);
+      gateway.destroy = () => undefined;
+      const discord = new DiscordTransport({
+        env: { CHAT_DISCORD_ENABLED: 'true', DISCORD_BOT_TOKEN: 'test-token-value' },
+        factory: async (): Promise<DiscordConnection> => ({
+          calls: {
+            reply: async () => undefined,
+            defer: async () => undefined,
+            editReply: async () => undefined,
+            deleteReply: async () => undefined,
+            registerGlobalCommands: async () => undefined,
+            sendDirectMessage: async (_userId, body) => void calls.push({ body: body as never }),
+            updateMessage: async () => undefined,
+            deferUpdate: async () => undefined,
+            followUp: async () => undefined,
+          },
+          gateway,
+          close: () => undefined,
+        }),
+      });
+      await discord.connect(async () => null);
+      gateway.emit('ready', { application: { id: '111111111111111111', flags: 0 } }, 0);
+      for (let i = 0; i < 5; i += 1) await new Promise((resolve) => setImmediate(resolve));
+      service = withApprovals(discord);
+      waiting();
+      step('r2', 'technology-advisor', '@everyone which stack?');
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      await service.tick();
+      expect(calls).toHaveLength(1);
+      expect(calls[0].body.allowed_mentions).toEqual({ parse: [] });
+      expect(calls[0].body.flags).toBeUndefined();
+      const rows = calls[0].body.components as Array<{ type: number; components: Array<Record<string, unknown>> }>;
+      expect(rows).toHaveLength(1);
+      expect(rows[0].type).toBe(1);
+      expect(rows[0].components.map((button) => [button.type, button.style, button.label])).toEqual([
+        [2, 3, 'Approve'],
+        [2, 4, 'Reject'],
+      ]);
+      await discord.disconnect();
+    });
   });
 
   it('the transport is not connected: nothing is sent and the row keeps waiting', async () => {

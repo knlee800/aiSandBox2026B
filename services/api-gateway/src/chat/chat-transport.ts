@@ -1,8 +1,8 @@
 import type { ChatChannel } from './chat-link.service';
 
 /**
- * CHAT-DISCORD-01 slice B (stage-start section 2): the channel-neutral side of
- * a chat transport. The Discord transport (discord/discord-transport.ts)
+ * CHAT-DISCORD-01 slices B and C2 (stage-start section 2): the channel-neutral
+ * side of a chat transport. The Discord transport (discord/discord-transport.ts)
  * implements it; tests use FakeChatTransport below and never connect.
  *
  * Every field of an invocation comes from the outside chat service and is
@@ -33,13 +33,51 @@ export interface ChatCommandInvocation {
   readonly ref: object;
 }
 
+/**
+ * Slice C2: one button under a direct message. customId is the server's own
+ * opaque value (never text from the chat service); style is approve (green)
+ * or reject (red).
+ */
+export interface ChatButton {
+  readonly customId: string;
+  readonly label: string;
+  readonly style: 'approve' | 'reject';
+}
+
 /** A reply is plain text; the transport turns mentions off and cuts it to the channel's limit. */
 export interface ChatReplyMessage {
   readonly text: string;
+  /** Slice C2: buttons under a direct message (at most 5, one row). */
+  readonly buttons?: readonly ChatButton[];
 }
 
 /** Returns the reply, or null to answer nothing (for example a silenced /link). */
 export type ChatCommandHandler = (invocation: ChatCommandInvocation) => Promise<ChatReplyMessage | null>;
+
+/** Slice C2: one button press as the transport received it. Every field is untrusted. */
+export interface ChatComponentPress {
+  readonly channel: ChatChannel;
+  /** The button's custom id as the chat service sends it back (untrusted). */
+  readonly customId: string;
+  /** The outside user id of the presser. */
+  readonly externalUserId: string;
+  readonly locale: string | null;
+  /** True only in the direct message with the bot. */
+  readonly directMessage: boolean;
+  /** Opaque to everyone but the transport that made it. */
+  readonly ref: object;
+}
+
+/**
+ * update: the message the button is on is edited to this text and its
+ * buttons are removed. ephemeral: a reply only the presser sees; the message
+ * and its buttons stay as they are.
+ */
+export type ChatComponentResponse =
+  | { readonly kind: 'update'; readonly message: ChatReplyMessage }
+  | { readonly kind: 'ephemeral'; readonly message: ChatReplyMessage };
+
+export type ChatComponentHandler = (press: ChatComponentPress) => Promise<ChatComponentResponse>;
 
 /**
  * off: never connected (switch off, no token, or under tests).
@@ -52,15 +90,19 @@ export type ChatTransportState = 'off' | 'connecting' | 'ready' | 'stopped';
 export interface ChatTransport {
   readonly channel: ChatChannel;
   readonly state: ChatTransportState;
-  /** Starts the connection when allowed. Never throws, never blocks on the network. True when a connection was started. */
-  connect(handler: ChatCommandHandler): Promise<boolean>;
+  /**
+   * Starts the connection when allowed. Never throws, never blocks on the
+   * network. True when a connection was started. Button presses go to
+   * onComponent (slice C2); without it they are ignored.
+   */
+  connect(handler: ChatCommandHandler, onComponent?: ChatComponentHandler): Promise<boolean>;
   /** Closes the connection; safe to call in any state. */
   disconnect(): Promise<void>;
   /** Registers the command list with the chat service (the transport calls it itself once ready). */
   registerCommands(): Promise<void>;
   /** Answers one invocation; null answers nothing. */
   reply(invocation: ChatCommandInvocation, message: ChatReplyMessage | null): Promise<void>;
-  /** Sends a direct message to an outside user (used from slice C1). */
+  /** Sends a direct message to an outside user (used from slice C1; with buttons from slice C2). */
   sendDirectMessage(externalUserId: string, message: ChatReplyMessage): Promise<void>;
 }
 
@@ -69,20 +111,23 @@ export class FakeChatTransport implements ChatTransport {
   readonly channel: ChatChannel = 'discord';
   state: ChatTransportState = 'off';
   handler: ChatCommandHandler | null = null;
+  componentHandler: ChatComponentHandler | null = null;
   connectCalls = 0;
   disconnectCalls = 0;
   registeredCommands = 0;
   readonly replies: Array<{ invocation: ChatCommandInvocation; message: ChatReplyMessage | null }> = [];
   readonly directMessages: Array<{ externalUserId: string; message: ChatReplyMessage }> = [];
+  readonly componentResponses: Array<{ press: ChatComponentPress; response: ChatComponentResponse }> = [];
 
   constructor(private readonly allowConnect = true) {}
 
-  async connect(handler: ChatCommandHandler): Promise<boolean> {
+  async connect(handler: ChatCommandHandler, onComponent?: ChatComponentHandler): Promise<boolean> {
     this.connectCalls += 1;
     if (!this.allowConnect) {
       return false;
     }
     this.handler = handler;
+    this.componentHandler = onComponent ?? null;
     this.state = 'ready';
     await this.registerCommands();
     return true;
@@ -91,6 +136,7 @@ export class FakeChatTransport implements ChatTransport {
   async disconnect(): Promise<void> {
     this.disconnectCalls += 1;
     this.handler = null;
+    this.componentHandler = null;
     this.state = this.state === 'off' ? 'off' : 'stopped';
   }
 
@@ -115,5 +161,16 @@ export class FakeChatTransport implements ChatTransport {
     const message = await this.handler(full);
     await this.reply(full, message);
     return message;
+  }
+
+  /** Simulates one button press: the component handler answers, the response is recorded. */
+  async press(press: Omit<ChatComponentPress, 'channel' | 'ref'>): Promise<ChatComponentResponse> {
+    if (!this.componentHandler) {
+      throw new Error('fake transport has no component handler');
+    }
+    const full: ChatComponentPress = { ...press, channel: this.channel, ref: {} };
+    const response = await this.componentHandler(full);
+    this.componentResponses.push({ press: full, response });
+    return response;
   }
 }

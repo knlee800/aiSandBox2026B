@@ -8,6 +8,7 @@ import { User } from '../entities/user.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatCommandService } from './chat-commands';
+import { ChatApprovalService } from './chat-approval.service';
 import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { ChatLinkService } from './chat-link.service';
@@ -129,6 +130,21 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       expect(await new ChatChannelRunner(throwing, commands, true).start()).toBe(false);
     });
 
+    it('C2: button presses go to the approval service; without it the transport gets no component handler', async () => {
+      const response = { kind: 'ephemeral' as const, message: { text: chatReply('en', 'approval.unavailable') } };
+      const approvals = { handlePress: jest.fn(async () => response) };
+      const withApprovals = new FakeChatTransport();
+      await new ChatChannelRunner(withApprovals, commands, true, approvals as never).start();
+      const press = { customId: 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA', externalUserId: DISCORD_ID, locale: 'en-US', directMessage: true };
+      expect(await withApprovals.press(press)).toBe(response);
+      expect(approvals.handlePress).toHaveBeenCalledWith(expect.objectContaining({ ...press, channel: 'discord' }));
+      // Commands still go to the command handler.
+      expect(await withApprovals.invoke(dm('help', {}, STRANGER))).toEqual({ text: chatReply('en', 'help') });
+
+      expect(transport.componentHandler).toBeNull();
+      await expect(transport.press(press)).rejects.toThrow('no component handler');
+    });
+
     it('ChatModule registers the commands, the transport token and the runner as providers', () => {
       expect(Reflect.getMetadata('providers', ChatModule)).toEqual([
         ChatLinkService,
@@ -137,6 +153,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
         ChatChannelRunner,
         ChatRunService,
         ChatDeliveryService,
+        ChatApprovalService,
       ]);
       expect(Reflect.getMetadata('exports', ChatModule)).toEqual([ChatLinkService]);
       expect(CHAT_TRANSPORT_PROVIDER).toEqual({ provide: CHAT_TRANSPORT, useFactory: createChatTransport });

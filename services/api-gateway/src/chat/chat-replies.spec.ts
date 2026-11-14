@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   CHAT_REPLY_KEYS,
+  chatAgentName,
   chatLanguageName,
   chatLocalePaths,
   chatLocaleText,
@@ -15,7 +16,7 @@ function placeholders(text: string): string[] {
   return Array.from(text.matchAll(/\{\{(\w+)\}\}/g), (match) => match[1]).sort();
 }
 
-describe('chat replies (CHAT-DISCORD-01 B, C1)', () => {
+describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
   it('every chat text in en.json exists in zh-TW.json and zh-CN.json, non-empty, with the same placeholders', () => {
     const paths = chatLocalePaths();
     expect(paths.length).toBeGreaterThan(25);
@@ -99,6 +100,22 @@ describe('chat replies (CHAT-DISCORD-01 B, C1)', () => {
       '之後的回覆會使用繁體中文。',
     );
     expect(chatReply('en', 'language.set')).toBe('Replies are now in {{language}}.');
+  });
+
+  it('C2: agent names are translated for the Discord-reachable system agents; anything else is "an agent"', () => {
+    expect(chatAgentName('en', 'chief-of-staff')).toBe('Chief of Staff');
+    expect(chatAgentName('zh-TW', 'product-strategy')).toBe('產品策略');
+    expect(chatAgentName('zh-CN', 'technology-advisor')).toBe('技术顾问');
+    expect(chatAgentName('en', 'writer')).toBe('an agent');
+    expect(chatAgentName('zh-TW', '__proto__')).toBe('一個代理');
+    expect(chatAgentName('fr' as never, 'other')).toBe('an agent');
+  });
+
+  it('C2: the approval reply keys and the button labels exist in all three files', () => {
+    expect(CHAT_REPLY_KEYS.filter((key) => key.startsWith('approval.'))).toHaveLength(14);
+    expect([chatReply('en', 'approval.approveButton'), chatReply('en', 'approval.rejectButton')]).toEqual(['Approve', 'Reject']);
+    expect([chatReply('zh-TW', 'approval.approveButton'), chatReply('zh-TW', 'approval.rejectButton')]).toEqual(['核准', '拒絕']);
+    expect([chatReply('zh-CN', 'approval.approveButton'), chatReply('zh-CN', 'approval.rejectButton')]).toEqual(['批准', '拒绝']);
   });
 
   it('falls back to en for an unknown locale', () => {

@@ -110,7 +110,29 @@
         "timedOut": "Your run timed out. See the Results page for details.",
         "cancelled": "Your run was cancelled.",
         "waitingApproval": "A step of your run is waiting for your approval on the Team page."
+      },
+      "approval": {
+        "request": "Step {{step}} of your run ({{agent}}) is waiting for your approval. It can only read, never change anything. The request:",
+        "approveButton": "Approve",
+        "rejectButton": "Reject",
+        "approved": "Approved: step {{step}} ({{agent}}). It is running; the answer comes here when the run is done.",
+        "rejected": "Rejected: step {{step}} ({{agent}}). Its work will not be used.",
+        "unavailable": "This button no longer works: the step was decided, the button expired, or the link changed. See the Team page.",
+        "notReadOnly": "This step is not read-only, so it cannot be approved from Discord. Decide it on the Team page.",
+        "testsBlocked": "The tests for this step have not passed. Decide it on the Team page.",
+        "runsOff": "Runs are switched off on the platform. The step was not approved and is still waiting.",
+        "providerOff": "The AI provider is switched off on the platform. The step was not approved and is still waiting.",
+        "noCredits": "Your credit balance is too low for this step. The step was not approved and is still waiting.",
+        "overCap": "A daily limit is reached. The step was not approved and is still waiting.",
+        "workflow": "The workflow cannot run this step now. The step was not approved; see the Team page.",
+        "refused": "The platform did not approve this step. It is still waiting; see the Team page for why."
       }
+    },
+    "agentNames": {
+      "chief-of-staff": "Chief of Staff",
+      "product-strategy": "Product Strategy",
+      "technology-advisor": "Technology Advisor",
+      "other": "an agent"
     }
   }
 }

@@ -4,7 +4,7 @@ import zhTW from '../../locales/zh-TW.json';
 import { CHAT_LINK_LOCALES, ChatLinkLocale } from './chat-link.service';
 
 /**
- * CHAT-DISCORD-01 slices B and C1 (stage-start section 8): the bot's own text.
+ * CHAT-DISCORD-01 slices B, C1 and C2 (stage-start section 8): the bot's own text.
  *
  * Replies and command names come from the gateway's locale files
  * (services/api-gateway/locales/{en,zh-TW,zh-CN}.json, key "chat"). The files
@@ -60,6 +60,21 @@ export const CHAT_REPLY_KEYS = [
   'result.timedOut',
   'result.cancelled',
   'result.waitingApproval',
+  // Slice C2: approvals in Discord for read-only steps.
+  'approval.request',
+  'approval.approveButton',
+  'approval.rejectButton',
+  'approval.approved',
+  'approval.rejected',
+  'approval.unavailable',
+  'approval.notReadOnly',
+  'approval.testsBlocked',
+  'approval.runsOff',
+  'approval.providerOff',
+  'approval.noCredits',
+  'approval.overCap',
+  'approval.workflow',
+  'approval.refused',
 ] as const;
 
 export type ChatReplyKey = (typeof CHAT_REPLY_KEYS)[number];
@@ -117,6 +132,18 @@ export function chatLanguageName(locale: ChatLinkLocale): string {
     chatLocaleText(safeLocale, `languageNames.${safeLocale}`) ??
     chatLocaleText('en', `languageNames.${safeLocale}`) ??
     safeLocale
+  );
+}
+
+/** Agent ids with their own name under chat.agentNames; anything else is "an agent" (agentNames.other). */
+const CHAT_AGENT_NAME_IDS: readonly string[] = ['chief-of-staff', 'product-strategy', 'technology-advisor'];
+
+/** Slice C2: the name of a system agent as the bot writes it in that locale, or "an agent". */
+export function chatAgentName(locale: ChatLinkLocale, agentId: string): string {
+  const safeLocale = isChatLocale(locale) ? locale : 'en';
+  const key = CHAT_AGENT_NAME_IDS.includes(agentId) ? agentId : 'other';
+  return (
+    chatLocaleText(safeLocale, `agentNames.${key}`) ?? chatLocaleText('en', `agentNames.${key}`) ?? 'an agent'
   );
 }
 

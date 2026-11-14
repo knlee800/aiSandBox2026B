@@ -15,11 +15,12 @@ import type { CollaborationReferralEntity } from '../orchestration/collaboration
 import { finalAnswerOf } from '../orchestration/collaboration-results';
 import type { CollaborationReferral } from '../orchestration/orchestration.contracts';
 import { OrchestrationService } from '../orchestration/orchestration.service';
+import { ChatApprovalService } from './chat-approval.service';
 import { chunkChatText } from './chat-chunk';
 import { CHAT_AUDIT_CATEGORY, CHAT_CHANNEL_DISCORD, ChatLinkLocale, normalizeChatLocale } from './chat-link.service';
 import { chatReply, ChatReplyKey } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
-import { CHAT_TRANSPORT, ChatTransport } from './chat-transport';
+import { CHAT_TRANSPORT, ChatReplyMessage, ChatTransport } from './chat-transport';
 
 /**
  * CHAT-DISCORD-01 slice C1 (stage-start sections 6.3, 7; decisions D5, D6):
@@ -34,7 +35,10 @@ import { CHAT_TRANSPORT, ChatTransport } from './chat-transport';
  * timer) and never overlaps itself. Each tick reads at most 20 rows.
  *
  * - Run still active: each hand-off newly waiting for approval gets one
- *   "waiting for your approval on the Team page" line (slice C2 adds buttons).
+ *   message (slice C2, ChatApprovalService.approvalMessage): a positively
+ *   read-only step gets its request text cut to 1000 characters with Approve
+ *   and Reject buttons; any other step gets the "waiting for your approval on
+ *   the Team page" line. Without the approval service (C1): one line for all.
  * - Run completed: the final answer (the Results page's rule: the last
  *   completed hand-off's answer) in parts of at most 1900 characters, at most
  *   5 parts, the fifth ending with the cut notice. No answer: one line.
@@ -155,6 +159,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     @InjectRepository(AuditEventEntity)
     private readonly audit: Repository<AuditEventEntity>,
     @Optional() @Inject(CHAT_DELIVERY_OPTIONS) options?: ChatDeliveryOptions,
+    @Optional() private readonly approvals?: ChatApprovalService,
   ) {
     this.testEnvironment = process.env.JEST_WORKER_ID !== undefined && options?.allowUnderJest !== true;
     this.now = options?.now ?? Date.now;
@@ -285,7 +290,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     const attempt = state ?? { failures: 0, nextAt: 0, partsSent: 0 };
     try {
       while (attempt.partsSent < result.parts.length) {
-        await this.send(link, result.parts[attempt.partsSent]);
+        await this.send(link, { text: result.parts[attempt.partsSent] });
         attempt.partsSent += 1;
       }
     } catch (error) {
@@ -322,7 +327,12 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     });
   }
 
-  /** C1: one line per hand-off newly waiting for approval (decide on the Team page). */
+  /**
+   * One message per hand-off newly waiting for approval. C2: the approval
+   * message (buttons for a positively read-only step, else the Team page
+   * line). C1 without the approval service: one Team page line for all.
+   * A step is marked notified only once its message is sent.
+   */
   private async announceWaiting(
     row: ChatRunDelivery,
     link: ChatLink,
@@ -336,29 +346,50 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     if (fresh.length === 0 || this.transport.state !== 'ready') {
       return;
     }
+    const sent: string[] = [];
+    let buttons = 0;
+    const approvals = this.approvals;
     try {
-      await this.send(link, chatReply(locale, 'result.waitingApproval'));
+      if (!approvals) {
+        await this.send(link, { text: chatReply(locale, 'result.waitingApproval') });
+        sent.push(...fresh.map((referral) => referral.referralId));
+      } else {
+        for (const referral of fresh) {
+          const step = referrals.indexOf(referral) + 1;
+          const message = await approvals.approvalMessage(link, row.collaborationRunId, referral.referralId, step);
+          try {
+            await this.send(link, message);
+          } catch (error) {
+            approvals.revoke(message);
+            throw error;
+          }
+          sent.push(referral.referralId);
+          if (message.buttons && message.buttons.length > 0) buttons += 1;
+        }
+      }
     } catch (error) {
       this.logger.warn(
         `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,
       );
+    }
+    if (sent.length === 0) {
       return;
     }
-    const next = [...notified, ...fresh.map((referral) => referral.referralId)];
+    const next = [...notified, ...sent];
     await this.deliveries.update({ collaborationRunId: row.collaborationRunId }, { notifiedReferralIds: next });
     this.logger.log(
-      `chat delivery approval notice runId=${row.collaborationRunId} linkId=${row.linkId} waiting=${fresh.length}`,
+      `chat delivery approval notice runId=${row.collaborationRunId} linkId=${row.linkId} waiting=${sent.length} buttons=${buttons}`,
     );
   }
 
   /** One message, at most one a second per owner. The transport sends it with mentions off. */
-  private async send(link: ChatLink, text: string): Promise<void> {
+  private async send(link: ChatLink, message: ChatReplyMessage): Promise<void> {
     const last = this.lastSentAt.get(link.id);
     const now = this.now();
     if (last !== undefined && now - last < this.spacingMs) {
       await this.sleep(this.spacingMs - (now - last));
     }
-    await this.transport.sendDirectMessage(link.externalUserId, { text });
+    await this.transport.sendDirectMessage(link.externalUserId, message);
     this.lastSentAt.set(link.id, this.now());
   }
 

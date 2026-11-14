@@ -7,24 +7,37 @@ import {
   GatewayDispatchEvents,
   InteractionType,
   ApplicationCommandType,
+  ButtonStyle,
+  ComponentType,
   MessageFlags,
 } from '@discordjs/core';
 import { WebSocketShardEvents } from '@discordjs/ws';
-import type { ChatCommandInvocation, ChatReplyMessage } from '../chat-transport';
+import type {
+  ChatCommandInvocation,
+  ChatComponentPress,
+  ChatComponentResponse,
+  ChatReplyMessage,
+} from '../chat-transport';
 import * as transportModule from './discord-transport';
 import {
+  DISCORD_BUTTON_STYLE_DANGER,
+  DISCORD_BUTTON_STYLE_SUCCESS,
   DISCORD_COMMAND_DATA_CHAT_INPUT,
+  DISCORD_COMPONENT_ACTION_ROW,
+  DISCORD_COMPONENT_BUTTON,
   DISCORD_DISPATCH_INTERACTION_CREATE,
   DISCORD_EPHEMERAL_FLAG,
   DISCORD_FATAL_CLOSE_CODES,
   DISCORD_GATEWAY_EVENTS,
   DISCORD_GATEWAY_INTENTS,
   DISCORD_INTERACTION_APPLICATION_COMMAND,
+  DISCORD_INTERACTION_MESSAGE_COMPONENT,
   DISCORD_MAX_FAILED_IDENTIFIES,
   DiscordCalls,
   DiscordConnection,
   DiscordIdentifyGuard,
   DiscordTransport,
+  toChatComponentPress,
   toChatInvocation,
 } from './discord-transport';
 
@@ -75,6 +88,34 @@ function fakeCalls(): DiscordCalls & { log: string[]; bodies: unknown[] } {
       log.push(`dm ${userId}`);
       bodies.push(body);
     },
+    async updateMessage(id, _token, body) {
+      log.push(`update ${id}`);
+      bodies.push(body);
+    },
+    async deferUpdate(id) {
+      log.push(`deferUpdate ${id}`);
+    },
+    async followUp(appId, _token, body) {
+      log.push(`followUp ${appId}`);
+      bodies.push(body);
+    },
+  };
+}
+
+const CUSTOM_ID = 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA';
+
+function buttonPress(overrides: Record<string, unknown> = {}, data: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: '444444444444444444',
+    application_id: APP_ID,
+    type: InteractionType.MessageComponent,
+    token: 'interaction-token',
+    locale: 'zh-CN',
+    context: 1,
+    user: { id: USER_ID, username: 'keith_user', global_name: 'Keith Display' },
+    message: { id: '555555555555555555', content: 'Step 2 is waiting' },
+    data: { component_type: ComponentType.Button, custom_id: CUSTOM_ID, ...data },
+    ...overrides,
   };
 }
 
@@ -157,6 +198,11 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
     expect(DISCORD_COMMAND_DATA_CHAT_INPUT).toBe(ApplicationCommandType.ChatInput);
     expect(DISCORD_DISPATCH_INTERACTION_CREATE).toBe(GatewayDispatchEvents.InteractionCreate);
     expect(DISCORD_EPHEMERAL_FLAG).toBe(MessageFlags.Ephemeral);
+    expect(DISCORD_INTERACTION_MESSAGE_COMPONENT).toBe(InteractionType.MessageComponent);
+    expect(DISCORD_COMPONENT_ACTION_ROW).toBe(ComponentType.ActionRow);
+    expect(DISCORD_COMPONENT_BUTTON).toBe(ComponentType.Button);
+    expect(DISCORD_BUTTON_STYLE_SUCCESS).toBe(ButtonStyle.Success);
+    expect(DISCORD_BUTTON_STYLE_DANGER).toBe(ButtonStyle.Danger);
     expect(DISCORD_GATEWAY_EVENTS).toEqual({
       closed: WebSocketShardEvents.Closed,
       dispatch: WebSocketShardEvents.Dispatch,
@@ -489,6 +535,139 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
     });
   });
 
+  describe('button presses (C2)', () => {
+    async function ready(onComponent: jest.Mock, deferAfterMs = 50): Promise<Harness> {
+      const h = harness(ON, Date.now, deferAfterMs);
+      await h.transport.connect(jest.fn(async () => ({ text: 'command' })), onComponent);
+      h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      h.calls.log.length = 0;
+      return h;
+    }
+
+    function dispatch(h: Harness, raw: Record<string, unknown>): void {
+      h.gateway.emit('dispatch', { t: 'INTERACTION_CREATE', op: 0, s: 1, d: raw }, 0);
+    }
+
+    const update: ChatComponentResponse = { kind: 'update', message: { text: 'Approved @everyone' } };
+    const ephemeral: ChatComponentResponse = { kind: 'ephemeral', message: { text: 'No longer works' } };
+
+    it('a press goes to the component handler with the custom id, presser and locale only', async () => {
+      const onComponent = jest.fn(async () => update);
+      const h = await ready(onComponent);
+      dispatch(h, buttonPress());
+      await flush();
+      expect(onComponent).toHaveBeenCalledTimes(1);
+      const press = (onComponent.mock.calls[0] as unknown[])[0] as ChatComponentPress;
+      expect(press).toEqual(
+        expect.objectContaining({
+          channel: 'discord',
+          customId: CUSTOM_ID,
+          externalUserId: USER_ID,
+          locale: 'zh-CN',
+          directMessage: true,
+        }),
+      );
+      expect(Object.keys(press).sort()).toEqual(['channel', 'customId', 'directMessage', 'externalUserId', 'locale', 'ref']);
+    });
+
+    it('an update edits the pressed message at once (type 7) and removes its buttons, mentions off', async () => {
+      const h = await ready(jest.fn(async () => update));
+      dispatch(h, buttonPress());
+      await flush();
+      expect(h.calls.log).toEqual(['update 444444444444444444']);
+      expect(h.calls.bodies).toEqual([{ content: 'Approved @everyone', allowed_mentions: { parse: [] }, components: [] }]);
+    });
+
+    it('an ephemeral answer is a reply only the presser sees; the message is not edited', async () => {
+      const h = await ready(jest.fn(async () => ephemeral));
+      dispatch(h, buttonPress());
+      await flush();
+      expect(h.calls.log).toEqual(['reply 444444444444444444 token']);
+      expect(h.calls.bodies).toEqual([{ content: 'No longer works', allowed_mentions: { parse: [] }, flags: 64 }]);
+    });
+
+    it('a slow handler: a deferred update within the window, then an edit of the message or a follow-up', async () => {
+      let release: (value: ChatComponentResponse) => void = () => undefined;
+      const onComponent = jest.fn(
+        () =>
+          new Promise<ChatComponentResponse>((resolve) => {
+            release = resolve;
+          }),
+      );
+      const h = await ready(onComponent, 5);
+      dispatch(h, buttonPress());
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      expect(h.calls.log).toEqual(['deferUpdate 444444444444444444']);
+      release(update);
+      await flush();
+      expect(h.calls.log).toEqual(['deferUpdate 444444444444444444', `edit ${APP_ID}`]);
+      expect(h.calls.bodies).toEqual([{ content: 'Approved @everyone', allowed_mentions: { parse: [] }, components: [] }]);
+
+      h.calls.log.length = 0;
+      h.calls.bodies.length = 0;
+      dispatch(h, buttonPress());
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      release(ephemeral);
+      await flush();
+      expect(h.calls.log).toEqual(['deferUpdate 444444444444444444', `followUp ${APP_ID}`]);
+      expect(h.calls.bodies).toEqual([{ content: 'No longer works', allowed_mentions: { parse: [] }, flags: 64 }]);
+    });
+
+    it('ignores other components, a custom id over 100 characters, presses without a handler, before ready or after disconnect', async () => {
+      const onComponent = jest.fn(async () => update);
+      const h = await ready(onComponent);
+      dispatch(h, buttonPress({}, { component_type: ComponentType.StringSelect }));
+      dispatch(h, buttonPress({}, { custom_id: 'x'.repeat(101) }));
+      dispatch(h, buttonPress({}, { custom_id: '' }));
+      dispatch(h, buttonPress({}, { custom_id: 5 }));
+      dispatch(h, buttonPress({ token: undefined }));
+      await flush();
+      expect(onComponent).not.toHaveBeenCalled();
+      expect(h.calls.log).toEqual([]);
+
+      const noHandler = harness(ON);
+      const commands = jest.fn(async () => ({ text: 'command' }));
+      await noHandler.transport.connect(commands);
+      noHandler.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      noHandler.calls.log.length = 0;
+      noHandler.gateway.emit('dispatch', { t: 'INTERACTION_CREATE', op: 0, s: 1, d: buttonPress() }, 0);
+      await flush();
+      expect(commands).not.toHaveBeenCalled();
+      expect(noHandler.calls.log).toEqual([]);
+
+      await h.transport.disconnect();
+      dispatch(h, buttonPress());
+      await flush();
+      expect(onComponent).not.toHaveBeenCalled();
+    });
+
+    it('a handler failure is logged by class name only, with no answer', async () => {
+      const h = await ready(
+        jest.fn(async () => {
+          throw new RangeError(`boom ${CUSTOM_ID}`);
+        }),
+      );
+      dispatch(h, buttonPress());
+      await flush();
+      expect(h.calls.log).toEqual([]);
+      expect(logs).toContain('warn: chat discord press failed reason=RangeError');
+      expect(logs.join('\n')).not.toContain(CUSTOM_ID);
+    });
+
+    it('toChatComponentPress: a press in a server or another context is not a direct message', () => {
+      expect(toChatComponentPress(buttonPress())?.directMessage).toBe(true);
+      expect(
+        toChatComponentPress(buttonPress({ guild_id: '1', user: undefined, member: { user: { id: USER_ID } }, context: 0 }))
+          ?.directMessage,
+      ).toBe(false);
+      expect(toChatComponentPress(buttonPress({ user: { id: 'not-a-number' } }))?.externalUserId).toBe('');
+      expect(toChatComponentPress(interaction())).toBeNull();
+      expect(toChatInvocation(buttonPress())).toBeNull();
+    });
+  });
+
   describe('toChatInvocation', () => {
     it('reads only the declared string options and cuts them to their limit', () => {
       const invocation = toChatInvocation(
@@ -539,6 +718,43 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       await h.transport.sendDirectMessage(USER_ID, { text: 'result' });
       expect(h.calls.log).toEqual([`dm ${USER_ID}`]);
       expect(h.calls.bodies).toEqual([{ content: 'result', allowed_mentions: { parse: [] } }]);
+    });
+
+    it('C2: a direct message with buttons sends one row (Approve green, Reject red); unusable buttons are left out', async () => {
+      const h = harness(ON);
+      await h.transport.connect(jest.fn());
+      h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      h.calls.bodies.length = 0;
+      const message: ChatReplyMessage = {
+        text: 'Step 2 is waiting',
+        buttons: [
+          { customId: 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA', label: 'Approve', style: 'approve' },
+          { customId: 'ap1:r:AAAAAAAAAAAAAAAAAAAAAA', label: `Reject ${'x'.repeat(100)}`, style: 'reject' },
+          { customId: 'y'.repeat(101), label: 'Too long', style: 'approve' },
+          { customId: '', label: 'Empty', style: 'approve' },
+          { customId: 'ok', label: '', style: 'approve' },
+        ],
+      };
+      await h.transport.sendDirectMessage(USER_ID, message);
+      expect(h.calls.bodies).toEqual([
+        {
+          content: 'Step 2 is waiting',
+          allowed_mentions: { parse: [] },
+          components: [
+            {
+              type: ComponentType.ActionRow,
+              components: [
+                { type: ComponentType.Button, style: ButtonStyle.Success, label: 'Approve', custom_id: 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA' },
+                { type: ComponentType.Button, style: ButtonStyle.Danger, label: `Reject ${'x'.repeat(73)}`, custom_id: 'ap1:r:AAAAAAAAAAAAAAAAAAAAAA' },
+              ],
+            },
+          ],
+        },
+      ]);
+      // A plain message has no components key at all.
+      await h.transport.sendDirectMessage(USER_ID, { text: 'plain', buttons: [] });
+      expect(h.calls.bodies[1]).toEqual({ content: 'plain', allowed_mentions: { parse: [] } });
     });
   });
 

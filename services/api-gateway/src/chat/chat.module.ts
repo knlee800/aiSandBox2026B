@@ -15,7 +15,9 @@ import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { User } from '../entities/user.entity';
+import { CollaborationReferralEntity } from '../orchestration/collaboration-referral.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
+import { ChatApprovalService } from './chat-approval.service';
 import { ChatCommandService } from './chat-commands';
 import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatLinkController } from './chat-link.controller';
@@ -45,7 +47,8 @@ export const CHAT_TRANSPORT_PROVIDER: Provider = {
  * module is destroyed (slice B). Under Jest it does nothing unless
  * CHAT_RUNNER_ALLOW_UNDER_JEST is provided; the Discord transport refuses its
  * real library under Jest too. connect() never blocks on the network, so the
- * gateway boot never waits for Discord.
+ * gateway boot never waits for Discord. Slice C2: button presses go to the
+ * approval service (without it, presses are ignored).
  */
 @Injectable()
 export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestroy {
@@ -57,6 +60,7 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     @Inject(CHAT_TRANSPORT) private readonly transport: ChatTransport,
     private readonly commands: ChatCommandService,
     @Optional() @Inject(CHAT_RUNNER_ALLOW_UNDER_JEST) allowUnderJest?: boolean,
+    @Optional() private readonly approvals?: ChatApprovalService,
   ) {
     this.testEnvironment = process.env.JEST_WORKER_ID !== undefined && allowUnderJest !== true;
   }
@@ -76,7 +80,11 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     }
     this.started = true;
     try {
-      return await this.transport.connect((invocation) => this.commands.handle(invocation));
+      const approvals = this.approvals;
+      return await this.transport.connect(
+        (invocation) => this.commands.handle(invocation),
+        approvals ? (press) => approvals.handlePress(press) : undefined,
+      );
     } catch {
       this.logger.warn('chat channel start failed');
       return false;
@@ -102,12 +110,20 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * 0, CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN) and the slash commands
  * without runs. Slice C1: /ask (and the /cancel logic) through the Team
  * page's start and approve code (OrchestrationModule's CollaborationStartService), the
- * chat_run_deliveries table and the result poller. Only ChatLinkService is
- * exported.
+ * chat_run_deliveries table and the result poller. Slice C2: Approve and
+ * Reject buttons for read-only steps (ChatApprovalService; it reads the
+ * hand-off rows, it does not write them). Only ChatLinkService is exported.
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ChatLink, ChatLinkCode, ChatRunDelivery, AuditEventEntity, User]),
+    TypeOrmModule.forFeature([
+      ChatLink,
+      ChatLinkCode,
+      ChatRunDelivery,
+      AuditEventEntity,
+      User,
+      CollaborationReferralEntity,
+    ]),
     AuthModule,
     OrchestrationModule,
   ],
@@ -119,6 +135,7 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     ChatChannelRunner,
     ChatRunService,
     ChatDeliveryService,
+    ChatApprovalService,
   ],
   exports: [ChatLinkService],
 })

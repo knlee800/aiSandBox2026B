@@ -110,7 +110,29 @@
         "timedOut": "你的运行已超时。详细信息请到结果页面查看。",
         "cancelled": "你的运行已取消。",
         "waitingApproval": "你的运行中有一个步骤正在团队页面上等待你批准。"
+      },
+      "approval": {
+        "request": "你的运行中的第 {{step}} 步（{{agent}}）正在等待你批准。这一步只能读取，不能更改任何内容。请求内容：",
+        "approveButton": "批准",
+        "rejectButton": "拒绝",
+        "approved": "已批准：第 {{step}} 步（{{agent}}）。它正在运行；运行完成后，答案会发到这里。",
+        "rejected": "已拒绝：第 {{step}} 步（{{agent}}）。它的工作不会被使用。",
+        "unavailable": "这个按钮已失效：这一步已有决定、按钮已过期，或链接已变更。请到团队页面查看。",
+        "notReadOnly": "这一步不是只读的，所以不能在 Discord 批准。请在团队页面上决定。",
+        "testsBlocked": "这一步的测试尚未通过。请在团队页面上决定。",
+        "runsOff": "平台上的运行已关闭。这一步没有被批准，仍在等待。",
+        "providerOff": "平台上的 AI 提供商已关闭。这一步没有被批准，仍在等待。",
+        "noCredits": "你的积分余额不足以运行这一步。这一步没有被批准，仍在等待。",
+        "overCap": "已达到每日上限。这一步没有被批准，仍在等待。",
+        "workflow": "这个工作流现在无法运行这一步。这一步没有被批准；请到团队页面查看。",
+        "refused": "平台没有批准这一步。它仍在等待；请到团队页面查看原因。"
       }
+    },
+    "agentNames": {
+      "chief-of-staff": "幕僚长",
+      "product-strategy": "产品策略",
+      "technology-advisor": "技术顾问",
+      "other": "一个代理"
     }
   }
 }

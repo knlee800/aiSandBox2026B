@@ -21,6 +21,7 @@ import { SameOriginWriteGuard } from '../guards/same-origin-write.guard';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
 import { ChatCommandService } from './chat-commands';
+import { ChatApprovalService } from './chat-approval.service';
 import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT_PROVIDER, ChatChannelRunner, ChatModule } from './chat.module';
@@ -386,6 +387,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       ChatChannelRunner,
       ChatRunService,
       ChatDeliveryService,
+      ChatApprovalService,
     ]);
     expect(exportsList).toEqual([ChatLinkService]);
 
