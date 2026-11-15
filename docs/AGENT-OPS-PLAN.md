@@ -70,7 +70,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does |
 |---|---|---|
 | 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check (Keith chose Phase 4 2026-11-15; TRIGGER-01 done 2026-11-15, not deployed: tables, routes, SCHEDULES_ENABLED off by default, the timer that starts read-only runs as the owner; TRIGGER-UI-01 done 2026-11-15 (the Schedules page, not deployed); STAGING-DEPLOY-TRIG-01 done 2026-11-15 (on staging at f32d88b, switch off, Keith checked the page); TRIGGER-LIVE-01 done 2026-11-15 (schedules proven live; PRD.md and ARCHITECTURE.md describe them as GATED; staging back to schedules off); follow-ups TRIGGER-UI-POLISH-01, TRIGGER-WAIT-NOTICE-01, TRIGGER-ORIGIN-01, TRIGGER-SESSION-01, REFUSAL-MAP-01, TRIGGER-SCALE-01, GOV-CHECKLIST-01) |
-| 43 | TRIGGER-EVENT-01 | Before a meeting (Keith chose it 2026-11-15; admitted for its stage-start, Lane 1) |
+| 43 | TRIGGER-EVENT-01 | Before a meeting (Keith chose it 2026-11-15; stage-start approved, slices S1 to S4 in Lane 1; beside it in Lane 2 COS-EVAL-DRIFT-01, the ai-service drift test fix) |
 | 44 | TRIGGER-MAIL-01 | New mail matching a filter |
 | 45 | TRIGGER-MORE-01 | After another workflow, webhook, new knowledge file |
 

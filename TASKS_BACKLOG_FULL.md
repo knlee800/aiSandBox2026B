@@ -88939,7 +88939,7 @@ taskId=TRIGGER-EVENT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice S1 (calendar window read) — 2026-11-15. Stage-start docs/TRIGGER-EVENT-01-STAGE-START.md drafted by a fable subagent (92fc178, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all sixteen"): all sixteen recommendations of section 15 (the run is told the event's times only and reads the event with its own calendar tool; the first step starts without a click; every timed event or an optional title word; lead 5 to 120 minutes, default 15; 3 triggers per owner and 3 starts per trigger per day; a moved event fires again inside the day limit; own tables and /api/event-triggers; a new gateway-only calendar_list_window; reads every 10 minutes plus one before each start; every read audited without content; a new EVENT_TRIGGERS_ENABLED; no reads while runs are off; a workflow without the calendar tool allowed with a warning; English task lines; the page section is slice S4; the switch back off after the live check). /api/schedules stays as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start TRIGGER-EVENT-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 3 slice S2 (tables, service, routes, switch) — 2026-11-15. Slice S1 landed on main as 265256d (opus subagent, fast-forwarded): the gateway-only calendar_list_window tool in connectors-mcp (timed, not-cancelled occurrences in a window of at most 3 hours: uid, title, start, end; repeating events expanded) and ConnectorBroker.readCalendarWindow with one content-free connector.trigger_read audit row; the tool is not in the catalogue, the allowlist, any grant or the internal route; calendar_list_today unchanged byte for byte; the control plane read the diff and reran the gates (connectors-mcp 85 of 85, build rc 0; gateway 4983 passed, 7 skipped, the 14 known smoke.integration failures only, build rc 0). The five connectors-mcp HOTFILE leases released. Was: ADMITTED — Lane 1 — Step 3 slice S1 (calendar window read) — 2026-11-15. Stage-start docs/TRIGGER-EVENT-01-STAGE-START.md drafted by a fable subagent (92fc178, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all sixteen"): all sixteen recommendations of section 15 (the run is told the event's times only and reads the event with its own calendar tool; the first step starts without a click; every timed event or an optional title word; lead 5 to 120 minutes, default 15; 3 triggers per owner and 3 starts per trigger per day; a moved event fires again inside the day limit; own tables and /api/event-triggers; a new gateway-only calendar_list_window; reads every 10 minutes plus one before each start; every read audited without content; a new EVENT_TRIGGERS_ENABLED; no reads while runs are off; a workflow without the calendar tool allowed with a warning; English task lines; the page section is slice S4; the switch back off after the live check). /api/schedules stays as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start TRIGGER-EVENT-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-EVENT-01
 **Title:** Trigger before a calendar event
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88947,9 +88947,9 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP
 **Start condition:** READY for Step 2 (Keith chose it, 2026-11-15, "Start TRIGGER-EVENT-01"; TRIGGER-LIVE-01 LOCKED). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
 **Depends on:** TRIGGER-LIVE-01.
-**Primary write scope:** slice S1 (set 2026-11-15): services/connectors-mcp/src/clients/ical-feed.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/tools/calendar-window.ts, services/connectors-mcp/src/__tests__/calendar-window.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts, services/api-gateway/src/connectors/connector-broker.ts, services/api-gateway/src/connectors/connector-broker.spec.ts. Slices S2, S3 and S4: stage-start section 12, set at each admission. Was: set at admission.
-**Mutexes / resources:** slice S1: GATEWAY (2026-11-15); S2: GATEWAY, MIGRATION, ENV; S3: GATEWAY; S4: FRONTEND, I18N. Was: Step 2: none (write set docs/TRIGGER-EVENT-01-STAGE-START.md, set 2026-11-15). Step 3: set when the stage-start is approved.
-**Hot-file leases:** slice S1: services/connectors-mcp/src/clients/ical-feed.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/tools/calendar-window.ts, services/connectors-mcp/src/__tests__/calendar-window.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts. Was: set at admission.
+**Primary write scope:** slice S2 (set 2026-11-15): services/api-gateway/src/migrations/1811000000000-CreateAgentEventTriggerTables.ts, services/api-gateway/src/migrations/__tests__/1811000000000-CreateAgentEventTriggerTables.spec.ts, services/api-gateway/src/entities/agent-event-trigger.entity.ts, services/api-gateway/src/entities/agent-event-trigger-run.entity.ts, services/api-gateway/src/entities/index.ts, services/api-gateway/src/triggers/event-trigger-switch.ts, services/api-gateway/src/triggers/event-trigger-switch.spec.ts, services/api-gateway/src/triggers/event-trigger.service.ts, services/api-gateway/src/triggers/event-trigger.service.spec.ts, services/api-gateway/src/triggers/event-trigger.controller.ts, services/api-gateway/src/triggers/event-trigger.controller.spec.ts, services/api-gateway/src/triggers/event-trigger-validation.ts, services/api-gateway/src/triggers/event-trigger-validation.spec.ts, services/api-gateway/src/triggers/triggers.module.ts, services/api-gateway/src/triggers/schedule.controller.spec.ts, ops/clean-baseline/env/gateway.env.template. Was: slice S1 (set 2026-11-15): services/connectors-mcp/src/clients/ical-feed.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/tools/calendar-window.ts, services/connectors-mcp/src/__tests__/calendar-window.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts, services/api-gateway/src/connectors/connector-broker.ts, services/api-gateway/src/connectors/connector-broker.spec.ts. Slices S2, S3 and S4: stage-start section 12, set at each admission. Was: set at admission.
+**Mutexes / resources:** slice S2: GATEWAY, MIGRATION, ENV (2026-11-15); S3: GATEWAY; S4: FRONTEND, I18N. Was: slice S1: GATEWAY (2026-11-15); S2: GATEWAY, MIGRATION, ENV; S3: GATEWAY; S4: FRONTEND, I18N. Was: Step 2: none (write set docs/TRIGGER-EVENT-01-STAGE-START.md, set 2026-11-15). Step 3: set when the stage-start is approved.
+**Hot-file leases:** none for S2 (the S1 leases released 2026-11-15). Was: slice S1: services/connectors-mcp/src/clients/ical-feed.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/tools/calendar-window.ts, services/connectors-mcp/src/__tests__/calendar-window.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts. Was: set at admission.
 **Shared contracts:** /api/schedules stays as frozen by TRIGGER-01 (not touched); the /api/event-triggers shapes of stage-start section 8 freeze when S2 lands; no slice edits orchestration.service.ts or ai-execution.controller.ts (HARNESS_ENTITLEMENT_PROOF_V1). Was: set at admission.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
@@ -88958,6 +88958,30 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-15).
 **Scope:** Start a workflow before a calendar event (F2).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### COS-EVAL-DRIFT-01 — Fix the ai-service briefing drift test after the start code moved
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-DRIFT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 2 — 2026-11-15 — registered and admitted together by the control plane (GOV-OS-04) for a gate that fails on main.
+**Task ID:** COS-EVAL-DRIFT-01
+**Title:** Fix the ai-service briefing drift test after the start code moved
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** READY (a gate fails on main; noticed 2026-11-15 by the TRIGGER-EVENT-01 S1 worker and confirmed by the control plane).
+**Depends on:** none.
+**Primary write scope:** services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts.
+**Mutexes / resources:** AI-SERVICE.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** one test file.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** The test 'the project instructions follow the gateway collaboration brief' in briefing-drift.spec.ts reads services/api-gateway/src/orchestration/collaboration.controller.ts from 'async startRun(' and expects 'createPendingReferral({' before 'fileAccess: true'. CHAT-DISCORD-01 slice C1 (fff407cd) moved that code into collaboration-start.service.ts start(); the test has failed on main since then. Point the check at the start code where it now lives, keep every other assertion, and change nothing else. Record (a correction of fact, not an edit of a locked document): the CHAT-DISCORD-01 checkpoint's ai-service gate line does not hold for main after C1.
 
 ### TRIGGER-MAIL-01 — Trigger on mail that matches a filter
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
