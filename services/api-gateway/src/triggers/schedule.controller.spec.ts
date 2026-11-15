@@ -22,8 +22,12 @@ import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { AuthModule } from '../auth/auth.module';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
+import { ConnectorsModule } from '../connectors/connectors.module';
+import { EventTriggerCalendar } from './event-trigger-calendar';
 import { EventTriggerController } from './event-trigger.controller';
+import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
+import { EventTriggerTimer } from './event-trigger-timer';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -466,10 +470,14 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         ScheduleRunService,
         ScheduleTimer,
         EventTriggerService,
+        // TRIGGER-EVENT-01 S3: the calendar reads, the event run service and the event timer.
+        EventTriggerCalendar,
+        EventTriggerRunService,
+        EventTriggerTimer,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
-        expect.arrayContaining([AuthModule, OrchestrationModule, SafetyModule]),
+        expect.arrayContaining([AuthModule, ConnectorsModule, OrchestrationModule, SafetyModule]),
       );
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
@@ -491,7 +499,12 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       const files = readdirSync(__dirname).filter((name) => name.endsWith('.ts') && !name.endsWith('.spec.ts'));
       expect(files.sort()).toEqual(
         [
+          'event-trigger-calendar.ts',
+          'event-trigger-due.ts',
+          'event-trigger-reasons.ts',
+          'event-trigger-run.service.ts',
           'event-trigger-switch.ts',
+          'event-trigger-timer.ts',
           'event-trigger-validation.ts',
           'event-trigger.controller.ts',
           'event-trigger.service.ts',
@@ -528,6 +541,26 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       // The timer reads the switch live on every tick, once.
       expect(source('schedule-timer.ts').match(/isSchedulesEnabled\(\)/g)).toHaveLength(1);
       expect(source('schedule-run.service.ts')).not.toMatch(/isSchedulesEnabled/);
+      // TRIGGER-EVENT-01 S3: the pure event helpers have no timer and no run start; the event
+      // interval and boot hook only in the event timer; start and approve only in the event run
+      // service; the calendar read only in the calendar file; the event flag read once a tick.
+      for (const name of ['event-trigger-due.ts', 'event-trigger-reasons.ts', 'event-trigger-calendar.ts']) {
+        expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
+      }
+      expect(source('event-trigger-timer.ts')).toMatch(/OnModuleInit/);
+      expect(source('event-trigger-timer.ts').match(/setInterval\(/g)).toHaveLength(1);
+      expect(source('event-trigger-timer.ts')).not.toMatch(/CollaborationStartService|approveStep|setTimeout|OnApplicationBootstrap|readCalendarWindow/);
+      expect(source('event-trigger-run.service.ts')).toMatch(/this\.starts\.start\(/);
+      expect(source('event-trigger-run.service.ts')).toMatch(/this\.starts\.approveStep\(/);
+      expect(source('event-trigger-run.service.ts')).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|readCalendarWindow|ConnectorBroker/);
+      expect(source('event-trigger-calendar.ts').match(/this\.broker\.readCalendarWindow\(/g)).toHaveLength(2);
+      expect(source('event-trigger-calendar.ts')).not.toMatch(/callConnectorTool/);
+      expect(source('event-trigger-timer.ts').match(/isEventTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('event-trigger-run.service.ts')).not.toMatch(/isEventTriggersEnabled|isSchedulesEnabled/);
+      expect(source('event-trigger-timer.ts')).not.toMatch(/isSchedulesEnabled/);
+      // The schedule timer and run service never reach the event parts.
+      expect(source('schedule-timer.ts')).not.toMatch(/EventTrigger/);
+      expect(source('schedule-run.service.ts')).not.toMatch(/EventTrigger/);
     });
   });
 });

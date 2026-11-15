@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
+import { ConnectorsModule } from '../connectors/connectors.module';
 import { AgentEventTrigger } from '../entities/agent-event-trigger.entity';
 import { AgentEventTriggerRun } from '../entities/agent-event-trigger-run.entity';
 import { AgentSchedule } from '../entities/agent-schedule.entity';
@@ -11,8 +12,11 @@ import { User } from '../entities/user.entity';
 import { UserAgent } from '../entities/user-agent.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
+import { EventTriggerCalendar } from './event-trigger-calendar';
 import { EventTriggerController } from './event-trigger.controller';
+import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
+import { EventTriggerTimer } from './event-trigger-timer';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -37,17 +41,35 @@ import { ScheduleTimer } from './schedule-timer';
  * EVENT_TRIGGERS_ENABLED switch (event-trigger-switch.ts). ConnectorConnection
  * is read only to say whether the owner has a calendar connection (a count;
  * no secret is read, no broker call). No timer, no calendar read and no run
- * start yet (slice S3).
+ * start in S2.
+ *
+ * TRIGGER-EVENT-01 S3: the event timer (event-trigger-timer.ts; its own
+ * 60-second interval, silent while EVENT_TRIGGERS_ENABLED is off), the
+ * 10-minute calendar reads held in memory (event-trigger-calendar.ts, through
+ * ConnectorsModule's ConnectorBroker.readCalendarWindow), the due rule
+ * (event-trigger-due.ts), the claim, day limit, confirm read, pre-checks,
+ * start and first approval through the same CollaborationStartService as
+ * schedules, and the skip reasons (event-trigger-reasons.ts) with their audit
+ * rows (event-trigger-run.service.ts).
  */
 @Module({
   imports: [
     TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
+    ConnectorsModule,
     OrchestrationModule,
     SafetyModule,
   ],
   controllers: [ScheduleController, EventTriggerController],
-  providers: [ScheduleService, ScheduleRunService, ScheduleTimer, EventTriggerService],
+  providers: [
+    ScheduleService,
+    ScheduleRunService,
+    ScheduleTimer,
+    EventTriggerService,
+    EventTriggerCalendar,
+    EventTriggerRunService,
+    EventTriggerTimer,
+  ],
   exports: [],
 })
 export class TriggersModule {}
