@@ -19,8 +19,13 @@ import { AuditEventEntity } from '../entities/audit-event.entity';
 import { UserAgent } from '../entities/user-agent.entity';
 import { SameOriginWriteGuard } from '../guards/same-origin-write.guard';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
+import { AuthModule } from '../auth/auth.module';
+import { OrchestrationModule } from '../orchestration/orchestration.module';
+import { SafetyModule } from '../safety/safety.module';
 import { ScheduleController } from './schedule.controller';
+import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
+import { ScheduleTimer } from './schedule-timer';
 import { TriggersModule } from './triggers.module';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -450,13 +455,17 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(listed.body.enabled).toBe(false);
     });
 
-    it('TriggersModule wires the controller, the service and the four repositories, and the app imports it', () => {
+    it('TriggersModule wires the controller, the services, the timer and the five repositories, and the app imports it', () => {
       expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController]);
-      expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([ScheduleService]);
+      // TRIGGER-01 S2: the run service and the timer join the S1 service.
+      expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([ScheduleService, ScheduleRunService, ScheduleTimer]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
+      expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
+        expect.arrayContaining([AuthModule, OrchestrationModule, SafetyModule]),
+      );
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AuditEventEntity, UserAgent])',
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AuditEventEntity, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -470,18 +479,42 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(entities).toContain("export { AgentScheduleRun, AGENT_SCHEDULE_RUN_OUTCOMES } from './agent-schedule-run.entity';");
     });
 
-    it('slice S1 has no timer, no run start and no boot hook; the switch is read only inside a route', () => {
+    it('the timer, the run start and the boot hook live only in the S2 files; the routes start nothing; the switch is read once in the service', () => {
       const files = readdirSync(__dirname).filter((name) => name.endsWith('.ts') && !name.endsWith('.spec.ts'));
       expect(files.sort()).toEqual(
-        ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'triggers.module.ts'].sort(),
+        [
+          'schedule-due.ts',
+          'schedule-refusal.ts',
+          'schedule-run.service.ts',
+          'schedule-switch.ts',
+          'schedule-timer.ts',
+          'schedule-validation.ts',
+          'schedule.controller.ts',
+          'schedule.service.ts',
+          'triggers.module.ts',
+        ].sort(),
       );
-      for (const name of files) {
-        const source = readFileSync(join(__dirname, name), 'utf8');
-        expect(source).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
+      const source = (name: string) => readFileSync(join(__dirname, name), 'utf8');
+      // The S1 files (and the pure S2 helpers) still have no timer, no run start and no boot hook.
+      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts']) {
+        expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
       }
-      const service = readFileSync(join(__dirname, 'schedule.service.ts'), 'utf8');
+      // TRIGGER-01 S2: the interval and the boot hook only in the timer; start and approve only in the run service.
+      expect(source('schedule-timer.ts')).toMatch(/OnModuleInit/);
+      expect(source('schedule-timer.ts').match(/setInterval\(/g)).toHaveLength(1);
+      expect(source('schedule-timer.ts')).not.toMatch(/CollaborationStartService|approveStep|setTimeout|OnApplicationBootstrap/);
+      expect(source('schedule-run.service.ts')).toMatch(/this\.starts\.start\(/);
+      expect(source('schedule-run.service.ts')).toMatch(/this\.starts\.approveStep\(/);
+      expect(source('schedule-run.service.ts')).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap/);
+      // The routes never call the run service or the timer.
+      expect(source('schedule.controller.ts')).not.toMatch(/ScheduleRunService|ScheduleTimer/);
+      expect(source('schedule.service.ts')).not.toMatch(/ScheduleRunService|ScheduleTimer/);
+      const service = source('schedule.service.ts');
       expect(service.match(/isSchedulesEnabled\(\)/g)).toHaveLength(1);
       expect(service).toMatch(/enabled: isSchedulesEnabled\(\),/);
+      // The timer reads the switch live on every tick, once.
+      expect(source('schedule-timer.ts').match(/isSchedulesEnabled\(\)/g)).toHaveLength(1);
+      expect(source('schedule-run.service.ts')).not.toMatch(/isSchedulesEnabled/);
     });
   });
 });
