@@ -84340,6 +84340,8 @@ nature=IMPLEMENTATION
 
 Note (CHAT-DISCORD-01 LOCK, 2026-11-14, F3): Discord joins the outside services in the privacy inventory and the future privacy page before any second user links a chat account.
 
+Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F9): agent_schedules.task joins the stored owner text in the privacy inventory before any second user.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -88043,6 +88045,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From the APPROVAL-SET-01 stage-start DECISION D (Keith "Yes, approve both"): the same approval setting on the Chief of Staff roster, read when the run lead is chief-of-staff; the same fail-closed rules. Needs its own stage-start. Implementer: set at its stage-start.
 
+Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F7): once the Chief of Staff roster has an approval setting, scheduled Chief of Staff runs can go past their first hand-off unattended; today they wait for the owner on the Team page.
+
 ### COS-DRAFTS-01 — Chief of Staff drafts a workflow the owner approves
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-DRAFTS-01
@@ -88354,6 +88358,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F5): an opt-in to receive results of runs started on the Team page (and later triggers) in the linked Discord.
 
+Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F1, Keith's Q8): include scheduled runs; they are not sent to Discord until this task.
+
 ### CHAT-SERVICE-SPLIT-01 — Move the chat transport to its own service
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-SERVICE-SPLIT-01
@@ -88656,7 +88662,7 @@ taskId=TRIGGER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice S2 (timer, due rule, start and skip) — 2026-11-15. Slice S1 landed on main as 566ef48 (opus subagent, fast-forwarded): migration 1810 CreateAgentScheduleTables, the AgentSchedule and AgentScheduleRun entities, the triggers module, the schedule service, controller and validation, the SCHEDULES_ENABLED switch and the env template line; the control plane read the diff and reran the gates (gateway jest 4852 passed, 7 skipped, the 14 known smoke.integration failures only; build rc 0). The /api/schedules shapes as built (request target {kind, workflowId}, error codes schedule_*, runs newest first, at most 30) are the frozen contract for TRIGGER-UI-01. Was: ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-15. Stage-start docs/TRIGGER-01-STAGE-START.md drafted by a fable subagent (6786647, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all twelve"): all twelve recommendations of section 14 (the first step starts without a click as the owner's request; read-only only, no session; one start per schedule per local day, at most 5 schedules per owner; start if at most 60 minutes late, else missed; the routes work while SCHEDULES_ENABLED is off, with a banner; silent while the flag is off; browser session only; Discord delivery later in CHAT-RESULTS-OTHER-01; a deleted workflow switches its schedule off; one migration, 1810; SCHEDULES_ENABLED back to false after the live check). The route shapes of section 7 are frozen for Step 3 and TRIGGER-UI-01. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Schedules are built as the gateway module triggers/ (not deployed): migration 1810 (agent_schedules, agent_schedule_runs with a unique schedule and local date), the five /api/schedules routes (browser session, harness access read live, owner-scoped, at most 5 per owner), SCHEDULES_ENABLED (default false, gates only the timer), a 60-second timer that reads each schedule's local time with Intl.DateTimeFormat, claims the day's row, pre-checks runs, owner, harness access, workflow and the daily cap, starts the Chief of Staff or the owner's workflow through the Team page's start code as the owner without a session (read-only) and approves the first step as the owner; refusals cancel a created run with schedule_skipped:<reason>; no retry that day; more than 60 minutes late is missed; a gone workflow switches its schedule off; audit rows hold ids and reason codes only, never the task text. Slices S1 and S2 by opus; control-plane gates on main bf6e4c4: gateway 4973 passed, 7 skipped, the 14 known smoke.integration failures; tsc and build rc 0; nothing under orchestration/, chat/, ai/, auth/, guards/ or safety/ changed. Checkpoint: docs/TRIGGER-01-CHECKPOINT.md. FOLLOWUPS: 6 registered (TRIGGER-WAIT-NOTICE-01; TRIGGER-ORIGIN-01; TRIGGER-SESSION-01; REFUSAL-MAP-01; TRIGGER-SCALE-01; GOV-CHECKLIST-01) / 11 superseded (F1 by CHAT-RESULTS-OTHER-01; F5 and F11 by GOV-CHECKLIST-01; F7 by APPROVAL-SET-02; F9 by ACCESS-READY-01; F10 by Keith's Q12; the log lines by design; the shapes note by TRIGGER-UI-01; the database and boot checks by STAGING-DEPLOY-TRIG-01; the leftover folders by Keith's step) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice S2 (timer, due rule, start and skip) — 2026-11-15. Slice S1 landed on main as 566ef48 (opus subagent, fast-forwarded): migration 1810 CreateAgentScheduleTables, the AgentSchedule and AgentScheduleRun entities, the triggers module, the schedule service, controller and validation, the SCHEDULES_ENABLED switch and the env template line; the control plane read the diff and reran the gates (gateway jest 4852 passed, 7 skipped, the 14 known smoke.integration failures only; build rc 0). The /api/schedules shapes as built (request target {kind, workflowId}, error codes schedule_*, runs newest first, at most 30) are the frozen contract for TRIGGER-UI-01. Was: ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-15. Stage-start docs/TRIGGER-01-STAGE-START.md drafted by a fable subagent (6786647, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all twelve"): all twelve recommendations of section 14 (the first step starts without a click as the owner's request; read-only only, no session; one start per schedule per local day, at most 5 schedules per owner; start if at most 60 minutes late, else missed; the routes work while SCHEDULES_ENABLED is off, with a banner; silent while the flag is off; browser session only; Discord delivery later in CHAT-RESULTS-OTHER-01; a deleted workflow switches its schedule off; one migration, 1810; SCHEDULES_ENABLED back to false after the live check). The route shapes of section 7 are frozen for Step 3 and TRIGGER-UI-01. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-01
 **Title:** Schedules that start a workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88678,6 +88684,143 @@ nature=IMPLEMENTATION
 **Note (added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK):** a trigger-started workflow run has no session; it reuses CollaborationBusinessSessionService.ensureForOwner (services/api-gateway/src/orchestration/collaboration-business-session.ts) for its project and session.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 **Also (added 2026-11-11 by the APPROVAL-SET-01 stage-start approval):** decide here whether an unattended start may auto-approve its first step under the APPROVAL-SET-01 setting (today the first hand-off never auto-approves).
+### TRIGGER-WAIT-NOTICE-01 — Tell the owner when a scheduled run waits for approval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-WAIT-NOTICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-01 LOCK — not admitted.
+**Task ID:** TRIGGER-WAIT-NOTICE-01
+**Title:** Tell the owner when a scheduled run waits for approval
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ or orchestration/collaboration-results*, frontend header badge, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-01 (stage-start F2): a step of an unattended run that waits for approval is visible only on the Team page and times out after 24 hours; a badge or notice for the owner.
+
+### TRIGGER-ORIGIN-01 — Show "started by a schedule" on Results and the Team page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-ORIGIN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-01 LOCK — not admitted.
+**Task ID:** TRIGGER-ORIGIN-01
+**Title:** Show "started by a schedule" on Results and the Team page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/collaboration-results*, frontend/components/results/, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-01 (stage-start F3): a field on the Results route and a label so the owner can tell scheduled runs from page runs; until then the Schedules page links each last run.
+
+### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-SESSION-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-01 LOCK — not admitted.
+**Task ID:** TRIGGER-SESSION-01
+**Title:** Schedules for the coding and advisors teams
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-01 (stage-start F4, Keith's Q2): those teams need a project session and a decision on write access for an unattended run.
+
+### REFUSAL-MAP-01 — One refusal-to-reason mapper for chat and triggers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=REFUSAL-MAP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-01 LOCK — not admitted.
+**Task ID:** REFUSAL-MAP-01
+**Title:** One refusal-to-reason mapper for chat and triggers
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/chat-run.service.ts, services/api-gateway/src/triggers/schedule-refusal.ts, a shared file.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-01 (stage-start F6, slice S2): triggers/schedule-refusal.ts copies chatRunRefusalOf's rules, pinned by a test; share one mapper.
+
+### TRIGGER-SCALE-01 — A stored next-due time for schedules
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-SCALE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-01 LOCK — not admitted.
+**Task ID:** TRIGGER-SCALE-01
+**Title:** A stored next-due time for schedules
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: the number of schedules makes the per-tick read too wide. Keith decides.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/, a migration.
+**Mutexes / resources:** set at admission (GATEWAY, MIGRATION expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-01 (stage-start F8, slice S2): the timer reads at most 200 enabled schedules a tick with an in-memory cursor; a stored next-due or last-evaluated time and index, and with it more than one start a day if ever wanted.
+
+### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-CHECKLIST-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-01 LOCK — not admitted.
+**Task ID:** GOV-CHECKLIST-01
+**Title:** Two checklist lines: the schedules switch and the model for subagent migrations
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the wording (in his words). Keith decides.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** docs/control-plane/task-checklists.md (DEPLOY or LIVE, and MIGRATION item 1).
+**Mutexes / resources:** GOVERNANCE.
+**Scope:** From TRIGGER-01 (stage-start F5 and F11): (1) a line that a tester window or run window never sets SCHEDULES_ENABLED unless a registered task holding ENV does; (2) MIGRATION item 1 names grok-4.7-xhigh for Cursor and opus for a Claude subagent, as Model Routing says. CLAUDE.md wins on conflict; no CLAUDE.md change.
+
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-UI-01
@@ -88704,6 +88847,8 @@ nature=IMPLEMENTATION
 **Scope:** Schedules page (F5, A9 part 5) where the owner sets when a workflow runs.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
+Note (TRIGGER-01 LOCK, 2026-11-15): TRIGGER-01 is LOCKED; the /api/schedules shapes as built are the frozen contract (docs/TRIGGER-01-STAGE-START.md section 7 and docs/TRIGGER-01-CHECKPOINT.md 'Shapes as built'); translate every schedule_* error code and every reason code of stage-start section 5 in en, zh-TW and zh-CN.
+
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=STAGING-DEPLOY-TRIG-01
@@ -88729,6 +88874,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy of the schedule trigger. The flag stays off until the live check.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+Note (TRIGGER-01 LOCK, 2026-11-15): this deploy is the first run of migration 1810 and of the per-owner advisory lock against PostgreSQL, and the first boot of TriggersModule with a real database: after the backup, apply 1810, check the gateway boots, then Keith creates, edits and deletes a schedule on the page with SCHEDULES_ENABLED=false (stage-start section 12).
 
 ### TRIGGER-LIVE-01 — Live trigger check and the triggers architecture wording
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

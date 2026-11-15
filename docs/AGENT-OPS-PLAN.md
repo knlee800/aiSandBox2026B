@@ -69,7 +69,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check (Keith chose Phase 4 2026-11-15; TRIGGER-01 admitted for its stage-start, Lane 1) |
+| 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check (Keith chose Phase 4 2026-11-15; TRIGGER-01 done 2026-11-15, not deployed: tables, routes, SCHEDULES_ENABLED off by default, the timer that starts read-only runs as the owner; next TRIGGER-UI-01; follow-ups TRIGGER-WAIT-NOTICE-01, TRIGGER-ORIGIN-01, TRIGGER-SESSION-01, REFUSAL-MAP-01, TRIGGER-SCALE-01, GOV-CHECKLIST-01) |
 | 43 | TRIGGER-EVENT-01 | Before a meeting |
 | 44 | TRIGGER-MAIL-01 | New mail matching a filter |
 | 45 | TRIGGER-MORE-01 | After another workflow, webhook, new knowledge file |
