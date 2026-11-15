@@ -70,7 +70,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does |
 |---|---|---|
 | 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check (Keith chose Phase 4 2026-11-15; TRIGGER-01 done 2026-11-15, not deployed: tables, routes, SCHEDULES_ENABLED off by default, the timer that starts read-only runs as the owner; TRIGGER-UI-01 done 2026-11-15 (the Schedules page, not deployed); STAGING-DEPLOY-TRIG-01 done 2026-11-15 (on staging at f32d88b, switch off, Keith checked the page); TRIGGER-LIVE-01 done 2026-11-15 (schedules proven live; PRD.md and ARCHITECTURE.md describe them as GATED; staging back to schedules off); follow-ups TRIGGER-UI-POLISH-01, TRIGGER-WAIT-NOTICE-01, TRIGGER-ORIGIN-01, TRIGGER-SESSION-01, REFUSAL-MAP-01, TRIGGER-SCALE-01, GOV-CHECKLIST-01) |
-| 43 | TRIGGER-EVENT-01 | Before a meeting (Keith chose it 2026-11-15; stage-start approved, slices S1 to S4 in Lane 1; beside it COS-EVAL-DRIFT-01, the ai-service drift test fix, done 2026-11-15) |
+| 43 | TRIGGER-EVENT-01, STAGING-DEPLOY-EVENT-01, TRIGGER-EVENT-LIVE-01 | Before a meeting (TRIGGER-EVENT-01 done 2026-11-15, not deployed: a gateway-only calendar read, /api/event-triggers, EVENT_TRIGGERS_ENABLED off by default, its own timer, starts as the owner with the event's times only, the Before a meeting section; next STAGING-DEPLOY-EVENT-01, which Keith approves, then TRIGGER-EVENT-LIVE-01; beside it COS-EVAL-DRIFT-01, the ai-service drift test fix, done 2026-11-15; follow-ups CONN-CAL-FIXES-01, CONN-CAL-WINDOW-01, TRIGGER-TIDY-01) |
 | 44 | TRIGGER-MAIL-01 | New mail matching a filter |
 | 45 | TRIGGER-MORE-01 | After another workflow, webhook, new knowledge file |
 
@@ -305,10 +305,10 @@ Pairs refused: CONN-GRANT-01 beside anything (contract change). Two UI slices ne
 | Closing record (Keith approved now) | Section 11 APPROVED FUTURE paragraph (section C below) | — |
 | CONN-02B | — | Repository Layout: `services/connectors-mcp/`; 13.1 row; section 8 internal `POST /api/internal/connectors/call` |
 | CONN-GRANT-01 | — | 12.1 row; contract path list |
-| BIZ-LIVE-03 | 3.I Chief of Staff row (briefing, IMAP headers, iCal, gated); 8:484 exception for allowlisted read-only connectors; 11 GATED row | 13.1 GATED; 13.3 line removed; new 13.6 Connectors |
+| BIZ-LIVE-03 | 3.I Chief of Staff row (briefing, IMAP headers, iCal, gated); 8:484 exception for allowlisted read-only connectors; 11 GATED row | 13.1 GATED; 13.3 line removed (connectors are in the 13.1 table; there is no Connectors subsection) |
 | BIZ-LIVE-04 | 3.I user workflows (304-306), 11 GATED row, 606-607 narrowed | 13.2 stored spec, server-side grants; 13.5 note |
 | APPROVAL-SET-01 live | 11: approval setting, never automatic for write/send/delete | 13.1 OrchestrationService row |
-| CHAT-DISCORD-01 live | 11 GATED row; 8 non-goal narrowed | new 13.8 Chat channels |
+| CHAT-DISCORD-01 live | 11 GATED row; 8 non-goal narrowed | new 13.6 Chat channels (landed 2026-11-15; 13.7 is Triggers) |
 | TRIGGER-LIVE-01 (GOVERNANCE held) | 11 GATED row; 8 new non-goal line for maintenance schedulers; 472 untouched | 2:177 and 15:1116 amended; new 13.7 Triggers |
 | CONN-03, CONN-OAUTH-01, CONN-DRAFT-01 | 3.I lines | 13.6 additions |
 

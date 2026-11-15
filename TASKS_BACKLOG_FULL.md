@@ -84342,6 +84342,8 @@ Note (CHAT-DISCORD-01 LOCK, 2026-11-14, F3): Discord joins the outside services 
 
 Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F9): agent_schedules.task joins the stored owner text in the privacy inventory before any second user.
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F7): the privacy inventory gains agent_event_triggers.task and title_filter (owner text), agent_event_trigger_runs.event_start, unattended calendar reads as a new use of the calendar connection, and a Connections data statement sentence that the platform reads the calendar for triggers.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -87618,6 +87620,8 @@ nature=IMPLEMENTATION
 **Scope:** Connect Google after verification (C17): the refresh token stays in the gateway and each call uses a short-lived access token. Also (CONN-UI-01, 2026-11-09): while reworking the Connections page, add a replace-connection action (the backend already accepts a second connect for the same kind) and run Verify automatically after a connect.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F12): Google's API gives event ids, change times and push; revisit the event triggers' 10-minute iCal read then.
+
 ### CONN-03 — Mail body reads after the injection eval
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CONN-03
@@ -88362,6 +88366,8 @@ nature=IMPLEMENTATION
 
 Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F1, Keith's Q8): include scheduled runs; they are not sent to Discord until this task.
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F6): include event-trigger runs.
+
 ### CHAT-SERVICE-SPLIT-01 — Move the chat transport to its own service
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-SERVICE-SPLIT-01
@@ -88710,6 +88716,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-01 (stage-start F2): a step of an unattended run that waits for approval is visible only on the Team page and times out after 24 hours; a badge or notice for the owner.
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F5): include event-trigger runs.
+
 ### TRIGGER-ORIGIN-01 — Show "started by a schedule" on Results and the Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-ORIGIN-01
@@ -88733,6 +88741,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-01 (stage-start F3): a field on the Results route and a label so the owner can tell scheduled runs from page runs; until then the Schedules page links each last run.
+
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F5): include event-trigger runs ("started before a meeting").
 
 ### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88782,6 +88792,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-01 (stage-start F6, slice S2): triggers/schedule-refusal.ts copies chatRunRefusalOf's rules, pinned by a test; share one mapper.
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F10): event triggers import scheduleRefusalOf, a third user of the mapper.
+
 ### TRIGGER-SCALE-01 — A stored next-due time for schedules
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-SCALE-01
@@ -88806,6 +88818,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-01 (stage-start F8, slice S2): the timer reads at most 200 enabled schedules a tick with an in-memory cursor; a stored next-due or last-evaluated time and index, and with it more than one start a day if ever wanted.
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F9): event-trigger calendar reads write 144 content-free connector.trigger_read audit rows a day per owner with a trigger on; a roll-up or prune before more users.
+
 ### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-CHECKLIST-01
@@ -88822,6 +88836,8 @@ nature=GOVERNANCE
 **Primary write scope:** docs/control-plane/task-checklists.md (DEPLOY or LIVE, and MIGRATION item 1).
 **Mutexes / resources:** GOVERNANCE.
 **Scope:** From TRIGGER-01 (stage-start F5 and F11): (1) a line that a tester window or run window never sets SCHEDULES_ENABLED unless a registered task holding ENV does; (2) MIGRATION item 1 names grok-4.7-xhigh for Cursor and opus for a Claude subagent, as Model Routing says. CLAUDE.md wins on conflict; no CLAUDE.md change.
+
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F8): the switch line names EVENT_TRIGGERS_ENABLED as well as SCHEDULES_ENABLED.
 
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88874,6 +88890,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-UI-01: the page reads the last run once and does not refresh it while open (for example on focus or on a timer); where Intl.supportedValuesOf is missing the time-zone field has no list of zones.
+
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, slice S4): the workflow list the Schedules page loads has no tool list, so the Before a meeting section shows its calendar-tool warning for every workflow; make it specific (needs the list to say whether a workflow has the calendar tool), and a Command Center link or card for event triggers.
 
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88939,7 +88957,7 @@ taskId=TRIGGER-EVENT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice S4 (the page section) — 2026-11-15. Slice S3 landed on main as d460bec (opus subagent, fast-forwarded): its own 60-second event timer (silent while EVENT_TRIGGERS_ENABLED is off), per-owner calendar reads every 10 minutes held in memory only (no reads while runs are off, no broker call without a calendar connection, read_failed after three failures, state written to all the owner's triggers), the due rule, claim by a hashed occurrence key, the day limit of 3, a confirm read before each start, the schedule pre-checks, a start as the owner with the saved task plus the event's times only, the first step approved as the owner, the four new reason codes and audit rows with ids and codes only; the control plane read the run path and reran the gates (gateway 5337 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S3 (timer, calendar reads, claim, start, skip) — 2026-11-15. Slice S2 landed on main as d6fbff0 (opus subagent, cherry-picked because main had moved): migration 1811 (agent_event_triggers, agent_event_trigger_runs unique on trigger and occurrence key), the two entities, the /api/event-triggers routes (browser session, harness access, owner-scoped, 3 per owner, armed_at), EVENT_TRIGGERS_ENABLED (default false) and its env template line; audit rows with ids and the target kind only; the control plane read the diff and reran the gates on the branch (gateway 5205 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0; tsc rc 0 on main after the cherry-pick). The /api/event-triggers shapes as built are frozen for S4; calendar.state is the newest state across the owner's triggers, so S3 writes it to all of an owner's triggers together. Was: ADMITTED — Lane 1 — Step 3 slice S2 (tables, service, routes, switch) — 2026-11-15. Slice S1 landed on main as 265256d (opus subagent, fast-forwarded): the gateway-only calendar_list_window tool in connectors-mcp (timed, not-cancelled occurrences in a window of at most 3 hours: uid, title, start, end; repeating events expanded) and ConnectorBroker.readCalendarWindow with one content-free connector.trigger_read audit row; the tool is not in the catalogue, the allowlist, any grant or the internal route; calendar_list_today unchanged byte for byte; the control plane read the diff and reran the gates (connectors-mcp 85 of 85, build rc 0; gateway 4983 passed, 7 skipped, the 14 known smoke.integration failures only, build rc 0). The five connectors-mcp HOTFILE leases released. Was: ADMITTED — Lane 1 — Step 3 slice S1 (calendar window read) — 2026-11-15. Stage-start docs/TRIGGER-EVENT-01-STAGE-START.md drafted by a fable subagent (92fc178, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all sixteen"): all sixteen recommendations of section 15 (the run is told the event's times only and reads the event with its own calendar tool; the first step starts without a click; every timed event or an optional title word; lead 5 to 120 minutes, default 15; 3 triggers per owner and 3 starts per trigger per day; a moved event fires again inside the day limit; own tables and /api/event-triggers; a new gateway-only calendar_list_window; reads every 10 minutes plus one before each start; every read audited without content; a new EVENT_TRIGGERS_ENABLED; no reads while runs are off; a workflow without the calendar tool allowed with a warning; English task lines; the page section is slice S4; the switch back off after the live check). /api/schedules stays as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start TRIGGER-EVENT-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. LANE-DONE and LOCKED by the control plane; Lane 1 and every mutex released. Event triggers are built (not deployed): S1 (265256d) the gateway-only calendar_list_window in connectors-mcp and ConnectorBroker.readCalendarWindow; S2 (d6fbff0) migration 1811, the /api/event-triggers routes (browser session, harness access, owner-scoped, 3 per owner) and EVENT_TRIGGERS_ENABLED (default false); S3 (d460bec) its own 60-second timer, calendar reads every 10 minutes held in memory only and none while runs are off, a hashed once-per-occurrence claim, the day limit of 3, a confirm read, starts as the owner with the saved task and the event's times only, first step approved as the owner, the four new reason codes; S4 (06512ff) the Before a meeting section on the Schedules page in en, zh-TW and zh-CN. Models: opus for S1 to S3, sonnet for S4. Control-plane gates: gateway 5337 passed, 7 skipped, the 14 known smoke.integration failures; connectors-mcp 85 of 85; frontend tsc rc 0, 2007 of 2007, build rc 0. No title, attendee, description, uid, task or filter text in audit rows or logs. Checkpoint: docs/TRIGGER-EVENT-01-CHECKPOINT.md. FOLLOWUPS: 5 registered (STAGING-DEPLOY-EVENT-01; TRIGGER-EVENT-LIVE-01; CONN-CAL-FIXES-01; CONN-CAL-WINDOW-01; TRIGGER-TIDY-01) / 13 superseded (F5 by TRIGGER-WAIT-NOTICE-01 and TRIGGER-ORIGIN-01; F6 by CHAT-RESULTS-OTHER-01; F7 by ACCESS-READY-01; F8 by GOV-CHECKLIST-01; F9 by TRIGGER-SCALE-01; F10 by REFUSAL-MAP-01; F11 by TRIGGER-MAIL-01; F12 by CONN-OAUTH-01; F13 by this record; the ai-service drift failure by COS-EVAL-DRIFT-01; the calendar.state rule by slice S3; the specific workflow calendar warning and a Command Center link by TRIGGER-UI-POLISH-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice S4 (the page section) — 2026-11-15. Slice S3 landed on main as d460bec (opus subagent, fast-forwarded): its own 60-second event timer (silent while EVENT_TRIGGERS_ENABLED is off), per-owner calendar reads every 10 minutes held in memory only (no reads while runs are off, no broker call without a calendar connection, read_failed after three failures, state written to all the owner's triggers), the due rule, claim by a hashed occurrence key, the day limit of 3, a confirm read before each start, the schedule pre-checks, a start as the owner with the saved task plus the event's times only, the first step approved as the owner, the four new reason codes and audit rows with ids and codes only; the control plane read the run path and reran the gates (gateway 5337 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S3 (timer, calendar reads, claim, start, skip) — 2026-11-15. Slice S2 landed on main as d6fbff0 (opus subagent, cherry-picked because main had moved): migration 1811 (agent_event_triggers, agent_event_trigger_runs unique on trigger and occurrence key), the two entities, the /api/event-triggers routes (browser session, harness access, owner-scoped, 3 per owner, armed_at), EVENT_TRIGGERS_ENABLED (default false) and its env template line; audit rows with ids and the target kind only; the control plane read the diff and reran the gates on the branch (gateway 5205 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0; tsc rc 0 on main after the cherry-pick). The /api/event-triggers shapes as built are frozen for S4; calendar.state is the newest state across the owner's triggers, so S3 writes it to all of an owner's triggers together. Was: ADMITTED — Lane 1 — Step 3 slice S2 (tables, service, routes, switch) — 2026-11-15. Slice S1 landed on main as 265256d (opus subagent, fast-forwarded): the gateway-only calendar_list_window tool in connectors-mcp (timed, not-cancelled occurrences in a window of at most 3 hours: uid, title, start, end; repeating events expanded) and ConnectorBroker.readCalendarWindow with one content-free connector.trigger_read audit row; the tool is not in the catalogue, the allowlist, any grant or the internal route; calendar_list_today unchanged byte for byte; the control plane read the diff and reran the gates (connectors-mcp 85 of 85, build rc 0; gateway 4983 passed, 7 skipped, the 14 known smoke.integration failures only, build rc 0). The five connectors-mcp HOTFILE leases released. Was: ADMITTED — Lane 1 — Step 3 slice S1 (calendar window read) — 2026-11-15. Stage-start docs/TRIGGER-EVENT-01-STAGE-START.md drafted by a fable subagent (92fc178, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all sixteen"): all sixteen recommendations of section 15 (the run is told the event's times only and reads the event with its own calendar tool; the first step starts without a click; every timed event or an optional title word; lead 5 to 120 minutes, default 15; 3 triggers per owner and 3 starts per trigger per day; a moved event fires again inside the day limit; own tables and /api/event-triggers; a new gateway-only calendar_list_window; reads every 10 minutes plus one before each start; every read audited without content; a new EVENT_TRIGGERS_ENABLED; no reads while runs are off; a workflow without the calendar tool allowed with a warning; English task lines; the page section is slice S4; the switch back off after the live check). /api/schedules stays as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start TRIGGER-EVENT-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-EVENT-01
 **Title:** Trigger before a calendar event
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88958,6 +88976,126 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-15).
 **Scope:** Start a workflow before a calendar event (F2).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### STAGING-DEPLOY-EVENT-01 — Deploy event triggers and check the page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-EVENT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-EVENT-01
+**Title:** Deploy event triggers and check the page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** TRIGGER-EVENT-01.
+**Primary write scope:** records; host state (deploy; gateway.env gains EVENT_TRIGGERS_ENABLED=false, a new baseline).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (event triggers are not current until TRIGGER-EVENT-LIVE-01).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-EVENT-01 (stage-start section 13, F1): deploy main with migration 1811 after the backup and the connectors-mcp build with calendar_list_window; the earlier deploy checks; EVENT_TRIGGERS_ENABLED=false added to gateway.env (a new baseline); the gateway boots; Keith creates, edits, switches and deletes a trigger in the Before a meeting section and sees the banners and his calendar's state; the host confirms the rows and audit rows hold no task or filter text and that no connector.trigger_read row appears. Runs stay off; no credits.
+
+### TRIGGER-EVENT-LIVE-01 — Live event-trigger check and the event-trigger wording
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-EVENT-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Task ID:** TRIGGER-EVENT-LIVE-01
+**Title:** Live event-trigger check and the event-trigger wording
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-EVENT-01 is locked, Keith's calendar is connected on staging and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-EVENT-01.
+**Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held in the LOCK record).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (event triggers are not current until TRIGGER-EVENT-LIVE-01).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-EVENT-01 (stage-start section 13, F1): in a phased run window with the stored Anthropic test key and write tools off: EVENT_TRIGGERS_ENABLED on with runs off reads nothing; a calendar event with a marker word and a matching Chief of Staff trigger starts one read-only run at start minus lead, first step approved by the owner, the answer names the meeting, Results unread +1; a gateway restart makes no second run; a deleted event is skipped as event_changed (also showing how fresh the feed is); all-day and non-matching events make no row; the daily cap skip; the marker absent from logs, audit and both tables; read counts and credits recorded; everything restored byte for byte. The LOCK lands the PRD.md and ARCHITECTURE.md wording of stage-start section 14 in Keith's words, holding GOVERNANCE.
+
+### CONN-CAL-FIXES-01 — Calendar tool: the owner's response and cancelled events
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-CAL-FIXES-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Task ID:** CONN-CAL-FIXES-01
+**Title:** Calendar tool: the owner's response and cancelled events
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-EVENT-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/connectors/, services/connectors-mcp/src/, the tool descriptions.
+**Mutexes / resources:** set at admission (GATEWAY expected; connectors-mcp HOTFILE leases).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-EVENT-01 (stage-start F2, F4): ownerResponse is always null through the broker because it never passes the owner's address (connector-broker.ts, ical-feed.ts); pass it or drop the field and its words from the tool descriptions, and with it skip events the owner declined; calendar_list_today still lists events whose status is CANCELLED.
+
+### CONN-CAL-WINDOW-01 — A calendar tool for agents that looks past today
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-CAL-WINDOW-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Task ID:** CONN-CAL-WINDOW-01
+**Title:** A calendar tool for agents that looks past today
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-EVENT-01.
+**Primary write scope:** PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/ai-service/src/agent-harness/tools/.
+**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-EVENT-01 (stage-start D6, F3): agents only have calendar_list_today, so an event in the first minutes after local midnight, triggered before midnight, is not found by the run; an agent-facing calendar tool for the next event or a short window (the gateway-only calendar_list_window stays gateway-only).
+
+### TRIGGER-TIDY-01 — Small triggers code tidy
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-TIDY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Task ID:** TRIGGER-TIDY-01
+**Title:** Small triggers code tidy
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** TRIGGER-EVENT-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/.
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (event triggers are not current until TRIGGER-EVENT-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-EVENT-01 (slices S2 and S3): three private copies of the errorName, isUniqueViolation and localDateText helpers (schedule-run.service.ts, event-trigger-run.service.ts, event-trigger-calendar.ts); the names of two tests in schedule.controller.spec.ts ('the five repositories', 'live only in the S2 files') are out of date.
 
 ### COS-EVAL-DRIFT-01 — Fix the ai-service briefing drift test after the start code moved
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89009,6 +89147,8 @@ nature=IMPLEMENTATION
 **Scope:** Start a workflow when new mail matches a filter, after the briefing cost is measured (F3).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
+Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F11): reuse the event-trigger read, memory copy, claim and state shape; the read cost measured in TRIGGER-EVENT-LIVE-01 feeds this task's ready condition.
+
 ### TRIGGER-MORE-01 — Later triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-MORE-01
@@ -89021,7 +89161,7 @@ nature=IMPLEMENTATION
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
+**Start condition:** NOT_READY. Ready when: Keith chooses. Keith decides. (Corrected 2026-11-15 by the TRIGGER-EVENT-01 LOCK, F13: the words about TRIGGER-MAIL-01 had been copied from that task.)
 **Depends on:** TRIGGER-LIVE-01.
 **Primary write scope:** set at admission.
 **Mutexes / resources:** set at admission.
