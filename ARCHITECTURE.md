@@ -184,8 +184,8 @@ See §14 Communication Mechanism Summary for the full matrix.
 - Idle timeout is request-driven inside container-manager (no idle sweeper / cron)
 - AI execution is queue-driven: API Gateway enqueues, WorkerProcessor claims and runs
 - No cron jobs and no platform schedulers for session maintenance. Sessions are governed at request time.
-- In-process timers are allowed only for run recovery and collaboration upkeep: the AI service's stuck-run watchdog, and the gateway's 5-minute collaboration sweep. They never touch session idle or lifetime.
-- User-visible schedules (TRIGGER-01) are approved FUTURE. When built, they run as an in-process gateway timer, are off by default, and have daily limits.
+- In-process timers are allowed only for run recovery, collaboration upkeep and owner schedules: the AI service's stuck-run watchdog, the gateway's 5-minute collaboration sweep, and the gateway's 60-second schedule timer (section 13.7). They never touch session idle or lifetime.
+- User-visible schedules (TRIGGER-01) are GATED: off by default (`SCHEDULES_ENABLED`), one start per schedule per local day, bounded by the daily caps.
 
 #### Persistent Terminal State
 - Termination is permanent
@@ -229,6 +229,7 @@ Owns:
 - Knowledge store (`knowledge_documents`, `/api/knowledge`, internal knowledge routes; KNOW-01, KNOW-02)
 - Connector credentials and broker (`connector_connections`, `/api/connectors`, `POST /api/internal/connectors/call`; CONN-02A, CONN-02B)
 - Chat channels (`chat_links`, `chat_link_codes`, `chat_run_deliveries`, `/api/chat-links`; CHAT-DISCORD-01)
+- Triggers (`agent_schedules`, `agent_schedule_runs`, `/api/schedules`; TRIGGER-01)
 - Per-user entitlements (`user_entitlements`, audited admin PATCH; ACCESS-01B) and the append-only `audit_events` table
 
 Does NOT own:
@@ -577,6 +578,7 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Per-user entitlements | API Gateway | PostgreSQL (`user_entitlements`; ACCESS-01B) |
 | Connector credentials | API Gateway | PostgreSQL (`connector_connections`, AES-256-GCM per owner and kind under `CONNECTOR_CREDENTIALS_KEY`; CONN-02A) |
 | Chat links, one-time link codes and result deliveries | API Gateway | PostgreSQL (`chat_links`, `chat_link_codes` with the code's SHA-256 only, `chat_run_deliveries` without any text; CHAT-DISCORD-01) |
+| Schedules and their occurrences | API Gateway | PostgreSQL (`agent_schedules`, `agent_schedule_runs` without task text; TRIGGER-01) |
 
 `user_agents` schema, entity, and migration exist in the repository. Locked staging evidence records that migration `CreateUserAgentsTable1772500000000` was applied. Live row contents were **not** probed by GOV-ARCH-02.
 
@@ -685,6 +687,12 @@ POST   /api/chat-links/discord/code
 POST   /api/chat-links/discord/confirm
 POST   /api/chat-links/discord/cancel
 DELETE /api/chat-links/discord
+
+GET    /api/schedules                               (TRIGGER-01; browser session)
+POST   /api/schedules
+PATCH  /api/schedules/:id
+DELETE /api/schedules/:id
+GET    /api/schedules/:id/runs
 
 PATCH  /api/admin/users/:userId/entitlements        (ACCESS-01B; admin)
 ```
@@ -1077,6 +1085,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | Stripe charging | **FUTURE / deferred** |
 | Google OAuth login activation | **FUTURE / deferred** |
 | Chat channels: Discord (`services/api-gateway/src/chat/`; CHAT-DISCORD-01) | STAGING, gated per user and behind `CHAT_DISCORD_ENABLED` (deployed 7fcc46d by STAGING-DEPLOY-CHAT-01; live checks STAGING-DEPLOY-CHAT-01 and CHAT-LIVE-01 passed on 2026-11-15); section 13.6 |
+| Triggers: schedules (`services/api-gateway/src/triggers/`; TRIGGER-01, TRIGGER-UI-01) | STAGING, gated per user and behind `SCHEDULES_ENABLED` (deployed f32d88b by STAGING-DEPLOY-TRIG-01; live check TRIGGER-LIVE-01 passed on 2026-11-15); section 13.7 |
 | Recursive self-improvement (RSI) | **FUTURE / PLANNED** — constraints in section 13.5 |
 
 ### 13.2 Agent Registry and Create Agent
@@ -1151,6 +1160,11 @@ This authorizes no refactor and selects no storage, scheduler or experiment envi
 
 The gateway module `chat/` links an owner to an outside chat account and carries commands in and results out. Discord is the first channel. The gateway opens an outbound WebSocket to Discord with no gateway intents; there is no public inbound address and no new service. `CHAT_DISCORD_ENABLED` (default false) gates the connection, the link routes and delivery; it never enables runs. Linking: the platform issues a one-time code (hash at rest, 10 minutes), the owner types it in Discord, and confirms on the platform; the link routes need a browser session. `chat_links` holds the Discord user id and reply language only. A command starts a run through the same start code as `POST /api/collaboration/runs`, as the linked owner, without a session, so read-profile only; the approval gate, entitlements, credits, daily caps and provider switches apply unchanged. Results are read from the run and sent as direct messages; `chat_run_deliveries` tracks delivery without any text and is pruned after 30 days. Waiting read-only steps get Approve and Reject buttons whose ids are random tokens mapped on the server; a press goes through the normal approve or reject path as the owner. Message text is untrusted data: only fixed commands are read, and no chat text or Discord id is logged or written to `audit_events`.
 
+
+### 13.7 Triggers (GATED)
+
+The gateway module `triggers/` starts runs at times an owner set. `agent_schedules` holds the owner, the target (the Chief of Staff or one of the owner's workflows), the task text, a time of day, days and an IANA time zone. A 60-second in-process timer, active only when `SCHEDULES_ENABLED` is exactly `true`, reads the local time in each schedule's zone and claims an occurrence by inserting into `agent_schedule_runs`, whose unique index on schedule and local date allows one start per schedule per local day across restarts and processes. A claimed occurrence is never retried; one more than 60 minutes late is recorded as missed. The start goes through the same start code as `POST /api/collaboration/runs`, as the owner, without a session, so read-profile only; the timer approves the first step as the owner, and the approval gate, entitlements, credits, daily caps and provider switches apply unchanged. Skips (runs off, no access, workflow gone or off, cap, credits, provider off, missed) write a history row and an `audit_events` row with ids and a reason code; task text is never logged or audited. `SCHEDULES_ENABLED` never enables runs and is not set by a tester window. The schedule routes need a browser session.
+
 ---
 
 ## 14. Communication Mechanism Summary
@@ -1207,7 +1221,7 @@ Leftover AI Service `POST /api/execute` HTTP remains as a listen surface. It is 
 - No general-purpose event bus (Redis is used specifically for BullMQ queue transport and
   execution-stream Pub/Sub — not as a general event bus)
 - No cron
-- No platform schedulers for maintenance (the Worker stuck-execution watchdog is in-process execution recovery only; the Gateway's in-process `CollaborationSweepWorker`, a 5-minute `setInterval` from COLLAB-CHOOSE-01, settles collaboration runs and expires waiting hand-offs — neither touches session idle)
+- No platform schedulers for maintenance (the Worker stuck-execution watchdog is in-process execution recovery only; the Gateway's in-process `CollaborationSweepWorker`, a 5-minute `setInterval` from COLLAB-CHOOSE-01, settles collaboration runs and expires waiting hand-offs; the Gateway's in-process schedule timer (TRIGGER-01), a 60-second `setInterval` active only when `SCHEDULES_ENABLED` is `true`, starts owners' scheduled runs — none of these touches session idle)
 - No Kubernetes
 - No Kafka
 - No event-sourcing architecture
