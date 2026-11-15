@@ -22,6 +22,8 @@ import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { AuthModule } from '../auth/auth.module';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
+import { EventTriggerController } from './event-trigger.controller';
+import { EventTriggerService } from './event-trigger.service';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -456,16 +458,22 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
     });
 
     it('TriggersModule wires the controller, the services, the timer and the five repositories, and the app imports it', () => {
-      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController]);
+      // TRIGGER-EVENT-01 S2: the event trigger routes and their service join the schedule parts.
+      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController]);
       // TRIGGER-01 S2: the run service and the timer join the S1 service.
-      expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([ScheduleService, ScheduleRunService, ScheduleTimer]);
+      expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([
+        ScheduleService,
+        ScheduleRunService,
+        ScheduleTimer,
+        EventTriggerService,
+      ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
         expect.arrayContaining([AuthModule, OrchestrationModule, SafetyModule]),
       );
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AuditEventEntity, UserAgent, User])',
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -483,6 +491,10 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       const files = readdirSync(__dirname).filter((name) => name.endsWith('.ts') && !name.endsWith('.spec.ts'));
       expect(files.sort()).toEqual(
         [
+          'event-trigger-switch.ts',
+          'event-trigger-validation.ts',
+          'event-trigger.controller.ts',
+          'event-trigger.service.ts',
           'schedule-due.ts',
           'schedule-refusal.ts',
           'schedule-run.service.ts',
@@ -496,7 +508,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       );
       const source = (name: string) => readFileSync(join(__dirname, name), 'utf8');
       // The S1 files (and the pure S2 helpers) still have no timer, no run start and no boot hook.
-      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts']) {
+      // TRIGGER-EVENT-01 S2: the event trigger files likewise (no timer, no run start in S2).
+      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts']) {
         expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
       }
       // TRIGGER-01 S2: the interval and the boot hook only in the timer; start and approve only in the run service.

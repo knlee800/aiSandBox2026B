@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
+import { AgentEventTrigger } from '../entities/agent-event-trigger.entity';
+import { AgentEventTriggerRun } from '../entities/agent-event-trigger-run.entity';
 import { AgentSchedule } from '../entities/agent-schedule.entity';
 import { AgentScheduleRun } from '../entities/agent-schedule-run.entity';
 import { AuditEventEntity } from '../entities/audit-event.entity';
+import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { User } from '../entities/user.entity';
 import { UserAgent } from '../entities/user-agent.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
+import { EventTriggerController } from './event-trigger.controller';
+import { EventTriggerService } from './event-trigger.service';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -24,16 +29,25 @@ import { ScheduleTimer } from './schedule-timer';
  * (schedule-refusal.ts) and the run and skip audit rows
  * (schedule-run.service.ts). SafetyModule gives the read-only daily cap
  * check; AuthModule the live harness access read. Nothing is exported.
+ *
+ * TRIGGER-EVENT-01 S2: event triggers ("N minutes before an event on my
+ * calendar"): the two tables (migration 1811), the owner's routes under
+ * /api/event-triggers with their audit rows (event-trigger.controller.ts,
+ * event-trigger.service.ts, event-trigger-validation.ts) and the
+ * EVENT_TRIGGERS_ENABLED switch (event-trigger-switch.ts). ConnectorConnection
+ * is read only to say whether the owner has a calendar connection (a count;
+ * no secret is read, no broker call). No timer, no calendar read and no run
+ * start yet (slice S3).
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AuditEventEntity, UserAgent, User]),
+    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
     OrchestrationModule,
     SafetyModule,
   ],
-  controllers: [ScheduleController],
-  providers: [ScheduleService, ScheduleRunService, ScheduleTimer],
+  controllers: [ScheduleController, EventTriggerController],
+  providers: [ScheduleService, ScheduleRunService, ScheduleTimer, EventTriggerService],
   exports: [],
 })
 export class TriggersModule {}

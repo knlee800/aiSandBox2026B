@@ -63,6 +63,14 @@ export { AgentSchedule, AGENT_SCHEDULE_TARGET_KINDS } from './agent-schedule.ent
 export type { AgentScheduleTargetKind } from './agent-schedule.entity';
 export { AgentScheduleRun, AGENT_SCHEDULE_RUN_OUTCOMES } from './agent-schedule-run.entity';
 export type { AgentScheduleRunOutcome } from './agent-schedule-run.entity';
+export {
+  AgentEventTrigger,
+  AGENT_EVENT_TRIGGER_TARGET_KINDS,
+  AGENT_EVENT_TRIGGER_CALENDAR_STATES,
+} from './agent-event-trigger.entity';
+export type { AgentEventTriggerTargetKind, AgentEventTriggerCalendarState } from './agent-event-trigger.entity';
+export { AgentEventTriggerRun, AGENT_EVENT_TRIGGER_RUN_OUTCOMES } from './agent-event-trigger-run.entity';
+export type { AgentEventTriggerRunOutcome } from './agent-event-trigger-run.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';
