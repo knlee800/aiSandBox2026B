@@ -38,6 +38,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { SystemAgentsModule } from './system-agents/system-agents.module';
 import { ChatModule } from './chat/chat.module';
+import { TriggersModule } from './triggers/triggers.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 import { SameOriginWriteGuard } from './guards/same-origin-write.guard';
@@ -95,6 +96,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     ConnectorsModule, // CONN-02A: Connector credentials
     SystemAgentsModule, // AGENT-DEFS-01: system agent definitions
     ChatModule, // CHAT-DISCORD-01 A1: chat account link routes (CHAT_DISCORD_ENABLED)
+    TriggersModule, // TRIGGER-01 S1: owner schedules and their routes (SCHEDULES_ENABLED gates only the timer)
   ],
   controllers: [],
   providers: [
