@@ -382,7 +382,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const openConnections = resolveNestedMessage(messages, 'platform.openConnections');
   const openResults = resolveNestedMessage(messages, 'platform.openResults');
   const openSchedules = resolveNestedMessage(messages, 'platform.openSchedules');
-  const unreadResultsTemplate =resolveNestedMessage(messages, 'platform.unreadResults');
+  const unreadResultsTemplate = resolveNestedMessage(messages, 'platform.unreadResults');
   const commandDeckLabel = resolveNestedMessage(messages, 'platform.commandDeckLabel');
   const commandDeckIntro = resolveNestedMessage(messages, 'platform.commandDeckIntro');
   const statusTitle = resolveNestedMessage(messages, 'platform.commandCenterStatusTitle');

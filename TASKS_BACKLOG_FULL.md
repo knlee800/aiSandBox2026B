@@ -87365,6 +87365,8 @@ nature=IMPLEMENTATION
 **Scope:** From RESULTS-01: (1) the Team page's "Past runs" links to the Results page (stage-start follow-up 4); (2) the Command Center header's unread count is read once on load and does not refresh while the page stays open; refresh it (for example on focus or after a run finishes). Expected FRONTEND and I18N. (3, added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK) After the first session-less start, the Team page learns the business project only on the next workflow-list read; refresh it after a start.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** a front-door result lists the agents used (from the run detail's agents, set by COS-FRONTDOOR-01B).
 
+Note (TRIGGER-UI-01 LOCK, 2026-11-15): Results has no address for one run, so the Schedules page's last-run link opens the Results list; a link that opens one run directly, used by the Schedules page too.
+
 ### RESULTS-COST-01 — Cost of each run on its result
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=RESULTS-COST-01
@@ -88827,7 +88829,7 @@ taskId=TRIGGER-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 2 (implementation) — 2026-11-15 — by the control plane after the TRIGGER-01 LOCK, under Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND, I18N and PACKAGE released. The Schedules page is built (not deployed): /[locale]/schedules lists, creates, edits, switches and deletes the owner's schedules against the frozen /api/schedules routes, with each schedule's last outcome and reason, its history, the switched-off and runs-off banners and the limit of 5; every state and every schedule_* error, reason and outcome code translated in en, zh-TW and zh-CN; a Schedules link in the command center; components/schedules tests added to the frontend test script. Sonnet subagent 983cd31, fast-forwarded; control-plane gates: frontend tsc rc 0, 1959 of 1959, build rc 0; no backend change. Checkpoint: docs/TRIGGER-UI-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (TRIGGER-UI-POLISH-01) / 3 superseded (the run deep link by RESULTS-POLISH-01; the schedule label by TRIGGER-ORIGIN-01; the browser flows by STAGING-DEPLOY-TRIG-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 2 (implementation) — 2026-11-15 — by the control plane after the TRIGGER-01 LOCK, under Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-UI-01
 **Title:** Schedules page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88848,6 +88850,30 @@ nature=IMPLEMENTATION
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
 Note (TRIGGER-01 LOCK, 2026-11-15): TRIGGER-01 is LOCKED; the /api/schedules shapes as built are the frozen contract (docs/TRIGGER-01-STAGE-START.md section 7 and docs/TRIGGER-01-CHECKPOINT.md 'Shapes as built'); translate every schedule_* error code and every reason code of stage-start section 5 in en, zh-TW and zh-CN.
+
+### TRIGGER-UI-POLISH-01 — Schedules page polish
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-UI-POLISH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the TRIGGER-UI-01 LOCK — not admitted.
+**Task ID:** TRIGGER-UI-POLISH-01
+**Title:** Schedules page polish
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** TRIGGER-UI-01.
+**Primary write scope:** PROVISIONAL: frontend/components/schedules/, the three message files.
+**Mutexes / resources:** set at admission (FRONTEND expected; I18N if copy changes).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (schedules are not current until TRIGGER-LIVE-01).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-UI-01: the page reads the last run once and does not refresh it while open (for example on focus or on a timer); where Intl.supportedValuesOf is missing the time-zone field has no list of zones.
 
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88876,6 +88902,8 @@ nature=IMPLEMENTATION
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
 Note (TRIGGER-01 LOCK, 2026-11-15): this deploy is the first run of migration 1810 and of the per-owner advisory lock against PostgreSQL, and the first boot of TriggersModule with a real database: after the backup, apply 1810, check the gateway boots, then Keith creates, edits and deletes a schedule on the page with SCHEDULES_ENABLED=false (stage-start section 12).
+
+Note (TRIGGER-UI-01 LOCK, 2026-11-15): TRIGGER-UI-01 is LOCKED; the live check with Keith covers the Schedules page in a browser: create, edit, switch and delete a schedule through the real routes (CSRF header, the 401 and 403 paths), the workflow picker with his real workflows, the browser time-zone default and the zone list, and the layout at phone width, with SCHEDULES_ENABLED=false and runs off.
 
 ### TRIGGER-LIVE-01 — Live trigger check and the triggers architecture wording
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
