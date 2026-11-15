@@ -228,6 +228,7 @@ Owns:
 - System-agent definitions (`src/system-agents/`, `GET /api/system-agents`; AGENT-DEFS-01, AGENT-SPEC-01)
 - Knowledge store (`knowledge_documents`, `/api/knowledge`, internal knowledge routes; KNOW-01, KNOW-02)
 - Connector credentials and broker (`connector_connections`, `/api/connectors`, `POST /api/internal/connectors/call`; CONN-02A, CONN-02B)
+- Chat channels (`chat_links`, `chat_link_codes`, `chat_run_deliveries`, `/api/chat-links`; CHAT-DISCORD-01)
 - Per-user entitlements (`user_entitlements`, audited admin PATCH; ACCESS-01B) and the append-only `audit_events` table
 
 Does NOT own:
@@ -575,6 +576,7 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Audit events (orchestration, entitlement changes) | API Gateway | PostgreSQL (`audit_events`, append-only: a trigger refuses UPDATE and DELETE; COLLAB-AUDIT-01, ACCESS-01B) |
 | Per-user entitlements | API Gateway | PostgreSQL (`user_entitlements`; ACCESS-01B) |
 | Connector credentials | API Gateway | PostgreSQL (`connector_connections`, AES-256-GCM per owner and kind under `CONNECTOR_CREDENTIALS_KEY`; CONN-02A) |
+| Chat links, one-time link codes and result deliveries | API Gateway | PostgreSQL (`chat_links`, `chat_link_codes` with the code's SHA-256 only, `chat_run_deliveries` without any text; CHAT-DISCORD-01) |
 
 `user_agents` schema, entity, and migration exist in the repository. Locked staging evidence records that migration `CreateUserAgentsTable1772500000000` was applied. Live row contents were **not** probed by GOV-ARCH-02.
 
@@ -678,10 +680,18 @@ GET    /api/connectors
 POST   /api/connectors/:kind/verify                 (CONN-02B)
 DELETE /api/connectors/:kind
 
+GET    /api/chat-links                              (CHAT-DISCORD-01; browser session)
+POST   /api/chat-links/discord/code
+POST   /api/chat-links/discord/confirm
+POST   /api/chat-links/discord/cancel
+DELETE /api/chat-links/discord
+
 PATCH  /api/admin/users/:userId/entitlements        (ACCESS-01B; admin)
 ```
 
 Session cookie, with cross-site writes refused by the global same-origin write guard (CsrfGuard only on logout and the admin entitlements PATCH). Execute / confirm-build-apply also accept API key via `SessionOrApiKeyAuthGuard`.
+
+`GET /api/ai/providers` (signed in) answers booleans only: a provider is usable when the AI service has its key and its provider switch is on. It reads `GET /api/internal/provider-availability` (AI service, internal key, booleans only). `GET /api/ai/executions/:id` returns `error {code, message}` only for allow-listed failures (`provider_key_missing`, and the provider usage-limit sentence), with the gateway's own text. On the execute routes, `ExecutionSafetyGuard` checks the switch of the provider the request will run on.
 
 Ownership enforced on session, project, execution, and agent resources (cross-user → not-found).
 
@@ -1066,6 +1076,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | Harness as default Builder experience | **FUTURE** |
 | Stripe charging | **FUTURE / deferred** |
 | Google OAuth login activation | **FUTURE / deferred** |
+| Chat channels: Discord (`services/api-gateway/src/chat/`; CHAT-DISCORD-01) | STAGING, gated per user and behind `CHAT_DISCORD_ENABLED` (deployed 7fcc46d by STAGING-DEPLOY-CHAT-01; live checks STAGING-DEPLOY-CHAT-01 and CHAT-LIVE-01 passed on 2026-11-15); section 13.6 |
 | Recursive self-improvement (RSI) | **FUTURE / PLANNED** — constraints in section 13.5 |
 
 ### 13.2 Agent Registry and Create Agent
@@ -1136,6 +1147,10 @@ Recursive self-improvement (RSI) is **approved FUTURE** product direction (`PRD.
 
 This authorizes no refactor and selects no storage, scheduler or experiment environment. Agent definitions are still code constants, now in one place with a version hash: `services/api-gateway/src/system-agents/system-agent-registry.ts` (team composition in `services/api-gateway/src/orchestration/collaboration-teams.ts`); there is no approval record or stored version history yet (AGENT-DEFS-01). Record and assessment: `docs/GOV-RSI-01-CHECKPOINT.md`.
 
+### 13.6 Chat channels (GATED)
+
+The gateway module `chat/` links an owner to an outside chat account and carries commands in and results out. Discord is the first channel. The gateway opens an outbound WebSocket to Discord with no gateway intents; there is no public inbound address and no new service. `CHAT_DISCORD_ENABLED` (default false) gates the connection, the link routes and delivery; it never enables runs. Linking: the platform issues a one-time code (hash at rest, 10 minutes), the owner types it in Discord, and confirms on the platform; the link routes need a browser session. `chat_links` holds the Discord user id and reply language only. A command starts a run through the same start code as `POST /api/collaboration/runs`, as the linked owner, without a session, so read-profile only; the approval gate, entitlements, credits, daily caps and provider switches apply unchanged. Results are read from the run and sent as direct messages; `chat_run_deliveries` tracks delivery without any text and is pruned after 30 days. Waiting read-only steps get Approve and Reject buttons whose ids are random tokens mapped on the server; a press goes through the normal approve or reject path as the owner. Message text is untrusted data: only fixed commands are read, and no chat text or Discord id is logged or written to `audit_events`.
+
 ---
 
 ## 14. Communication Mechanism Summary
@@ -1163,6 +1178,7 @@ The system uses mixed communication mechanisms. It is neither HTTP-only nor queu
 | container-manager | Docker engine | Docker SDK + bind-mount `${workspacePath}:/workspace:rw` |
 | container-manager | API Gateway | HTTP (session lifecycle + `POST /api/internal/git-checkpoints`) |
 | API Gateway | connectors-mcp | stdio child process (MCP over stdio, spawned by absolute path with only PATH and NODE_ENV; CONN-02B) |
+| API Gateway | Discord | Outbound WebSocket and HTTPS (CHAT-DISCORD-01; no inbound address) |
 | AI Service Worker (Harness, gated) | API Gateway | HTTP (`POST /api/internal/knowledge/search` and `/read`, KNOW-02; `POST /api/internal/connectors/call` with the per-job grant token, CONN-GRANT-01) |
 | API Gateway (in-process) | PostgreSQL | `CollaborationSweepWorker` every 5 minutes: settles finished runs, expires hand-offs waiting more than 24 hours, recovers unprocessed hand-off requests (COLLAB-CHOOSE-01, COLLAB-HANDOFF-RECOVER-01) |
 

@@ -85229,7 +85229,7 @@ taskId=GOV-ARCH-PKEY-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. Keith approved the exact text (2026-11-15, "approved"): ARCHITECTURE.md section 8: GET /api/ai/providers and the internal provider-availability route (booleans; usable means key and switch), the allow-listed error field on GET /api/ai/executions/:id, and ExecutionSafetyGuard checking the chosen provider's switch. GOVERNANCE held for the record and released. Checkpoint: docs/GOV-CHAT-WORDING-01-CHECKPOINT.md (both tasks). FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: READY — registered 2026-11-13 by the PROVIDER-KEY-01 LOCK — not admitted.
 **Task ID:** GOV-ARCH-PKEY-01
 **Title:** ARCHITECTURE.md note for the provider availability routes and the run error field
 **Nature:** GOVERNANCE
@@ -88247,7 +88247,7 @@ taskId=GOV-CHAT-WORDING-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-15 by the CHAT-LIVE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. Keith approved the exact text (2026-11-15, "approved"): PRD.md: a section 11 GATED row for the Discord chat channel, section 8 narrowed, the front-door sentence; ARCHITECTURE.md: new 13.6 Chat channels and the section 3, 7, 8, 13.1 and 14 lines. GOVERNANCE held for the record and released. Checkpoint: docs/GOV-CHAT-WORDING-01-CHECKPOINT.md (both tasks). FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: READY — registered 2026-11-15 by the CHAT-LIVE-01 LOCK — not admitted.
 **Task ID:** GOV-CHAT-WORDING-01
 **Title:** PRD.md and ARCHITECTURE.md lines for the Discord chat channel
 **Nature:** GOVERNANCE
