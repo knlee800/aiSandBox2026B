@@ -88911,13 +88911,13 @@ taskId=TRIGGER-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-15 — Keith said "go" after the STAGING-DEPLOY-TRIG-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-LIVE-01
 **Title:** Live trigger check and the triggers architecture wording
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (Keith, 2026-11-15, "go"; the stored Anthropic test key is used, so no new key is needed). Was: NOT_READY. Ready when: LOCKED. Keith decides.
 **Depends on:** STAGING-DEPLOY-TRIG-01.
 **Primary write scope:** records; host state; ARCHITECTURE.md lines 177 and 1116 and new section 13.7 in the LOCK record (GOVERNANCE held then).
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
