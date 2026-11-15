@@ -88827,23 +88827,23 @@ taskId=TRIGGER-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (implementation) — 2026-11-15 — by the control plane after the TRIGGER-01 LOCK, under Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-UI-01
 **Title:** Schedules page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (TRIGGER-01 LOCKED 2026-11-15; Keith chose Phase 4, "Start triggers (Stage 6)"). Was: NOT_READY. Ready when: LOCKED. Keith decides.
 **Depends on:** TRIGGER-01.
-**Primary write scope:** frontend/app/, frontend/components/schedules/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
-**Mutexes / resources:** FRONTEND, I18N.
+**Primary write scope:** (set 2026-11-15) frontend/app/[locale]/schedules/page.tsx, frontend/components/schedules/schedules-api.ts, frontend/components/schedules/schedules-api.test.ts, frontend/components/schedules/schedules.logic.ts, frontend/components/schedules/schedules.logic.test.ts, frontend/components/schedules/schedules-screen.tsx, frontend/components/schedules/schedules-screen.test.tsx, frontend/components/platform/platform-dashboard.tsx, frontend/components/platform/platform-dashboard.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json, frontend/package.json. Was: frontend/app/, frontend/components/schedules/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N, PACKAGE (the test script line in frontend/package.json so components/schedules tests run; no install, no lockfile) (2026-11-15). Was: FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** page.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-15; was PROVISIONAL and true).
 **Scope:** Schedules page (F5, A9 part 5) where the owner sets when a workflow runs.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
