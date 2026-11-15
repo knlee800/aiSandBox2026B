@@ -88881,13 +88881,13 @@ taskId=STAGING-DEPLOY-TRIG-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-15 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** STAGING-DEPLOY-TRIG-01
 **Title:** Deploy triggers
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (Keith, 2026-11-15, "Yes, deploy"). Was: NOT_READY. Ready when: LOCKED. Keith decides.
 **Depends on:** TRIGGER-UI-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV.
