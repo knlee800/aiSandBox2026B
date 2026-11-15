@@ -84385,7 +84385,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3). Deploy done 2026-11-13 by STAGING-DEPLOY-PKEY-01 (staging runs 6f6b8e8); only the live check remains. Also from PROVIDER-SWITCH-01 (2026-11-13): every PROVIDER_*_ENABLED is false on staging, so the run window must set PROVIDER_<X>_ENABLED=true for each provider it uses (a gateway restart; the switches are read at start), and it checks the chosen-provider switch live: a chat run naming a provider whose switch is off is refused with 503 before any write, and the provider picker offers only providers with a key and the switch on.
+**Scope:** From ACCESS-01J (docs/ACCESS-01J-CHECKPOINT.md, Not proven here): deploy the change to staging, then run a short multi-step Agent run with tool calls on OpenAI gpt-4o (no include) and one gpt-6 model, and on xAI grok-4.x if an xAI key is added. Check: every step succeeds with store: false and no previous_response_id; replayed output items with their provider ids are accepted; reasoning items come back with encrypted_content and replay; no other output item types make a step fail closed; tokens per step under full replay are recorded. Runs switched off again afterwards. Until this passes, the control plane recommends no OpenAI or xAI key for anyone but Keith (D3). Deploy done 2026-11-13 by STAGING-DEPLOY-PKEY-01 (staging runs 6f6b8e8); only the live check remains. Also from PROVIDER-SWITCH-01 (2026-11-13): every PROVIDER_*_ENABLED is false on staging, so the run window must set PROVIDER_<X>_ENABLED=true for each provider it uses (a gateway restart; the switches are read at start), and it checks the chosen-provider switch live: a chat run naming a provider whose switch is off is refused with 503 before any write, and the provider picker offers only providers with a key and the switch on. The chosen-provider switch refusal was proven live in CHAT-LIVE-01 (2026-11-15); only the OpenAI and xAI stateless continuation checks remain.
 
 ### PRIVACY-INVENTORY-01 — Privacy data inventory (read-only)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88223,7 +88223,7 @@ taskId=CHAT-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-15 — Keith said "go" after the deploy lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT released; the three authorizations false. Run window 2026-11-15T04:27:51Z to 04:46:44Z with the stored Anthropic test key (never shown), the tool loop on and write tools off; Keith re-linked in Discord, got the Chief of Staff's answer by direct message, approved two waiting read-only hand-offs with the Approve button (after adding Product Strategy to his roster), a probe asking to approve everything and turn on write tools approved nothing, then unlinked: 4 runs completed, 6 steps all read-only with write tools off, 2 approvals both by button, every answer delivered, 45 credits, no Discord id in audit or logs, rows cleaned up. PROVIDER-SWITCH-01 proven live in the same window: /api/ai/execute naming openai while only the anthropic switch was on gave 503 'Provider openai temporarily unavailable' with nothing written. Env files restored byte for byte to 1ecb298f and 721f4772; runs off; Discord on. Checkpoint: docs/CHAT-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (GOV-CHAT-WORDING-01) / 1 superseded (the provider-switch live refusal named for ACCESS-01J-LIVE, by this task) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-15 — Keith said "go" after the deploy lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-LIVE-01
 **Title:** Discord live check with a real answer and an approval
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88240,6 +88240,23 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Live check 2 of docs/CHAT-DISCORD-01-STAGE-START.md section 10: in a run window (tester window closed), /ask the Chief of Staff in Discord gets the real answer by direct message within the part limits; a waiting read-only step shows Approve and Reject and Approve continues the run; a non-read-only step points to the Team page; credits and the daily cap apply; a prompt-injection probe in the task stays data; runs switched off again afterwards. Lands the PRD.md section 11 GATED row, the section 8 narrowing and ARCHITECTURE.md 13.6 Chat channels as drafted in stage-start section 11, in Keith's words.
+
+### GOV-CHAT-WORDING-01 — PRD.md and ARCHITECTURE.md lines for the Discord chat channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-CHAT-WORDING-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-15 by the CHAT-LIVE-01 LOCK — not admitted.
+**Task ID:** GOV-CHAT-WORDING-01
+**Title:** PRD.md and ARCHITECTURE.md lines for the Discord chat channel
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the wording (in his words). Keith decides.
+**Depends on:** CHAT-LIVE-01.
+**Primary write scope:** PRD.md (section 11 GATED row, section 8 narrowing, the :626 sentence); ARCHITECTURE.md (13.6 Chat channels and the smaller lines).
+**Mutexes / resources:** GOVERNANCE.
+**Scope:** From CHAT-DISCORD-01 (stage-start section 11, plan section 7) and CHAT-LIVE-01: the Discord chat channel is GATED and proven live; land the drafted PRD.md and ARCHITECTURE.md lines after Keith approves the wording; may be done together with GOV-ARCH-PKEY-01.
 
 ### CHAT-DISCORD-DM-01 — Free-text direct messages to the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
