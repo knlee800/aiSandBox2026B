@@ -88656,7 +88656,7 @@ taskId=TRIGGER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-15. Stage-start docs/TRIGGER-01-STAGE-START.md drafted by a fable subagent (6786647, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all twelve"): all twelve recommendations of section 14 (the first step starts without a click as the owner's request; read-only only, no session; one start per schedule per local day, at most 5 schedules per owner; start if at most 60 minutes late, else missed; the routes work while SCHEDULES_ENABLED is off, with a banner; silent while the flag is off; browser session only; Discord delivery later in CHAT-RESULTS-OTHER-01; a deleted workflow switches its schedule off; one migration, 1810; SCHEDULES_ENABLED back to false after the live check). The route shapes of section 7 are frozen for Step 3 and TRIGGER-UI-01. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-01
 **Title:** Schedules that start a workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88664,10 +88664,10 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP
 **Start condition:** READY for Step 2 (Keith chose Phase 4, 2026-11-15, "Start triggers (Stage 6)"). Step 3 starts only after Keith approves the stage-start and its wording. Was: NOT_READY. Ready when: Keith chooses Phase 4 and approves the wording. Keith decides.
 **Depends on:** BIZ-LIVE-04.
-**Primary write scope:** services/api-gateway/src/triggers/, services/api-gateway/src/entities/, services/api-gateway/src/migrations/, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template.
-**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-01-STAGE-START.md, set 2026-11-15). Step 3: GATEWAY, MIGRATION, ENV as registered, confirmed when the stage-start is approved. Was: GATEWAY, MIGRATION, ENV.
+**Primary write scope:** slice S1 (set 2026-11-15): services/api-gateway/src/migrations/1810000000000-CreateAgentScheduleTables.ts, services/api-gateway/src/migrations/__tests__/1810000000000-CreateAgentScheduleTables.spec.ts, services/api-gateway/src/entities/agent-schedule.entity.ts, services/api-gateway/src/entities/agent-schedule-run.entity.ts, services/api-gateway/src/entities/index.ts, services/api-gateway/src/triggers/triggers.module.ts, services/api-gateway/src/triggers/schedule-switch.ts, services/api-gateway/src/triggers/schedule-switch.spec.ts, services/api-gateway/src/triggers/schedule.service.ts, services/api-gateway/src/triggers/schedule.service.spec.ts, services/api-gateway/src/triggers/schedule.controller.ts, services/api-gateway/src/triggers/schedule.controller.spec.ts, services/api-gateway/src/triggers/schedule-validation.ts, services/api-gateway/src/triggers/schedule-validation.spec.ts, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template. Slice S2: stage-start section 11, set at its admission. Was: services/api-gateway/src/triggers/, services/api-gateway/src/entities/, services/api-gateway/src/migrations/, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template.
+**Mutexes / resources:** slice S1: GATEWAY, MIGRATION, ENV (2026-11-15); slice S2: GATEWAY. Was: Step 2: none (write set docs/TRIGGER-01-STAGE-START.md, set 2026-11-15). Step 3: GATEWAY, MIGRATION, ENV as registered, confirmed when the stage-start is approved. Was: GATEWAY, MIGRATION, ENV.
 **Hot-file leases:** none.
-**Shared contracts:** none.
+**Shared contracts:** the /api/schedules route shapes of stage-start section 7, frozen 2026-11-15 for Step 3 and TRIGGER-UI-01; no slice edits orchestration.service.ts or ai-execution.controller.ts (HARNESS_ENTITLEMENT_PROOF_V1) or anything under orchestration/, chat/, ai/, auth/ or guards/. Was: none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** migration down; flag off.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
