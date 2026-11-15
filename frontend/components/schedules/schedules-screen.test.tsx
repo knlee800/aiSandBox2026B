@@ -365,3 +365,25 @@ describe('schedules form', () => {
     }
   });
 });
+
+describe('schedules screen: the Before a meeting slot', () => {
+  test('the events section renders below the schedules and does not change them', () => {
+    const slot = <section data-testid="events-slot">slot</section>;
+    const html = render({ eventsSection: slot });
+    assert.match(html, /data-testid="events-slot"/);
+    assert.ok(html.indexOf('data-testid="schedules-list"') < html.indexOf('data-testid="events-slot"'));
+    assert.match(html, /data-testid="schedules-new"/);
+  });
+
+  test('the slot still shows when the schedules themselves failed to load, so each section fails on its own', () => {
+    const slot = <section data-testid="events-slot">slot</section>;
+    for (const phase of ['failed', 'forbidden'] as const) {
+      const html = render({ phase, data: null, eventsSection: slot });
+      assert.match(html, /data-testid="events-slot"/);
+    }
+  });
+
+  test('without the slot the page is exactly the schedules page', () => {
+    assert.doesNotMatch(render(), /events-slot|event-triggers-section/);
+  });
+});

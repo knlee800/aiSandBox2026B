@@ -2063,6 +2063,131 @@
       "schedule_not_found": "This schedule no longer exists.",
       "schedule_workflow_not_found": "That workflow was not found.",
       "schedule_limit_reached": "You have reached the limit of 5 schedules. Delete one to add another."
+    },
+    "events": {
+      "title": "Before a meeting",
+      "subtitle": "Start a read-only run a few minutes before a timed event on your calendar.",
+      "loading": "Loading event triggers…",
+      "loadError": "Event triggers could not be loaded.",
+      "retry": "Try again",
+      "forbiddenTitle": "Event triggers are not available",
+      "forbiddenBody": "Event triggers appear here once Team runs are turned on for your account.",
+      "banner": {
+        "off": "Event triggers are switched off; nothing will start.",
+        "runsOff": "Runs are switched off on this platform, so every event start will be skipped."
+      },
+      "calendar": {
+        "label": "Calendar:",
+        "ok": "Connected and readable.",
+        "connector_missing": "Not connected.",
+        "read_failed": "Connected, but it could not be read.",
+        "openConnections": "Open Connections"
+      },
+      "readNotice": "While a trigger is on, the platform reads your calendar about every 10 minutes.",
+      "limit": "{count} of {limit} event triggers used",
+      "limitReached": "You have reached the limit of {limit} event triggers. Delete one to add another.",
+      "new": "New event trigger",
+      "emptyTitle": "No event triggers yet",
+      "emptyBody": "Create an event trigger to start the Chief of Staff or one of your workflows shortly before a meeting.",
+      "notice": {
+        "saved": "Event trigger saved.",
+        "deleted": "Event trigger deleted.",
+        "switchedOn": "Event trigger switched on.",
+        "switchedOff": "Event trigger switched off."
+      },
+      "target": {
+        "chiefOfStaff": "Chief of Staff",
+        "workflowNamed": "Workflow: {name}",
+        "workflowGone": "Workflow no longer available"
+      },
+      "row": {
+        "on": "On",
+        "off": "Off",
+        "switchOn": "Switch on",
+        "switchOff": "Switch off",
+        "starts": "Starts",
+        "startsValue": "{minutes} minutes before a timed event",
+        "titleWord": "Title word",
+        "anyTitle": "Every timed event",
+        "timeZone": "Time zone",
+        "lastRun": "Last run",
+        "neverRan": "Has not run yet",
+        "viewResult": "Open Results",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this event trigger? This cannot be undone.",
+        "deleteYes": "Yes, delete",
+        "history": "History",
+        "hideHistory": "Hide history"
+      },
+      "form": {
+        "createTitle": "New event trigger",
+        "editTitle": "Edit event trigger",
+        "hint": "The run is told the time of the event. It reads the event itself with its calendar tool. Event runs are read-only: the first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
+        "target": "What to start",
+        "workflowWarning": "A workflow can read the event only if it has the calendar tool. Check the workflow’s tools; without it the run will not see the event.",
+        "task": "Task",
+        "taskCount": "{count} of {max} characters",
+        "lead": "Minutes before the event",
+        "leadHint": "A whole number from {min} to {max}.",
+        "titleFilter": "Title word (optional)",
+        "titleFilterHint": "Only events whose title contains this word start a run. Leave empty for every timed event.",
+        "timeZone": "Time zone",
+        "enabled": "Switched on",
+        "save": "Save event trigger",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "history": {
+        "title": "History (last 30)",
+        "loading": "Loading history…",
+        "empty": "Nothing has happened for this event trigger yet.",
+        "loadError": "The history could not be loaded."
+      },
+      "outcomes": {
+        "claimed": "Claimed, starting",
+        "started": "Started",
+        "skipped": "Skipped",
+        "unknown": "Unknown"
+      },
+      "reasons": {
+        "runs_off": "Runs are switched off on this platform.",
+        "inactive": "The event trigger was switched off.",
+        "not_entitled": "Your account no longer has access.",
+        "workflow_gone": "The workflow no longer exists.",
+        "workflow_off": "The workflow is switched off.",
+        "workflow_not_tested": "The workflow has not been tested yet.",
+        "workflow_invalid": "The workflow is not valid.",
+        "workflow_budget": "The workflow reached its credit budget.",
+        "over_cap": "Too many runs were already in progress.",
+        "provider_off": "The AI provider is switched off.",
+        "no_credits": "There were not enough credits.",
+        "missed": "The platform was not running when the meeting was coming up.",
+        "interrupted": "The start was interrupted.",
+        "refused": "The start was refused.",
+        "day_limit": "The daily limit of starts for this trigger was reached.",
+        "event_changed": "The event changed or was cancelled before the start.",
+        "calendar_read_failed": "The calendar could not be read.",
+        "connector_missing": "The calendar was disconnected.",
+        "unknown": "The start was skipped."
+      },
+      "errors": {
+        "generic": "Something went wrong. Try again.",
+        "network": "Network error. Check your connection and try again.",
+        "event_trigger_invalid_body": "The request was not valid.",
+        "event_trigger_unknown_field": "The request had a field that is not allowed.",
+        "event_trigger_missing_field": "A required field is missing.",
+        "event_trigger_empty_change": "There is nothing to change.",
+        "event_trigger_invalid_target": "Choose the Chief of Staff or one of your workflows.",
+        "event_trigger_invalid_task": "The task must be 1 to 7500 characters.",
+        "event_trigger_invalid_lead": "Minutes before the event must be a whole number from 5 to 120.",
+        "event_trigger_invalid_filter": "The title word must be at most 100 characters.",
+        "event_trigger_invalid_time_zone": "That time zone is not known.",
+        "event_trigger_invalid_enabled": "The on or off setting was not valid.",
+        "event_trigger_not_found": "This event trigger no longer exists.",
+        "event_trigger_workflow_not_found": "That workflow was not found.",
+        "event_trigger_limit_reached": "You have reached the limit of 3 event triggers. Delete one to add another."
+      }
     }
   }
 }

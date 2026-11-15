@@ -13,6 +13,7 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import Spinner from '@/components/ui/Spinner';
+import EventTriggersSection from './event-triggers-section';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   createSchedule,
@@ -92,6 +93,8 @@ export interface SchedulesScreenViewProps {
   onCancelDelete: () => void;
   onConfirmDelete: (id: string) => void;
   onToggleHistory: (id: string) => void;
+  /** TRIGGER-EVENT-01 S4: the "Before a meeting" section, below the schedules. It loads and fails on its own. */
+  eventsSection?: React.ReactNode;
 }
 
 const QUIET_BUTTON =
@@ -646,6 +649,8 @@ export function SchedulesScreenView(props: SchedulesScreenViewProps): React.Reac
               )}
             </>
           ) : null}
+
+          {props.eventsSection ?? null}
         </div>
       </main>
     </div>
@@ -870,6 +875,7 @@ export default function SchedulesScreen({ locale, fetcher }: SchedulesScreenProp
       onCancelDelete={() => setConfirmDeleteId(null)}
       onConfirmDelete={(id) => void onConfirmDelete(id)}
       onToggleHistory={(id) => void onToggleHistory(id)}
+      eventsSection={<EventTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
     />
   );
 }

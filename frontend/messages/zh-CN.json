@@ -2063,6 +2063,131 @@
       "schedule_not_found": "此计划任务已不存在。",
       "schedule_workflow_not_found": "找不到该工作流。",
       "schedule_limit_reached": "你已达到 5 个计划任务的上限。请先删除一个再添加。"
+    },
+    "events": {
+      "title": "会议之前",
+      "subtitle": "在日历上有时间的活动开始前几分钟，启动一次只读运行。",
+      "loading": "正在加载活动触发器…",
+      "loadError": "无法加载活动触发器。",
+      "retry": "重试",
+      "forbiddenTitle": "活动触发器不可用",
+      "forbiddenBody": "当您的账号开启团队运行后，活动触发器就会显示在这里。",
+      "banner": {
+        "off": "活动触发器已关闭，不会启动任何运行。",
+        "runsOff": "此平台已关闭运行功能，因此每次活动启动都会被跳过。"
+      },
+      "calendar": {
+        "label": "日历：",
+        "ok": "已连接，可以读取。",
+        "connector_missing": "尚未连接。",
+        "read_failed": "已连接，但无法读取。",
+        "openConnections": "前往连接页面"
+      },
+      "readNotice": "触发器开启期间，平台约每 10 分钟读取一次您的日历。",
+      "limit": "已使用 {count} / {limit} 个活动触发器",
+      "limitReached": "您已达到 {limit} 个活动触发器的上限。请先删除一个才能新增。",
+      "new": "新增活动触发器",
+      "emptyTitle": "还没有活动触发器",
+      "emptyBody": "创建活动触发器，即可在会议开始前不久启动幕僚长或您的某个工作流。",
+      "notice": {
+        "saved": "活动触发器已保存。",
+        "deleted": "活动触发器已删除。",
+        "switchedOn": "活动触发器已开启。",
+        "switchedOff": "活动触发器已关闭。"
+      },
+      "target": {
+        "chiefOfStaff": "幕僚长",
+        "workflowNamed": "工作流：{name}",
+        "workflowGone": "工作流已不存在"
+      },
+      "row": {
+        "on": "开启",
+        "off": "关闭",
+        "switchOn": "开启",
+        "switchOff": "关闭",
+        "starts": "启动时间",
+        "startsValue": "有时间的活动开始前 {minutes} 分钟",
+        "titleWord": "标题关键词",
+        "anyTitle": "所有有时间的活动",
+        "timeZone": "时区",
+        "lastRun": "上次运行",
+        "neverRan": "尚未运行",
+        "viewResult": "打开结果",
+        "edit": "编辑",
+        "delete": "删除",
+        "deleteConfirm": "要删除这个活动触发器吗？此操作无法撤销。",
+        "deleteYes": "是，删除",
+        "history": "历史记录",
+        "hideHistory": "隐藏历史记录"
+      },
+      "form": {
+        "createTitle": "新增活动触发器",
+        "editTitle": "编辑活动触发器",
+        "hint": "运行会被告知活动的时间，并由它自己使用日历工具读取该活动。活动运行为只读：第一步无需点击即会开始；后续步骤按工作流的审批设置进行，并在团队页面等待。",
+        "target": "要启动的对象",
+        "workflowWarning": "工作流必须具备日历工具才能读取活动。请检查该工作流的工具；没有此工具，运行将看不到活动。",
+        "task": "任务",
+        "taskCount": "{count} / {max} 个字符",
+        "lead": "活动开始前的分钟数",
+        "leadHint": "{min} 到 {max} 之间的整数。",
+        "titleFilter": "标题关键词（选填）",
+        "titleFilterHint": "只有标题包含此关键词的活动才会启动运行。留空则适用于所有有时间的活动。",
+        "timeZone": "时区",
+        "enabled": "已开启",
+        "save": "保存活动触发器",
+        "saving": "保存中…",
+        "cancel": "取消"
+      },
+      "history": {
+        "title": "历史记录（最近 30 条）",
+        "loading": "正在加载历史记录…",
+        "empty": "这个活动触发器还没有任何记录。",
+        "loadError": "无法加载历史记录。"
+      },
+      "outcomes": {
+        "claimed": "已受理，正在启动",
+        "started": "已启动",
+        "skipped": "已跳过",
+        "unknown": "未知"
+      },
+      "reasons": {
+        "runs_off": "此平台已关闭运行功能。",
+        "inactive": "活动触发器已关闭。",
+        "not_entitled": "您的账号已不再具有访问权限。",
+        "workflow_gone": "工作流已不存在。",
+        "workflow_off": "工作流已关闭。",
+        "workflow_not_tested": "工作流尚未测试。",
+        "workflow_invalid": "工作流无效。",
+        "workflow_budget": "工作流已达积分预算上限。",
+        "over_cap": "进行中的运行过多。",
+        "provider_off": "AI 提供商已关闭。",
+        "no_credits": "积分不足。",
+        "missed": "会议即将开始时，平台并未运行。",
+        "interrupted": "启动被中断。",
+        "refused": "启动被拒绝。",
+        "day_limit": "此触发器已达当日启动次数上限。",
+        "event_changed": "活动在启动前已变更或被取消。",
+        "calendar_read_failed": "无法读取日历。",
+        "connector_missing": "日历已断开连接。",
+        "unknown": "启动已被跳过。"
+      },
+      "errors": {
+        "generic": "出现错误，请重试。",
+        "network": "网络错误。请检查您的连接后重试。",
+        "event_trigger_invalid_body": "请求无效。",
+        "event_trigger_unknown_field": "请求包含不允许的字段。",
+        "event_trigger_missing_field": "缺少必填字段。",
+        "event_trigger_empty_change": "没有任何更改。",
+        "event_trigger_invalid_target": "请选择幕僚长或您的某个工作流。",
+        "event_trigger_invalid_task": "任务必须为 1 到 7500 个字符。",
+        "event_trigger_invalid_lead": "活动开始前的分钟数必须是 5 到 120 之间的整数。",
+        "event_trigger_invalid_filter": "标题关键词最多 100 个字符。",
+        "event_trigger_invalid_time_zone": "无法识别这个时区。",
+        "event_trigger_invalid_enabled": "开启或关闭的设置无效。",
+        "event_trigger_not_found": "这个活动触发器已不存在。",
+        "event_trigger_workflow_not_found": "找不到该工作流。",
+        "event_trigger_limit_reached": "您已达到 3 个活动触发器的上限。请先删除一个才能新增。"
+      }
     }
   }
 }
