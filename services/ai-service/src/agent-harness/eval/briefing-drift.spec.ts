@@ -259,8 +259,15 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
       path.join(GATEWAY_SRC, 'orchestration', 'collaboration.controller.ts'),
       'utf8',
     );
+    // The controller delegates to the start service, where the start code lives.
     const startRun = controller.slice(controller.indexOf('async startRun('));
-    const createCall = startRun.slice(0, startRun.indexOf('fileAccess: true'));
+    expect(startRun).toContain('this.starter.start(');
+    const starter = fs.readFileSync(
+      path.join(GATEWAY_SRC, 'orchestration', 'collaboration-start.service.ts'),
+      'utf8',
+    );
+    const start = starter.slice(starter.indexOf('async start('));
+    const createCall = start.slice(0, start.indexOf('fileAccess: true'));
     expect(createCall).toContain('createPendingReferral({');
     expect(createCall).not.toContain('projectInstructions');
     expect(createCall).not.toContain('globalInstructions');
