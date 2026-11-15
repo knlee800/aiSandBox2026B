@@ -88656,23 +88656,23 @@ taskId=TRIGGER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start triggers (Stage 6)". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-01
 **Title:** Schedules that start a workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: Keith chooses Phase 4 and approves the wording. Keith decides.
+**Start condition:** READY for Step 2 (Keith chose Phase 4, 2026-11-15, "Start triggers (Stage 6)"). Step 3 starts only after Keith approves the stage-start and its wording. Was: NOT_READY. Ready when: Keith chooses Phase 4 and approves the wording. Keith decides.
 **Depends on:** BIZ-LIVE-04.
 **Primary write scope:** services/api-gateway/src/triggers/, services/api-gateway/src/entities/, services/api-gateway/src/migrations/, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template.
-**Mutexes / resources:** GATEWAY, MIGRATION, ENV.
+**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-01-STAGE-START.md, set 2026-11-15). Step 3: GATEWAY, MIGRATION, ENV as registered, confirmed when the stage-start is approved. Was: GATEWAY, MIGRATION, ENV.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** migration down; flag off.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-15).
 **Scope:** agent_schedules and an in-process gateway timer (F1, F4). SCHEDULES_ENABLED defaults false. One idempotency key per owner per local day, no retry, skipped when runs are off or a cap would be exceeded, never enabled by a tester window, with an audit row on every skip.
 **Note (added 2026-11-10 by the RESULTS-01 LOCK):** trigger-started runs appear in Results (RESULTS-01) with no change; this task's stage-start names the Results unread badge as the owner's notice of a finished scheduled run.
 **Note (added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK):** a trigger-started workflow run has no session; it reuses CollaborationBusinessSessionService.ensureForOwner (services/api-gateway/src/orchestration/collaboration-business-session.ts) for its project and session.

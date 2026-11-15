@@ -7,13 +7,13 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
+      "state": "ACTIVE",
+      "taskId": "TRIGGER-01",
       "mutexes": [],
-      "writePaths": [],
+      "writePaths": ["docs/TRIGGER-01-STAGE-START.md"],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -6367,20 +6367,14 @@
       "taskId": "TRIGGER-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
       "dependsOn": ["BIZ-LIVE-04"],
-      "mutexes": ["GATEWAY", "MIGRATION", "ENV"],
-      "writePaths": [
-        "services/api-gateway/src/triggers/",
-        "services/api-gateway/src/entities/",
-        "services/api-gateway/src/migrations/",
-        "services/api-gateway/src/app.module.ts",
-        "ops/clean-baseline/env/gateway.env.template"
-      ],
+      "mutexes": [],
+      "writePaths": ["docs/TRIGGER-01-STAGE-START.md"],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -6388,8 +6382,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "TRIGGER-UI-01",
