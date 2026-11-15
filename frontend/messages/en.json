@@ -646,6 +646,7 @@
     "openKnowledge": "Knowledge",
     "openConnections": "Connections",
     "openResults": "Results",
+    "openSchedules": "Schedules",
     "unreadResults": "{count} new",
     "comingSoonMessage": "This agent is coming soon. Stay tuned!",
     "systemAgentsLoading": "Loading stations…",
@@ -1946,5 +1947,122 @@
     "authErrorUnsafeTemplatePath": "Template file path \"{path}\" is not a safe relative path.",
     "authErrorForbiddenTemplateContent": "Generated content for \"{path}\" contains forbidden platform content.",
     "networkError": "Network error. Check your connection and try again."
+  },
+  "schedules": {
+    "title": "Schedules",
+    "subtitle": "Start a read-only run at a set time on the days you choose.",
+    "backToPlatform": "Command Center",
+    "loading": "Loading schedules…",
+    "loadError": "Schedules could not be loaded.",
+    "retry": "Try again",
+    "forbiddenTitle": "Schedules are not available",
+    "forbiddenBody": "Schedules appear here once Team runs are turned on for your account.",
+    "banner": {
+      "off": "Schedules are switched off; nothing will start.",
+      "runsOff": "Runs are switched off on this platform, so every scheduled start will be skipped."
+    },
+    "limit": "{count} of {limit} schedules used",
+    "limitReached": "You have reached the limit of {limit} schedules. Delete one to add another.",
+    "new": "New schedule",
+    "emptyTitle": "No schedules yet",
+    "emptyBody": "Create a schedule to start the Chief of Staff or one of your workflows at a set time.",
+    "notice": {
+      "saved": "Schedule saved.",
+      "deleted": "Schedule deleted.",
+      "switchedOn": "Schedule switched on.",
+      "switchedOff": "Schedule switched off."
+    },
+    "target": {
+      "chiefOfStaff": "Chief of Staff",
+      "workflowNamed": "Workflow: {name}",
+      "workflowGone": "Workflow no longer available"
+    },
+    "days": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    },
+    "row": {
+      "on": "On",
+      "off": "Off",
+      "switchOn": "Switch on",
+      "switchOff": "Switch off",
+      "when": "When",
+      "whenValue": "{time} on {days} ({zone})",
+      "lastRun": "Last run",
+      "neverRan": "Has not run yet",
+      "viewResult": "Open Results",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this schedule? This cannot be undone.",
+      "deleteYes": "Yes, delete",
+      "history": "History",
+      "hideHistory": "Hide history"
+    },
+    "form": {
+      "createTitle": "New schedule",
+      "editTitle": "Edit schedule",
+      "readOnlyHint": "Scheduled runs are read-only. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
+      "target": "What to start",
+      "task": "Task",
+      "taskCount": "{count} of {max} characters",
+      "time": "Time of day",
+      "timeZone": "Time zone",
+      "days": "Days",
+      "enabled": "Switched on",
+      "save": "Save schedule",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "history": {
+      "title": "History (last 30)",
+      "loading": "Loading history…",
+      "empty": "Nothing has happened for this schedule yet.",
+      "loadError": "The history could not be loaded."
+    },
+    "outcomes": {
+      "claimed": "Claimed, starting",
+      "started": "Started",
+      "skipped": "Skipped",
+      "unknown": "Unknown"
+    },
+    "reasons": {
+      "runs_off": "Runs are switched off on this platform.",
+      "inactive": "The schedule was switched off.",
+      "not_entitled": "Your account no longer has access.",
+      "workflow_gone": "The workflow no longer exists.",
+      "workflow_off": "The workflow is switched off.",
+      "workflow_not_tested": "The workflow has not been tested yet.",
+      "workflow_invalid": "The workflow is not valid.",
+      "workflow_budget": "The workflow reached its credit budget.",
+      "over_cap": "Too many runs were already in progress.",
+      "provider_off": "The AI provider is switched off.",
+      "no_credits": "There were not enough credits.",
+      "missed": "The platform was not running at the scheduled time.",
+      "interrupted": "The start was interrupted.",
+      "refused": "The start was refused.",
+      "unknown": "The start was skipped."
+    },
+    "errors": {
+      "generic": "Something went wrong. Try again.",
+      "network": "Network error. Check your connection and try again.",
+      "schedule_invalid_body": "The request was not valid.",
+      "schedule_unknown_field": "The request had a field that is not allowed.",
+      "schedule_missing_field": "A required field is missing.",
+      "schedule_empty_change": "There is nothing to change.",
+      "schedule_invalid_target": "Choose the Chief of Staff or one of your workflows.",
+      "schedule_invalid_task": "The task must be 1 to 8000 characters.",
+      "schedule_invalid_time": "Enter a time between 00:00 and 23:59.",
+      "schedule_invalid_days": "Choose at least one day.",
+      "schedule_invalid_time_zone": "That time zone is not known.",
+      "schedule_invalid_enabled": "The on or off setting was not valid.",
+      "schedule_not_found": "This schedule no longer exists.",
+      "schedule_workflow_not_found": "That workflow was not found.",
+      "schedule_limit_reached": "You have reached the limit of 5 schedules. Delete one to add another."
+    }
   }
 }

@@ -646,6 +646,7 @@
     "openKnowledge": "知識庫",
     "openConnections": "連線",
     "openResults": "結果",
+    "openSchedules": "排程",
     "unreadResults": "{count} 則新結果",
     "comingSoonMessage": "此代理即將推出，敬請期待！",
     "systemAgentsLoading": "正在載入席位…",
@@ -1946,5 +1947,122 @@
     "authErrorUnsafeTemplatePath": "範本檔案路徑「{path}」不是安全的相對路徑。",
     "authErrorForbiddenTemplateContent": "「{path}」的產生內容含有禁止使用的平台內容。",
     "networkError": "網路錯誤，請檢查連線後再試一次。"
+  },
+  "schedules": {
+    "title": "排程",
+    "subtitle": "在你選擇的日子和時間，啟動唯讀執行。",
+    "backToPlatform": "指揮中心",
+    "loading": "正在載入排程…",
+    "loadError": "無法載入排程。",
+    "retry": "重試",
+    "forbiddenTitle": "排程目前無法使用",
+    "forbiddenBody": "你的帳戶開啟團隊執行後，排程就會顯示在這裡。",
+    "banner": {
+      "off": "排程已關閉，不會啟動任何項目。",
+      "runsOff": "此平台已關閉執行，因此所有排程啟動都會被略過。"
+    },
+    "limit": "已使用 {count} / {limit} 個排程",
+    "limitReached": "你已達到 {limit} 個排程的上限。請先刪除一個再新增。",
+    "new": "新增排程",
+    "emptyTitle": "尚無排程",
+    "emptyBody": "建立排程，在指定時間啟動幕僚長或你的工作流程。",
+    "notice": {
+      "saved": "排程已儲存。",
+      "deleted": "排程已刪除。",
+      "switchedOn": "排程已開啟。",
+      "switchedOff": "排程已關閉。"
+    },
+    "target": {
+      "chiefOfStaff": "幕僚長",
+      "workflowNamed": "工作流程：{name}",
+      "workflowGone": "工作流程已不存在"
+    },
+    "days": {
+      "1": "週一",
+      "2": "週二",
+      "3": "週三",
+      "4": "週四",
+      "5": "週五",
+      "6": "週六",
+      "7": "週日"
+    },
+    "row": {
+      "on": "開啟",
+      "off": "關閉",
+      "switchOn": "開啟",
+      "switchOff": "關閉",
+      "when": "時間",
+      "whenValue": "{days} {time}（{zone}）",
+      "lastRun": "上次執行",
+      "neverRan": "尚未執行",
+      "viewResult": "查看結果",
+      "edit": "編輯",
+      "delete": "刪除",
+      "deleteConfirm": "要刪除此排程嗎？此操作無法復原。",
+      "deleteYes": "確定刪除",
+      "history": "歷史紀錄",
+      "hideHistory": "隱藏歷史紀錄"
+    },
+    "form": {
+      "createTitle": "新增排程",
+      "editTitle": "編輯排程",
+      "readOnlyHint": "排程執行為唯讀。第一步無需點擊即會啟動；後續步驟依工作流程的核准設定，並在團隊頁面等候。",
+      "target": "要啟動的項目",
+      "task": "任務",
+      "taskCount": "{count} / {max} 個字元",
+      "time": "時間",
+      "timeZone": "時區",
+      "days": "日期",
+      "enabled": "已開啟",
+      "save": "儲存排程",
+      "saving": "正在儲存…",
+      "cancel": "取消"
+    },
+    "history": {
+      "title": "歷史紀錄（最近 30 筆）",
+      "loading": "正在載入歷史紀錄…",
+      "empty": "此排程尚無任何紀錄。",
+      "loadError": "無法載入歷史紀錄。"
+    },
+    "outcomes": {
+      "claimed": "已取得，正在啟動",
+      "started": "已啟動",
+      "skipped": "已略過",
+      "unknown": "未知"
+    },
+    "reasons": {
+      "runs_off": "此平台已關閉執行。",
+      "inactive": "此排程已被關閉。",
+      "not_entitled": "你的帳戶已無權限。",
+      "workflow_gone": "工作流程已不存在。",
+      "workflow_off": "工作流程已關閉。",
+      "workflow_not_tested": "工作流程尚未測試。",
+      "workflow_invalid": "工作流程無效。",
+      "workflow_budget": "工作流程已達到點數預算。",
+      "over_cap": "已有過多執行正在進行。",
+      "provider_off": "AI 供應商已關閉。",
+      "no_credits": "點數不足。",
+      "missed": "排程時間到達時平台未在執行。",
+      "interrupted": "啟動被中斷。",
+      "refused": "啟動被拒絕。",
+      "unknown": "啟動已被略過。"
+    },
+    "errors": {
+      "generic": "發生錯誤，請再試一次。",
+      "network": "網路錯誤。請檢查連線後再試一次。",
+      "schedule_invalid_body": "請求內容無效。",
+      "schedule_unknown_field": "請求包含不允許的欄位。",
+      "schedule_missing_field": "缺少必填欄位。",
+      "schedule_empty_change": "沒有可變更的項目。",
+      "schedule_invalid_target": "請選擇幕僚長或你的工作流程。",
+      "schedule_invalid_task": "任務須為 1 至 8000 個字元。",
+      "schedule_invalid_time": "請輸入 00:00 至 23:59 之間的時間。",
+      "schedule_invalid_days": "請至少選擇一天。",
+      "schedule_invalid_time_zone": "無法辨識此時區。",
+      "schedule_invalid_enabled": "開啟或關閉的設定無效。",
+      "schedule_not_found": "此排程已不存在。",
+      "schedule_workflow_not_found": "找不到該工作流程。",
+      "schedule_limit_reached": "你已達到 5 個排程的上限。請先刪除一個再新增。"
+    }
   }
 }

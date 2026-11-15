@@ -646,6 +646,7 @@
     "openKnowledge": "知识库",
     "openConnections": "连接",
     "openResults": "结果",
+    "openSchedules": "计划任务",
     "unreadResults": "{count} 条新结果",
     "comingSoonMessage": "此代理即将推出，敬请期待！",
     "systemAgentsLoading": "正在加载席位…",
@@ -1946,5 +1947,122 @@
     "authErrorUnsafeTemplatePath": "模板文件路径“{path}”不是安全的相对路径。",
     "authErrorForbiddenTemplateContent": "“{path}”的生成内容包含禁止使用的平台内容。",
     "networkError": "网络错误，请检查连接后重试。"
+  },
+  "schedules": {
+    "title": "计划任务",
+    "subtitle": "在你选择的日子和时间，启动只读运行。",
+    "backToPlatform": "指挥中心",
+    "loading": "正在加载计划任务…",
+    "loadError": "无法加载计划任务。",
+    "retry": "重试",
+    "forbiddenTitle": "计划任务暂不可用",
+    "forbiddenBody": "你的账户开启团队运行后，计划任务就会显示在这里。",
+    "banner": {
+      "off": "计划任务已关闭，不会启动任何内容。",
+      "runsOff": "此平台已关闭运行，因此所有计划启动都会被跳过。"
+    },
+    "limit": "已使用 {count} / {limit} 个计划任务",
+    "limitReached": "你已达到 {limit} 个计划任务的上限。请先删除一个再添加。",
+    "new": "新建计划任务",
+    "emptyTitle": "还没有计划任务",
+    "emptyBody": "创建计划任务，在指定时间启动幕僚长或你的工作流。",
+    "notice": {
+      "saved": "计划任务已保存。",
+      "deleted": "计划任务已删除。",
+      "switchedOn": "计划任务已开启。",
+      "switchedOff": "计划任务已关闭。"
+    },
+    "target": {
+      "chiefOfStaff": "幕僚长",
+      "workflowNamed": "工作流：{name}",
+      "workflowGone": "工作流已不存在"
+    },
+    "days": {
+      "1": "周一",
+      "2": "周二",
+      "3": "周三",
+      "4": "周四",
+      "5": "周五",
+      "6": "周六",
+      "7": "周日"
+    },
+    "row": {
+      "on": "开启",
+      "off": "关闭",
+      "switchOn": "开启",
+      "switchOff": "关闭",
+      "when": "时间",
+      "whenValue": "{days} {time}（{zone}）",
+      "lastRun": "上次运行",
+      "neverRan": "尚未运行",
+      "viewResult": "查看结果",
+      "edit": "编辑",
+      "delete": "删除",
+      "deleteConfirm": "要删除此计划任务吗？此操作无法撤销。",
+      "deleteYes": "确定删除",
+      "history": "历史记录",
+      "hideHistory": "隐藏历史记录"
+    },
+    "form": {
+      "createTitle": "新建计划任务",
+      "editTitle": "编辑计划任务",
+      "readOnlyHint": "计划运行为只读。第一步无需点击即会启动；后续步骤按工作流的审批设置，并在团队页面等待。",
+      "target": "要启动的对象",
+      "task": "任务",
+      "taskCount": "{count} / {max} 个字符",
+      "time": "时间",
+      "timeZone": "时区",
+      "days": "日期",
+      "enabled": "已开启",
+      "save": "保存计划任务",
+      "saving": "正在保存…",
+      "cancel": "取消"
+    },
+    "history": {
+      "title": "历史记录（最近 30 条）",
+      "loading": "正在加载历史记录…",
+      "empty": "此计划任务还没有任何记录。",
+      "loadError": "无法加载历史记录。"
+    },
+    "outcomes": {
+      "claimed": "已领取，正在启动",
+      "started": "已启动",
+      "skipped": "已跳过",
+      "unknown": "未知"
+    },
+    "reasons": {
+      "runs_off": "此平台已关闭运行。",
+      "inactive": "此计划任务已被关闭。",
+      "not_entitled": "你的账户已无权限。",
+      "workflow_gone": "工作流已不存在。",
+      "workflow_off": "工作流已关闭。",
+      "workflow_not_tested": "工作流尚未测试。",
+      "workflow_invalid": "工作流无效。",
+      "workflow_budget": "工作流已达到积分预算。",
+      "over_cap": "已有过多运行正在进行。",
+      "provider_off": "AI 供应商已关闭。",
+      "no_credits": "积分不足。",
+      "missed": "计划时间到达时平台未在运行。",
+      "interrupted": "启动被中断。",
+      "refused": "启动被拒绝。",
+      "unknown": "启动已被跳过。"
+    },
+    "errors": {
+      "generic": "出错了，请再试一次。",
+      "network": "网络错误。请检查连接后再试一次。",
+      "schedule_invalid_body": "请求内容无效。",
+      "schedule_unknown_field": "请求包含不允许的字段。",
+      "schedule_missing_field": "缺少必填字段。",
+      "schedule_empty_change": "没有可更改的内容。",
+      "schedule_invalid_target": "请选择幕僚长或你的工作流。",
+      "schedule_invalid_task": "任务须为 1 至 8000 个字符。",
+      "schedule_invalid_time": "请输入 00:00 至 23:59 之间的时间。",
+      "schedule_invalid_days": "请至少选择一天。",
+      "schedule_invalid_time_zone": "无法识别此时区。",
+      "schedule_invalid_enabled": "开启或关闭的设置无效。",
+      "schedule_not_found": "此计划任务已不存在。",
+      "schedule_workflow_not_found": "找不到该工作流。",
+      "schedule_limit_reached": "你已达到 5 个计划任务的上限。请先删除一个再添加。"
+    }
   }
 }

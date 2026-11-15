@@ -7,6 +7,7 @@ import {
   ArrowLeftIcon,
   BookOpenIcon,
   BuildingOffice2Icon,
+  ClockIcon,
   ExclamationTriangleIcon,
   InboxIcon,
   LinkIcon,
@@ -380,7 +381,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const openKnowledge = resolveNestedMessage(messages, 'platform.openKnowledge');
   const openConnections = resolveNestedMessage(messages, 'platform.openConnections');
   const openResults = resolveNestedMessage(messages, 'platform.openResults');
-  const unreadResultsTemplate = resolveNestedMessage(messages, 'platform.unreadResults');
+  const openSchedules = resolveNestedMessage(messages, 'platform.openSchedules');
+  const unreadResultsTemplate =resolveNestedMessage(messages, 'platform.unreadResults');
   const commandDeckLabel = resolveNestedMessage(messages, 'platform.commandDeckLabel');
   const commandDeckIntro = resolveNestedMessage(messages, 'platform.commandDeckIntro');
   const statusTitle = resolveNestedMessage(messages, 'platform.commandCenterStatusTitle');
@@ -792,6 +794,14 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
               <InboxIcon className="h-4 w-4" aria-hidden="true" />
               {openResults}
               <ResultsUnreadPill count={unreadResults} template={unreadResultsTemplate} />
+            </Link>
+            <Link
+              href={`${localePrefix}/schedules`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              data-testid="platform-open-schedules"
+            >
+              <ClockIcon className="h-4 w-4" aria-hidden="true" />
+              {openSchedules}
             </Link>
             <Link
               href={`${localePrefix}/app`}

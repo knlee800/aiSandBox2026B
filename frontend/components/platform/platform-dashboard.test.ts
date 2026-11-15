@@ -205,6 +205,22 @@ describe('platform dashboard navigation integration', () => {
     assert.ok(connections > 0 && results > connections && workspace > results);
   });
 
+  test('command center header links to the schedules route after Results and before back-to-workspace (TRIGGER-UI-01)', () => {
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /platform\.openSchedules/);
+    assert.match(dashboardSource, /data-testid="platform-open-schedules"/);
+    assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/schedules`\}/);
+    assert.match(dashboardSource, /<ClockIcon className="h-4 w-4" aria-hidden="true" \/>/);
+    const results = dashboardSource.indexOf('data-testid="platform-open-results"');
+    const schedules = dashboardSource.indexOf('data-testid="platform-open-schedules"');
+    const workspace = dashboardSource.indexOf('data-testid="platform-back-to-workspace"');
+    assert.ok(results > 0 && schedules > results && workspace > schedules);
+    for (const { code, messages } of ALL_LOCALES) {
+      const value = resolveNestedString(messages, 'platform.openSchedules');
+      assert.ok(value && value.trim().length > 0, `Missing platform.openSchedules in locale "${code}"`);
+    }
+  });
+
   test('the results count is read once after sign-in with the shared fetch, and any failure hides it', () => {
     const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
     assert.match(dashboardSource, /import \{ loadUnreadCount \} from '@\/components\/results\/results-api'/);
