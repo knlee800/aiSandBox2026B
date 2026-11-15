@@ -88881,7 +88881,7 @@ taskId=STAGING-DEPLOY-TRIG-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-15 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 7fcc46d to f32d88b (rc 0; migration 1810 after the pre-migration backup, hash fa23a84d to 03e88640; both schedule tables, the unique (schedule_id, local_date) index, 6 CHECKs and 2 cascades present); every earlier deploy, provider and chat check passed; the schedule routes refuse without a session (401), with an API key alone (401) and cross-origin (403); /en, /zh-TW and /zh-CN /schedules answer 200; Discord reconnected; SCHEDULES_ENABLED=false added to gateway.env and the gateway restarted (new baseline 15000e51; ai.env 721f4772 and the Caddyfile unchanged); runs off. Keith checked the Schedules page in his browser ("Done, all fine"): created two schedules (the Chief of Staff and one of his workflows), edited one, deleted one; the host saw 4 trigger audit rows with ids and the target kind only, the marker word in no audit row and no log line, and no run row after his schedule's due time passed with the switch off. Checkpoint: docs/STAGING-DEPLOY-TRIG-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-15 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** STAGING-DEPLOY-TRIG-01
 **Title:** Deploy triggers
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88930,6 +88930,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Live check of a schedule trigger. The LOCK record, holding GOVERNANCE, amends ARCHITECTURE.md lines 177 and 1116 and adds section 13.7. PRD.md line 472 is left alone. Not the RSI-00 hold.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+Note (STAGING-DEPLOY-TRIG-01 LOCK, 2026-11-15): staging runs f32d88b with SCHEDULES_ENABLED=false and runs off; the gateway.env baseline is now 15000e51 (ai.env 721f4772); the run window starts from those and restores them byte for byte. Keith's PINEAPPLE7 schedule (Chief of Staff, Sundays 14:50 Asia/Hong_Kong) is still on his account; the live check makes its own schedules and Keith may delete that one.
 
 ### TRIGGER-EVENT-01 — Trigger before a calendar event
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

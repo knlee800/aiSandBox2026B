@@ -69,7 +69,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check (Keith chose Phase 4 2026-11-15; TRIGGER-01 done 2026-11-15, not deployed: tables, routes, SCHEDULES_ENABLED off by default, the timer that starts read-only runs as the owner; TRIGGER-UI-01 done 2026-11-15 (the Schedules page, not deployed); next STAGING-DEPLOY-TRIG-01 (Keith approves); follow-ups TRIGGER-UI-POLISH-01, TRIGGER-WAIT-NOTICE-01, TRIGGER-ORIGIN-01, TRIGGER-SESSION-01, REFUSAL-MAP-01, TRIGGER-SCALE-01, GOV-CHECKLIST-01) |
+| 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check (Keith chose Phase 4 2026-11-15; TRIGGER-01 done 2026-11-15, not deployed: tables, routes, SCHEDULES_ENABLED off by default, the timer that starts read-only runs as the owner; TRIGGER-UI-01 done 2026-11-15 (the Schedules page, not deployed); STAGING-DEPLOY-TRIG-01 done 2026-11-15 (on staging at f32d88b, switch off, Keith checked the page); next TRIGGER-LIVE-01 (a run window Keith approves); follow-ups TRIGGER-UI-POLISH-01, TRIGGER-WAIT-NOTICE-01, TRIGGER-ORIGIN-01, TRIGGER-SESSION-01, REFUSAL-MAP-01, TRIGGER-SCALE-01, GOV-CHECKLIST-01) |
 | 43 | TRIGGER-EVENT-01 | Before a meeting |
 | 44 | TRIGGER-MAIL-01 | New mail matching a filter |
 | 45 | TRIGGER-MORE-01 | After another workflow, webhook, new knowledge file |
