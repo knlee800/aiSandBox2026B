@@ -83,6 +83,35 @@ export const CALENDAR_TOOL: ConnectorToolDefinition = {
   },
 };
 
+/**
+ * TRIGGER-EVENT-01 S1: the gateway-only calendar window read. Only the gateway's
+ * event-trigger timer calls it, through ConnectorBroker.readCalendarWindow. It is
+ * deliberately not a ConnectorToolDefinition: it is not in connectorToolCatalog(),
+ * not found by findAllowlistedTool() and not on CONNECTOR_SERVERS, so no workflow
+ * can tick it, no grant token can name it, POST /api/internal/connectors/call
+ * refuses it and no model ever sees it.
+ */
+export const CALENDAR_WINDOW_TOOL_ID = 'calendar_list_window';
+/** A window read covers at most 3 hours (the child refuses a longer one too). */
+export const CALENDAR_WINDOW_MAX_MS = 3 * 60 * 60 * 1000;
+
+export interface InternalConnectorToolDefinition {
+  readonly id: typeof CALENDAR_WINDOW_TOOL_ID;
+  readonly kind: ConnectorKind;
+  readonly readOnly: true;
+}
+
+export const CALENDAR_WINDOW_TOOL: InternalConnectorToolDefinition = {
+  id: CALENDAR_WINDOW_TOOL_ID,
+  kind: 'ical',
+  readOnly: true,
+};
+
+/** True only for a tool the gateway calls itself and never offers. */
+export function isInternalConnectorTool(toolId: unknown): boolean {
+  return toolId === CALENDAR_WINDOW_TOOL_ID;
+}
+
 export const CONNECTOR_SERVERS = [
   {
     id: CONNECTOR_SERVER_ID,

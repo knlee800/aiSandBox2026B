@@ -28,6 +28,28 @@ export interface CalendarFeed {
   listToday(input: CalendarTodayInput): Promise<CalendarEvent[]>;
 }
 
+/**
+ * TRIGGER-EVENT-01 S1: one occurrence for the gateway's event triggers. Only the
+ * event id, the title and the two instants: no organizer, attendees, description
+ * or location.
+ */
+export interface CalendarWindowEvent {
+  uid: string;
+  title: string;
+  start: string;
+  end: string;
+}
+
+export interface CalendarWindowInput {
+  icalUrl: string;
+  from: Date;
+  to: Date;
+}
+
+export interface CalendarWindowFeed {
+  listWindow(input: CalendarWindowInput): Promise<CalendarWindowEvent[]>;
+}
+
 type ZonedParts = {
   year: number;
   month: number;
@@ -188,26 +210,38 @@ function eventFromInstance(instance: EventInstance, ownerEmail: string | undefin
   };
 }
 
-export function eventsFromIcs(ics: string, timeZone: string, now: Date, ownerEmail?: string): CalendarEvent[] {
-  const bounds = zonedDayBounds(now, timeZone);
+/**
+ * The events of a parsed feed, each with its occurrences between `from` and `to`
+ * (both inclusive): repeating events expanded, EXDATE exceptions left out and
+ * RECURRENCE-ID overrides applied. An event that cannot be expanded is skipped.
+ */
+function expandedEvents(ics: string, from: Date, to: Date): Array<{ component: VEvent; instances: EventInstance[] }> {
   const parsed = parseICS(ics);
-  const events: CalendarEvent[] = [];
+  const out: Array<{ component: VEvent; instances: EventInstance[] }> = [];
   for (const component of Object.values(parsed)) {
     if (!component || component.type !== 'VEVENT') {
       continue;
     }
-    let instances: EventInstance[] = [];
     try {
-      instances = expandRecurringEvent(component, {
-        from: bounds.start,
-        to: new Date(bounds.end.getTime() - 1),
+      const instances = expandRecurringEvent(component, {
+        from,
+        to,
         expandOngoing: true,
         excludeExdates: true,
         includeOverrides: true,
       });
+      out.push({ component, instances });
     } catch {
       continue;
     }
+  }
+  return out;
+}
+
+export function eventsFromIcs(ics: string, timeZone: string, now: Date, ownerEmail?: string): CalendarEvent[] {
+  const bounds = zonedDayBounds(now, timeZone);
+  const events: CalendarEvent[] = [];
+  for (const { instances } of expandedEvents(ics, bounds.start, new Date(bounds.end.getTime() - 1))) {
     for (const instance of instances) {
       if (!occursToday(instance, bounds)) {
         continue;
@@ -219,7 +253,68 @@ export function eventsFromIcs(ics: string, timeZone: string, now: Date, ownerEma
   return events;
 }
 
-export class IcalCalendarFeed implements CalendarFeed {
+/** TRIGGER-EVENT-01 S1: a window read covers at most 3 hours. */
+export const CALENDAR_WINDOW_MAX_MS = 3 * 60 * 60 * 1000;
+
+/** Throws unless `to` is after `from` and at most 3 hours later. */
+export function checkCalendarWindow(from: Date, to: Date): void {
+  if (!(from instanceof Date) || !(to instanceof Date) || Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+    throw new Error('from and to must be ISO times');
+  }
+  const span = to.getTime() - from.getTime();
+  if (span <= 0) {
+    throw new Error('to must be after from');
+  }
+  if (span > CALENDAR_WINDOW_MAX_MS) {
+    throw new Error('the window must be at most 3 hours');
+  }
+}
+
+function isCancelled(event: VEvent): boolean {
+  const status: unknown = event.status;
+  return typeof status === 'string' && stripControls(status).trim().toUpperCase() === 'CANCELLED';
+}
+
+/**
+ * TRIGGER-EVENT-01 S1: the timed, not-cancelled occurrences whose start is in
+ * [from, to). All-day events never count. A cancelled override cancels only its
+ * own occurrence. An event without a UID cannot be told apart, so it is skipped.
+ */
+export function windowEventsFromIcs(ics: string, from: Date, to: Date): CalendarWindowEvent[] {
+  const fromMs = from.getTime();
+  const toMs = to.getTime();
+  const events: CalendarWindowEvent[] = [];
+  for (const { component, instances } of expandedEvents(ics, from, new Date(toMs - 1))) {
+    for (const instance of instances) {
+      if (instance.isFullDay || instance.start.dateOnly === true) {
+        continue;
+      }
+      const source: VEvent = instance.event || component;
+      if (isCancelled(source)) {
+        continue;
+      }
+      const start = instance.start.getTime();
+      if (!(start >= fromMs && start < toMs)) {
+        continue;
+      }
+      const rawUid = typeof source.uid === 'string' && source.uid.length > 0 ? source.uid : component.uid;
+      const uid = typeof rawUid === 'string' ? limitText(rawUid).trim() : '';
+      if (!uid) {
+        continue;
+      }
+      events.push({
+        uid,
+        title: limitText(parameterText(instance.summary)),
+        start: instance.start.toISOString(),
+        end: instance.end.toISOString(),
+      });
+    }
+  }
+  events.sort((left, right) => left.start.localeCompare(right.start) || left.uid.localeCompare(right.uid));
+  return events;
+}
+
+export class IcalCalendarFeed implements CalendarFeed, CalendarWindowFeed {
   constructor(private readonly fetchFeed: (url: string) => Promise<Buffer> = fetchPublicHttps) {}
 
   async listToday(input: CalendarTodayInput): Promise<CalendarEvent[]> {
@@ -231,6 +326,16 @@ export class IcalCalendarFeed implements CalendarFeed {
     try {
       const body = await this.fetchFeed(input.icalUrl);
       return eventsFromIcs(body.toString('utf8'), input.timeZone, now, input.ownerEmail);
+    } catch (error) {
+      throw new Error(redact(errorText(error), [input.icalUrl]));
+    }
+  }
+
+  async listWindow(input: CalendarWindowInput): Promise<CalendarWindowEvent[]> {
+    checkCalendarWindow(input.from, input.to);
+    try {
+      const body = await this.fetchFeed(input.icalUrl);
+      return windowEventsFromIcs(body.toString('utf8'), input.from, input.to);
     } catch (error) {
       throw new Error(redact(errorText(error), [input.icalUrl]));
     }

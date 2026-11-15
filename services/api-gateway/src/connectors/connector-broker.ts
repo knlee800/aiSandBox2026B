@@ -38,6 +38,8 @@ import {
 } from './connector-rules';
 import {
   CALENDAR_TOOL,
+  CALENDAR_WINDOW_MAX_MS,
+  CALENDAR_WINDOW_TOOL,
   CONNECTOR_ARGUMENTS_MESSAGE,
   CONNECTOR_BUSY_MESSAGE,
   CONNECTOR_CALL_TIMEOUT_MS,
@@ -55,6 +57,7 @@ import {
   MAIL_TOOL,
   findAllowlistedTool,
   isFixedConnectorFailure,
+  isInternalConnectorTool,
   scrubSecrets,
 } from './connector-servers';
 
@@ -62,6 +65,8 @@ const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const SAFE_TOOL_NAME = /^[A-Za-z0-9_-]{1,64}$/;
 
 export type ConnectorAuditAction = 'connector_call' | 'connector_verify';
+/** TRIGGER-EVENT-01 S1: the gateway's own calendar window read is audited under its own action. */
+export type ConnectorAuditEvent = ConnectorAuditAction | 'connector_trigger_read';
 export type ConnectorAuditOutcome = 'ok' | 'error' | 'timeout';
 
 export interface ConnectorCallInput {
@@ -73,7 +78,7 @@ export interface ConnectorCallInput {
 }
 
 export interface ConnectorAuditPayload {
-  action: ConnectorAuditAction;
+  action: ConnectorAuditEvent;
   toolId: string;
   userId: string;
   itemCount: number;
@@ -81,6 +86,23 @@ export interface ConnectorAuditPayload {
   durationMs: number;
   outcome: ConnectorAuditOutcome;
 }
+
+/**
+ * TRIGGER-EVENT-01 S1: one timed, not-cancelled occurrence from readCalendarWindow.
+ * Held in memory by the caller only: never stored, logged or audited.
+ */
+export interface CalendarWindowEvent {
+  uid: string;
+  title: string;
+  start: string;
+  end: string;
+}
+
+const AUDIT_EVENT_TYPES: Record<ConnectorAuditEvent, string> = {
+  connector_call: 'connector.call',
+  connector_verify: 'connector.verify',
+  connector_trigger_read: 'connector.trigger_read',
+};
 
 class ConnectorTimeout extends Error {
   constructor() {
@@ -95,6 +117,8 @@ export class ConnectorBroker implements OnModuleDestroy {
   private readonly timers: ConnectorTimers;
   private readonly ignored = new Set<string>();
   private session: ConnectorMcpSession | null = null;
+  /** The tool names each child listed when it started (TRIGGER-EVENT-01 S1). */
+  private readonly sessionTools = new WeakMap<ConnectorMcpSession, ReadonlySet<string>>();
   private sessionPromise: Promise<ConnectorMcpSession> | null = null;
   private reconciled = false;
   private inFlight = 0;
@@ -201,6 +225,79 @@ export class ConnectorBroker implements OnModuleDestroy {
     }
   }
 
+  /**
+   * TRIGGER-EVENT-01 S1: the gateway's own read of the owner's calendar for event
+   * triggers, with no session, request or agent. The same connection load, decrypt,
+   * child, 25-second timeout, 64 KB result cap, in-flight limit and secret scrubbing
+   * as callConnectorTool. One content-free audit row (`connector.trigger_read`:
+   * counts, bytes, duration and outcome) per call. Returns the occurrences that
+   * start in [from, to), at most 3 hours apart. No route reaches this method.
+   */
+  async readCalendarWindow(userId: unknown, from: Date, to: Date): Promise<CalendarWindowEvent[]> {
+    const started = Date.now();
+    if (!isUserId(userId)) {
+      throw new BadRequestException(INVALID_CONNECTOR_MESSAGE);
+    }
+    const action: ConnectorAuditEvent = 'connector_trigger_read';
+    const tool = CALENDAR_WINDOW_TOOL;
+    const secrets: string[] = [];
+    let audited = false;
+    let slot = false;
+    let connectionId: string | null = null;
+    try {
+      assertConnectorCredentialsConfigured();
+      const window = readWindow(from, to);
+      const row = await this.loadConnection(userId, tool.kind);
+      connectionId = row.id;
+      const secret = decryptConnectorSecret(userId, tool.kind, row.secretCiphertext);
+      secrets.push(secret);
+      if (this.inFlight >= CONNECTOR_MAX_IN_FLIGHT) {
+        await this.writeAudit(action, userId, tool.id, connectionId, started, 'error', 0, 0);
+        audited = true;
+        throw new ServiceUnavailableException(CONNECTOR_BUSY_MESSAGE);
+      }
+      this.inFlight += 1;
+      slot = true;
+      this.clearIdle();
+      const session = await this.ensureSession();
+      if (!this.sessionTools.get(session)?.has(tool.id)) {
+        throw new ServiceUnavailableException(CONNECTOR_TOOL_MISSING_MESSAGE);
+      }
+      const raw = await this.invoke(session, tool.id, {
+        icalUrl: secret,
+        from: window.from,
+        to: window.to,
+      });
+      const read = this.readResult(raw, [secret]);
+      const events = readWindowEvents(read.value);
+      await this.writeAudit(
+        action,
+        userId,
+        tool.id,
+        connectionId,
+        started,
+        'ok',
+        events.length,
+        read.resultBytes,
+      );
+      audited = true;
+      return events;
+    } catch (error) {
+      this.logFailure(error, secrets);
+      if (isMissingKey(error)) throw error;
+      if (!audited) {
+        const outcome: ConnectorAuditOutcome = error instanceof ConnectorTimeout ? 'timeout' : 'error';
+        await this.writeAudit(action, userId, tool.id, connectionId, started, outcome, 0, 0);
+      }
+      throw this.publicError(error);
+    } finally {
+      if (slot) {
+        this.inFlight -= 1;
+        this.armIdle();
+      }
+    }
+  }
+
   private async ensureSession(): Promise<ConnectorMcpSession> {
     if (this.session && this.reconciled) return this.session;
     if (!this.sessionPromise) {
@@ -219,24 +316,27 @@ export class ConnectorBroker implements OnModuleDestroy {
         this.reconciled = false;
       }
     });
+    let names: ReadonlySet<string>;
     try {
-      await this.reconcile(session);
+      names = await this.reconcile(session);
     } catch (error) {
       await session.close().catch(() => undefined);
       throw error;
     }
+    this.sessionTools.set(session, names);
     this.session = session;
     this.reconciled = true;
     return session;
   }
 
-  private async reconcile(session: ConnectorMcpSession): Promise<void> {
+  private async reconcile(session: ConnectorMcpSession): Promise<ReadonlySet<string>> {
     const listed = await session.listTools();
     const names = new Set<string>();
     for (const tool of listed.tools || []) {
       if (!tool || typeof tool.name !== 'string' || tool.name.length === 0) continue;
       names.add(tool.name);
-      if (findAllowlistedTool(tool.name) || this.ignored.has(tool.name)) continue;
+      if (findAllowlistedTool(tool.name) || isInternalConnectorTool(tool.name)) continue;
+      if (this.ignored.has(tool.name)) continue;
       this.ignored.add(tool.name);
       if (SAFE_TOOL_NAME.test(tool.name)) {
         this.logger.warn(`ignored connector tool ${tool.name}`);
@@ -249,6 +349,7 @@ export class ConnectorBroker implements OnModuleDestroy {
         throw new ServiceUnavailableException(CONNECTOR_TOOL_MISSING_MESSAGE);
       }
     }
+    return names;
   }
 
   private invoke(
@@ -320,7 +421,7 @@ export class ConnectorBroker implements OnModuleDestroy {
   }
 
   private async writeAudit(
-    action: ConnectorAuditAction,
+    action: ConnectorAuditEvent,
     userId: string,
     toolId: string,
     connectionId: string | null,
@@ -341,7 +442,7 @@ export class ConnectorBroker implements OnModuleDestroy {
     try {
       await this.auditEvents.save({
         category: 'connector',
-        eventType: action === 'connector_call' ? 'connector.call' : 'connector.verify',
+        eventType: AUDIT_EVENT_TYPES[action],
         subjectType: 'connector_connection',
         subjectId: (connectionId ?? toolId).slice(0, 64),
         userId,
@@ -482,6 +583,56 @@ function childArguments(
     throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
   }
   return { timeZone: modelArgs.timeZone, icalUrl: secret };
+}
+
+/** TRIGGER-EVENT-01 S1: two valid instants, `to` after `from` and at most 3 hours later. */
+function readWindow(from: unknown, to: unknown): { from: string; to: string } {
+  if (!(from instanceof Date) || !(to instanceof Date)) {
+    throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+  }
+  const fromMs = from.getTime();
+  const toMs = to.getTime();
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) {
+    throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+  }
+  const span = toMs - fromMs;
+  if (span <= 0 || span > CALENDAR_WINDOW_MAX_MS) {
+    throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+  }
+  return { from: from.toISOString(), to: to.toISOString() };
+}
+
+/** Keeps exactly uid, title, start and end of each event; a result of any other shape is a failure. */
+function readWindowEvents(value: unknown): CalendarWindowEvent[] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+  }
+  const list = (value as { events?: unknown }).events;
+  if (!Array.isArray(list)) {
+    throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+  }
+  const events: CalendarWindowEvent[] = [];
+  for (const item of list) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+    }
+    const { uid, title, start, end } = item as Record<string, unknown>;
+    if (
+      typeof uid !== 'string' ||
+      uid.length === 0 ||
+      typeof title !== 'string' ||
+      !isInstantText(start) ||
+      !isInstantText(end)
+    ) {
+      throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+    }
+    events.push({ uid, title, start, end });
+  }
+  return events;
+}
+
+function isInstantText(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && Number.isFinite(Date.parse(value));
 }
 
 function toolText(raw: unknown): { text: string; isError: boolean } {

@@ -2,10 +2,11 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
-import type { CalendarFeed } from './clients/ical-feed';
+import type { CalendarFeed, CalendarWindowFeed } from './clients/ical-feed';
 import type { MailboxClient } from './clients/imap-client';
 import { errorText, redact } from './limits';
 import { calendarListToday, defaultCalendarFeed } from './tools/calendar-today';
+import { calendarListWindow, defaultCalendarWindowFeed } from './tools/calendar-window';
 import { defaultMailboxClient, mailListUnread } from './tools/mail-list-unread';
 
 export const SERVER_INSTRUCTIONS =
@@ -13,12 +14,17 @@ export const SERVER_INSTRUCTIONS =
 
 export const MAIL_TOOL_NAME = 'mail_list_unread_metadata';
 export const CALENDAR_TOOL_NAME = 'calendar_list_today';
+/** TRIGGER-EVENT-01 S1: called only by the gateway for event triggers; never offered to a model. */
+export const CALENDAR_WINDOW_TOOL_NAME = 'calendar_list_window';
 
 export const MAIL_TOOL_DESCRIPTION =
   'List unread Inbox messages for the connected mailbox: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). At most 25 messages. Does not mark messages read and does not change the mailbox.';
 
 export const CALENDAR_TOOL_DESCRIPTION =
   "List today's events from an iCalendar feed in an IANA time zone, with repeating events expanded: title, start, end, organizer, attendee count, and the owner's response status. Does not change the calendar.";
+
+export const CALENDAR_WINDOW_TOOL_DESCRIPTION =
+  'List the timed, not-cancelled events of an iCalendar feed that start in a window of at most 3 hours, with repeating events expanded: event id, title, start and end only. All-day events are left out. Does not change the calendar.';
 
 export const MAIL_INPUT_SCHEMA = {
   type: 'object',
@@ -53,9 +59,21 @@ export const CALENDAR_INPUT_SCHEMA = {
   required: ['icalUrl', 'timeZone'],
 } as const;
 
+export const CALENDAR_WINDOW_INPUT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    icalUrl: { type: 'string', minLength: 1 },
+    from: { type: 'string', minLength: 1, description: 'ISO time where the window starts (inclusive).' },
+    to: { type: 'string', minLength: 1, description: 'ISO time where the window ends (exclusive), at most 3 hours after from.' },
+  },
+  required: ['icalUrl', 'from', 'to'],
+} as const;
+
 export interface ConnectorDeps {
   mail: MailboxClient;
   calendar: CalendarFeed;
+  calendarWindow: CalendarWindowFeed;
 }
 
 function secretsIn(args: unknown): string[] {
@@ -94,6 +112,11 @@ export function createConnectorServer(deps: ConnectorDeps): Server {
         description: CALENDAR_TOOL_DESCRIPTION,
         inputSchema: CALENDAR_INPUT_SCHEMA,
       },
+      {
+        name: CALENDAR_WINDOW_TOOL_NAME,
+        description: CALENDAR_WINDOW_TOOL_DESCRIPTION,
+        inputSchema: CALENDAR_WINDOW_INPUT_SCHEMA,
+      },
     ],
   }));
 
@@ -109,6 +132,10 @@ export function createConnectorServer(deps: ConnectorDeps): Server {
         const result = await calendarListToday(deps.calendar, args);
         return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
       }
+      if (name === CALENDAR_WINDOW_TOOL_NAME) {
+        const result = await calendarListWindow(deps.calendarWindow, args);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+      }
       return toolError(new Error('unknown tool'), args);
     } catch (error) {
       return toolError(error, args);
@@ -122,6 +149,7 @@ export function defaultConnectorDeps(): ConnectorDeps {
   return {
     mail: defaultMailboxClient(),
     calendar: defaultCalendarFeed(),
+    calendarWindow: defaultCalendarWindowFeed(),
   };
 }
 
