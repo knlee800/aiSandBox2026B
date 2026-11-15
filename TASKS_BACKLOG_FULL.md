@@ -88223,13 +88223,13 @@ taskId=CHAT-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-15 — Keith said "go" after the deploy lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-LIVE-01
 **Title:** Discord live check with a real answer and an approval
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHAT-01 is locked and Keith opens a run window with a provider key he types on the host (recommended: the same window as ACCESS-01J-LIVE).
+**Start condition:** READY (Keith, 2026-11-15, "go"; the stored Anthropic test key is used, so no new key is needed). Was: NOT_READY. Ready when: STAGING-DEPLOY-CHAT-01 is locked and Keith opens a run window with a provider key he types on the host (recommended: the same window as ACCESS-01J-LIVE).
 **Depends on:** STAGING-DEPLOY-CHAT-01.
 **Primary write scope:** records; host state during the window (provider switch, GLOBAL_EXECUTION_ENABLED, key), restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held).
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
