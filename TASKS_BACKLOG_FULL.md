@@ -88965,7 +88965,7 @@ taskId=COS-EVAL-DRIFT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-15 — registered and admitted together by the control plane (GOV-OS-04) for a gate that fails on main.
+**Status:** COMPLETE AND LOCKED — 2026-11-15. LANE-DONE and LOCKED by the control plane; Lane 2 and AI-SERVICE released. The ai-service briefing drift test now reads the Team page's start code from collaboration-start.service.ts and checks that the controller delegates to it (920d1e7, sonnet subagent, fast-forwarded); ai-service 1381 passed, 0 failed, 1 skipped, build rc 0 (rerun by the control plane). The CHAT-DISCORD-01 checkpoint's ai-service pass line did not hold for main after C1; recorded here, the locked checkpoint not edited. Checkpoint: docs/COS-EVAL-DRIFT-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-15 — registered and admitted together by the control plane (GOV-OS-04) for a gate that fails on main.
 **Task ID:** COS-EVAL-DRIFT-01
 **Title:** Fix the ai-service briefing drift test after the start code moved
 **Workstream:** AGENT (taxonomy only; zero admission weight)
