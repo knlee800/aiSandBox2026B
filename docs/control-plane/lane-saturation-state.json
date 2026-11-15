@@ -9,9 +9,25 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "TRIGGER-EVENT-01",
-      "mutexes": [],
-      "writePaths": ["docs/TRIGGER-EVENT-01-STAGE-START.md"],
-      "hotfiles": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/connectors-mcp/src/clients/ical-feed.ts",
+        "services/connectors-mcp/src/server.ts",
+        "services/connectors-mcp/src/tools/calendar-window.ts",
+        "services/connectors-mcp/src/__tests__/calendar-window.spec.ts",
+        "services/connectors-mcp/src/__tests__/server.spec.ts",
+        "services/api-gateway/src/connectors/connector-servers.ts",
+        "services/api-gateway/src/connectors/connector-servers.spec.ts",
+        "services/api-gateway/src/connectors/connector-broker.ts",
+        "services/api-gateway/src/connectors/connector-broker.spec.ts"
+      ],
+      "hotfiles": [
+        "services/connectors-mcp/src/clients/ical-feed.ts",
+        "services/connectors-mcp/src/server.ts",
+        "services/connectors-mcp/src/tools/calendar-window.ts",
+        "services/connectors-mcp/src/__tests__/calendar-window.spec.ts",
+        "services/connectors-mcp/src/__tests__/server.spec.ts"
+      ],
       "i18n": false,
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
@@ -6622,9 +6638,25 @@
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
       "dependsOn": ["TRIGGER-LIVE-01"],
-      "mutexes": [],
-      "writePaths": ["docs/TRIGGER-EVENT-01-STAGE-START.md"],
-      "hotfiles": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/connectors-mcp/src/clients/ical-feed.ts",
+        "services/connectors-mcp/src/server.ts",
+        "services/connectors-mcp/src/tools/calendar-window.ts",
+        "services/connectors-mcp/src/__tests__/calendar-window.spec.ts",
+        "services/connectors-mcp/src/__tests__/server.spec.ts",
+        "services/api-gateway/src/connectors/connector-servers.ts",
+        "services/api-gateway/src/connectors/connector-servers.spec.ts",
+        "services/api-gateway/src/connectors/connector-broker.ts",
+        "services/api-gateway/src/connectors/connector-broker.spec.ts"
+      ],
+      "hotfiles": [
+        "services/connectors-mcp/src/clients/ical-feed.ts",
+        "services/connectors-mcp/src/server.ts",
+        "services/connectors-mcp/src/tools/calendar-window.ts",
+        "services/connectors-mcp/src/__tests__/calendar-window.spec.ts",
+        "services/connectors-mcp/src/__tests__/server.spec.ts"
+      ],
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],

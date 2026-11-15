@@ -88939,7 +88939,7 @@ taskId=TRIGGER-EVENT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start TRIGGER-EVENT-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 3 slice S1 (calendar window read) — 2026-11-15. Stage-start docs/TRIGGER-EVENT-01-STAGE-START.md drafted by a fable subagent (92fc178, fast-forwarded; facts checked against the code by the control plane). Keith approved it on 2026-11-15 ("Yes, approve all sixteen"): all sixteen recommendations of section 15 (the run is told the event's times only and reads the event with its own calendar tool; the first step starts without a click; every timed event or an optional title word; lead 5 to 120 minutes, default 15; 3 triggers per owner and 3 starts per trigger per day; a moved event fires again inside the day limit; own tables and /api/event-triggers; a new gateway-only calendar_list_window; reads every 10 minutes plus one before each start; every read audited without content; a new EVENT_TRIGGERS_ENABLED; no reads while runs are off; a workflow without the calendar tool allowed with a warning; English task lines; the page section is slice S4; the switch back off after the live check). /api/schedules stays as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-15 — by the control plane on Keith's "Start TRIGGER-EVENT-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-EVENT-01
 **Title:** Trigger before a calendar event
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -88947,10 +88947,10 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP
 **Start condition:** READY for Step 2 (Keith chose it, 2026-11-15, "Start TRIGGER-EVENT-01"; TRIGGER-LIVE-01 LOCKED). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
 **Depends on:** TRIGGER-LIVE-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-EVENT-01-STAGE-START.md, set 2026-11-15). Step 3: set when the stage-start is approved.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** slice S1 (set 2026-11-15): services/connectors-mcp/src/clients/ical-feed.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/tools/calendar-window.ts, services/connectors-mcp/src/__tests__/calendar-window.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts, services/api-gateway/src/connectors/connector-broker.ts, services/api-gateway/src/connectors/connector-broker.spec.ts. Slices S2, S3 and S4: stage-start section 12, set at each admission. Was: set at admission.
+**Mutexes / resources:** slice S1: GATEWAY (2026-11-15); S2: GATEWAY, MIGRATION, ENV; S3: GATEWAY; S4: FRONTEND, I18N. Was: Step 2: none (write set docs/TRIGGER-EVENT-01-STAGE-START.md, set 2026-11-15). Step 3: set when the stage-start is approved.
+**Hot-file leases:** slice S1: services/connectors-mcp/src/clients/ical-feed.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/tools/calendar-window.ts, services/connectors-mcp/src/__tests__/calendar-window.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts. Was: set at admission.
+**Shared contracts:** /api/schedules stays as frozen by TRIGGER-01 (not touched); the /api/event-triggers shapes of stage-start section 8 freeze when S2 lands; no slice edits orchestration.service.ts or ai-execution.controller.ts (HARNESS_ENTITLEMENT_PROOF_V1). Was: set at admission.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
