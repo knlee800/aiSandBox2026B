@@ -4,6 +4,8 @@ import { AuthModule } from '../auth/auth.module';
 import { ConnectorsModule } from '../connectors/connectors.module';
 import { AgentEventTrigger } from '../entities/agent-event-trigger.entity';
 import { AgentEventTriggerRun } from '../entities/agent-event-trigger-run.entity';
+import { AgentKnowledgeTrigger } from '../entities/agent-knowledge-trigger.entity';
+import { AgentKnowledgeTriggerRun } from '../entities/agent-knowledge-trigger-run.entity';
 import { AgentMailTrigger } from '../entities/agent-mail-trigger.entity';
 import { AgentMailTriggerRun } from '../entities/agent-mail-trigger-run.entity';
 import { AgentSchedule } from '../entities/agent-schedule.entity';
@@ -19,6 +21,8 @@ import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
+import { KnowledgeTriggerController } from './knowledge-trigger.controller';
+import { KnowledgeTriggerService } from './knowledge-trigger.service';
 import { MailTriggerController } from './mail-trigger.controller';
 import { MailTriggerMailbox } from './mail-trigger-mailbox';
 import { MailTriggerRunService } from './mail-trigger-run.service';
@@ -77,16 +81,24 @@ import { ScheduleTimer } from './schedule-timer';
  * pre-checks, start and first approval through the same
  * CollaborationStartService as schedules, and the skip reasons
  * (mail-trigger-reasons.ts) with their audit rows (mail-trigger-run.service.ts).
+ *
+ * TRIGGER-MORE-01 S1: knowledge triggers ("when a file is added to or
+ * replaced in this Knowledge folder"): the two tables (migration 1813), the
+ * owner's routes under /api/knowledge-triggers with their audit rows
+ * (knowledge-trigger.controller.ts, knowledge-trigger.service.ts,
+ * knowledge-trigger-validation.ts) and the KNOWLEDGE_TRIGGERS_ENABLED switch
+ * (knowledge-trigger-switch.ts). No timer, no knowledge_documents read and no
+ * run start in S1.
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
+    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
     ConnectorsModule,
     OrchestrationModule,
     SafetyModule,
   ],
-  controllers: [ScheduleController, EventTriggerController, MailTriggerController],
+  controllers: [ScheduleController, EventTriggerController, MailTriggerController, KnowledgeTriggerController],
   providers: [
     ScheduleService,
     ScheduleRunService,
@@ -99,6 +111,7 @@ import { ScheduleTimer } from './schedule-timer';
     MailTriggerMailbox,
     MailTriggerRunService,
     MailTriggerTimer,
+    KnowledgeTriggerService,
   ],
   exports: [],
 })

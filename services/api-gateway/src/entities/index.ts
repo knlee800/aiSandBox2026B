@@ -79,6 +79,13 @@ export {
 export type { AgentMailTriggerTargetKind, AgentMailTriggerMailState } from './agent-mail-trigger.entity';
 export { AgentMailTriggerRun, AGENT_MAIL_TRIGGER_RUN_OUTCOMES } from './agent-mail-trigger-run.entity';
 export type { AgentMailTriggerRunOutcome } from './agent-mail-trigger-run.entity';
+export { AgentKnowledgeTrigger, AGENT_KNOWLEDGE_TRIGGER_TARGET_KINDS } from './agent-knowledge-trigger.entity';
+export type { AgentKnowledgeTriggerTargetKind } from './agent-knowledge-trigger.entity';
+export {
+  AgentKnowledgeTriggerRun,
+  AGENT_KNOWLEDGE_TRIGGER_RUN_OUTCOMES,
+} from './agent-knowledge-trigger-run.entity';
+export type { AgentKnowledgeTriggerRunOutcome } from './agent-knowledge-trigger-run.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';

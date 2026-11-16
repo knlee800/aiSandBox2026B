@@ -28,6 +28,8 @@ import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
+import { KnowledgeTriggerController } from './knowledge-trigger.controller';
+import { KnowledgeTriggerService } from './knowledge-trigger.service';
 import { MailTriggerController } from './mail-trigger.controller';
 import { MailTriggerMailbox } from './mail-trigger-mailbox';
 import { MailTriggerRunService } from './mail-trigger-run.service';
@@ -469,7 +471,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
     it('TriggersModule wires the controller, the services, the timer and the five repositories, and the app imports it', () => {
       // TRIGGER-EVENT-01 S2: the event trigger routes and their service join the schedule parts.
       // TRIGGER-MAIL-01 S2: the mail trigger routes join them.
-      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController, MailTriggerController]);
+      // TRIGGER-MORE-01 S1: the knowledge trigger routes join them.
+      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController, MailTriggerController, KnowledgeTriggerController]);
       // TRIGGER-01 S2: the run service and the timer join the S1 service.
       expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([
         ScheduleService,
@@ -486,6 +489,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         MailTriggerMailbox,
         MailTriggerRunService,
         MailTriggerTimer,
+        // TRIGGER-MORE-01 S1: the knowledge trigger service (no timer, no document read, no run start).
+        KnowledgeTriggerService,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
@@ -493,7 +498,7 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       );
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User])',
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -520,6 +525,10 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
           'event-trigger-validation.ts',
           'event-trigger.controller.ts',
           'event-trigger.service.ts',
+          'knowledge-trigger-switch.ts',
+          'knowledge-trigger-validation.ts',
+          'knowledge-trigger.controller.ts',
+          'knowledge-trigger.service.ts',
           'mail-trigger-mailbox.ts',
           'mail-trigger-match.ts',
           'mail-trigger-reasons.ts',
@@ -544,7 +553,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       // The S1 files (and the pure S2 helpers) still have no timer, no run start and no boot hook.
       // TRIGGER-EVENT-01 S2: the event trigger files likewise (no timer, no run start in S2).
       // TRIGGER-MAIL-01 S2: the mail trigger files likewise (no timer, no run start in S2).
-      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts', 'mail-trigger-switch.ts', 'mail-trigger-validation.ts', 'mail-trigger.controller.ts', 'mail-trigger.service.ts']) {
+      // TRIGGER-MORE-01 S1: the knowledge trigger files likewise (no timer, no run start in S1).
+      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts', 'mail-trigger-switch.ts', 'mail-trigger-validation.ts', 'mail-trigger.controller.ts', 'mail-trigger.service.ts', 'knowledge-trigger-switch.ts', 'knowledge-trigger-validation.ts', 'knowledge-trigger.controller.ts', 'knowledge-trigger.service.ts']) {
         expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
       }
       // TRIGGER-01 S2: the interval and the boot hook only in the timer; start and approve only in the run service.
@@ -613,6 +623,16 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(source('mail-trigger-run.service.ts')).not.toMatch(/isMailTriggersEnabled|isEventTriggersEnabled|isSchedulesEnabled/);
       for (const name of ['mail-trigger-timer.ts', 'mail-trigger-run.service.ts', 'mail-trigger-mailbox.ts', 'mail-trigger-match.ts', 'mail-trigger-reasons.ts']) {
         expect(source(name)).not.toMatch(/EventTriggerRunService|EventTriggerCalendar|ScheduleRunService/);
+      }
+      // TRIGGER-MORE-01 S1: the knowledge files read no knowledge document and reach no broker or
+      // other run service; the knowledge flag is read once, in the service's list; the schedule,
+      // event and mail parts never reach the knowledge parts.
+      for (const name of ['knowledge-trigger-switch.ts', 'knowledge-trigger-validation.ts', 'knowledge-trigger.controller.ts', 'knowledge-trigger.service.ts']) {
+        expect(source(name)).not.toMatch(/KnowledgeDocument|knowledge_documents|KnowledgeService|ConnectorBroker|ConnectorsModule|ScheduleRunService|EventTriggerRunService|MailTriggerRunService/);
+      }
+      expect(source('knowledge-trigger.service.ts').match(/isKnowledgeTriggersEnabled\(\)/g)).toHaveLength(1);
+      for (const name of ['schedule-timer.ts', 'schedule-run.service.ts', 'event-trigger-timer.ts', 'event-trigger-run.service.ts', 'mail-trigger-timer.ts', 'mail-trigger-run.service.ts']) {
+        expect(source(name)).not.toMatch(/KnowledgeTrigger|isKnowledgeTriggersEnabled/);
       }
     });
   });
