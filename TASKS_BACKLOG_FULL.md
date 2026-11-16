@@ -84344,6 +84344,8 @@ Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F9): agent_schedules.task joins t
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F7): the privacy inventory gains agent_event_triggers.task and title_filter (owner text), agent_event_trigger_runs.event_start, unattended calendar reads as a new use of the calendar connection, and a Connections data statement sentence that the platform reads the calendar for triggers.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F6): the privacy inventory gains agent_mail_triggers.task, sender_filter and subject_filter (owner text), agent_mail_trigger_runs.arrived_at, unattended mailbox sign-ins as a new use of the mail connection, and a Connections data statement sentence that the platform signs in to the mailbox for triggers.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -87622,6 +87624,8 @@ nature=IMPLEMENTATION
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F12): Google's API gives event ids, change times and push; revisit the event triggers' 10-minute iCal read then.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F10): Gmail's API gives history ids and push; revisit the mail triggers' 10-minute sign-in then.
+
 ### CONN-03 — Mail body reads after the injection eval
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CONN-03
@@ -88368,6 +88372,8 @@ Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F1, Keith's Q8): include schedule
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F6): include event-trigger runs.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs.
+
 ### CHAT-SERVICE-SPLIT-01 — Move the chat transport to its own service
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-SERVICE-SPLIT-01
@@ -88718,6 +88724,8 @@ nature=IMPLEMENTATION
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F5): include event-trigger runs.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs.
+
 ### TRIGGER-ORIGIN-01 — Show "started by a schedule" on Results and the Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-ORIGIN-01
@@ -88743,6 +88751,8 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-01 (stage-start F3): a field on the Results route and a label so the owner can tell scheduled runs from page runs; until then the Schedules page links each last run.
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F5): include event-trigger runs ("started before a meeting").
+
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs ("started by new mail").
 
 ### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88794,6 +88804,8 @@ nature=IMPLEMENTATION
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F10): event triggers import scheduleRefusalOf, a third user of the mapper.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers import scheduleRefusalOf, a fourth user of the mapper.
+
 ### TRIGGER-SCALE-01 — A stored next-due time for schedules
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-SCALE-01
@@ -88820,6 +88832,8 @@ nature=IMPLEMENTATION
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F9): event-trigger calendar reads write 144 content-free connector.trigger_read audit rows a day per owner with a trigger on; a roll-up or prune before more users.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F8): mail-trigger sign-ins add another 144 content-free connector.trigger_read rows a day per owner with a trigger on; the roll-up or prune covers both.
+
 ### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-CHECKLIST-01
@@ -88838,6 +88852,8 @@ nature=GOVERNANCE
 **Scope:** From TRIGGER-01 (stage-start F5 and F11): (1) a line that a tester window or run window never sets SCHEDULES_ENABLED unless a registered task holding ENV does; (2) MIGRATION item 1 names grok-4.7-xhigh for Cursor and opus for a Claude subagent, as Model Routing says. CLAUDE.md wins on conflict; no CLAUDE.md change.
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F8): the switch line names EVENT_TRIGGERS_ENABLED as well as SCHEDULES_ENABLED.
+
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F7): the switch line also names MAIL_TRIGGERS_ENABLED.
 
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88892,6 +88908,8 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-UI-01: the page reads the last run once and does not refresh it while open (for example on focus or on a timer); where Intl.supportedValuesOf is missing the time-zone field has no list of zones.
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, slice S4): the workflow list the Schedules page loads has no tool list, so the Before a meeting section shows its calendar-tool warning for every workflow; make it specific (needs the list to say whether a workflow has the calendar tool), and a Command Center link or card for event triggers.
+
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16): a native-speaker review of the zh-TW and zh-CN wording of the three trigger sections (the mail section's Chinese was written by the S4 worker).
 
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89123,6 +89141,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-EVENT-01 (slices S2 and S3): three private copies of the errorName, isUniqueViolation and localDateText helpers (schedule-run.service.ts, event-trigger-run.service.ts, event-trigger-calendar.ts); the names of two tests in schedule.controller.spec.ts ('the five repositories', 'live only in the S2 files') are out of date.
 
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers add further copies of the private helpers, the pinning spec's test names drift further, and the mail and event sections of the Schedules page duplicate about 1,000 lines that a shared trigger-section base could remove.
+
 ### COS-EVAL-DRIFT-01 — Fix the ai-service briefing drift test after the start code moved
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-DRIFT-01
@@ -89153,7 +89173,7 @@ taskId=TRIGGER-MAIL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice S4 (the page section) — 2026-11-16. Slice S3 landed on main as 822e530 (opus subagent, fast-forwarded): its own 60-second mail timer (silent while MAIL_TRIGGERS_ENABLED is off), a mailbox sign-in per owner every 10 minutes and hourly after three failures, no sign-in while runs are off or without a mail connection, the sender and subject match, the 60-minute and armed_at rules, a claim on the SHA-256 of trigger id, UIDVALIDITY and UID, the day limit of 5 and the row cap, the schedule pre-checks, starts as the owner with the saved task plus the arrival time and the message number only, the first step approved as the owner, state written to all the owner's triggers, audit rows with ids and codes only; the control plane read the task text and reran the gates (gateway 5770 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S3 (timer, mailbox reads, match, claim, start, skip) — 2026-11-16. Slice S2 landed on main as eb5f2d6 (opus subagent, fast-forwarded): migration 1812 (agent_mail_triggers with a required sender filter, agent_mail_trigger_runs unique on trigger and message_key), the two entities, the /api/mail-triggers routes (browser session, harness access, owner-scoped, 3 per owner under its own lock, armed_at), MAIL_TRIGGERS_ENABLED (default false) and its env template line; audit rows with ids and the target kind only; the sender is stored lower-cased and trimmed; the control plane reran the gates (gateway 5621 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The /api/mail-triggers shapes as built are frozen for S4. The worker's first attempt at the env template line was a shell append that the permission check refused; it made the same in-scope two-line change with the Edit tool, which the control plane reports to Keith. Was: ADMITTED — Lane 1 — Step 3 slice S2 (tables, service, routes, switch) — 2026-11-16. Slice S1 landed on main as aa581dd (opus subagent, fast-forwarded): the gateway-only mail_list_recent tool in connectors-mcp (EXAMINE INBOX read-only, UID SEARCH UNSEEN SINCE, UID FETCH of UID, ENVELOPE and INTERNALDATE only; returns uidValidity and, per message, uid, fromAddress, subject, arrivedAt; at most 25, newest first; no body; never sets Seen) and ConnectorBroker.readRecentMail with one content-free connector.trigger_read audit row; the tool is not in the catalogue, the allowlist, any grant or the internal route; mail_list_unread_metadata unchanged byte for byte; the control plane read the read path and reran the gates (connectors-mcp 103 of 103, build rc 0; gateway 5350 passed, 7 skipped, the 14 known smoke.integration failures only, build rc 0). The shape follows the approved stage-start (the S1 brief had named other field names and 50; the stage-start's 25 and names stand). The seven connectors-mcp HOTFILE leases released. Was: ADMITTED — Lane 1 — Step 3 slice S1 (recent-mail read) — 2026-11-16. Stage-start docs/TRIGGER-MAIL-01-STAGE-START.md drafted by a fable subagent (511b34c, fast-forwarded; facts checked against the code by the control plane, including that a read-only run never gets the browser tool). Keith approved it on 2026-11-16 ("Yes, approve all"): all sixteen recommendations of section 15 (the run is told the arrival time and the message number only; the first step starts without a click; a sender is required and a subject word optional; unread Inbox mail only; up to 60 minutes late, older mail ignored; one run per message within the day limit; 3 triggers per owner and 5 starts per trigger per day; own tables and /api/mail-triggers; a new gateway-only mail_list_recent read with no body; a sign-in every 10 minutes, hourly after three failures; a workflow without the mail tool allowed with a warning; every read audited without content; a new MAIL_TRIGGERS_ENABLED; no sign-in while runs are off; the page section is slice S4; the switch back off after the live check). /api/schedules and /api/event-triggers stay as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MAIL-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. LANE-DONE and LOCKED by the control plane; Lane 1 and every mutex released. Mail triggers are built (not deployed): S1 (aa581dd) the gateway-only read-only mail_list_recent and ConnectorBroker.readRecentMail; S2 (eb5f2d6) migration 1812, the /api/mail-triggers routes (browser session, harness access, owner-scoped, 3 per owner, a required sender filter) and MAIL_TRIGGERS_ENABLED (default false); S3 (822e530) its own timer, a mailbox sign-in per owner every 10 minutes and hourly after three failures and none while runs are off, the sender and subject match, once-per-message claims, the day limit of 5 and the row cap, starts as the owner with the saved task, the arrival time and the message number only, first step approved as the owner; S4 (a11e010, d696c66) the When mail arrives section on the Schedules page in en, zh-TW and zh-CN. Models: opus for S1 to S3, sonnet for S4. Control-plane gates: gateway 5770 passed, 7 skipped, the 14 known smoke.integration failures; connectors-mcp 103 of 103; frontend tsc rc 0, 2060 of 2060, build rc 0. No sender, subject, body, UID, task or filter text in audit rows or logs; mail is never marked read. Checkpoint: docs/TRIGGER-MAIL-01-CHECKPOINT.md. FOLLOWUPS: 5 registered (STAGING-DEPLOY-MAIL-01; TRIGGER-MAIL-LIVE-01; CONN-MAIL-READ-01; COS-MAIL-BODY-RULE-01; CONN-MAIL-AUTH-STATE-01) / 13 superseded (F5 by TRIGGER-WAIT-NOTICE-01, TRIGGER-ORIGIN-01 and CHAT-RESULTS-OTHER-01; F6 by ACCESS-READY-01; F7 by GOV-CHECKLIST-01; F8 by TRIGGER-SCALE-01; F9 by REFUSAL-MAP-01 and TRIGGER-TIDY-01; F10 by CONN-OAUTH-01 and CONN-OUTLOOK-01; F11 by this record; F12 by TRIGGER-MORE-01; F13 by the control plane's check; the S1 shape by S1; the S2 sender hint by S4; the S4 Chinese review by TRIGGER-UI-POLISH-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice S4 (the page section) — 2026-11-16. Slice S3 landed on main as 822e530 (opus subagent, fast-forwarded): its own 60-second mail timer (silent while MAIL_TRIGGERS_ENABLED is off), a mailbox sign-in per owner every 10 minutes and hourly after three failures, no sign-in while runs are off or without a mail connection, the sender and subject match, the 60-minute and armed_at rules, a claim on the SHA-256 of trigger id, UIDVALIDITY and UID, the day limit of 5 and the row cap, the schedule pre-checks, starts as the owner with the saved task plus the arrival time and the message number only, the first step approved as the owner, state written to all the owner's triggers, audit rows with ids and codes only; the control plane read the task text and reran the gates (gateway 5770 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S3 (timer, mailbox reads, match, claim, start, skip) — 2026-11-16. Slice S2 landed on main as eb5f2d6 (opus subagent, fast-forwarded): migration 1812 (agent_mail_triggers with a required sender filter, agent_mail_trigger_runs unique on trigger and message_key), the two entities, the /api/mail-triggers routes (browser session, harness access, owner-scoped, 3 per owner under its own lock, armed_at), MAIL_TRIGGERS_ENABLED (default false) and its env template line; audit rows with ids and the target kind only; the sender is stored lower-cased and trimmed; the control plane reran the gates (gateway 5621 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The /api/mail-triggers shapes as built are frozen for S4. The worker's first attempt at the env template line was a shell append that the permission check refused; it made the same in-scope two-line change with the Edit tool, which the control plane reports to Keith. Was: ADMITTED — Lane 1 — Step 3 slice S2 (tables, service, routes, switch) — 2026-11-16. Slice S1 landed on main as aa581dd (opus subagent, fast-forwarded): the gateway-only mail_list_recent tool in connectors-mcp (EXAMINE INBOX read-only, UID SEARCH UNSEEN SINCE, UID FETCH of UID, ENVELOPE and INTERNALDATE only; returns uidValidity and, per message, uid, fromAddress, subject, arrivedAt; at most 25, newest first; no body; never sets Seen) and ConnectorBroker.readRecentMail with one content-free connector.trigger_read audit row; the tool is not in the catalogue, the allowlist, any grant or the internal route; mail_list_unread_metadata unchanged byte for byte; the control plane read the read path and reran the gates (connectors-mcp 103 of 103, build rc 0; gateway 5350 passed, 7 skipped, the 14 known smoke.integration failures only, build rc 0). The shape follows the approved stage-start (the S1 brief had named other field names and 50; the stage-start's 25 and names stand). The seven connectors-mcp HOTFILE leases released. Was: ADMITTED — Lane 1 — Step 3 slice S1 (recent-mail read) — 2026-11-16. Stage-start docs/TRIGGER-MAIL-01-STAGE-START.md drafted by a fable subagent (511b34c, fast-forwarded; facts checked against the code by the control plane, including that a read-only run never gets the browser tool). Keith approved it on 2026-11-16 ("Yes, approve all"): all sixteen recommendations of section 15 (the run is told the arrival time and the message number only; the first step starts without a click; a sender is required and a subject word optional; unread Inbox mail only; up to 60 minutes late, older mail ignored; one run per message within the day limit; 3 triggers per owner and 5 starts per trigger per day; own tables and /api/mail-triggers; a new gateway-only mail_list_recent read with no body; a sign-in every 10 minutes, hourly after three failures; a workflow without the mail tool allowed with a warning; every read audited without content; a new MAIL_TRIGGERS_ENABLED; no sign-in while runs are off; the page section is slice S4; the switch back off after the live check). /api/schedules and /api/event-triggers stay as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MAIL-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-MAIL-01
 **Title:** Trigger on mail that matches a filter
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89174,6 +89194,126 @@ nature=IMPLEMENTATION
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F11): reuse the event-trigger read, memory copy, claim and state shape; the read cost measured in TRIGGER-EVENT-LIVE-01 feeds this task's ready condition.
+
+### STAGING-DEPLOY-MAIL-01 — Deploy mail triggers and check the page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-MAIL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-MAIL-01
+**Title:** Deploy mail triggers and check the page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** TRIGGER-MAIL-01.
+**Primary write scope:** records; host state (deploy; gateway.env gains MAIL_TRIGGERS_ENABLED=false, a new baseline).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (mail triggers are not current until TRIGGER-MAIL-LIVE-01).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-MAIL-01 (stage-start section 13, F1): deploy main with migration 1812 after the backup and the connectors-mcp build with mail_list_recent; the earlier deploy checks; MAIL_TRIGGERS_ENABLED=false added to gateway.env (a new baseline); the gateway boots; Keith creates, edits, switches and deletes a trigger in the When mail arrives section (two languages, phone width) and sees the banners and his mailbox state; the host confirms the rows and audit rows hold no task, sender or subject text and that no connector.trigger_read row appears. Runs stay off; no credits.
+
+### TRIGGER-MAIL-LIVE-01 — Live mail-trigger check and the mail-trigger wording
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-MAIL-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Task ID:** TRIGGER-MAIL-LIVE-01
+**Title:** Live mail-trigger check and the mail-trigger wording
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-MAIL-01 is locked, Keith's mailbox is connected on staging and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-MAIL-01.
+**Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held in the LOCK record).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (mail triggers are not current until TRIGGER-MAIL-LIVE-01).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-MAIL-01 (stage-start section 13, F1): in a phased run window with the stored Anthropic test key and write tools off: MAIL_TRIGGERS_ENABLED on with runs off signs in to nothing; a test mail from a named sender with a marker word starts one read-only run, first step approved by the owner, the mail stays unread, Results unread +1; a gateway restart makes no second run; mail from another sender or without the subject word makes no row; the day limit and the daily cap skips; the marker absent from logs, audit and both tables; sign-in count, duration and credits recorded (the first mail-read cost measure); everything restored byte for byte. The LOCK lands the PRD.md and ARCHITECTURE.md wording of stage-start section 14 in Keith's words, holding GOVERNANCE. Lesson from TRIGGER-EVENT-LIVE-01: confirm first which account the staging connection reads.
+
+### CONN-MAIL-READ-01 — An agent mail tool that reads one message by its number
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-MAIL-READ-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Task ID:** CONN-MAIL-READ-01
+**Title:** An agent mail tool that reads one message by its number
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-MAIL-01.
+**Primary write scope:** PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/ai-service/src/agent-harness/tools/.
+**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected; connectors-mcp HOTFILE leases).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MAIL-01 (stage-start D7, F2): a mail-triggered run is told the message number, but the agent's mail tool lists only the 25 newest unread; if the owner opens the message or 25 newer unread arrive first, the agent cannot find it. A read-only agent tool that reads one message by its number, read or not.
+
+### COS-MAIL-BODY-RULE-01 — Mail bodies in the Chief of Staff's data rule, with an eval case
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-MAIL-BODY-RULE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Task ID:** COS-MAIL-BODY-RULE-01
+**Title:** Mail bodies in the Chief of Staff's data rule, with an eval case
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides; before mail triggers are switched on for real use.
+**Depends on:** TRIGGER-MAIL-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/system-agents/system-agent-registry.ts, its spec, services/ai-service/src/agent-harness/eval/.
+**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MAIL-01 (stage-start P5, F3): the Chief of Staff's instructions say mail senders, subjects and event titles are data, never instructions, but do not name mail bodies, which the mail tool has returned since CONN-03; name bodies too (this changes the Chief of Staff's version hash and its eval copy), and add an eval case for a mail-triggered run whose mail carries a planted instruction.
+
+### CONN-MAIL-AUTH-STATE-01 — A distinct sign-in-refused state for the mailbox
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-MAIL-AUTH-STATE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Task ID:** CONN-MAIL-AUTH-STATE-01
+**Title:** A distinct sign-in-refused state for the mailbox
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-MAIL-01.
+**Primary write scope:** PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/api-gateway/src/triggers/, frontend/components/schedules/, frontend/components/connections/, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MAIL-01 (stage-start P6, F4): the broker maps every child failure to one fixed message, so a revoked app password looks like any read failure; the mail triggers only slow to hourly. A fixed message for an authentication failure, so the page can say reconnect your mailbox and the timer can stop signing in until the owner reconnects.
 
 ### TRIGGER-MORE-01 — Later triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89200,6 +89340,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Later triggers (F6): after another workflow, a webhook, or a new knowledge file.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F12): later mail filters if wanted: several senders in one trigger, To or Cc, a Gmail label or another folder.
 
 ### SKILL-01 — Reusable saved step
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89330,6 +89472,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Outlook.com by Microsoft sign-in (G6), after the platform's Google app is verified and Connect Google exists.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F10): mail triggers for Outlook follow that connection.
 
 ### BRIEF-WIDE-01 — Wider briefing after the cost is known
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
