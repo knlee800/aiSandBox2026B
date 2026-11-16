@@ -23,6 +23,8 @@ import { AuthModule } from '../auth/auth.module';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
 import { ConnectorsModule } from '../connectors/connectors.module';
+import { ChainTriggerController } from './chain-trigger.controller';
+import { ChainTriggerService } from './chain-trigger.service';
 import { EventTriggerCalendar } from './event-trigger-calendar';
 import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
@@ -474,7 +476,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       // TRIGGER-EVENT-01 S2: the event trigger routes and their service join the schedule parts.
       // TRIGGER-MAIL-01 S2: the mail trigger routes join them.
       // TRIGGER-MORE-01 S1: the knowledge trigger routes join them.
-      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController, MailTriggerController, KnowledgeTriggerController]);
+      // TRIGGER-CHAIN-01 S1: the chain trigger routes join them.
+      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController, MailTriggerController, KnowledgeTriggerController, ChainTriggerController]);
       // TRIGGER-01 S2: the run service and the timer join the S1 service.
       expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([
         ScheduleService,
@@ -496,6 +499,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         // TRIGGER-MORE-01 S2: the knowledge run service (document read, batch, claim, start) and the knowledge timer.
         KnowledgeTriggerRunService,
         KnowledgeTriggerTimer,
+        // TRIGGER-CHAIN-01 S1: the chain trigger service (no timer, no run read, no run start).
+        ChainTriggerService,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
@@ -504,7 +509,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
         // TRIGGER-MORE-01 S2: KnowledgeDocument, read by the knowledge run service only (five columns).
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User])',
+        // TRIGGER-CHAIN-01 S1: the two chain trigger tables.
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AgentChainTrigger, AgentChainTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -522,6 +528,10 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       const files = readdirSync(__dirname).filter((name) => name.endsWith('.ts') && !name.endsWith('.spec.ts'));
       expect(files.sort()).toEqual(
         [
+          'chain-trigger-switch.ts',
+          'chain-trigger-validation.ts',
+          'chain-trigger.controller.ts',
+          'chain-trigger.service.ts',
           'event-trigger-calendar.ts',
           'event-trigger-due.ts',
           'event-trigger-reasons.ts',
@@ -564,7 +574,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       // TRIGGER-EVENT-01 S2: the event trigger files likewise (no timer, no run start in S2).
       // TRIGGER-MAIL-01 S2: the mail trigger files likewise (no timer, no run start in S2).
       // TRIGGER-MORE-01 S1: the knowledge trigger files likewise (no timer, no run start in S1).
-      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts', 'mail-trigger-switch.ts', 'mail-trigger-validation.ts', 'mail-trigger.controller.ts', 'mail-trigger.service.ts', 'knowledge-trigger-switch.ts', 'knowledge-trigger-validation.ts', 'knowledge-trigger.controller.ts', 'knowledge-trigger.service.ts']) {
+      // TRIGGER-CHAIN-01 S1: the chain trigger files likewise (no timer, no run start in S1).
+      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts', 'mail-trigger-switch.ts', 'mail-trigger-validation.ts', 'mail-trigger.controller.ts', 'mail-trigger.service.ts', 'knowledge-trigger-switch.ts', 'knowledge-trigger-validation.ts', 'knowledge-trigger.controller.ts', 'knowledge-trigger.service.ts', 'chain-trigger-switch.ts', 'chain-trigger-validation.ts', 'chain-trigger.controller.ts', 'chain-trigger.service.ts']) {
         expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
       }
       // TRIGGER-01 S2: the interval and the boot hook only in the timer; start and approve only in the run service.
@@ -664,6 +675,15 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(source('knowledge-trigger-run.service.ts')).not.toMatch(/isMailTriggersEnabled|isEventTriggersEnabled|isSchedulesEnabled/);
       for (const name of ['knowledge-trigger-timer.ts', 'knowledge-trigger-run.service.ts', 'knowledge-trigger-match.ts', 'knowledge-trigger-reasons.ts']) {
         expect(source(name)).not.toMatch(/ScheduleRunService|EventTriggerRunService|EventTriggerCalendar|MailTriggerRunService|MailTriggerMailbox/);
+      }
+      // TRIGGER-CHAIN-01 S1: the chain files read no run and reach no other trigger type's run
+      // parts; the chain flag is read once, in the service's list; no other part reaches them.
+      for (const name of ['chain-trigger-switch.ts', 'chain-trigger-validation.ts', 'chain-trigger.controller.ts', 'chain-trigger.service.ts']) {
+        expect(source(name)).not.toMatch(/CollaborationRunEntity|CollaborationReferral|collaboration_runs|collaboration_referrals|ConnectorBroker|ConnectorsModule|ScheduleRunService|EventTriggerRunService|MailTriggerRunService|KnowledgeTriggerRunService/);
+      }
+      expect(source('chain-trigger.service.ts').match(/isChainTriggersEnabled\(\)/g)).toHaveLength(1);
+      for (const name of ['schedule-timer.ts', 'schedule-run.service.ts', 'event-trigger-timer.ts', 'event-trigger-run.service.ts', 'mail-trigger-timer.ts', 'mail-trigger-run.service.ts', 'knowledge-trigger-timer.ts', 'knowledge-trigger-run.service.ts']) {
+        expect(source(name)).not.toMatch(/ChainTrigger|isChainTriggersEnabled/);
       }
       for (const name of readdirSync(__dirname).filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))) {
         if (name === 'knowledge-trigger-run.service.ts' || name === 'triggers.module.ts') continue;

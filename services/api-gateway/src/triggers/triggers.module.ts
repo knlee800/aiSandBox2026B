@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { ConnectorsModule } from '../connectors/connectors.module';
+import { AgentChainTrigger } from '../entities/agent-chain-trigger.entity';
+import { AgentChainTriggerRun } from '../entities/agent-chain-trigger-run.entity';
 import { AgentEventTrigger } from '../entities/agent-event-trigger.entity';
 import { AgentEventTriggerRun } from '../entities/agent-event-trigger-run.entity';
 import { AgentKnowledgeTrigger } from '../entities/agent-knowledge-trigger.entity';
@@ -17,6 +19,8 @@ import { User } from '../entities/user.entity';
 import { UserAgent } from '../entities/user-agent.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
+import { ChainTriggerController } from './chain-trigger.controller';
+import { ChainTriggerService } from './chain-trigger.service';
 import { EventTriggerCalendar } from './event-trigger-calendar';
 import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
@@ -103,16 +107,24 @@ import { ScheduleTimer } from './schedule-timer';
  * CollaborationStartService as schedules, and the skip reasons
  * (knowledge-trigger-reasons.ts) with their audit rows
  * (knowledge-trigger-run.service.ts).
+ *
+ * TRIGGER-CHAIN-01 S1: chain triggers ("when one of my workflows completes a
+ * run"): the two tables (migration 1814), the owner's routes under
+ * /api/chain-triggers with their audit rows, the same-workflow and save-time
+ * cycle refusals (chain-trigger.controller.ts, chain-trigger.service.ts,
+ * chain-trigger-validation.ts) and the CHAIN_TRIGGERS_ENABLED switch
+ * (chain-trigger-switch.ts). No timer, no collaboration_runs read and no run
+ * start in S1.
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User]),
+    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AgentChainTrigger, AgentChainTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
     ConnectorsModule,
     OrchestrationModule,
     SafetyModule,
   ],
-  controllers: [ScheduleController, EventTriggerController, MailTriggerController, KnowledgeTriggerController],
+  controllers: [ScheduleController, EventTriggerController, MailTriggerController, KnowledgeTriggerController, ChainTriggerController],
   providers: [
     ScheduleService,
     ScheduleRunService,
@@ -128,6 +140,7 @@ import { ScheduleTimer } from './schedule-timer';
     KnowledgeTriggerService,
     KnowledgeTriggerRunService,
     KnowledgeTriggerTimer,
+    ChainTriggerService,
   ],
   exports: [],
 })
