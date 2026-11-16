@@ -9,8 +9,14 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "RESULT-TOOL-01",
-      "mutexes": [],
-      "writePaths": ["docs/RESULT-TOOL-01-STAGE-START.md"],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/orchestration/collaboration-results.ts",
+        "services/api-gateway/src/orchestration/collaboration-results.spec.ts",
+        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.ts",
+        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.spec.ts",
+        "services/api-gateway/src/orchestration/orchestration.module.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "evidenceClass": "LOCAL-TESTS",
@@ -7096,8 +7102,14 @@
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
       "dependsOn": ["TRIGGER-MORE-01"],
-      "mutexes": [],
-      "writePaths": ["docs/RESULT-TOOL-01-STAGE-START.md"],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/orchestration/collaboration-results.ts",
+        "services/api-gateway/src/orchestration/collaboration-results.spec.ts",
+        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.ts",
+        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.spec.ts",
+        "services/api-gateway/src/orchestration/orchestration.module.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
