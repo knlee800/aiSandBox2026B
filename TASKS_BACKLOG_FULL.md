@@ -84346,6 +84346,8 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F7): the privacy inventory gains agent_
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F6): the privacy inventory gains agent_mail_triggers.task, sender_filter and subject_filter (owner text), agent_mail_trigger_runs.arrived_at, unattended mailbox sign-ins as a new use of the mail connection, and a Connections data statement sentence that the platform signs in to the mailbox for triggers.
 
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F7 and F13): the privacy inventory gains agent_knowledge_triggers.task and agent_knowledge_trigger_runs.document_id and changed_at; the knowledge route accepts an API key, so a script holding the owner's key can start runs through a knowledge trigger (bounded by the day limit); and review the per-user daily cap (default 500 credits) before several trigger types are switched on together: the three live types can already spend 348 to 551 credits a day at their limits, all six 888 to 1,406.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -87091,6 +87093,8 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** The plan's owner-named knowledge folders (for example hr-payroll; docs/AGENT-OPS-PLAN.md:194): a per-owner folders table, the worker's scope check accepting the owner's own folder ids, the Knowledge page creating and naming folders, and workflows ticking them. v1 (BIZ-USER-01A) uses the nine fixed catalogue folders, which already hold only the owner's documents. Also (BIZ-USER-01B, 2026-11-10): the options route carries each folder's display name, since the editor shows folder names from the fixed knowledge.scopes.* keys today.
 
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F5): when owner-named folders exist, knowledge triggers accept them (the scope_id CHECK is length only; the routes enforce the nine fixed ids today).
+
 ### BIZ-USER-01B — Create Agent editor for user workflows
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=BIZ-USER-01B
@@ -88726,6 +88730,8 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F5): include event-trigger runs.
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs.
 
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs.
+
 ### TRIGGER-ORIGIN-01 — Show "started by a schedule" on Results and the Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-ORIGIN-01
@@ -88753,6 +88759,8 @@ nature=IMPLEMENTATION
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F5): include event-trigger runs ("started before a meeting").
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs ("started by new mail").
+
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs ("started by a new file").
 
 ### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88806,6 +88814,8 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F10): event triggers import scheduleRef
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers import scheduleRefusalOf, a fourth user of the mapper.
 
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F10): knowledge triggers import scheduleRefusalOf, a fifth user of the mapper.
+
 ### TRIGGER-SCALE-01 — A stored next-due time for schedules
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-SCALE-01
@@ -88836,6 +88846,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F8): mail-trigger sign-ins add another 1
 
 Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the mail-trigger sign-in pace lives in gateway memory per owner and is forgotten when none of the owner's triggers is enabled (MailTriggerMailbox.forgetOthers) and at a gateway restart, so switching an owner's only trigger off and on signs in to the mailbox at the next tick (seen live at 06:57 UTC, eight minutes after the previous read). Acceptance: switching triggers off and on, or restarts, cannot make one owner's mailbox sign-ins more frequent than the 10-minute pace (for example a persisted last-read time), with a test.
 
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F11): the knowledge timer also reads all enabled triggers each tick, and one knowledge_documents query a minute for their owners.
+
 ### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-CHECKLIST-01
@@ -88856,6 +88868,8 @@ nature=GOVERNANCE
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F8): the switch line names EVENT_TRIGGERS_ENABLED as well as SCHEDULES_ENABLED.
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F7): the switch line also names MAIL_TRIGGERS_ENABLED.
+
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F8): the switch line also names KNOWLEDGE_TRIGGERS_ENABLED.
 
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88912,6 +88926,8 @@ nature=IMPLEMENTATION
 Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, slice S4): the workflow list the Schedules page loads has no tool list, so the Before a meeting section shows its calendar-tool warning for every workflow; make it specific (needs the list to say whether a workflow has the calendar tool), and a Command Center link or card for event triggers.
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16): a native-speaker review of the zh-TW and zh-CN wording of the three trigger sections (the mail section's Chinese was written by the S4 worker).
+
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16): the knowledge section's history could show the document count per batch if Keith wants it; gate hover effects behind (hover: hover) across the four Schedules sections; and a native-speaker review of the knowledge section's zh-TW and zh-CN wording (written by the S3 worker).
 
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89145,6 +89161,8 @@ nature=IMPLEMENTATION
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers add further copies of the private helpers, the pinning spec's test names drift further, and the mail and event sections of the Schedules page duplicate about 1,000 lines that a shared trigger-section base could remove.
 
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F10): knowledge triggers copy the private helpers and the in-memory test store a fourth time, add a fourth near-identical Schedules page section, and the pinning spec now names four trigger types.
+
 ### COS-EVAL-DRIFT-01 — Fix the ai-service briefing drift test after the start code moved
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-DRIFT-01
@@ -89327,7 +89345,7 @@ taskId=TRIGGER-MORE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice S3 (the page section) — 2026-11-16. Slice S2 landed on main as d60331e (opus subagent, fast-forwarded): its own 60-second knowledge timer (silent while KNOWLEDGE_TRIGGERS_ENABLED is off), nothing read or recorded while runs are off, one read of knowledge_documents a tick selecting id, owner, folder, content hash and change time only (never a title or content; asserted), the armed_at and 60-minute rules compared in code, one run per batch (2 quiet minutes, at most 10 minutes and 10 documents, oldest first), a claim per document version on the SHA-256 of trigger id, document id and content hash, the day limit of 5 and the 50-row cap, the schedule pre-checks, starts as the owner with the saved task plus the folder id, the local time and the document ids only, the first step approved as the owner, audit rows with ids, the folder, a document count and codes only; the control plane read the read, batch and task code and reran the gates (gateway 6117 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S2 (timer, document read, match, batch, claim, start, skip) — 2026-11-16. Slice S1 landed on main as 7f50509 (opus subagent, fast-forwarded): migration 1813 (agent_knowledge_triggers with one folder id per trigger, agent_knowledge_trigger_runs unique on trigger and document_key), the two entities, the /api/knowledge-triggers routes (browser session, harness access, owner-scoped, 3 per owner under its own lock namespace 1813, armed_at at create, switch-on and folder or zone change), KNOWLEDGE_TRIGGERS_ENABLED (default off) and its env template line; the Chief of Staff's readable folders imported from the system-agent registry, the nine folder ids from knowledge-scopes.ts; audit rows with ids, the target kind and the folder id only; the control plane read the diff and reran the gates (gateway 5995 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The /api/knowledge-triggers shapes as built are frozen for S3 (the history row carries the owner's own documentId; the folder CHECK is length only, the routes enforce the nine ids; knowledge_trigger_invalid_folder added beside knowledge_trigger_folder_not_readable). Was: ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-16. Stage-start docs/TRIGGER-MORE-01-STAGE-START.md drafted by a fable subagent (bcdcb93, fast-forwarded; its main facts checked against the code by the control plane: runs settle lazily with no finished event, knowledge has one upsert write path and TIMESTAMP columns without a zone, the knowledge route accepts an API key, no agent tool reads another run's result). Keith approved it on 2026-11-16 ("Yes, approve all"): all sixteen recommendations of section 11 (split the three triggers; the knowledge-file trigger first in this task's Step 3; TRIGGER-CHAIN-01 later with a new read-only result tool and completed runs only; TRIGGER-WEBHOOK-01 last, nothing from the request in the task, not on staging before the beta decision; knowledge: one run per batch, new or replaced content, the folder, time and document ids only, the first step without a click, 3 triggers per owner and 5 starts per trigger per day, a folder the Chief of Staff cannot read refused and a warning for a workflow, a new KNOWLEDGE_TRIGGERS_ENABLED, nothing read or recorded while runs are off, the page section as slice S3, the switch back off after the live check). The tasks the split names are registered at this task's LOCK. /api/schedules, /api/event-triggers and /api/mail-triggers stay as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MORE-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. LANE-DONE and LOCKED by the control plane; Lane 1 and every mutex released. Knowledge triggers are built (not deployed); the chain and webhook triggers are split into their own registered tasks (Keith's Q1, Q2). S1 (7f50509) migration 1813, the /api/knowledge-triggers routes (browser session, harness access, owner-scoped, 3 per owner, one of the nine folders, a Chief of Staff trigger only on a folder it can read) and KNOWLEDGE_TRIGGERS_ENABLED (default false); S2 (d60331e) its own timer, nothing read while runs are off, one read of knowledge_documents a tick with five columns only (never a title or content), one run per batch (2 quiet minutes, at most 10 minutes and 10 documents), a claim per document version, the day limit of 5 and the 50-row cap, starts as the owner with the saved task, the folder id, the local time and the document ids only, first step approved as the owner; S3 (3b2cd0b, a0d3bbd) the When a file is added section on the Schedules page in en, zh-TW and zh-CN, with press feedback after the control plane sent the slice back to read both UI skills. Models: opus for S1 and S2, sonnet for S3. Control-plane gates: gateway 6117 passed, 7 skipped, the 14 known smoke.integration failures; frontend tsc rc 0, 2114 of 2114, build rc 0. No title, content, content hash or task text in audit rows or logs. Checkpoint: docs/TRIGGER-MORE-01-CHECKPOINT.md. FOLLOWUPS: 6 registered (STAGING-DEPLOY-KNOWTRIG-01; TRIGGER-KNOW-LIVE-01; RESULT-TOOL-01; TRIGGER-CHAIN-01; TRIGGER-WEBHOOK-01; TRIGGER-MAIL-FILTERS-01) / 11 superseded (F5 by KNOW-FOLDERS-01; F6 by TRIGGER-WAIT-NOTICE-01 and TRIGGER-ORIGIN-01; F7 by ACCESS-READY-01; F8 by GOV-CHECKLIST-01; F10 by REFUSAL-MAP-01 and TRIGGER-TIDY-01; F11 by TRIGGER-SCALE-01; F12 by TRIGGER-CHAIN-01; F13 by ACCESS-READY-01; the S1 and S2 helper copies by TRIGGER-TIDY-01; the S3 document count and hover gating by TRIGGER-UI-POLISH-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice S3 (the page section) — 2026-11-16. Slice S2 landed on main as d60331e (opus subagent, fast-forwarded): its own 60-second knowledge timer (silent while KNOWLEDGE_TRIGGERS_ENABLED is off), nothing read or recorded while runs are off, one read of knowledge_documents a tick selecting id, owner, folder, content hash and change time only (never a title or content; asserted), the armed_at and 60-minute rules compared in code, one run per batch (2 quiet minutes, at most 10 minutes and 10 documents, oldest first), a claim per document version on the SHA-256 of trigger id, document id and content hash, the day limit of 5 and the 50-row cap, the schedule pre-checks, starts as the owner with the saved task plus the folder id, the local time and the document ids only, the first step approved as the owner, audit rows with ids, the folder, a document count and codes only; the control plane read the read, batch and task code and reran the gates (gateway 6117 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S2 (timer, document read, match, batch, claim, start, skip) — 2026-11-16. Slice S1 landed on main as 7f50509 (opus subagent, fast-forwarded): migration 1813 (agent_knowledge_triggers with one folder id per trigger, agent_knowledge_trigger_runs unique on trigger and document_key), the two entities, the /api/knowledge-triggers routes (browser session, harness access, owner-scoped, 3 per owner under its own lock namespace 1813, armed_at at create, switch-on and folder or zone change), KNOWLEDGE_TRIGGERS_ENABLED (default off) and its env template line; the Chief of Staff's readable folders imported from the system-agent registry, the nine folder ids from knowledge-scopes.ts; audit rows with ids, the target kind and the folder id only; the control plane read the diff and reran the gates (gateway 5995 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The /api/knowledge-triggers shapes as built are frozen for S3 (the history row carries the owner's own documentId; the folder CHECK is length only, the routes enforce the nine ids; knowledge_trigger_invalid_folder added beside knowledge_trigger_folder_not_readable). Was: ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-16. Stage-start docs/TRIGGER-MORE-01-STAGE-START.md drafted by a fable subagent (bcdcb93, fast-forwarded; its main facts checked against the code by the control plane: runs settle lazily with no finished event, knowledge has one upsert write path and TIMESTAMP columns without a zone, the knowledge route accepts an API key, no agent tool reads another run's result). Keith approved it on 2026-11-16 ("Yes, approve all"): all sixteen recommendations of section 11 (split the three triggers; the knowledge-file trigger first in this task's Step 3; TRIGGER-CHAIN-01 later with a new read-only result tool and completed runs only; TRIGGER-WEBHOOK-01 last, nothing from the request in the task, not on staging before the beta decision; knowledge: one run per batch, new or replaced content, the folder, time and document ids only, the first step without a click, 3 triggers per owner and 5 starts per trigger per day, a folder the Chief of Staff cannot read refused and a warning for a workflow, a new KNOWLEDGE_TRIGGERS_ENABLED, nothing read or recorded while runs are off, the page section as slice S3, the switch back off after the live check). The tasks the split names are registered at this task's LOCK. /api/schedules, /api/event-triggers and /api/mail-triggers stay as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MORE-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-MORE-01
 **Title:** Later triggers
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89348,6 +89366,152 @@ nature=IMPLEMENTATION
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F12): later mail filters if wanted: several senders in one trigger, To or Cc, a Gmail label or another folder.
+
+Note (TRIGGER-MORE-01 LOCK, 2026-11-16): the later-mail-filters note above moved to TRIGGER-MAIL-FILTERS-01.
+
+### STAGING-DEPLOY-KNOWTRIG-01 — Deploy knowledge triggers and check the page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-KNOWTRIG-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-KNOWTRIG-01
+**Title:** Deploy knowledge triggers and check the page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** TRIGGER-MORE-01.
+**Primary write scope:** records; host state (deploy; gateway.env gains KNOWLEDGE_TRIGGERS_ENABLED=false, a new baseline).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-MORE-01 (stage-start sections 8 and 9, F1): deploy main with migration 1813 after the backup; the earlier deploy checks; KNOWLEDGE_TRIGGERS_ENABLED=false added to gateway.env (a new baseline); the gateway boots; the routes refuse without a session, with an API key alone and cross-origin; Keith creates, edits, switches and deletes a trigger in the When a file is added section (two languages, phone width); the host confirms rows and audit rows hold no task text, and records the gateway process's and the database session's time zones (knowledge_documents has TIMESTAMP columns without a zone, compared in code). Runs stay off; no credits.
+
+### TRIGGER-KNOW-LIVE-01 — Live knowledge-trigger check and the knowledge-trigger wording
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-KNOW-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Task ID:** TRIGGER-KNOW-LIVE-01
+**Title:** Live knowledge-trigger check and the knowledge-trigger wording
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-KNOWTRIG-01 is locked and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-KNOWTRIG-01.
+**Primary write scope:** records; host state during the window, restored afterwards; test documents added and deleted from the host; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held in the LOCK record).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-MORE-01 (stage-start section 9, F1): in a phased run window with the stored Anthropic test key and write tools off, files added from the host with an API key: the switch on with runs off records nothing; one file with a marker starts one read-only run 2 to 4 minutes later, first step approved by the owner, Results unread +1; a gateway restart makes no second run; three files within a minute start one run naming three ids; an unchanged re-upload starts nothing and a changed one starts once; another folder and a file added while the trigger was off start nothing; a file asking to ignore instructions is not followed; the daily cap skip; marker and titles absent from logs, audit rows and both tables; credits by batch size; everything restored byte for byte and test files deleted. The LOCK lands the PRD.md and ARCHITECTURE.md wording of stage-start section 10 in Keith's words, holding GOVERNANCE.
+
+### RESULT-TOOL-01 — A read-only agent tool that reads one of the owner's finished run results
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULT-TOOL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Task ID:** RESULT-TOOL-01
+**Title:** A read-only agent tool that reads one of the owner's finished run results
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (needed before TRIGGER-CHAIN-01).
+**Depends on:** TRIGGER-MORE-01.
+**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/tools/, an internal gateway route under services/api-gateway/src/orchestration/ or a new module, the grant lists.
+**Mutexes / resources:** set at admission (AI-SERVICE, GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MORE-01 (stage-start section 2 and Q3, F3): no agent tool reads another run's result. A read-only harness tool that returns the final answer of one of the owner's own finished runs as tool data (never instructions), through an internal gateway route with the internal guard, granted to the Chief of Staff and to workflows; needed by TRIGGER-CHAIN-01 and useful to the Chief of Staff on its own. Opus (an internal route, a new grant).
+
+### TRIGGER-CHAIN-01 — Start a workflow after another workflow finishes
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-CHAIN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Task ID:** TRIGGER-CHAIN-01
+**Title:** Start a workflow after another workflow finishes
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: RESULT-TOOL-01 is locked and Keith decides.
+**Depends on:** RESULT-TOOL-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), a migration, frontend/components/schedules/, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, MIGRATION, ENV, FRONTEND, I18N by slice).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MORE-01 (stage-start section 2, Q3 and Q4, F2): when one of the owner's own workflows completes (completed only; never the Chief of Staff as source, never a test run), start the Chief of Staff or another of the owner's workflows with a saved task plus the finished run's id, status and finish time; the next agent reads the answer with RESULT-TOOL-01. Polls collaboration_runs (runs settle lazily, so up to about 6 minutes late; a run-finished event is a possible later improvement); loops bounded by a cycle check at save, a depth limit of 3 (chain_depth) and 5 starts per trigger per day; own tables, /api/chain-triggers, CHAIN_TRIGGERS_ENABLED, a Schedules page section; its own stage-start, deploy and live check.
+
+### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-WEBHOOK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Task ID:** TRIGGER-WEBHOOK-01
+**Title:** Start a workflow from a webhook call
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith names a real sender to connect and decides whether one path on staging may bypass basic_auth (stage-start Q6: not before the beta decision). Keith decides.
+**Depends on:** TRIGGER-MORE-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (webhook-trigger files and a public hook controller), a migration, frontend/components/schedules/, the three message files; a separate host task for any Caddy change.
+**Mutexes / resources:** set at admission (GATEWAY, MIGRATION, ENV, FRONTEND, I18N by slice).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MORE-01 (stage-start section 3, Q5 and Q6, F4): POST /api/hooks/<public id> with a per-trigger secret shown once and stored hashed, sent in its own header, compared in constant time; nothing from the request reaches the task; replay and flood bounds; a timer starts the run; WEBHOOK_TRIGGERS_ENABLED gates the public route and the timer; /api/webhook-triggers for management. Security-sensitive: its own stage-start, opus, and an independent review before deploy. It is the first route outsiders can call: no Caddy exception on staging before the beta decision and ACCESS-READY-01.
+
+### TRIGGER-MAIL-FILTERS-01 — Later mail-trigger filters
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-MAIL-FILTERS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Task ID:** TRIGGER-MAIL-FILTERS-01
+**Title:** Later mail-trigger filters
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith wants them. Keith decides.
+**Depends on:** TRIGGER-MAIL-LIVE-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (mail-trigger files), services/connectors-mcp/src/ if more fields are read, a migration if columns change, frontend/components/schedules/, the three message files.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-MORE-01 (stage-start P11 and F9; the note TRIGGER-MAIL-01 left on TRIGGER-MORE-01): later mail filters if wanted: several senders in one trigger, To or Cc, a Gmail label or another folder. Moved here because it belongs to mail triggers, not to the later trigger types.
 
 ### SKILL-01 — Reusable saved step
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
