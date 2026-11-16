@@ -89375,13 +89375,13 @@ taskId=STAGING-DEPLOY-KNOWTRIG-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-16 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-KNOWTRIG-01
 **Title:** Deploy knowledge triggers and check the page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Start condition:** READY (Keith, 2026-11-16, "Yes, deploy"). Was: NOT_READY. Ready when: Keith approves the deploy. Keith decides.
 **Depends on:** TRIGGER-MORE-01.
 **Primary write scope:** records; host state (deploy; gateway.env gains KNOWLEDGE_TRIGGERS_ENABLED=false, a new baseline).
 **Mutexes / resources:** STAGING, ENV.
