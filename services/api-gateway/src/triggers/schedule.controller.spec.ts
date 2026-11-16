@@ -29,7 +29,10 @@ import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
 import { MailTriggerController } from './mail-trigger.controller';
+import { MailTriggerMailbox } from './mail-trigger-mailbox';
+import { MailTriggerRunService } from './mail-trigger-run.service';
 import { MailTriggerService } from './mail-trigger.service';
+import { MailTriggerTimer } from './mail-trigger-timer';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -479,6 +482,10 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         EventTriggerTimer,
         // TRIGGER-MAIL-01 S2: the mail trigger service (no timer, no mailbox read, no run start).
         MailTriggerService,
+        // TRIGGER-MAIL-01 S3: the mailbox reads, the mail run service and the mail timer.
+        MailTriggerMailbox,
+        MailTriggerRunService,
+        MailTriggerTimer,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
@@ -513,7 +520,12 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
           'event-trigger-validation.ts',
           'event-trigger.controller.ts',
           'event-trigger.service.ts',
+          'mail-trigger-mailbox.ts',
+          'mail-trigger-match.ts',
+          'mail-trigger-reasons.ts',
+          'mail-trigger-run.service.ts',
           'mail-trigger-switch.ts',
+          'mail-trigger-timer.ts',
           'mail-trigger-validation.ts',
           'mail-trigger.controller.ts',
           'mail-trigger.service.ts',
@@ -579,6 +591,28 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(source('mail-trigger.service.ts').match(/isMailTriggersEnabled\(\)/g)).toHaveLength(1);
       for (const name of ['schedule-timer.ts', 'schedule-run.service.ts', 'event-trigger-timer.ts', 'event-trigger-run.service.ts', 'event-trigger-calendar.ts']) {
         expect(source(name)).not.toMatch(/MailTrigger|isMailTriggersEnabled/);
+      }
+      // TRIGGER-MAIL-01 S3: the pure mail helpers have no timer and no run start; the mail interval
+      // and boot hook only in the mail timer; start and approve only in the mail run service; the
+      // mailbox read only in the mailbox file, once; the mail flag read once a tick in the timer and
+      // live before each owner's read in the mailbox; the mail parts never reach the event or
+      // schedule run parts.
+      for (const name of ['mail-trigger-match.ts', 'mail-trigger-reasons.ts', 'mail-trigger-mailbox.ts']) {
+        expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
+      }
+      expect(source('mail-trigger-timer.ts')).toMatch(/OnModuleInit/);
+      expect(source('mail-trigger-timer.ts').match(/setInterval\(/g)).toHaveLength(1);
+      expect(source('mail-trigger-timer.ts')).not.toMatch(/CollaborationStartService|approveStep|setTimeout|OnApplicationBootstrap|readRecentMail|ConnectorBroker/);
+      expect(source('mail-trigger-run.service.ts')).toMatch(/this\.starts\.start\(/);
+      expect(source('mail-trigger-run.service.ts')).toMatch(/this\.starts\.approveStep\(/);
+      expect(source('mail-trigger-run.service.ts')).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|readRecentMail|ConnectorBroker/);
+      expect(source('mail-trigger-mailbox.ts').match(/this\.broker\.readRecentMail\(/g)).toHaveLength(1);
+      expect(source('mail-trigger-mailbox.ts')).not.toMatch(/callConnectorTool|readCalendarWindow/);
+      expect(source('mail-trigger-timer.ts').match(/isMailTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('mail-trigger-mailbox.ts').match(/isMailTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('mail-trigger-run.service.ts')).not.toMatch(/isMailTriggersEnabled|isEventTriggersEnabled|isSchedulesEnabled/);
+      for (const name of ['mail-trigger-timer.ts', 'mail-trigger-run.service.ts', 'mail-trigger-mailbox.ts', 'mail-trigger-match.ts', 'mail-trigger-reasons.ts']) {
+        expect(source(name)).not.toMatch(/EventTriggerRunService|EventTriggerCalendar|ScheduleRunService/);
       }
     });
   });

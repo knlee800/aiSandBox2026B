@@ -20,7 +20,10 @@ import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
 import { MailTriggerController } from './mail-trigger.controller';
+import { MailTriggerMailbox } from './mail-trigger-mailbox';
+import { MailTriggerRunService } from './mail-trigger-run.service';
 import { MailTriggerService } from './mail-trigger.service';
+import { MailTriggerTimer } from './mail-trigger-timer';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -64,6 +67,16 @@ import { ScheduleTimer } from './schedule-timer';
  * is read only to say whether the owner has a mail connection (a count of
  * imap rows; no secret is read, no broker call). No timer, no mailbox read
  * and no run start in S2.
+ *
+ * TRIGGER-MAIL-01 S3: the mail timer (mail-trigger-timer.ts; its own
+ * 60-second interval, silent while MAIL_TRIGGERS_ENABLED is off), the
+ * 10-minute mailbox reads with the hourly back-off after three failures
+ * (mail-trigger-mailbox.ts, through ConnectorsModule's
+ * ConnectorBroker.readRecentMail; nothing from a read is kept past its tick),
+ * the match rule (mail-trigger-match.ts), the row cap, claim, day limit,
+ * pre-checks, start and first approval through the same
+ * CollaborationStartService as schedules, and the skip reasons
+ * (mail-trigger-reasons.ts) with their audit rows (mail-trigger-run.service.ts).
  */
 @Module({
   imports: [
@@ -83,6 +96,9 @@ import { ScheduleTimer } from './schedule-timer';
     EventTriggerRunService,
     EventTriggerTimer,
     MailTriggerService,
+    MailTriggerMailbox,
+    MailTriggerRunService,
+    MailTriggerTimer,
   ],
   exports: [],
 })
