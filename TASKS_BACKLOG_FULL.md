@@ -89459,7 +89459,7 @@ taskId=STAGING-DEPLOY-RESULTTOOL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-16 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed c091b53 to df9f2b5 (rc 0; no migration, the hash stays 4913e9f7); every earlier deploy, provider, chat, schedule and trigger check passed; the internal results route answers 401 without or with a wrong internal key, 400 for a bad user id and the fixed 404 NOT_FOUND for a made-up run; the gateway and AI-service builds hold the new files; RUN_RESULT_TOOL_ENABLED=false added to gateway.env and the gateway restarted (new baseline dc089a70; ai.env 721f4772 and the Caddyfile unchanged); runs, schedules and all trigger switches off. No page check (no visible change). Checkpoint: docs/STAGING-DEPLOY-RESULTTOOL-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-16 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-RESULTTOOL-01
 **Title:** Deploy the run-result tool
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89500,6 +89500,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers and their tools are not current until proven live).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From RESULT-TOOL-01 (stage-start section 9, F5): in a run window with the stored Anthropic test key and write tools off: with the switch off a Chief of Staff run whose task names a completed run id gets no read_run_result tool; with it on the same task makes one read_run_result call and uses the source run's text; a failed, an active and a made-up run id each give the same not-found text; a workflow run reads it too; a source result quoting a planted instruction is mentioned, not followed; the source run's result_seen_at and status are unchanged; no answer text in gateway logs or audit rows; env files restored byte for byte. The LOCK lands the wording of stage-start section 10 in Keith's words, holding GOVERNANCE.
+
+Note (STAGING-DEPLOY-RESULTTOOL-01 LOCK, 2026-11-16): staging runs df9f2b5 with RUN_RESULT_TOOL_ENABLED=false and runs off; the gateway.env baseline is now dc089a70 (ai.env 721f4772); the run window starts from those and restores them byte for byte. Source runs to read: Keith's completed knowledge- and mail-triggered runs (for example the planted-instruction runs of TRIGGER-KNOW-LIVE-01 and TRIGGER-MAIL-LIVE-01) can serve as the results the live check reads.
 
 ### RESULT-LIST-01 — A read-only tool that lists the owner's recent completed results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
