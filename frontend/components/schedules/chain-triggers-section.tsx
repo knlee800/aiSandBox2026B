@@ -642,7 +642,7 @@ export function ChainTriggersSectionView(props: ChainTriggersSectionViewProps): 
           ) : null}
 
           {data.triggers.length === 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5" data-testid="chain-triggers-empty">
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/60 p-4 sm:p-5" data-testid="chain-triggers-empty">
               <h3 className="text-sm font-semibold text-white">{t('emptyTitle')}</h3>
               <p className="mt-2 text-sm text-slate-300">{t('emptyBody')}</p>
             </div>
