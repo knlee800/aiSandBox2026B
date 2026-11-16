@@ -89153,7 +89153,7 @@ taskId=TRIGGER-MAIL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MAIL-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 3 slice S1 (recent-mail read) — 2026-11-16. Stage-start docs/TRIGGER-MAIL-01-STAGE-START.md drafted by a fable subagent (511b34c, fast-forwarded; facts checked against the code by the control plane, including that a read-only run never gets the browser tool). Keith approved it on 2026-11-16 ("Yes, approve all"): all sixteen recommendations of section 15 (the run is told the arrival time and the message number only; the first step starts without a click; a sender is required and a subject word optional; unread Inbox mail only; up to 60 minutes late, older mail ignored; one run per message within the day limit; 3 triggers per owner and 5 starts per trigger per day; own tables and /api/mail-triggers; a new gateway-only mail_list_recent read with no body; a sign-in every 10 minutes, hourly after three failures; a workflow without the mail tool allowed with a warning; every read audited without content; a new MAIL_TRIGGERS_ENABLED; no sign-in while runs are off; the page section is slice S4; the switch back off after the live check). /api/schedules and /api/event-triggers stay as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MAIL-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-MAIL-01
 **Title:** Trigger on mail that matches a filter
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89161,10 +89161,10 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP
 **Start condition:** READY for Step 2 (Keith chose it, 2026-11-16, "Start TRIGGER-MAIL-01"; TRIGGER-LIVE-01 LOCKED; the read and run cost measured in TRIGGER-EVENT-LIVE-01). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
 **Depends on:** TRIGGER-LIVE-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-MAIL-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** slice S1 (set 2026-11-16): services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/tools/mail-recent.ts, services/connectors-mcp/src/__tests__/mail-recent.spec.ts, services/connectors-mcp/src/__tests__/imap-verbs.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts, services/api-gateway/src/connectors/connector-broker.ts, services/api-gateway/src/connectors/connector-broker.spec.ts. Slices S2, S3 and S4: stage-start section 12, set at each admission. Was: set at admission.
+**Mutexes / resources:** slice S1: GATEWAY (2026-11-16); S2: GATEWAY, MIGRATION, ENV; S3: GATEWAY; S4: FRONTEND, I18N. Was: Step 2: none (write set docs/TRIGGER-MAIL-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
+**Hot-file leases:** slice S1: services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/tools/mail-recent.ts, services/connectors-mcp/src/__tests__/mail-recent.spec.ts, services/connectors-mcp/src/__tests__/imap-verbs.spec.ts, services/connectors-mcp/src/__tests__/server.spec.ts. Was: set at admission.
+**Shared contracts:** /api/schedules and /api/event-triggers stay as frozen (not touched); the /api/mail-triggers shapes of stage-start section 8 freeze when S2 lands; no slice edits orchestration.service.ts or ai-execution.controller.ts (HARNESS_ENTITLEMENT_PROOF_V1). Was: set at admission.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
