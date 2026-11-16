@@ -84350,6 +84350,8 @@ Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F7 and F13): the privacy inventory gains
 
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F7): the inventory gains one internal route (POST /api/internal/collaboration/results/read) and one grant (runResultRead). The existing GET /api/internal/collaboration/runs/:id has no owner check, returns every step and settles the run; nothing in the AI service calls it today; decide whether to remove or owner-scope it.
 
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F4): the inventory gains agent_chain_triggers.task and agent_chain_trigger_runs (run ids, depth, times); the daily-cap arithmetic now covers five trigger types; one outside event (a mail) can cause up to four runs through a chain.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -88734,6 +88736,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs.
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs.
 
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F3): include chain-started runs.
+
 ### TRIGGER-ORIGIN-01 — Show "started by a schedule" on Results and the Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-ORIGIN-01
@@ -88765,6 +88769,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs ("started
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs ("started by a new file").
 
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F8): if the owner should see that a run read another run's result, show it with the run's origin.
+
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F3): include chain-started runs ("started after a workflow finished", with a link to the finished run).
 
 ### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88820,6 +88826,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers import scheduleRefusa
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F10): knowledge triggers import scheduleRefusalOf, a fifth user of the mapper.
 
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F6): chain triggers import scheduleRefusalOf, a sixth user of the mapper.
+
 ### TRIGGER-SCALE-01 — A stored next-due time for schedules
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-SCALE-01
@@ -88852,6 +88860,8 @@ Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the mail-trigger sign-in pace live
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F11): the knowledge timer also reads all enabled triggers each tick, and one knowledge_documents query a minute for their owners.
 
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F7): the chain timer reads all enabled triggers and their owners' completed runs of the last hour each tick, at most 500 runs ordered by completion; an owner with more than 500 completions an hour would delay the newest.
+
 ### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-CHECKLIST-01
@@ -88876,6 +88886,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F7): the switch line also names MAIL_TRI
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F8): the switch line also names KNOWLEDGE_TRIGGERS_ENABLED.
 
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F7): the switch line also names RUN_RESULT_TOOL_ENABLED.
+
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F5): the switch line also names CHAIN_TRIGGERS_ENABLED.
 
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88934,6 +88946,8 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, slice S4): the workflow list the Schedu
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16): a native-speaker review of the zh-TW and zh-CN wording of the three trigger sections (the mail section's Chinese was written by the S4 worker).
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16): the knowledge section's history could show the document count per batch if Keith wants it; gate hover effects behind (hover: hover) across the four Schedules sections; and a native-speaker review of the knowledge section's zh-TW and zh-CN wording (written by the S3 worker).
+
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F10): a native-speaker review of the After a workflow finishes section's zh-TW and zh-CN wording; and align all five Schedules sections with DESIGN.md where they differ today (text links text-indigo-300 instead of text-brand-text, which follows the OS theme and would lose contrast on the dark slate sections; warning notes border-amber-500/40 bg-amber-950/30 instead of border-amber-900/80 bg-amber-950/40; danger buttons on the dark surface border-red-700/60 text-red-200 instead of the light-surface red), or record in DESIGN.md that the dark Schedules sections use these.
 
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89169,6 +89183,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers add further copies of
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F10): knowledge triggers copy the private helpers and the in-memory test store a fourth time, add a fourth near-identical Schedules page section, and the pinning spec now names four trigger types.
 
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F6): a fifth copy of the private helpers and the in-memory test store, a fifth near-identical Schedules page section, the pinning spec names five trigger types, and the chain task builder copies the result route's run-id pattern (pinned equal by a test; a shared export would need an orchestration edit).
+
 ### COS-EVAL-DRIFT-01 — Fix the ai-service briefing drift test after the start code moved
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-DRIFT-01
@@ -89324,6 +89340,8 @@ Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the live check showed that a mail-
 Note (TRIGGER-KNOW-LIVE-01 LOCK, 2026-11-16): knowledge-triggered runs read document text with read_knowledge; a planted instruction in a test document reached the run, which mentioned it and did not follow it. Name knowledge document text in the Chief of Staff's data rule too, and add a knowledge-triggered eval case.
 
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F3): correction to the TRIGGER-KNOW-LIVE-01 note: the rule already names document text (system-agent-registry.ts:310); only mail bodies are missing. Also name earlier run results (read_run_result), add an eval case for a run reading a result that carries a planted instruction, and have the Chief of Staff eval model RUN_RESULT_TOOL_ENABLED on (today it models it off; briefing-prompt.ts). Changing the rules text changes every workflow's version (USER_WORKFLOW_RULES is pinned equal to it by user-workflow-rules.spec.ts and is in each workflow's version hash), so each workflow then needs a new test run before normal use.
+
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F2): a readiness condition before chain triggers stay on for real use (Keith's Q12); its eval case can be a chain-started run reading a result that carries a planted instruction.
 
 ### CONN-MAIL-AUTH-STATE-01 — A distinct sign-in-refused state for the mailbox
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89551,13 +89569,15 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From RESULT-TOOL-01 (stage-start F2 and P2, Keith's Q1: every workflow by default for now): show the run-result access on the workflow form and in the registry's access (a fixed line or a tick, the never-do list, the version material), with i18n; decide then whether it becomes a per-workflow tick. A tick changes each ticked workflow's version, which then needs a new test run.
 
+Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F9): if the run-result access becomes a per-workflow tick, a chain trigger's save must refuse or warn about a target workflow without it.
+
 ### TRIGGER-CHAIN-01 — Start a workflow after another workflow finishes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-CHAIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 3 slice S3 (the page section) — 2026-11-16. Slice S2 landed on main as 687d7d31 (opus subagent, fast-forwarded): its own 60-second chain timer, nothing read or recorded unless CHAIN_TRIGGERS_ENABLED, runs and the run-result tool are all on, one read of the owners' completed runs a tick with a fixed select list (no task, no answer) and one fixed SQL for the first hand-offs taking only the workflow id and test-run paths, the own-target and first-hand-off rules, a claim per finished run, the depth rule with chain_depth past 3, the day limit of 5 and the 20-row cap, starts as the owner with the saved task plus the finished run's id and time and an instruction to read it with read_run_result, the first step approved as the owner, audit rows with ids, the depth and codes only; the control plane read the two reads and the switch order and reran the gates (gateway 6549 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S2 (timer, run read, depth, claim, start, skip) — 2026-11-16. Slice S1 landed on main as 5fb2ee68 (opus subagent, fast-forwarded): migration 1814 (agent_chain_triggers with a source workflow and a target, agent_chain_trigger_runs unique on trigger and source run, with a depth), the two entities, the /api/chain-triggers routes (browser session, harness access, owner-scoped, 3 per owner under lock namespace 1814, the save-time cycle check under that lock, source = target refused, armed_at at create, switch-on and source change), CHAIN_TRIGGERS_ENABLED (default off) and its env template line; GET also reports whether the run-result tool is on (imported isRunResultToolEnabled); audit rows with ids and the target kind only; the control plane read the cycle check and reran the gates (gateway 6425 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The /api/chain-triggers shapes as built are frozen for S3. The S1 worker's one shell edit of triggers.module.ts was refused by the permission check; it made the same in-scope change with the Edit tool. Was: ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-16. Stage-start docs/TRIGGER-CHAIN-01-STAGE-START.md drafted by a fable subagent (9676d0d, fast-forwarded; its main facts checked against the code by the control plane: completed_at is set at settle, the Results workflow filter matches any hand-off, collaboration-result-grant.spec.ts pins the run-result texts to two files). Keith approved it on 2026-11-16 ("Yes, approve all"): all twelve recommendations of section 8 (the timer does nothing while the result tool is off, with a banner; the task gets the finished run's id and time only; 3 triggers per owner, 5 starts and 20 rows per trigger per day, depth 3; trigger-started runs count as sources; a team run led by the source counts, a member use does not; several triggers per source allowed; the first step without a click; a run already going at switch-on does not fire; a time-zone field; the page section as slice S3; both switches back off after the live check; COS-MAIL-BODY-RULE-01 required before real use). The tasks the stage-start names are registered at this task's LOCK. No orchestration file and no frozen contract changes. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-CHAIN-01". Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. LANE-DONE and LOCKED by the control plane; Lane 1 and every mutex released. Chain triggers are built (not deployed): S1 (5fb2ee6) migration 1814, the /api/chain-triggers routes (browser session, harness access, owner-scoped, 3 per owner, source = target and any cycle refused under lock namespace 1814) and CHAIN_TRIGGERS_ENABLED (default false); S2 (687d7d3) its own timer, nothing read or recorded unless the chain switch, runs and the run-result tool are all on, one read of the owners' completed runs with a fixed select list and one fixed SQL for the first hand-offs (two JSON paths; never a task or an answer), a claim per finished run, the depth rule (chain_depth past 3), the day limit of 5 and the 20-row cap, starts as the owner with the saved task plus the finished run's id and time and an instruction to read it with read_run_result, first step approved as the owner; S3 (0c26b64, bf9de19) the After a workflow finishes section on the Schedules page in en, zh-TW and zh-CN, with the dashed empty state after the control plane sent the slice back to read DESIGN.md. Models: opus for S1 and S2, sonnet for S3. Control-plane gates: gateway 6549 passed, 7 skipped, the 14 known smoke.integration failures; frontend tsc rc 0, 2167 of 2167, build rc 0. No task text, answer or workflow name in audit rows or logs; nothing under orchestration/ changed. Checkpoint: docs/TRIGGER-CHAIN-01-CHECKPOINT.md. FOLLOWUPS: 4 registered (STAGING-DEPLOY-CHAIN-01; TRIGGER-CHAIN-LIVE-01; RUN-FINISH-EVENT-01; TRIGGER-CHAIN-FAILED-01) / 9 superseded (F2 by COS-MAIL-BODY-RULE-01; F3 by TRIGGER-ORIGIN-01 and TRIGGER-WAIT-NOTICE-01; F4 by ACCESS-READY-01; F5 by GOV-CHECKLIST-01; F6 by REFUSAL-MAP-01 and TRIGGER-TIDY-01; F7 and the 500-run read cap by TRIGGER-SCALE-01; F9 by RESULT-GRANT-FORM-01; F10 and the three DESIGN.md differences shared by the five Schedules sections by TRIGGER-UI-POLISH-01; the copied run-id pattern by TRIGGER-TIDY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — Step 3 slice S3 (the page section) — 2026-11-16. Slice S2 landed on main as 687d7d31 (opus subagent, fast-forwarded): its own 60-second chain timer, nothing read or recorded unless CHAIN_TRIGGERS_ENABLED, runs and the run-result tool are all on, one read of the owners' completed runs a tick with a fixed select list (no task, no answer) and one fixed SQL for the first hand-offs taking only the workflow id and test-run paths, the own-target and first-hand-off rules, a claim per finished run, the depth rule with chain_depth past 3, the day limit of 5 and the 20-row cap, starts as the owner with the saved task plus the finished run's id and time and an instruction to read it with read_run_result, the first step approved as the owner, audit rows with ids, the depth and codes only; the control plane read the two reads and the switch order and reran the gates (gateway 6549 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). Was: ADMITTED — Lane 1 — Step 3 slice S2 (timer, run read, depth, claim, start, skip) — 2026-11-16. Slice S1 landed on main as 5fb2ee68 (opus subagent, fast-forwarded): migration 1814 (agent_chain_triggers with a source workflow and a target, agent_chain_trigger_runs unique on trigger and source run, with a depth), the two entities, the /api/chain-triggers routes (browser session, harness access, owner-scoped, 3 per owner under lock namespace 1814, the save-time cycle check under that lock, source = target refused, armed_at at create, switch-on and source change), CHAIN_TRIGGERS_ENABLED (default off) and its env template line; GET also reports whether the run-result tool is on (imported isRunResultToolEnabled); audit rows with ids and the target kind only; the control plane read the cycle check and reran the gates (gateway 6425 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The /api/chain-triggers shapes as built are frozen for S3. The S1 worker's one shell edit of triggers.module.ts was refused by the permission check; it made the same in-scope change with the Edit tool. Was: ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-16. Stage-start docs/TRIGGER-CHAIN-01-STAGE-START.md drafted by a fable subagent (9676d0d, fast-forwarded; its main facts checked against the code by the control plane: completed_at is set at settle, the Results workflow filter matches any hand-off, collaboration-result-grant.spec.ts pins the run-result texts to two files). Keith approved it on 2026-11-16 ("Yes, approve all"): all twelve recommendations of section 8 (the timer does nothing while the result tool is off, with a banner; the task gets the finished run's id and time only; 3 triggers per owner, 5 starts and 20 rows per trigger per day, depth 3; trigger-started runs count as sources; a team run led by the source counts, a member use does not; several triggers per source allowed; the first step without a click; a run already going at switch-on does not fire; a time-zone field; the page section as slice S3; both switches back off after the live check; COS-MAIL-BODY-RULE-01 required before real use). The tasks the stage-start names are registered at this task's LOCK. No orchestration file and no frozen contract changes. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-CHAIN-01". Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-01
 **Title:** Start a workflow after another workflow finishes
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89576,6 +89596,102 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-MORE-01 (stage-start section 2, Q3 and Q4, F2): when one of the owner's own workflows completes (completed only; never the Chief of Staff as source, never a test run), start the Chief of Staff or another of the owner's workflows with a saved task plus the finished run's id, status and finish time; the next agent reads the answer with RESULT-TOOL-01. Polls collaboration_runs (runs settle lazily, so up to about 6 minutes late; a run-finished event is a possible later improvement); loops bounded by a cycle check at save, a depth limit of 3 (chain_depth) and 5 starts per trigger per day; own tables, /api/chain-triggers, CHAIN_TRIGGERS_ENABLED, a Schedules page section; its own stage-start, deploy and live check.
 
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F6): its start condition also needs RUN_RESULT_TOOL_ENABLED on and RESULT-TOOL-LIVE-01 locked; its task text should name read_run_result and the finished run's id; its stage-start can rely on the frozen route POST /api/internal/collaboration/results/read and the signed field runResultRead.
+
+### STAGING-DEPLOY-CHAIN-01 — Deploy chain triggers and check the page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CHAIN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CHAIN-01
+**Title:** Deploy chain triggers and check the page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** TRIGGER-CHAIN-01.
+**Primary write scope:** records; host state (deploy; gateway.env gains CHAIN_TRIGGERS_ENABLED=false, a new baseline).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-CHAIN-01 (stage-start sections 5 and 6, F1): deploy main with migration 1814 after the backup; the earlier deploy checks; CHAIN_TRIGGERS_ENABLED=false added to gateway.env (a new baseline); the gateway boots; the routes refuse without a session, with an API key alone and cross-origin; Keith creates chain triggers between two of his active, tested workflows in the After a workflow finishes section (the cycle and same-workflow refusals shown), edits, switches and deletes one (two languages, phone width); the host confirms rows and audit rows hold no task text or workflow name and that no run read happened. Runs stay off; no credits.
+
+### TRIGGER-CHAIN-LIVE-01 — Live chain-trigger check and the chain-trigger wording
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-CHAIN-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Task ID:** TRIGGER-CHAIN-LIVE-01
+**Title:** Live chain-trigger check and the chain-trigger wording
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHAIN-01 is locked and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-CHAIN-01.
+**Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held in the LOCK record).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-CHAIN-01 (stage-start section 6, F1): in a run window with the stored Anthropic test key, write tools off, CHAIN_TRIGGERS_ENABLED and RUN_RESULT_TOOL_ENABLED on: a workflow run started from the host with a temporary harness key and approved as the owner completes and starts the chained run, which reads the finished run with read_run_result; with the result tool off the chain does nothing; a restart makes no second start; a run that used the source only as a member starts nothing; the depth limit and the daily cap skips; no task text or workflow name in logs or audit rows; credits recorded; both switches back off and env files restored byte for byte. The LOCK lands the wording of stage-start section 7 in Keith's words, holding GOVERNANCE.
+
+### RUN-FINISH-EVENT-01 — Settle a run at its last step or emit a run-finished event
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-FINISH-EVENT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Task ID:** RUN-FINISH-EVENT-01
+**Title:** Settle a run at its last step or emit a run-finished event
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (only if the few-minute delay matters).
+**Depends on:** TRIGGER-CHAIN-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ (settleCollaborationRun and the step completion path), the triggers that read finished runs.
+**Mutexes / resources:** set at admission (GATEWAY expected; HARNESS_ENTITLEMENT_PROOF_V1 includes orchestration.service.ts).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-CHAIN-01 (stage-start F8): a run is settled only when someone reads it or the 5-minute sweep runs, so a chain trigger and the Results badge see a finished run up to about 6 minutes late. Settle the run when its last step completes, or emit a run-finished event, so they react at once.
+
+### TRIGGER-CHAIN-FAILED-01 — Tell the Chief of Staff when a workflow fails
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-CHAIN-FAILED-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Task ID:** TRIGGER-CHAIN-FAILED-01
+**Title:** Tell the Chief of Staff when a workflow fails
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-CHAIN-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), the run-result route or a new failure read, frontend/components/schedules/, the three message files.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-CHAIN-01 (stage-start F11; Keith's Q4 chose completed runs only): a trigger for a failed workflow run ("when a workflow fails, tell the Chief of Staff"). A failed run has no final answer for read_run_result, so it needs its own design for what the next run is told.
 
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
