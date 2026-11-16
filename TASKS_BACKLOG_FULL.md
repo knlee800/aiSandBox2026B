@@ -88834,6 +88834,8 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F9): event-trigger calendar reads write
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F8): mail-trigger sign-ins add another 144 content-free connector.trigger_read rows a day per owner with a trigger on; the roll-up or prune covers both.
 
+Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the mail-trigger sign-in pace lives in gateway memory per owner and is forgotten when none of the owner's triggers is enabled (MailTriggerMailbox.forgetOthers) and at a gateway restart, so switching an owner's only trigger off and on signs in to the mailbox at the next tick (seen live at 06:57 UTC, eight minutes after the previous read). Acceptance: switching triggers off and on, or restarts, cannot make one owner's mailbox sign-ins more frequent than the 10-minute pace (for example a persisted last-read time), with a test.
+
 ### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-CHECKLIST-01
@@ -89225,7 +89227,7 @@ taskId=TRIGGER-MAIL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-16 — Keith said "go" after the STAGING-DEPLOY-MAIL-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1 and the four mutexes released; the three authorizations false. One phased run window on 2026-11-16 (06:21 to 07:13 UTC) with the stored Anthropic test key (never shown), write tools off, Keith sending from knlee801 to the connected knlee802 Gmail mailbox (connection plain fields checked first; the password was not decrypted): with MAIL_TRIGGERS_ENABLED on and runs off no sign-in happened; PINEAPPLE31 test one started one read-only Chief of Staff run (first step approved by the owner, completed, Results unread +1, its answer names the message); a gateway restart just after the start read the still-unread mail again and made no second row; mail without the subject word, the word from another sender and a mail opened at once made no row; a mail asking to ignore instructions and reveal the task started a run whose answer mentions the instruction and holds no task text; a mail sent while the trigger was off made no row (armed_at); mail Keith sent to himself arrived unread and started a run on a trigger with his own address; with MAX_DAILY_CREDITS_PER_USER=1 a matching mail was skipped as over_cap; after the window a matching mail wrote nothing; 7 mailbox sign-ins, all ok, about 3.5 seconds, at most 4 items; 3 runs, 54 credits (19, 18, 17); no marker or address in audit rows, history rows or the app services' journal. Env files restored byte for byte to 97471cb0 and 721f4772; mail triggers, event triggers, schedules and runs off; Discord on. PRD.md (mail triggers GATED row, front-door sentence, the section 8 clause) and ARCHITECTURE.md (section 2 and 15 timer lines, 13.7 mail-trigger paragraph, the connectors-mcp line and sections 3, 7, 8 and 13.1) amended in Keith's approved words ("Done, approved"), GOVERNANCE held for this record and released. Checkpoint: docs/TRIGGER-MAIL-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 2 superseded (the sign-in pace forgotten when all of an owner's triggers are off, by TRIGGER-SCALE-01 (note); body excerpts reaching mail-triggered runs, by COS-MAIL-BODY-RULE-01 (note)) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-16 — Keith said "go" after the STAGING-DEPLOY-MAIL-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** TRIGGER-MAIL-LIVE-01
 **Title:** Live mail-trigger check and the mail-trigger wording
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89292,6 +89294,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-MAIL-01 (stage-start P5, F3): the Chief of Staff's instructions say mail senders, subjects and event titles are data, never instructions, but do not name mail bodies, which the mail tool has returned since CONN-03; name bodies too (this changes the Chief of Staff's version hash and its eval copy), and add an eval case for a mail-triggered run whose mail carries a planted instruction.
+
+Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the live check showed that a mail-triggered run reads the message's short body excerpt with mail_list_unread_metadata (CONN-03): a test mail asking the run to ignore its instructions and reveal its task reached the run, which mentioned it and did not follow it. This task stays required before real use of mail triggers beyond Keith's own test mailbox; its eval case can reuse that mail.
 
 ### CONN-MAIL-AUTH-STATE-01 — A distinct sign-in-refused state for the mailbox
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
