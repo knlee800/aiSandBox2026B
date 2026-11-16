@@ -53,7 +53,7 @@ services/connectors-mcp/
 frontend/
 ```
 
-`services/connectors-mcp/` (approved by Keith 2026-11-08, GOV-BIZ-AGENT-OPS-PLAN-01; built by CONN-01) is the platform-written MCP server for read-only mail headers with short plain-text body excerpts (CONN-03) and today's calendar. It is not a network service: the Gateway starts it as a stdio child process.
+`services/connectors-mcp/` (approved by Keith 2026-11-08, GOV-BIZ-AGENT-OPS-PLAN-01; built by CONN-01) is the platform-written MCP server for read-only mail headers with short plain-text body excerpts (CONN-03) and today's calendar, plus a gateway-only calendar window read for event triggers (`calendar_list_window`, TRIGGER-EVENT-01; never offered to a model). It is not a network service: the Gateway starts it as a stdio child process.
 
 Any change to this layout requires explicit approval.
 
@@ -184,8 +184,8 @@ See §14 Communication Mechanism Summary for the full matrix.
 - Idle timeout is request-driven inside container-manager (no idle sweeper / cron)
 - AI execution is queue-driven: API Gateway enqueues, WorkerProcessor claims and runs
 - No cron jobs and no platform schedulers for session maintenance. Sessions are governed at request time.
-- In-process timers are allowed only for run recovery, collaboration upkeep and owner schedules: the AI service's stuck-run watchdog, the gateway's 5-minute collaboration sweep, and the gateway's 60-second schedule timer (section 13.7). They never touch session idle or lifetime.
-- User-visible schedules (TRIGGER-01) are GATED: off by default (`SCHEDULES_ENABLED`), one start per schedule per local day, bounded by the daily caps.
+- In-process timers are allowed only for run recovery, collaboration upkeep and owner schedules: the AI service's stuck-run watchdog, the gateway's 5-minute collaboration sweep, the gateway's 60-second schedule timer, and the gateway's 60-second event-trigger timer (section 13.7). They never touch session idle or lifetime.
+- User-visible schedules (TRIGGER-01) are GATED: off by default (`SCHEDULES_ENABLED`), one start per schedule per local day, bounded by the daily caps. Event triggers (TRIGGER-EVENT-01) are GATED: off by default (`EVENT_TRIGGERS_ENABLED`), at most three starts per trigger per local day.
 
 #### Persistent Terminal State
 - Termination is permanent
@@ -229,7 +229,7 @@ Owns:
 - Knowledge store (`knowledge_documents`, `/api/knowledge`, internal knowledge routes; KNOW-01, KNOW-02)
 - Connector credentials and broker (`connector_connections`, `/api/connectors`, `POST /api/internal/connectors/call`; CONN-02A, CONN-02B)
 - Chat channels (`chat_links`, `chat_link_codes`, `chat_run_deliveries`, `/api/chat-links`; CHAT-DISCORD-01)
-- Triggers (`agent_schedules`, `agent_schedule_runs`, `/api/schedules`; TRIGGER-01)
+- Triggers (`agent_schedules`, `agent_schedule_runs`, `/api/schedules`; TRIGGER-01; `agent_event_triggers`, `agent_event_trigger_runs`, `/api/event-triggers`; TRIGGER-EVENT-01)
 - Per-user entitlements (`user_entitlements`, audited admin PATCH; ACCESS-01B) and the append-only `audit_events` table
 
 Does NOT own:
@@ -579,6 +579,7 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Connector credentials | API Gateway | PostgreSQL (`connector_connections`, AES-256-GCM per owner and kind under `CONNECTOR_CREDENTIALS_KEY`; CONN-02A) |
 | Chat links, one-time link codes and result deliveries | API Gateway | PostgreSQL (`chat_links`, `chat_link_codes` with the code's SHA-256 only, `chat_run_deliveries` without any text; CHAT-DISCORD-01) |
 | Schedules and their occurrences | API Gateway | PostgreSQL (`agent_schedules`, `agent_schedule_runs` without task text; TRIGGER-01) |
+| Event triggers and their occurrences | API Gateway | PostgreSQL (`agent_event_triggers`, `agent_event_trigger_runs` with a hashed occurrence key and the event start only, no title or event text; TRIGGER-EVENT-01) |
 
 `user_agents` schema, entity, and migration exist in the repository. Locked staging evidence records that migration `CreateUserAgentsTable1772500000000` was applied. Live row contents were **not** probed by GOV-ARCH-02.
 
@@ -693,6 +694,12 @@ POST   /api/schedules
 PATCH  /api/schedules/:id
 DELETE /api/schedules/:id
 GET    /api/schedules/:id/runs
+
+GET    /api/event-triggers                          (TRIGGER-EVENT-01; browser session)
+POST   /api/event-triggers
+PATCH  /api/event-triggers/:id
+DELETE /api/event-triggers/:id
+GET    /api/event-triggers/:id/runs
 
 PATCH  /api/admin/users/:userId/entitlements        (ACCESS-01B; admin)
 ```
@@ -1086,6 +1093,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | Google OAuth login activation | **FUTURE / deferred** |
 | Chat channels: Discord (`services/api-gateway/src/chat/`; CHAT-DISCORD-01) | STAGING, gated per user and behind `CHAT_DISCORD_ENABLED` (deployed 7fcc46d by STAGING-DEPLOY-CHAT-01; live checks STAGING-DEPLOY-CHAT-01 and CHAT-LIVE-01 passed on 2026-11-15); section 13.6 |
 | Triggers: schedules (`services/api-gateway/src/triggers/`; TRIGGER-01, TRIGGER-UI-01) | STAGING, gated per user and behind `SCHEDULES_ENABLED` (deployed f32d88b by STAGING-DEPLOY-TRIG-01; live check TRIGGER-LIVE-01 passed on 2026-11-15); section 13.7 |
+| Triggers: event triggers (`services/api-gateway/src/triggers/`, `services/connectors-mcp/`; TRIGGER-EVENT-01) | STAGING, gated per user and behind `EVENT_TRIGGERS_ENABLED` (deployed 60fe280 by STAGING-DEPLOY-EVENT-01; live check TRIGGER-EVENT-LIVE-01 passed on 2026-11-16); section 13.7 |
 | Recursive self-improvement (RSI) | **FUTURE / PLANNED** — constraints in section 13.5 |
 
 ### 13.2 Agent Registry and Create Agent
@@ -1163,7 +1171,10 @@ The gateway module `chat/` links an owner to an outside chat account and carries
 
 ### 13.7 Triggers (GATED)
 
-The gateway module `triggers/` starts runs at times an owner set. `agent_schedules` holds the owner, the target (the Chief of Staff or one of the owner's workflows), the task text, a time of day, days and an IANA time zone. A 60-second in-process timer, active only when `SCHEDULES_ENABLED` is exactly `true`, reads the local time in each schedule's zone and claims an occurrence by inserting into `agent_schedule_runs`, whose unique index on schedule and local date allows one start per schedule per local day across restarts and processes. A claimed occurrence is never retried; one more than 60 minutes late is recorded as missed. The start goes through the same start code as `POST /api/collaboration/runs`, as the owner, without a session, so read-profile only; the timer approves the first step as the owner, and the approval gate, entitlements, credits, daily caps and provider switches apply unchanged. Skips (runs off, no access, workflow gone or off, cap, credits, provider off, missed) write a history row and an `audit_events` row with ids and a reason code; task text is never logged or audited. `SCHEDULES_ENABLED` never enables runs and is not set by a tester window. The schedule routes need a browser session.
+The gateway module `triggers/` starts runs at times an owner set or before events on the owner's calendar. `agent_schedules` holds the owner, the target (the Chief of Staff or one of the owner's workflows), the task text, a time of day, days and an IANA time zone. A 60-second in-process timer, active only when `SCHEDULES_ENABLED` is exactly `true`, reads the local time in each schedule's zone and claims an occurrence by inserting into `agent_schedule_runs`, whose unique index on schedule and local date allows one start per schedule per local day across restarts and processes. A claimed occurrence is never retried; one more than 60 minutes late is recorded as missed. The start goes through the same start code as `POST /api/collaboration/runs`, as the owner, without a session, so read-profile only; the timer approves the first step as the owner, and the approval gate, entitlements, credits, daily caps and provider switches apply unchanged. Skips (runs off, no access, workflow gone or off, cap, credits, provider off, missed) write a history row and an `audit_events` row with ids and a reason code; task text is never logged or audited. `SCHEDULES_ENABLED` never enables runs and is not set by a tester window. The schedule routes need a browser session.
+
+
+Event triggers (TRIGGER-EVENT-01). `agent_event_triggers` holds the owner, the target, the task text, a lead time in minutes, an optional title word and a time zone. A second 60-second timer, active only when `EVENT_TRIGGERS_ENABLED` is exactly `true` and runs are on, reads each such owner's calendar through the connector broker every 10 minutes with the gateway-only tool `calendar_list_window` (event id, title, start and end of timed, not-cancelled events in the next lead plus 15 minutes), and once more before each start. Titles are matched in memory and never stored, logged or audited, and are not placed in the task: the run is told the event's times and reads the event with its own calendar tool. An occurrence is claimed by inserting into `agent_event_trigger_runs`, unique on trigger and a hash of event id and start; it is never retried. All-day and cancelled events never start a run; a trigger starts at most three runs a local day. The start, the first-step approval, the checks and the skip audit are those of schedules; added reasons are `day_limit`, `event_changed`, `calendar_read_failed` and `connector_missing`. Every platform read writes one content-free `connector.trigger_read` audit row. `calendar_list_window` is not in the tool catalog and cannot be granted to an agent.
 
 ---
 
@@ -1221,7 +1232,7 @@ Leftover AI Service `POST /api/execute` HTTP remains as a listen surface. It is 
 - No general-purpose event bus (Redis is used specifically for BullMQ queue transport and
   execution-stream Pub/Sub — not as a general event bus)
 - No cron
-- No platform schedulers for maintenance (the Worker stuck-execution watchdog is in-process execution recovery only; the Gateway's in-process `CollaborationSweepWorker`, a 5-minute `setInterval` from COLLAB-CHOOSE-01, settles collaboration runs and expires waiting hand-offs; the Gateway's in-process schedule timer (TRIGGER-01), a 60-second `setInterval` active only when `SCHEDULES_ENABLED` is `true`, starts owners' scheduled runs — none of these touches session idle)
+- No platform schedulers for maintenance (the Worker stuck-execution watchdog is in-process execution recovery only; the Gateway's in-process `CollaborationSweepWorker`, a 5-minute `setInterval` from COLLAB-CHOOSE-01, settles collaboration runs and expires waiting hand-offs; the Gateway's in-process schedule timer (TRIGGER-01), a 60-second `setInterval` active only when `SCHEDULES_ENABLED` is `true`, starts owners' scheduled runs; the Gateway's in-process event-trigger timer (TRIGGER-EVENT-01), a 60-second `setInterval` active only when `EVENT_TRIGGERS_ENABLED` is `true` and runs are on, starts runs before owners' calendar events — none of these touches session idle)
 - No Kubernetes
 - No Kafka
 - No event-sourcing architecture

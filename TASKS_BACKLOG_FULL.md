@@ -89007,7 +89007,7 @@ taskId=TRIGGER-EVENT-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-16 — Keith said "go" after the STAGING-DEPLOY-EVENT-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1 and the four mutexes released; the three authorizations false. Two phased run windows on 2026-11-16 with the stored Anthropic test key (never shown), write tools off: with runs off no calendar read happened; the first window's reads were empty because Keith's Google Calendar was in another time zone, and the second's at first because the events were in another Google account (the connection's plain fields showed it was connected beside the knlee802 mailbox; the stored link was not decrypted); with the events in the connected calendar, PINEAPPLE21 planning started a real read-only run at 11:00:16, exactly start minus lead, first step approved by the owner, completed, Results unread +1, 12 credits; a gateway restart during it made no second run; an event deleted after the cached read was skipped as event_changed at the confirm read; all-day and non-matching events made no row; with MAX_DAILY_CREDITS_PER_USER=1 a due event was skipped as over_cap; 14 calendar reads, all ok, about 0.7 seconds, at most 440 bytes; Google's iCal link showed an added event within about 10 minutes and a deletion within about 1 minute; no marker word in audit rows or logs. Env files restored byte for byte to 23c838b8 and 721f4772; event triggers, schedules and runs off; Discord on. PRD.md (event triggers GATED row, front-door sentence, the section 8 clause) and ARCHITECTURE.md (section 2 and 15 timer lines, 13.7 event-trigger paragraph, the connectors-mcp line and sections 3, 7, 8 and 13.1) amended in Keith's approved words ("Approved"), GOVERNANCE held for this record and released. Checkpoint: docs/TRIGGER-EVENT-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CONN-CAL-LABEL-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-16 — Keith said "go" after the STAGING-DEPLOY-EVENT-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
 **Task ID:** TRIGGER-EVENT-LIVE-01
 **Title:** Live event-trigger check and the event-trigger wording
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89026,6 +89026,30 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-EVENT-01 (stage-start section 13, F1): in a phased run window with the stored Anthropic test key and write tools off: EVENT_TRIGGERS_ENABLED on with runs off reads nothing; a calendar event with a marker word and a matching Chief of Staff trigger starts one read-only run at start minus lead, first step approved by the owner, the answer names the meeting, Results unread +1; a gateway restart makes no second run; a deleted event is skipped as event_changed (also showing how fresh the feed is); all-day and non-matching events make no row; the daily cap skip; the marker absent from logs, audit and both tables; read counts and credits recorded; everything restored byte for byte. The LOCK lands the PRD.md and ARCHITECTURE.md wording of stage-start section 14 in Keith's words, holding GOVERNANCE.
 
 Note (STAGING-DEPLOY-EVENT-01 LOCK, 2026-11-16): staging runs 60fe280 with EVENT_TRIGGERS_ENABLED=false and runs off; the gateway.env baseline is now 23c838b8 (ai.env 721f4772); the run window starts from those and restores them byte for byte. Keith's calendar is connected (one ical row). Keith's PINEAPPLE20 trigger (Chief of Staff, lead 30, title word PINEAPPLE21) is on his account; the live check makes its own events and triggers.
+
+### CONN-CAL-LABEL-01 — Show which calendar is connected
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-CAL-LABEL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the TRIGGER-EVENT-LIVE-01 LOCK — not admitted.
+**Task ID:** CONN-CAL-LABEL-01
+**Title:** Show which calendar is connected
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-EVENT-LIVE-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/connectors/, services/connectors-mcp/src/, frontend/components/connections/, the three message files; a migration if a column is added.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected; MIGRATION if a column is added).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-EVENT-LIVE-01: the live check lost two attempts because the connected calendar belonged to another Google account and nothing on the platform shows which calendar the stored iCal link reads. At connect (and on demand), keep a non-secret label for the calendar, for example the feed's calendar name (X-WR-CALNAME) and its time zone, and show it on the Connections page and in the Before a meeting section, never the link or its token.
 
 ### CONN-CAL-FIXES-01 — Calendar tool: the owner's response and cancelled events
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
