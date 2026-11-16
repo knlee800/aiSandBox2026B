@@ -5,12 +5,17 @@ import {
   CALENDAR_WINDOW_TOOL,
   CALENDAR_WINDOW_TOOL_ID,
   CONNECTOR_SERVERS,
+  MAIL_RECENT_MAX_LOOKBACK_MS,
+  MAIL_RECENT_MAX_MESSAGES,
+  MAIL_RECENT_TOOL,
+  MAIL_RECENT_TOOL_ID,
   MAIL_TOOL,
   MAIL_TOOL_ID,
   connectorToolCatalog,
   findAllowlistedTool,
   isInternalConnectorTool,
   toolForKind,
+  verifyArguments,
 } from './connector-servers';
 
 /**
@@ -86,5 +91,37 @@ describe('the gateway-only calendar window tool (TRIGGER-EVENT-01 S1)', () => {
     );
     expect(toolForKind('ical')).toBe(CALENDAR_TOOL);
     expect(findAllowlistedTool(CALENDAR_TOOL_ID)).toBe(CALENDAR_TOOL);
+  });
+});
+
+describe('the gateway-only recent-mail tool (TRIGGER-MAIL-01 S1)', () => {
+  it('is an internal read-only mail tool', () => {
+    expect(MAIL_RECENT_TOOL_ID).toBe('mail_list_recent');
+    expect(MAIL_RECENT_TOOL).toEqual({ id: 'mail_list_recent', kind: 'imap', readOnly: true });
+    expect(MAIL_RECENT_MAX_LOOKBACK_MS).toBe(2 * 60 * 60 * 1000);
+    expect(MAIL_RECENT_MAX_MESSAGES).toBe(25);
+    expect(isInternalConnectorTool(MAIL_RECENT_TOOL_ID)).toBe(true);
+    expect(isInternalConnectorTool(CALENDAR_WINDOW_TOOL_ID)).toBe(true);
+    for (const other of [MAIL_TOOL_ID, CALENDAR_TOOL_ID, 'mail_list_recent ', 'MAIL_LIST_RECENT', '', null, undefined, MAIL_RECENT_TOOL]) {
+      expect(isInternalConnectorTool(other)).toBe(false);
+    }
+  });
+
+  it('is absent from the catalogue, the allowlist lookup and every connector server', () => {
+    expect(connectorToolCatalog().map((tool) => tool.id)).toEqual([MAIL_TOOL_ID, CALENDAR_TOOL_ID]);
+    expect(JSON.stringify(connectorToolCatalog()).includes(MAIL_RECENT_TOOL_ID)).toBe(false);
+    expect(findAllowlistedTool(MAIL_RECENT_TOOL_ID)).toBeNull();
+    expect(findAllowlistedTool(MAIL_RECENT_TOOL)).toBeNull();
+    const served = CONNECTOR_SERVERS.flatMap((server) => [...server.tools]);
+    expect(served.some((tool) => (tool.id as string) === MAIL_RECENT_TOOL_ID)).toBe(false);
+    expect(toolForKind('imap')).toBe(MAIL_TOOL);
+  });
+
+  it('leaves mail_list_unread_metadata, its description and its schema byte for byte unchanged', () => {
+    expect(JSON.stringify(MAIL_TOOL)).toBe(
+      '{"id":"mail_list_unread_metadata","kind":"imap","readOnly":true,"description":"List unread Inbox messages for the connected mailbox: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). At most 25 messages. Does not mark messages read and does not change the mailbox.","inputSchema":{"type":"object","additionalProperties":false,"properties":{"limit":{"type":"integer","minimum":1,"maximum":25,"description":"Maximum unread messages to return. Defaults to 25."}}}}',
+    );
+    expect(findAllowlistedTool(MAIL_TOOL_ID)).toBe(MAIL_TOOL);
+    expect(verifyArguments('imap')).toEqual({ limit: 1 });
   });
 });

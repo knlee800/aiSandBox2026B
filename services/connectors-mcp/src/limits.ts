@@ -4,6 +4,13 @@ export const MAX_CALENDAR_BYTES = 2 * 1024 * 1024;
 export const MAX_TEXT_CHARS = 300;
 export const MAX_MAIL_MESSAGES = 25;
 export const MAX_RESULT_CHARS = 32_000;
+/**
+ * TRIGGER-MAIL-01 S1: mail_list_recent (gateway-only) returns at most this many
+ * messages, the newest by arrival time.
+ */
+export const MAX_RECENT_MESSAGES = 25;
+/** TRIGGER-MAIL-01 S1: mail_list_recent's `since` may be at most this far before the call. */
+export const RECENT_MAIL_MAX_LOOKBACK_MS = 2 * 60 * 60 * 1000;
 export const IMAP_PORT = 993;
 
 /** CONN-03: each mail body excerpt is at most this many characters (code points). */

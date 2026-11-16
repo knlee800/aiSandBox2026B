@@ -12,6 +12,7 @@ import {
   MAIL_TIMEOUT_MS,
   MAX_BODY_CHARS,
   MAX_BODY_FETCH_BYTES,
+  MAX_RECENT_MESSAGES,
   REPLACEMENT_CHARACTER,
   cleanBodyText,
   cutCodePoints,
@@ -369,6 +370,182 @@ export class ImapMailboxClient implements MailboxClient {
       presetTarget(preset),
       { username: input.username, appPassword: input.appPassword },
       limit,
+      MAIL_TIMEOUT_MS,
+    );
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* TRIGGER-MAIL-01 S1: the gateway-only recent-mail read.              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One unread Inbox message for mail triggers: the server's UID, the sender's
+ * address only (lower-case, no display name), the subject and the server's
+ * arrival time (INTERNALDATE). No body, no recipients, no Date header.
+ */
+export interface RecentMessage {
+  uid: number;
+  fromAddress: string;
+  subject: string;
+  arrivedAt: string;
+}
+
+export interface RecentMailList {
+  /** The Inbox's UIDVALIDITY, so a caller can key a message by (uidValidity, uid). */
+  uidValidity: number;
+  messages: RecentMessage[];
+}
+
+export interface RecentMailInput {
+  preset: MailPreset | string;
+  username: string;
+  appPassword: string;
+  /** Only messages that arrived at or after this instant are returned. */
+  since: Date;
+}
+
+export interface RecentMailClient {
+  listRecent(input: RecentMailInput): Promise<RecentMailList>;
+}
+
+const MAX_UID_VALIDITY = 0xffffffff;
+
+/** UIDVALIDITY is a non-zero 32-bit number (RFC 3501); anything else is refused. */
+export function uidValidityOf(mailbox: unknown): number {
+  const raw = mailbox && typeof mailbox === 'object' ? (mailbox as { uidValidity?: unknown }).uidValidity : undefined;
+  const value = typeof raw === 'bigint' ? Number(raw) : raw;
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > MAX_UID_VALIDITY) {
+    throw new Error('mail mailbox has no UIDVALIDITY');
+  }
+  return value;
+}
+
+/**
+ * IMAP SINCE matches whole days (the arrival date, ignoring time). The search asks
+ * from the UTC day before `since`, so no time zone of the server can leave a
+ * message out; the exact instant is applied after the fetch.
+ */
+export function searchDayBefore(since: Date): Date {
+  const day = new Date(Date.UTC(since.getUTCFullYear(), since.getUTCMonth(), since.getUTCDate()));
+  return new Date(day.getTime() - 24 * 60 * 60 * 1000);
+}
+
+function arrivalOf(value: Date | string | undefined): Date | null {
+  if (value === undefined) {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/** The sender's address only: control characters dropped, trimmed, cut at 300 characters, lower-case. */
+export function senderAddressOf(envelope: MessageEnvelopeObject | undefined): string {
+  return limitText(stripControls(envelope?.from?.[0]?.address || '').trim()).toLowerCase();
+}
+
+/** A fetched message that arrived at or after `since`, or null (no UID, no arrival time, or older). */
+export function recentFromFetch(message: FetchMessageObject, since: Date): RecentMessage | null {
+  const uid = message.uid;
+  if (typeof uid !== 'number' || !Number.isSafeInteger(uid) || uid < 1) {
+    return null;
+  }
+  const arrived = arrivalOf(message.internalDate);
+  if (!arrived || arrived.getTime() < since.getTime()) {
+    return null;
+  }
+  return {
+    uid,
+    fromAddress: senderAddressOf(message.envelope),
+    subject: limitText(message.envelope?.subject || ''),
+    arrivedAt: arrived.toISOString(),
+  };
+}
+
+/** Newest arrival first; the same arrival time by the higher UID first. */
+export function newestRecentFirst(messages: RecentMessage[]): RecentMessage[] {
+  return messages.slice().sort((left, right) => {
+    const byTime = Date.parse(right.arrivedAt) - Date.parse(left.arrivedAt);
+    return byTime !== 0 ? byTime : right.uid - left.uid;
+  });
+}
+
+/**
+ * TRIGGER-MAIL-01 S1: EXAMINE INBOX (read-only), UID SEARCH UNSEEN SINCE <the day
+ * before>, and one UID FETCH of UID, ENVELOPE and INTERNALDATE for the newest
+ * MAX_RECENT_MESSAGES UIDs. No BODY section is fetched, so nothing is marked read,
+ * and no command changes flags or the mailbox.
+ */
+export async function fetchRecentHeaders(
+  target: ImapSessionTarget,
+  auth: MailAuth,
+  since: Date,
+  timeoutMs: number,
+): Promise<RecentMailList> {
+  if (!(since instanceof Date) || Number.isNaN(since.getTime())) {
+    throw new Error('since must be an ISO time');
+  }
+  const client = new ImapFlow(buildImapOptions(target, auth, timeoutMs));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const secrets = [auth.appPassword, auth.username];
+  try {
+    const work = (async (): Promise<RecentMailList> => {
+      await client.connect();
+      const lock = await client.getMailboxLock('INBOX', { readOnly: true });
+      try {
+        const uidValidity = uidValidityOf(client.mailbox);
+        const found = await client.search({ seen: false, since: searchDayBefore(since) }, { uid: true });
+        if (!Array.isArray(found)) {
+          throw new Error('mail search failed');
+        }
+        const uids = found
+          .filter((uid) => Number.isSafeInteger(uid) && uid > 0)
+          .sort((left, right) => left - right)
+          .slice(-MAX_RECENT_MESSAGES);
+        if (uids.length === 0) {
+          return { uidValidity, messages: [] };
+        }
+        const fetched = await client.fetchAll(uids, {
+          uid: true,
+          envelope: true,
+          internalDate: true,
+        }, { uid: true });
+        const messages: RecentMessage[] = [];
+        for (const message of fetched) {
+          const recent = recentFromFetch(message, since);
+          if (recent) {
+            messages.push(recent);
+          }
+        }
+        return { uidValidity, messages: newestRecentFirst(messages).slice(0, MAX_RECENT_MESSAGES) };
+      } finally {
+        lock.release();
+      }
+    })();
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        client.close();
+        reject(new Error('mail request timed out'));
+      }, timeoutMs);
+    });
+    return await Promise.race([work, timeout]);
+  } catch (error) {
+    throw new Error(redact(errorText(error), secrets));
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    await closeQuietly(client);
+  }
+}
+
+export class ImapRecentMailClient implements RecentMailClient {
+  async listRecent(input: RecentMailInput): Promise<RecentMailList> {
+    const preset = mailPreset(input.preset);
+    return fetchRecentHeaders(
+      presetTarget(preset),
+      { username: input.username, appPassword: input.appPassword },
+      input.since,
       MAIL_TIMEOUT_MS,
     );
   }

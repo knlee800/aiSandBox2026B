@@ -54,6 +54,9 @@ import {
   CONNECTOR_TOOL_MISSING_MESSAGE,
   CONNECTOR_UNAVAILABLE_MESSAGE,
   ConnectorToolDefinition,
+  MAIL_RECENT_MAX_LOOKBACK_MS,
+  MAIL_RECENT_MAX_MESSAGES,
+  MAIL_RECENT_TOOL,
   MAIL_TOOL,
   findAllowlistedTool,
   isFixedConnectorFailure,
@@ -65,7 +68,10 @@ const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const SAFE_TOOL_NAME = /^[A-Za-z0-9_-]{1,64}$/;
 
 export type ConnectorAuditAction = 'connector_call' | 'connector_verify';
-/** TRIGGER-EVENT-01 S1: the gateway's own calendar window read is audited under its own action. */
+/**
+ * TRIGGER-EVENT-01 S1: the gateway's own calendar window read is audited under its own action.
+ * TRIGGER-MAIL-01 S1: the gateway's own recent-mail read uses the same action; the row names the tool.
+ */
 export type ConnectorAuditEvent = ConnectorAuditAction | 'connector_trigger_read';
 export type ConnectorAuditOutcome = 'ok' | 'error' | 'timeout';
 
@@ -96,6 +102,24 @@ export interface CalendarWindowEvent {
   title: string;
   start: string;
   end: string;
+}
+
+/**
+ * TRIGGER-MAIL-01 S1: one unread Inbox message from readRecentMail: the server's UID,
+ * the sender's address, the subject and the server's arrival time. Held in memory by
+ * the caller only: never stored, logged or audited.
+ */
+export interface RecentMailMessage {
+  uid: number;
+  fromAddress: string;
+  subject: string;
+  arrivedAt: string;
+}
+
+/** TRIGGER-MAIL-01 S1: the Inbox's UIDVALIDITY and its recent unread messages, newest first. */
+export interface RecentMailRead {
+  uidValidity: number;
+  messages: RecentMailMessage[];
 }
 
 const AUDIT_EVENT_TYPES: Record<ConnectorAuditEvent, string> = {
@@ -298,6 +322,92 @@ export class ConnectorBroker implements OnModuleDestroy {
     }
   }
 
+  /**
+   * TRIGGER-MAIL-01 S1: the gateway's own read of the owner's Inbox for mail
+   * triggers, with no session, request or agent. Built like readCalendarWindow: the
+   * same connection load (kind imap), decrypt, child, 25-second timeout, 64 KB result
+   * cap, in-flight limit and secret scrubbing, and one content-free
+   * `connector.trigger_read` audit row (counts, bytes, duration and outcome; never a
+   * sender, subject, UID or credential) per call. `since` is at most 2 hours back and
+   * not in the future. Returns the Inbox's UIDVALIDITY and, for at most 25 unread
+   * messages that arrived at or after `since`, newest first, the UID, the sender's
+   * address, the subject and the arrival time. No route reaches this method.
+   */
+  async readRecentMail(userId: unknown, since: Date): Promise<RecentMailRead> {
+    const started = Date.now();
+    if (!isUserId(userId)) {
+      throw new BadRequestException(INVALID_CONNECTOR_MESSAGE);
+    }
+    const action: ConnectorAuditEvent = 'connector_trigger_read';
+    const tool = MAIL_RECENT_TOOL;
+    const secrets: string[] = [];
+    let audited = false;
+    let slot = false;
+    let connectionId: string | null = null;
+    try {
+      assertConnectorCredentialsConfigured();
+      const sinceText = readSince(since, started);
+      const row = await this.loadConnection(userId, tool.kind);
+      connectionId = row.id;
+      const secret = decryptConnectorSecret(userId, tool.kind, row.secretCiphertext);
+      secrets.push(secret);
+      if (typeof row.username === 'string' && row.username.length > 0) {
+        secrets.push(row.username);
+      }
+      if (!isImapPreset(row.preset) || typeof row.username !== 'string' || row.username.length === 0) {
+        throw new ServiceUnavailableException(CONNECTOR_UNAVAILABLE_MESSAGE);
+      }
+      const preset: ImapPreset = row.preset;
+      if (this.inFlight >= CONNECTOR_MAX_IN_FLIGHT) {
+        await this.writeAudit(action, userId, tool.id, connectionId, started, 'error', 0, 0);
+        audited = true;
+        throw new ServiceUnavailableException(CONNECTOR_BUSY_MESSAGE);
+      }
+      this.inFlight += 1;
+      slot = true;
+      this.clearIdle();
+      const session = await this.ensureSession();
+      if (!this.sessionTools.get(session)?.has(tool.id)) {
+        throw new ServiceUnavailableException(CONNECTOR_TOOL_MISSING_MESSAGE);
+      }
+      const raw = await this.invoke(session, tool.id, {
+        preset,
+        username: row.username,
+        appPassword: secret,
+        since: sinceText,
+      });
+      // The username is not scrubbed from the result: it is the owner's own address,
+      // which is a valid sender. It is scrubbed from every log line.
+      const read = this.readResult(raw, [secret], secrets);
+      const mail = readRecentMessages(read.value, Date.parse(sinceText));
+      await this.writeAudit(
+        action,
+        userId,
+        tool.id,
+        connectionId,
+        started,
+        'ok',
+        mail.messages.length,
+        read.resultBytes,
+      );
+      audited = true;
+      return mail;
+    } catch (error) {
+      this.logFailure(error, secrets);
+      if (isMissingKey(error)) throw error;
+      if (!audited) {
+        const outcome: ConnectorAuditOutcome = error instanceof ConnectorTimeout ? 'timeout' : 'error';
+        await this.writeAudit(action, userId, tool.id, connectionId, started, outcome, 0, 0);
+      }
+      throw this.publicError(error);
+    } finally {
+      if (slot) {
+        this.inFlight -= 1;
+        this.armIdle();
+      }
+    }
+  }
+
   private async ensureSession(): Promise<ConnectorMcpSession> {
     if (this.session && this.reconciled) return this.session;
     if (!this.sessionPromise) {
@@ -383,14 +493,19 @@ export class ConnectorBroker implements OnModuleDestroy {
     });
   }
 
+  /**
+   * `secrets` are scrubbed from the result and from log lines; `logSecrets` (default
+   * `secrets`) from log lines only (TRIGGER-MAIL-01 S1: the mailbox username).
+   */
   private readResult(
     raw: unknown,
     secrets: string[],
+    logSecrets: string[] = secrets,
   ): { value: unknown; itemCount: number; resultBytes: number } {
     const body = toolText(raw);
     const resultBytes = Buffer.byteLength(body.text, 'utf8');
     if (body.isError) {
-      this.logScrubbed(body.text, secrets);
+      this.logScrubbed(body.text, logSecrets);
       throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
     }
     if (resultBytes > CONNECTOR_MAX_RESULT_BYTES) {
@@ -401,7 +516,7 @@ export class ConnectorBroker implements OnModuleDestroy {
       const value: unknown = JSON.parse(scrubbed);
       return { value, itemCount: countItems(value), resultBytes };
     } catch {
-      this.logScrubbed(body.text, secrets);
+      this.logScrubbed(body.text, logSecrets);
       throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
     }
   }
@@ -629,6 +744,64 @@ function readWindowEvents(value: unknown): CalendarWindowEvent[] {
     events.push({ uid, title, start, end });
   }
   return events;
+}
+
+/**
+ * TRIGGER-MAIL-01 S1: a valid instant, not after `nowMs` and at most 2 hours before
+ * it, as ISO text for the child.
+ */
+function readSince(since: unknown, nowMs: number): string {
+  if (!(since instanceof Date)) {
+    throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+  }
+  const sinceMs = since.getTime();
+  if (!Number.isFinite(sinceMs) || sinceMs > nowMs || nowMs - sinceMs > MAIL_RECENT_MAX_LOOKBACK_MS) {
+    throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+  }
+  return since.toISOString();
+}
+
+const MAX_UID_VALIDITY = 0xffffffff;
+
+function isPositiveInteger(value: unknown, max: number): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1 && value <= max;
+}
+
+/**
+ * TRIGGER-MAIL-01 S1: keeps exactly uidValidity and, per message, uid, fromAddress,
+ * subject and arrivedAt; a result of any other shape, or with more than 25 messages,
+ * is a failure. A message that arrived before `sinceMs` is left out.
+ */
+function readRecentMessages(value: unknown, sinceMs: number): RecentMailRead {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+  }
+  const record = value as { uidValidity?: unknown; messages?: unknown };
+  if (!isPositiveInteger(record.uidValidity, MAX_UID_VALIDITY)) {
+    throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+  }
+  const list = record.messages;
+  if (!Array.isArray(list) || list.length > MAIL_RECENT_MAX_MESSAGES) {
+    throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+  }
+  const messages: RecentMailMessage[] = [];
+  for (const item of list) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+    }
+    const { uid, fromAddress, subject, arrivedAt } = item as Record<string, unknown>;
+    if (
+      !isPositiveInteger(uid, Number.MAX_SAFE_INTEGER) ||
+      typeof fromAddress !== 'string' ||
+      typeof subject !== 'string' ||
+      !isInstantText(arrivedAt)
+    ) {
+      throw new BadGatewayException(CONNECTOR_RESULT_MESSAGE);
+    }
+    if (Date.parse(arrivedAt) < sinceMs) continue;
+    messages.push({ uid, fromAddress, subject, arrivedAt });
+  }
+  return { uidValidity: record.uidValidity, messages };
 }
 
 function isInstantText(value: unknown): value is string {
