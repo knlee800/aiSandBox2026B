@@ -71,6 +71,14 @@ export {
 export type { AgentEventTriggerTargetKind, AgentEventTriggerCalendarState } from './agent-event-trigger.entity';
 export { AgentEventTriggerRun, AGENT_EVENT_TRIGGER_RUN_OUTCOMES } from './agent-event-trigger-run.entity';
 export type { AgentEventTriggerRunOutcome } from './agent-event-trigger-run.entity';
+export {
+  AgentMailTrigger,
+  AGENT_MAIL_TRIGGER_TARGET_KINDS,
+  AGENT_MAIL_TRIGGER_MAIL_STATES,
+} from './agent-mail-trigger.entity';
+export type { AgentMailTriggerTargetKind, AgentMailTriggerMailState } from './agent-mail-trigger.entity';
+export { AgentMailTriggerRun, AGENT_MAIL_TRIGGER_RUN_OUTCOMES } from './agent-mail-trigger-run.entity';
+export type { AgentMailTriggerRunOutcome } from './agent-mail-trigger-run.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';

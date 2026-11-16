@@ -4,6 +4,8 @@ import { AuthModule } from '../auth/auth.module';
 import { ConnectorsModule } from '../connectors/connectors.module';
 import { AgentEventTrigger } from '../entities/agent-event-trigger.entity';
 import { AgentEventTriggerRun } from '../entities/agent-event-trigger-run.entity';
+import { AgentMailTrigger } from '../entities/agent-mail-trigger.entity';
+import { AgentMailTriggerRun } from '../entities/agent-mail-trigger-run.entity';
 import { AgentSchedule } from '../entities/agent-schedule.entity';
 import { AgentScheduleRun } from '../entities/agent-schedule-run.entity';
 import { AuditEventEntity } from '../entities/audit-event.entity';
@@ -17,6 +19,8 @@ import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
+import { MailTriggerController } from './mail-trigger.controller';
+import { MailTriggerService } from './mail-trigger.service';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -51,16 +55,25 @@ import { ScheduleTimer } from './schedule-timer';
  * start and first approval through the same CollaborationStartService as
  * schedules, and the skip reasons (event-trigger-reasons.ts) with their audit
  * rows (event-trigger-run.service.ts).
+ *
+ * TRIGGER-MAIL-01 S2: mail triggers ("when new mail from this sender arrives
+ * in my Inbox"): the two tables (migration 1812), the owner's routes under
+ * /api/mail-triggers with their audit rows (mail-trigger.controller.ts,
+ * mail-trigger.service.ts, mail-trigger-validation.ts) and the
+ * MAIL_TRIGGERS_ENABLED switch (mail-trigger-switch.ts). ConnectorConnection
+ * is read only to say whether the owner has a mail connection (a count of
+ * imap rows; no secret is read, no broker call). No timer, no mailbox read
+ * and no run start in S2.
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
+    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
     ConnectorsModule,
     OrchestrationModule,
     SafetyModule,
   ],
-  controllers: [ScheduleController, EventTriggerController],
+  controllers: [ScheduleController, EventTriggerController, MailTriggerController],
   providers: [
     ScheduleService,
     ScheduleRunService,
@@ -69,6 +82,7 @@ import { ScheduleTimer } from './schedule-timer';
     EventTriggerCalendar,
     EventTriggerRunService,
     EventTriggerTimer,
+    MailTriggerService,
   ],
   exports: [],
 })

@@ -28,6 +28,8 @@ import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
+import { MailTriggerController } from './mail-trigger.controller';
+import { MailTriggerService } from './mail-trigger.service';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleRunService } from './schedule-run.service';
 import { ScheduleService } from './schedule.service';
@@ -463,7 +465,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
 
     it('TriggersModule wires the controller, the services, the timer and the five repositories, and the app imports it', () => {
       // TRIGGER-EVENT-01 S2: the event trigger routes and their service join the schedule parts.
-      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController]);
+      // TRIGGER-MAIL-01 S2: the mail trigger routes join them.
+      expect(Reflect.getMetadata('controllers', TriggersModule)).toEqual([ScheduleController, EventTriggerController, MailTriggerController]);
       // TRIGGER-01 S2: the run service and the timer join the S1 service.
       expect(Reflect.getMetadata('providers', TriggersModule)).toEqual([
         ScheduleService,
@@ -474,6 +477,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         EventTriggerCalendar,
         EventTriggerRunService,
         EventTriggerTimer,
+        // TRIGGER-MAIL-01 S2: the mail trigger service (no timer, no mailbox read, no run start).
+        MailTriggerService,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
@@ -481,7 +486,7 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       );
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User])',
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -508,6 +513,10 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
           'event-trigger-validation.ts',
           'event-trigger.controller.ts',
           'event-trigger.service.ts',
+          'mail-trigger-switch.ts',
+          'mail-trigger-validation.ts',
+          'mail-trigger.controller.ts',
+          'mail-trigger.service.ts',
           'schedule-due.ts',
           'schedule-refusal.ts',
           'schedule-run.service.ts',
@@ -522,7 +531,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       const source = (name: string) => readFileSync(join(__dirname, name), 'utf8');
       // The S1 files (and the pure S2 helpers) still have no timer, no run start and no boot hook.
       // TRIGGER-EVENT-01 S2: the event trigger files likewise (no timer, no run start in S2).
-      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts']) {
+      // TRIGGER-MAIL-01 S2: the mail trigger files likewise (no timer, no run start in S2).
+      for (const name of ['schedule-switch.ts', 'schedule-validation.ts', 'schedule.controller.ts', 'schedule.service.ts', 'schedule-due.ts', 'schedule-refusal.ts', 'event-trigger-switch.ts', 'event-trigger-validation.ts', 'event-trigger.controller.ts', 'event-trigger.service.ts', 'mail-trigger-switch.ts', 'mail-trigger-validation.ts', 'mail-trigger.controller.ts', 'mail-trigger.service.ts']) {
         expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep/);
       }
       // TRIGGER-01 S2: the interval and the boot hook only in the timer; start and approve only in the run service.
@@ -561,6 +571,15 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       // The schedule timer and run service never reach the event parts.
       expect(source('schedule-timer.ts')).not.toMatch(/EventTrigger/);
       expect(source('schedule-run.service.ts')).not.toMatch(/EventTrigger/);
+      // TRIGGER-MAIL-01 S2: the mail files read no mailbox and reach no broker; the mail flag is
+      // read once, in the service's list; the schedule and event parts never reach the mail parts.
+      for (const name of ['mail-trigger-switch.ts', 'mail-trigger-validation.ts', 'mail-trigger.controller.ts', 'mail-trigger.service.ts']) {
+        expect(source(name)).not.toMatch(/ConnectorBroker|ConnectorsModule|readRecentMail|callConnectorTool|mail_list_recent|ScheduleRunService|EventTriggerRunService/);
+      }
+      expect(source('mail-trigger.service.ts').match(/isMailTriggersEnabled\(\)/g)).toHaveLength(1);
+      for (const name of ['schedule-timer.ts', 'schedule-run.service.ts', 'event-trigger-timer.ts', 'event-trigger-run.service.ts', 'event-trigger-calendar.ts']) {
+        expect(source(name)).not.toMatch(/MailTrigger|isMailTriggersEnabled/);
+      }
     });
   });
 });
