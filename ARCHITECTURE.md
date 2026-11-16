@@ -283,7 +283,7 @@ Owns:
 - Provider adapter registry (Anthropic, OpenAI, Groq, xAI, DeepSeek, stub)
 - Plain single-shot execution path (AIExecutionService → adapter → provider API) — **CURRENT private-beta path**
 - Agent Harness multi-turn tool loop (**GATED — not private-beta default**; see §12)
-- Harness tools registered per signed job: the `read`, `review`, `write` and `agent-write` tool profiles (COLLAB-WRITE-01, ACCESS-01C); `search_knowledge` / `read_knowledge` only with signed `knowledgeScopes` (KNOW-02); connector tools only with signed `connectorGrants` (CONN-GRANT-01). The HARNESS_ENTITLEMENT_PROOF_V1 check runs before any tool registers
+- Harness tools registered per signed job: the `read`, `review`, `write` and `agent-write` tool profiles (COLLAB-WRITE-01, ACCESS-01C); `search_knowledge` / `read_knowledge` only with signed `knowledgeScopes` (KNOW-02); connector tools only with signed `connectorGrants` (CONN-GRANT-01); `read_run_result` only with signed `runResultRead` on a read-profile Chief of Staff or workflow step (RESULT-TOOL-01), GATED by `RUN_RESULT_TOOL_ENABLED`. The HARNESS_ENTITLEMENT_PROOF_V1 check runs before any tool registers
 - Redis Pub/Sub execution stream publishing
 - Per-builder harness config adapter
 - `usage_records` finalization (status, tokens, result metadata)
@@ -749,7 +749,10 @@ POST /api/internal/collaboration/runs/:id/referrals/:referralId/reject
 GET  /api/internal/collaboration/runs/:id
 POST /api/internal/knowledge/search
 POST /api/internal/knowledge/read
+POST /api/internal/collaboration/results/read
 ```
+
+`POST /api/internal/collaboration/results/read` (RESULT-TOOL-01) returns the final answer of one completed run of the given owner, cut to 12,000 characters, with the finish time and the workflow name; it reads only, never settles a run and never marks a result seen; a run that is missing, not completed or another owner's is one 404.
 
 `POST /api/internal/connectors/call` (CONN-02B) runs one allowlisted connector tool for a user who has that connection; it is behind the global InternalServiceAuthGuard like the other `/api/internal/` routes, and since CONN-GRANT-01 it also requires `executionId` and a per-job `grantToken` minted by the Gateway (HMAC under a key derived from CONNECTOR_CREDENTIALS_KEY, bound to the execution, the user and the granted tools, 2-hour expiry); a missing or invalid token is refused with 403 before the broker runs.
 
@@ -1222,7 +1225,7 @@ The system uses mixed communication mechanisms. It is neither HTTP-only nor queu
 | container-manager | API Gateway | HTTP (session lifecycle + `POST /api/internal/git-checkpoints`) |
 | API Gateway | connectors-mcp | stdio child process (MCP over stdio, spawned by absolute path with only PATH and NODE_ENV; CONN-02B) |
 | API Gateway | Discord | Outbound WebSocket and HTTPS (CHAT-DISCORD-01; no inbound address) |
-| AI Service Worker (Harness, gated) | API Gateway | HTTP (`POST /api/internal/knowledge/search` and `/read`, KNOW-02; `POST /api/internal/connectors/call` with the per-job grant token, CONN-GRANT-01) |
+| AI Service Worker (Harness, gated) | API Gateway | HTTP (`POST /api/internal/knowledge/search` and `/read`, KNOW-02; `POST /api/internal/connectors/call` with the per-job grant token, CONN-GRANT-01; `POST /api/internal/collaboration/results/read`, RESULT-TOOL-01) |
 | API Gateway (in-process) | PostgreSQL | `CollaborationSweepWorker` every 5 minutes: settles finished runs, expires hand-offs waiting more than 24 hours, recovers unprocessed hand-off requests (COLLAB-CHOOSE-01, COLLAB-HANDOFF-RECOVER-01) |
 
 **Transport types in use:**
