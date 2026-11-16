@@ -89327,7 +89327,7 @@ taskId=TRIGGER-MORE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MORE-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 3 slice S1 (tables, service, routes, switch) — 2026-11-16. Stage-start docs/TRIGGER-MORE-01-STAGE-START.md drafted by a fable subagent (bcdcb93, fast-forwarded; its main facts checked against the code by the control plane: runs settle lazily with no finished event, knowledge has one upsert write path and TIMESTAMP columns without a zone, the knowledge route accepts an API key, no agent tool reads another run's result). Keith approved it on 2026-11-16 ("Yes, approve all"): all sixteen recommendations of section 11 (split the three triggers; the knowledge-file trigger first in this task's Step 3; TRIGGER-CHAIN-01 later with a new read-only result tool and completed runs only; TRIGGER-WEBHOOK-01 last, nothing from the request in the task, not on staging before the beta decision; knowledge: one run per batch, new or replaced content, the folder, time and document ids only, the first step without a click, 3 triggers per owner and 5 starts per trigger per day, a folder the Chief of Staff cannot read refused and a warning for a workflow, a new KNOWLEDGE_TRIGGERS_ENABLED, nothing read or recorded while runs are off, the page section as slice S3, the switch back off after the live check). The tasks the split names are registered at this task's LOCK. /api/schedules, /api/event-triggers and /api/mail-triggers stay as frozen. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MORE-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-MORE-01
 **Title:** Later triggers
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89335,12 +89335,12 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP
 **Start condition:** READY for Step 2 (Keith chose it, 2026-11-16, "Start TRIGGER-MORE-01"; TRIGGER-LIVE-01 LOCKED). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith chooses. Keith decides. (Corrected 2026-11-15 by the TRIGGER-EVENT-01 LOCK, F13: the words about TRIGGER-MAIL-01 had been copied from that task.)
 **Depends on:** TRIGGER-LIVE-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-MORE-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** slice S1 (set 2026-11-16): services/api-gateway/src/migrations/1813000000000-CreateAgentKnowledgeTriggerTables.ts, services/api-gateway/src/migrations/__tests__/1813000000000-CreateAgentKnowledgeTriggerTables.spec.ts, services/api-gateway/src/entities/agent-knowledge-trigger.entity.ts, services/api-gateway/src/entities/agent-knowledge-trigger-run.entity.ts, services/api-gateway/src/entities/index.ts, services/api-gateway/src/triggers/knowledge-trigger-switch.ts, services/api-gateway/src/triggers/knowledge-trigger-switch.spec.ts, services/api-gateway/src/triggers/knowledge-trigger.service.ts, services/api-gateway/src/triggers/knowledge-trigger.service.spec.ts, services/api-gateway/src/triggers/knowledge-trigger.controller.ts, services/api-gateway/src/triggers/knowledge-trigger.controller.spec.ts, services/api-gateway/src/triggers/knowledge-trigger-validation.ts, services/api-gateway/src/triggers/knowledge-trigger-validation.spec.ts, services/api-gateway/src/triggers/triggers.module.ts, services/api-gateway/src/triggers/schedule.controller.spec.ts, ops/clean-baseline/env/gateway.env.template. Slices S2 and S3: stage-start section 8, set at each admission. Was: set at admission.
+**Mutexes / resources:** slice S1: GATEWAY, MIGRATION, ENV (2026-11-16); S2: GATEWAY; S3: FRONTEND, I18N. Was: Step 2: none (write set docs/TRIGGER-MORE-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
+**Hot-file leases:** none (2026-11-16; every shared file is under GATEWAY or FRONTEND). Was: set at admission.
+**Shared contracts:** /api/schedules, /api/event-triggers and /api/mail-triggers stay as frozen (not touched); the /api/knowledge-triggers shapes of stage-start section 5 freeze when S1 lands; no slice edits anything under orchestration/, knowledge/, chat/, ai/, auth/, guards/ or safety/ (HARNESS_ENTITLEMENT_PROOF_V1 untouched). Was: set at admission.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** per slice (2026-11-16). Was: set at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-16).
