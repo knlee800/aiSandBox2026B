@@ -88983,7 +88983,7 @@ taskId=STAGING-DEPLOY-EVENT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-16 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed f32d88b to 60fe280 (rc 0; migration 1811 after the pre-migration backup, hash 03e88640 to 2bbd0c4f; both event-trigger tables, the unique (trigger_id, occurrence_key) index, 6 CHECKs and 2 cascades present); the connector server lists calendar_list_window; every earlier deploy, provider, chat and schedule check passed; the event-trigger routes refuse without a session (401), with an API key alone (401) and cross-origin (403); EVENT_TRIGGERS_ENABLED=false added to gateway.env and the gateway restarted (new baseline 23c838b8; ai.env 721f4772 and the Caddyfile unchanged); runs, schedules and event triggers off. Keith checked the Before a meeting section ("Done, calendar connected"): created two triggers, changed one, deleted one, two languages, phone width; the host saw 4 audit rows with ids and the target kind only, the marker words in no audit row and no log line, his calendar connection present, and no calendar read (0 connector.trigger_read rows). Checkpoint: docs/STAGING-DEPLOY-EVENT-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-16 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-15 by the TRIGGER-EVENT-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-EVENT-01
 **Title:** Deploy event triggers and check the page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89024,6 +89024,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (event triggers are not current until TRIGGER-EVENT-LIVE-01).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From TRIGGER-EVENT-01 (stage-start section 13, F1): in a phased run window with the stored Anthropic test key and write tools off: EVENT_TRIGGERS_ENABLED on with runs off reads nothing; a calendar event with a marker word and a matching Chief of Staff trigger starts one read-only run at start minus lead, first step approved by the owner, the answer names the meeting, Results unread +1; a gateway restart makes no second run; a deleted event is skipped as event_changed (also showing how fresh the feed is); all-day and non-matching events make no row; the daily cap skip; the marker absent from logs, audit and both tables; read counts and credits recorded; everything restored byte for byte. The LOCK lands the PRD.md and ARCHITECTURE.md wording of stage-start section 14 in Keith's words, holding GOVERNANCE.
+
+Note (STAGING-DEPLOY-EVENT-01 LOCK, 2026-11-16): staging runs 60fe280 with EVENT_TRIGGERS_ENABLED=false and runs off; the gateway.env baseline is now 23c838b8 (ai.env 721f4772); the run window starts from those and restores them byte for byte. Keith's calendar is connected (one ical row). Keith's PINEAPPLE20 trigger (Chief of Staff, lead 30, title word PINEAPPLE21) is on his account; the live check makes its own events and triggers.
 
 ### CONN-CAL-FIXES-01 — Calendar tool: the owner's response and cancelled events
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
