@@ -84348,6 +84348,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F6): the privacy inventory gains agent_m
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F7 and F13): the privacy inventory gains agent_knowledge_triggers.task and agent_knowledge_trigger_runs.document_id and changed_at; the knowledge route accepts an API key, so a script holding the owner's key can start runs through a knowledge trigger (bounded by the day limit); and review the per-user daily cap (default 500 credits) before several trigger types are switched on together: the three live types can already spend 348 to 551 credits a day at their limits, all six 888 to 1,406.
 
+Note (RESULT-TOOL-01 LOCK, 2026-11-16, F7): the inventory gains one internal route (POST /api/internal/collaboration/results/read) and one grant (runResultRead). The existing GET /api/internal/collaboration/runs/:id has no owner check, returns every step and settles the run; nothing in the AI service calls it today; decide whether to remove or owner-scope it.
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -88762,6 +88764,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs ("started
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs ("started by a new file").
 
+Note (RESULT-TOOL-01 LOCK, 2026-11-16, F8): if the owner should see that a run read another run's result, show it with the run's origin.
+
 ### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-SESSION-01
@@ -88870,6 +88874,8 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F8): the switch line names EVENT_TRIGGE
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F7): the switch line also names MAIL_TRIGGERS_ENABLED.
 
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F8): the switch line also names KNOWLEDGE_TRIGGERS_ENABLED.
+
+Note (RESULT-TOOL-01 LOCK, 2026-11-16, F7): the switch line also names RUN_RESULT_TOOL_ENABLED.
 
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89317,6 +89323,8 @@ Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the live check showed that a mail-
 
 Note (TRIGGER-KNOW-LIVE-01 LOCK, 2026-11-16): knowledge-triggered runs read document text with read_knowledge; a planted instruction in a test document reached the run, which mentioned it and did not follow it. Name knowledge document text in the Chief of Staff's data rule too, and add a knowledge-triggered eval case.
 
+Note (RESULT-TOOL-01 LOCK, 2026-11-16, F3): correction to the TRIGGER-KNOW-LIVE-01 note: the rule already names document text (system-agent-registry.ts:310); only mail bodies are missing. Also name earlier run results (read_run_result), add an eval case for a run reading a result that carries a planted instruction, and have the Chief of Staff eval model RUN_RESULT_TOOL_ENABLED on (today it models it off; briefing-prompt.ts). Changing the rules text changes every workflow's version (USER_WORKFLOW_RULES is pinned equal to it by user-workflow-rules.spec.ts and is in each workflow's version hash), so each workflow then needs a new test run before normal use.
+
 ### CONN-MAIL-AUTH-STATE-01 — A distinct sign-in-refused state for the mailbox
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CONN-MAIL-AUTH-STATE-01
@@ -89427,7 +89435,7 @@ taskId=RESULT-TOOL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 (exclusive) — Step 3 slice S3 (the AI-service tool; changes HARNESS_ENTITLEMENT_PROOF_V1) — 2026-11-16. Slice S2 landed on main as fade71ab (opus subagent, fast-forwarded): collaboration-result-grant.ts sets runResultRead: true on the signed job only while RUN_RESULT_TOOL_ENABLED is exactly true, the job is harness v1 with the read profile and read-only, and the step is the Chief of Staff or a workflow's own step (a workflow step whose target is a system-agent id refused); added in orchestration.service.ts after the connector grants and before the proof, so the payload digest covers it; the proof code and claim string unchanged (the declared HARNESS_ENTITLEMENT_PROOF_V1 change); the env template line; the control plane read the job-build diff and reran the gates (gateway 6201 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). GATEWAY and ENV released. Was: ADMITTED — Lane 1 (exclusive) — Step 3 slice S2 (the grant and the switch; changes HARNESS_ENTITLEMENT_PROOF_V1) — 2026-11-16. Slice S1 landed on main as 7868a17 (opus subagent 32d20b0, cherry-picked because main had moved; its write set expanded by the control plane to the spec that pins the module's controller list): POST /api/internal/collaboration/results/read behind the existing global internal-service guard (unchanged), the owner's own completed run by id and owner in one query, the final answer cut to 12,000 characters with a truncated flag, one fixed 404 for every miss, no write (no settle, no result_seen_at); the control plane read the diff and reran the gates (gateway 6145 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The route's request and response shapes are frozen for S3. Keith agreed on 2026-11-16 ("Yes, go ahead") that S2 and S3 change the frozen contract HARNESS_ENTITLEMENT_PROOF_V1 with a new signed job field runResultRead, running alone in Lane 1 (exclusive capacity), re-frozen at LOCK (the CONN-GRANT-01 precedent). Was: ADMITTED — Lane 1 — Step 3 slice S1 (the internal results route) — 2026-11-16. Stage-start docs/RESULT-TOOL-01-STAGE-START.md drafted by a fable subagent (3f8245a, fast-forwarded; its main facts checked against the code by the control plane: the workflows' rules are pinned equal to the Chief of Staff's by a spec, the existing internal run route has no owner check, the job proof digests the whole canonical job). Keith approved it on 2026-11-16 ("Yes, approve all"): all eight recommendations of section 11 (read_run_result for the Chief of Staff and every workflow by default; a switch RUN_RESULT_TOOL_ENABLED, default off; its own deploy and live-check tasks before TRIGGER-CHAIN-01; completed runs only; no list tool now; a tool read does not mark the result seen; escaped run_result tags and a fixed worker line, the rules text left to COS-MAIL-BODY-RULE-01; answers cut to 12,000 characters). Slices S2 and S3 add a signed job field in orchestration.service.ts, job.types.ts and worker.processor.ts, files of the frozen contract HARNESS_ENTITLEMENT_PROOF_V1; their admission declares that change (the CONN-GRANT-01 precedent). The tasks the stage-start names are registered at this task's LOCK. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start RESULT-TOOL-01". Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-16. LANE-DONE and LOCKED by the control plane; Lane 1, exclusive capacity and every mutex released. The read_run_result tool is built (not deployed), with RUN_RESULT_TOOL_ENABLED off by default. S1 (7868a17, from 32d20b0) the internal route POST /api/internal/collaboration/results/read behind the existing global internal guard: the owner's own completed run by id and owner, the answer cut to 12,000 characters, one fixed 404 for every miss, no write (no settle, no result_seen_at). S2 (fade71a) runResultRead on the signed job only while the switch is exactly true, for harness v1 read-only steps of the Chief of Staff or a workflow, added before the proof so its digest covers it. S3 (5252393, from 36ffbe9) the AI-service tool registered only after the proof verifies, for the read profile and runResultRead exactly true; userId from the job; the answer in escaped run_result tags with a fixed system-prompt line; one fixed error text. HARNESS_ENTITLEMENT_PROOF_V1 changed as declared (job.types.ts, worker.processor.ts, orchestration.service.ts; the proof code and claim string unchanged) and is re-frozen with the same four paths. Write sets expanded twice by the control plane for specs that pin lists (orchestration.persistence.spec.ts, briefing-worker-pin.spec.ts). All three slices by opus. Control-plane gates: gateway 6201 passed, 7 skipped, the 14 known smoke.integration failures; ai-service 1407 passed, 1 skipped; builds and tsc rc 0. No result text in logs or audit rows. Checkpoint: docs/RESULT-TOOL-01-CHECKPOINT.md. FOLLOWUPS: 4 registered (STAGING-DEPLOY-RESULTTOOL-01; RESULT-TOOL-LIVE-01; RESULT-LIST-01; RESULT-GRANT-FORM-01) / 6 superseded (F3 and the eval switch-on by COS-MAIL-BODY-RULE-01; F6 by TRIGGER-CHAIN-01; F7 by GOV-CHECKLIST-01 and ACCESS-READY-01; F8 by TRIGGER-ORIGIN-01; the unowned internal run route by ACCESS-READY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 (exclusive) — Step 3 slice S3 (the AI-service tool; changes HARNESS_ENTITLEMENT_PROOF_V1) — 2026-11-16. Slice S2 landed on main as fade71ab (opus subagent, fast-forwarded): collaboration-result-grant.ts sets runResultRead: true on the signed job only while RUN_RESULT_TOOL_ENABLED is exactly true, the job is harness v1 with the read profile and read-only, and the step is the Chief of Staff or a workflow's own step (a workflow step whose target is a system-agent id refused); added in orchestration.service.ts after the connector grants and before the proof, so the payload digest covers it; the proof code and claim string unchanged (the declared HARNESS_ENTITLEMENT_PROOF_V1 change); the env template line; the control plane read the job-build diff and reran the gates (gateway 6201 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). GATEWAY and ENV released. Was: ADMITTED — Lane 1 (exclusive) — Step 3 slice S2 (the grant and the switch; changes HARNESS_ENTITLEMENT_PROOF_V1) — 2026-11-16. Slice S1 landed on main as 7868a17 (opus subagent 32d20b0, cherry-picked because main had moved; its write set expanded by the control plane to the spec that pins the module's controller list): POST /api/internal/collaboration/results/read behind the existing global internal-service guard (unchanged), the owner's own completed run by id and owner in one query, the final answer cut to 12,000 characters with a truncated flag, one fixed 404 for every miss, no write (no settle, no result_seen_at); the control plane read the diff and reran the gates (gateway 6145 passed, 7 skipped, the 14 known smoke.integration failures only; tsc and build rc 0). The route's request and response shapes are frozen for S3. Keith agreed on 2026-11-16 ("Yes, go ahead") that S2 and S3 change the frozen contract HARNESS_ENTITLEMENT_PROOF_V1 with a new signed job field runResultRead, running alone in Lane 1 (exclusive capacity), re-frozen at LOCK (the CONN-GRANT-01 precedent). Was: ADMITTED — Lane 1 — Step 3 slice S1 (the internal results route) — 2026-11-16. Stage-start docs/RESULT-TOOL-01-STAGE-START.md drafted by a fable subagent (3f8245a, fast-forwarded; its main facts checked against the code by the control plane: the workflows' rules are pinned equal to the Chief of Staff's by a spec, the existing internal run route has no owner check, the job proof digests the whole canonical job). Keith approved it on 2026-11-16 ("Yes, approve all"): all eight recommendations of section 11 (read_run_result for the Chief of Staff and every workflow by default; a switch RUN_RESULT_TOOL_ENABLED, default off; its own deploy and live-check tasks before TRIGGER-CHAIN-01; completed runs only; no list tool now; a tool read does not mark the result seen; escaped run_result tags and a fixed worker line, the rules text left to COS-MAIL-BODY-RULE-01; answers cut to 12,000 characters). Slices S2 and S3 add a signed job field in orchestration.service.ts, job.types.ts and worker.processor.ts, files of the frozen contract HARNESS_ENTITLEMENT_PROOF_V1; their admission declares that change (the CONN-GRANT-01 precedent). The tasks the stage-start names are registered at this task's LOCK. Was: ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start RESULT-TOOL-01". Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
 **Task ID:** RESULT-TOOL-01
 **Title:** A read-only agent tool that reads one of the owner's finished run results
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89444,6 +89452,102 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
 **writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-16).
 **Scope:** From TRIGGER-MORE-01 (stage-start section 2 and Q3, F3): no agent tool reads another run's result. A read-only harness tool that returns the final answer of one of the owner's own finished runs as tool data (never instructions), through an internal gateway route with the internal guard, granted to the Chief of Staff and to workflows; needed by TRIGGER-CHAIN-01 and useful to the Chief of Staff on its own. Opus (an internal route, a new grant).
+
+### STAGING-DEPLOY-RESULTTOOL-01 — Deploy the run-result tool
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-RESULTTOOL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-RESULTTOOL-01
+**Title:** Deploy the run-result tool
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** RESULT-TOOL-01.
+**Primary write scope:** records; host state (deploy; gateway.env gains RUN_RESULT_TOOL_ENABLED=false, a new baseline).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers and their tools are not current until proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From RESULT-TOOL-01 (stage-start F4, Keith's Q3): deploy main with RESULT-TOOL-01 (no migration); the earlier deploy checks; the internal results route refuses without the internal key; RUN_RESULT_TOOL_ENABLED=false added to gateway.env (a new baseline); the gateway and the AI worker boot; no run reads a result while the switch is off. Runs stay off; no credits.
+
+### RESULT-TOOL-LIVE-01 — Live run-result tool check and its wording
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULT-TOOL-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
+**Task ID:** RESULT-TOOL-LIVE-01
+**Title:** Live run-result tool check and its wording
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-RESULTTOOL-01 is locked and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-RESULTTOOL-01.
+**Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held in the LOCK record).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers and their tools are not current until proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From RESULT-TOOL-01 (stage-start section 9, F5): in a run window with the stored Anthropic test key and write tools off: with the switch off a Chief of Staff run whose task names a completed run id gets no read_run_result tool; with it on the same task makes one read_run_result call and uses the source run's text; a failed, an active and a made-up run id each give the same not-found text; a workflow run reads it too; a source result quoting a planted instruction is mentioned, not followed; the source run's result_seen_at and status are unchanged; no answer text in gateway logs or audit rows; env files restored byte for byte. The LOCK lands the wording of stage-start section 10 in Keith's words, holding GOVERNANCE.
+
+### RESULT-LIST-01 — A read-only tool that lists the owner's recent completed results
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULT-LIST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
+**Task ID:** RESULT-LIST-01
+**Title:** A read-only tool that lists the owner's recent completed results
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** RESULT-TOOL-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ (an internal list route), services/ai-service/src/agent-harness/tools/ and worker/.
+**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected; HARNESS_ENTITLEMENT_PROOF_V1 if the grant changes).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers and their tools are not current until proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From RESULT-TOOL-01 (stage-start F1, Keith's Q5: not now): a read-only list of the owner's recent completed results (ids, workflow name, finish time; no text) so the Chief of Staff can find a result without being given an id. Needs decisions on whether Chief of Staff chats and test runs appear.
+
+### RESULT-GRANT-FORM-01 — Show the run-result access on the workflow form and in the registry
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULT-GRANT-FORM-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
+**Task ID:** RESULT-GRANT-FORM-01
+**Title:** Show the run-result access on the workflow form and in the registry
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** RESULT-TOOL-01.
+**Primary write scope:** PROVISIONAL: frontend/components/team/ (the workflow form), services/api-gateway/src/system-agents/system-agent-registry.ts, services/api-gateway/src/user-agent/, the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From RESULT-TOOL-01 (stage-start F2 and P2, Keith's Q1: every workflow by default for now): show the run-result access on the workflow form and in the registry's access (a fixed line or a tick, the never-do list, the version material), with i18n; decide then whether it becomes a per-workflow tick. A tick changes each ticked workflow's version, which then needs a new test run.
 
 ### TRIGGER-CHAIN-01 — Start a workflow after another workflow finishes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89468,6 +89572,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TRIGGER-MORE-01 (stage-start section 2, Q3 and Q4, F2): when one of the owner's own workflows completes (completed only; never the Chief of Staff as source, never a test run), start the Chief of Staff or another of the owner's workflows with a saved task plus the finished run's id, status and finish time; the next agent reads the answer with RESULT-TOOL-01. Polls collaboration_runs (runs settle lazily, so up to about 6 minutes late; a run-finished event is a possible later improvement); loops bounded by a cycle check at save, a depth limit of 3 (chain_depth) and 5 starts per trigger per day; own tables, /api/chain-triggers, CHAIN_TRIGGERS_ENABLED, a Schedules page section; its own stage-start, deploy and live check.
+
+Note (RESULT-TOOL-01 LOCK, 2026-11-16, F6): its start condition also needs RUN_RESULT_TOOL_ENABLED on and RESULT-TOOL-LIVE-01 locked; its task text should name read_run_result and the finished run's id; its stage-start can rely on the frozen route POST /api/internal/collaboration/results/read and the signed field runResultRead.
 
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
