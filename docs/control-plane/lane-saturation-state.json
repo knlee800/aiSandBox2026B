@@ -27,6 +27,7 @@
         "services/ai-service/src/worker/connector-grants.spec.ts",
         "services/ai-service/src/worker/worker.processor.ts",
         "services/ai-service/src/worker/worker.processor.spec.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-worker-pin.spec.ts",
         "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
         "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts"
       ],
@@ -7133,6 +7134,7 @@
         "services/ai-service/src/worker/connector-grants.spec.ts",
         "services/ai-service/src/worker/worker.processor.ts",
         "services/ai-service/src/worker/worker.processor.spec.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-worker-pin.spec.ts",
         "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
         "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts"
       ],
