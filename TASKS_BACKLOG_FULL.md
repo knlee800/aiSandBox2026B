@@ -89557,22 +89557,22 @@ taskId=TRIGGER-CHAIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-CHAIN-01". Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-01
 **Title:** Start a workflow after another workflow finishes
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: RESULT-TOOL-01 is locked and Keith decides.
+**Start condition:** READY for Step 2 (Keith chose it, 2026-11-16, "Start TRIGGER-CHAIN-01"; RESULT-TOOL-01 and RESULT-TOOL-LIVE-01 LOCKED; the switch RUN_RESULT_TOOL_ENABLED is off on staging and is turned on by this task's own live check). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: RESULT-TOOL-01 is locked and Keith decides.
 **Depends on:** RESULT-TOOL-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), a migration, frontend/components/schedules/, the three message files.
-**Mutexes / resources:** set at admission (GATEWAY, MIGRATION, ENV, FRONTEND, I18N by slice).
+**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-CHAIN-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-16).
 **Scope:** From TRIGGER-MORE-01 (stage-start section 2, Q3 and Q4, F2): when one of the owner's own workflows completes (completed only; never the Chief of Staff as source, never a test run), start the Chief of Staff or another of the owner's workflows with a saved task plus the finished run's id, status and finish time; the next agent reads the answer with RESULT-TOOL-01. Polls collaboration_runs (runs settle lazily, so up to about 6 minutes late; a run-finished event is a possible later improvement); loops bounded by a cycle check at save, a depth limit of 3 (chain_depth) and 5 starts per trigger per day; own tables, /api/chain-triggers, CHAIN_TRIGGERS_ENABLED, a Schedules page section; its own stage-start, deploy and live check.
 
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F6): its start condition also needs RUN_RESULT_TOOL_ENABLED on and RESULT-TOOL-LIVE-01 locked; its task text should name read_run_result and the finished run's id; its stage-start can rely on the frozen route POST /api/internal/collaboration/results/read and the signed field runResultRead.
