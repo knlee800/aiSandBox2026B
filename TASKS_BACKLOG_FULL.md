@@ -89427,22 +89427,22 @@ taskId=RESULT-TOOL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start RESULT-TOOL-01". Was: READY — registered 2026-11-16 by the TRIGGER-MORE-01 LOCK — not admitted.
 **Task ID:** RESULT-TOOL-01
 **Title:** A read-only agent tool that reads one of the owner's finished run results
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (needed before TRIGGER-CHAIN-01).
+**Lifecycle:** 4-STEP (set 2026-11-16 at admission: an internal route and a new agent grant are security-sensitive, Task Workflow Rules). Was: 3-STEP.
+**Start condition:** READY for Step 2 (Keith chose it, 2026-11-16, "Start RESULT-TOOL-01"; TRIGGER-LIVE-01 LOCKED). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith decides (needed before TRIGGER-CHAIN-01).
 **Depends on:** TRIGGER-MORE-01.
 **Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/tools/, an internal gateway route under services/api-gateway/src/orchestration/ or a new module, the grant lists.
-**Mutexes / resources:** set at admission (AI-SERVICE, GATEWAY expected).
+**Mutexes / resources:** Step 2: none (write set docs/RESULT-TOOL-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-16).
 **Scope:** From TRIGGER-MORE-01 (stage-start section 2 and Q3, F3): no agent tool reads another run's result. A read-only harness tool that returns the final answer of one of the owner's own finished runs as tool data (never instructions), through an internal gateway route with the internal guard, granted to the Chief of Staff and to workflows; needed by TRIGGER-CHAIN-01 and useful to the Chief of Staff on its own. Opus (an internal route, a new grant).
 
 ### TRIGGER-CHAIN-01 — Start a workflow after another workflow finishes
