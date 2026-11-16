@@ -2420,6 +2420,125 @@
         "knowledge_trigger_workflow_not_found": "找不到该工作流。",
         "knowledge_trigger_limit_reached": "您已达到 3 个文件触发器的上限。请先删除一个才能新增。"
       }
+    },
+    "chain": {
+      "title": "工作流完成后",
+      "subtitle": "当您的某个工作流完成一次运行时，启动另一次运行。",
+      "loading": "正在加载工作流触发器…",
+      "loadError": "无法加载工作流触发器。",
+      "retry": "重试",
+      "forbiddenTitle": "无法使用工作流触发器",
+      "forbiddenBody": "您的账号开启团队运行后，工作流触发器就会显示在这里。",
+      "banner": {
+        "off": "工作流触发器已关闭，不会启动任何运行。",
+        "runsOff": "此平台已关闭运行功能，因此每次启动都会被跳过。",
+        "resultToolOff": "运行结果工具已关闭，因此在重新开启之前，工作流完成后不会启动任何运行。"
+      },
+      "delayNotice": "来源工作流完成后的几分钟内会启动一次运行。只有最近一小时内完成的运行才会计入；在此功能关闭期间完成的运行不会启动任何东西。",
+      "privacyNotice": "下一次运行只会被告知已完成运行的编号和时间，并由它自己读取结果。平台不会为了启动运行而读取结果内容。",
+      "limit": "已使用 {count} / {limit} 个工作流触发器",
+      "limitReached": "您已达到 {limit} 个工作流触发器的上限。请先删除一个才能新增。",
+      "new": "新增工作流触发器",
+      "emptyTitle": "还没有工作流触发器",
+      "emptyBody": "创建工作流触发器，即可在您的某个工作流完成运行时，启动幕僚长或您的另一个工作流。",
+      "notice": {
+        "saved": "工作流触发器已保存。",
+        "deleted": "工作流触发器已删除。",
+        "switchedOn": "工作流触发器已开启。",
+        "switchedOff": "工作流触发器已关闭。"
+      },
+      "target": {
+        "chiefOfStaff": "幕僚长",
+        "workflowNamed": "工作流：{name}",
+        "workflowGone": "工作流已不存在"
+      },
+      "source": {
+        "workflowGone": "（已删除的工作流）",
+        "goneNote": "来源工作流已不存在，因此这个触发器无法启动任何东西。请编辑并选择其他工作流，或将它删除。"
+      },
+      "row": {
+        "on": "开启",
+        "off": "关闭",
+        "switchOn": "开启",
+        "switchOff": "关闭",
+        "startsNext": "接着启动",
+        "timeZone": "时区",
+        "lastRun": "上次运行",
+        "neverRan": "尚未运行",
+        "viewResult": "打开结果",
+        "depth": "串联的第 {depth} 步",
+        "edit": "编辑",
+        "delete": "删除",
+        "deleteConfirm": "要删除这个工作流触发器吗？此操作无法撤销。",
+        "deleteYes": "是，删除",
+        "history": "历史记录",
+        "hideHistory": "隐藏历史记录"
+      },
+      "form": {
+        "createTitle": "新增工作流触发器",
+        "editTitle": "编辑工作流触发器",
+        "hint": "下一次运行只会被告知已完成运行的编号和时间，并由它自己读取该次运行的结果，视为数据而非指令。第一步无需点击即会开始；后续步骤按工作流的审批设置进行，并在团队页面等待。",
+        "source": "当这个工作流完成时",
+        "sourcePlaceholder": "选择工作流",
+        "sourceHelp": "这个工作流正常完成的运行都会计入，无论是如何启动的。测试运行不计入。",
+        "target": "接着启动",
+        "loopRule": "串联不能绕回原点：如果触发器会导回已经启动它的工作流，就会被拒绝。",
+        "task": "任务",
+        "taskCount": "{count} / {max} 个字符",
+        "timeZone": "时区",
+        "enabled": "已开启",
+        "save": "保存工作流触发器",
+        "saving": "保存中…",
+        "cancel": "取消"
+      },
+      "history": {
+        "title": "历史记录（最近 30 条）",
+        "loading": "正在加载历史记录…",
+        "empty": "这个工作流触发器还没有发生任何事。",
+        "loadError": "无法加载历史记录。"
+      },
+      "outcomes": {
+        "claimed": "已认领，正在启动",
+        "started": "已启动",
+        "skipped": "已跳过",
+        "unknown": "未知"
+      },
+      "reasons": {
+        "runs_off": "此平台已关闭运行功能。",
+        "inactive": "工作流触发器已关闭。",
+        "not_entitled": "您的账号已不再具有访问权限。",
+        "workflow_gone": "有工作流已不存在。",
+        "workflow_off": "工作流已关闭。",
+        "workflow_not_tested": "工作流尚未测试。",
+        "workflow_invalid": "工作流无效。",
+        "workflow_budget": "工作流已达积分预算上限。",
+        "over_cap": "进行中的运行过多。",
+        "provider_off": "AI 提供商已关闭。",
+        "no_credits": "积分不足。",
+        "interrupted": "启动被中断。",
+        "refused": "启动被拒绝。",
+        "day_limit": "此触发器已达当日启动次数上限。",
+        "chain_depth": "这条串联已经有 3 层深。",
+        "unknown": "启动已被跳过。"
+      },
+      "errors": {
+        "generic": "出现错误，请重试。",
+        "network": "网络错误。请检查您的连接后重试。",
+        "chain_trigger_invalid_body": "请求无效。",
+        "chain_trigger_unknown_field": "请求包含不允许的字段。",
+        "chain_trigger_missing_field": "缺少必填字段。",
+        "chain_trigger_empty_change": "没有任何更改。",
+        "chain_trigger_invalid_source": "请选择您要监看的其中一个工作流。",
+        "chain_trigger_invalid_target": "请选择幕僚长或您的某个工作流。",
+        "chain_trigger_same_workflow": "工作流无法启动它自己。请选择另一个要启动的工作流。",
+        "chain_trigger_invalid_task": "任务必须为 1 到 7000 个字符。",
+        "chain_trigger_invalid_time_zone": "无法识别这个时区。",
+        "chain_trigger_invalid_enabled": "开启或关闭的设置无效。",
+        "chain_trigger_not_found": "这个工作流触发器已不存在。",
+        "chain_trigger_workflow_not_found": "找不到该工作流。",
+        "chain_trigger_limit_reached": "您已达到 3 个工作流触发器的上限。请先删除一个才能新增。",
+        "chain_trigger_cycle": "这个触发器会形成循环：它要启动的工作流已经会导回它所监看的工作流。请选择其他工作流。"
+      }
     }
   }
 }

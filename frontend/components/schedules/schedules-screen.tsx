@@ -15,6 +15,7 @@ import {
 import Spinner from '@/components/ui/Spinner';
 import EventTriggersSection from './event-triggers-section';
 import KnowledgeTriggersSection from './knowledge-triggers-section';
+import ChainTriggersSection from './chain-triggers-section';
 import MailTriggersSection from './mail-triggers-section';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
@@ -101,6 +102,8 @@ export interface SchedulesScreenViewProps {
   mailSection?: React.ReactNode;
   /** TRIGGER-MORE-01 S3: the "When a file is added" section, below "When mail arrives". It loads and fails on its own. */
   knowledgeSection?: React.ReactNode;
+  /** TRIGGER-CHAIN-01 S3: the "After a workflow finishes" section, below "When a file is added". It loads and fails on its own. */
+  chainSection?: React.ReactNode;
 }
 
 const QUIET_BUTTON =
@@ -659,6 +662,7 @@ export function SchedulesScreenView(props: SchedulesScreenViewProps): React.Reac
           {props.eventsSection ?? null}
           {props.mailSection ?? null}
           {props.knowledgeSection ?? null}
+          {props.chainSection ?? null}
         </div>
       </main>
     </div>
@@ -886,6 +890,7 @@ export default function SchedulesScreen({ locale, fetcher }: SchedulesScreenProp
       eventsSection={<EventTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
       mailSection={<MailTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
       knowledgeSection={<KnowledgeTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
+      chainSection={<ChainTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
     />
   );
 }

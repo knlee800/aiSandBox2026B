@@ -2420,6 +2420,125 @@
         "knowledge_trigger_workflow_not_found": "That workflow was not found.",
         "knowledge_trigger_limit_reached": "You have reached the limit of 3 file triggers. Delete one to add another."
       }
+    },
+    "chain": {
+      "title": "After a workflow finishes",
+      "subtitle": "Start a run when one of your workflows finishes a run.",
+      "loading": "Loading workflow triggers…",
+      "loadError": "Workflow triggers could not be loaded.",
+      "retry": "Try again",
+      "forbiddenTitle": "Workflow triggers are not available",
+      "forbiddenBody": "Workflow triggers appear here once Team runs are turned on for your account.",
+      "banner": {
+        "off": "Workflow triggers are switched off; nothing will start.",
+        "runsOff": "Runs are switched off on this platform, so every start will be skipped.",
+        "resultToolOff": "The run result tool is switched off, so nothing starts after a workflow finishes until it is switched on."
+      },
+      "delayNotice": "A run starts a few minutes after the source workflow finishes. Only runs that finished in the last hour count; a run that finished while this was switched off starts nothing.",
+      "privacyNotice": "The next run is told only the finished run’s id and time, and reads its answer itself. The platform never reads the answer to start it.",
+      "limit": "{count} of {limit} workflow triggers used",
+      "limitReached": "You have reached the limit of {limit} workflow triggers. Delete one to add another.",
+      "new": "New workflow trigger",
+      "emptyTitle": "No workflow triggers yet",
+      "emptyBody": "Create a workflow trigger to start the Chief of Staff or another of your workflows when one of your workflows finishes a run.",
+      "notice": {
+        "saved": "Workflow trigger saved.",
+        "deleted": "Workflow trigger deleted.",
+        "switchedOn": "Workflow trigger switched on.",
+        "switchedOff": "Workflow trigger switched off."
+      },
+      "target": {
+        "chiefOfStaff": "Chief of Staff",
+        "workflowNamed": "Workflow: {name}",
+        "workflowGone": "Workflow no longer available"
+      },
+      "source": {
+        "workflowGone": "(deleted workflow)",
+        "goneNote": "The source workflow no longer exists, so this trigger cannot start anything. Edit it to choose another workflow, or delete it."
+      },
+      "row": {
+        "on": "On",
+        "off": "Off",
+        "switchOn": "Switch on",
+        "switchOff": "Switch off",
+        "startsNext": "Then starts",
+        "timeZone": "Time zone",
+        "lastRun": "Last run",
+        "neverRan": "Has not run yet",
+        "viewResult": "Open Results",
+        "depth": "Step {depth} of a chain",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this workflow trigger? This cannot be undone.",
+        "deleteYes": "Yes, delete",
+        "history": "History",
+        "hideHistory": "Hide history"
+      },
+      "form": {
+        "createTitle": "New workflow trigger",
+        "editTitle": "Edit workflow trigger",
+        "hint": "The next run is told only the id and the time of the finished run. It reads that run’s answer itself, as data and never as instructions. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
+        "source": "When this workflow finishes",
+        "sourcePlaceholder": "Choose a workflow",
+        "sourceHelp": "A run of this workflow that finishes normally counts, however it was started. Test runs do not.",
+        "target": "Then start",
+        "loopRule": "A chain cannot loop back: a trigger is refused if it would lead back to a workflow that already starts it.",
+        "task": "Task",
+        "taskCount": "{count} of {max} characters",
+        "timeZone": "Time zone",
+        "enabled": "Switched on",
+        "save": "Save workflow trigger",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "history": {
+        "title": "History (last 30)",
+        "loading": "Loading history…",
+        "empty": "Nothing has happened for this workflow trigger yet.",
+        "loadError": "The history could not be loaded."
+      },
+      "outcomes": {
+        "claimed": "Claimed, starting",
+        "started": "Started",
+        "skipped": "Skipped",
+        "unknown": "Unknown"
+      },
+      "reasons": {
+        "runs_off": "Runs are switched off on this platform.",
+        "inactive": "The workflow trigger was switched off.",
+        "not_entitled": "Your account no longer has access.",
+        "workflow_gone": "A workflow no longer exists.",
+        "workflow_off": "The workflow is switched off.",
+        "workflow_not_tested": "The workflow has not been tested yet.",
+        "workflow_invalid": "The workflow is not valid.",
+        "workflow_budget": "The workflow reached its credit budget.",
+        "over_cap": "Too many runs were already in progress.",
+        "provider_off": "The AI provider is switched off.",
+        "no_credits": "There were not enough credits.",
+        "interrupted": "The start was interrupted.",
+        "refused": "The start was refused.",
+        "day_limit": "The daily limit of starts for this trigger was reached.",
+        "chain_depth": "The chain was already 3 steps deep.",
+        "unknown": "The start was skipped."
+      },
+      "errors": {
+        "generic": "Something went wrong. Try again.",
+        "network": "Network error. Check your connection and try again.",
+        "chain_trigger_invalid_body": "The request was not valid.",
+        "chain_trigger_unknown_field": "The request had a field that is not allowed.",
+        "chain_trigger_missing_field": "A required field is missing.",
+        "chain_trigger_empty_change": "There is nothing to change.",
+        "chain_trigger_invalid_source": "Choose one of your workflows to watch.",
+        "chain_trigger_invalid_target": "Choose the Chief of Staff or one of your workflows.",
+        "chain_trigger_same_workflow": "A workflow cannot start itself. Choose a different workflow to start.",
+        "chain_trigger_invalid_task": "The task must be 1 to 7000 characters.",
+        "chain_trigger_invalid_time_zone": "That time zone is not known.",
+        "chain_trigger_invalid_enabled": "The on or off setting was not valid.",
+        "chain_trigger_not_found": "This workflow trigger no longer exists.",
+        "chain_trigger_workflow_not_found": "That workflow was not found.",
+        "chain_trigger_limit_reached": "You have reached the limit of 3 workflow triggers. Delete one to add another.",
+        "chain_trigger_cycle": "This trigger would close a loop: the workflow it starts already leads back to the workflow it watches. Choose a different workflow."
+      }
     }
   }
 }

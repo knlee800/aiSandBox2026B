@@ -437,3 +437,29 @@ describe('schedules screen: the When a file is added slot', () => {
     assert.doesNotMatch(render(), /knowledge-slot|knowledge-triggers-section/);
   });
 });
+
+describe('schedules screen: the After a workflow finishes slot', () => {
+  test('the chain section renders below the knowledge section and does not change the schedules', () => {
+    const events = <section data-testid="events-slot">events</section>;
+    const mail = <section data-testid="mail-slot">mail</section>;
+    const knowledge = <section data-testid="knowledge-slot">knowledge</section>;
+    const chain = <section data-testid="chain-slot">chain</section>;
+    const html = render({ eventsSection: events, mailSection: mail, knowledgeSection: knowledge, chainSection: chain });
+    assert.match(html, /data-testid="chain-slot"/);
+    assert.ok(html.indexOf('data-testid="schedules-list"') < html.indexOf('data-testid="events-slot"'));
+    assert.ok(html.indexOf('data-testid="knowledge-slot"') < html.indexOf('data-testid="chain-slot"'));
+    assert.match(html, /data-testid="schedules-new"/);
+  });
+
+  test('the slot still shows when the schedules themselves failed to load, so each section fails on its own', () => {
+    const chain = <section data-testid="chain-slot">chain</section>;
+    for (const phase of ['failed', 'forbidden'] as const) {
+      const html = render({ phase, data: null, chainSection: chain });
+      assert.match(html, /data-testid="chain-slot"/);
+    }
+  });
+
+  test('without the slot the page has no chain section', () => {
+    assert.doesNotMatch(render(), /chain-slot|chain-triggers-section/);
+  });
+});
