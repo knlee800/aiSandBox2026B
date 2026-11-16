@@ -140,6 +140,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
     expect(advertisedNames(advertised)).toEqual([
       'list_files',
@@ -150,6 +151,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
 
     const listFiles = getAgentHarnessToolDefinition('list_files');
@@ -194,6 +196,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
     expect(declarations[0].inputSchema).toBe(listFiles!.inputSchema.schema);
     expect(declarations[1].inputSchema).toBe(readFile!.inputSchema.schema);
@@ -217,6 +220,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
     expect(advertisedNames(advertised)).not.toContain('delete_file');
   });
@@ -237,6 +241,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
   });
 
@@ -310,7 +315,48 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
+  });
+
+  it('RESULT-TOOL-01: advertises read_run_result only when its handler is registered, whatever the flags', () => {
+    const withoutHandler = ALL_REGISTRY_HANDLER_NAMES.filter(
+      (name) => name !== 'read_run_result',
+    );
+    for (const flag of [false, true]) {
+      const off = selectAdvertisedAgentHarnessTools({
+        registeredHandlerNames: withoutHandler,
+        enableWriteTools: flag,
+        enableValidationTools: flag,
+        enableBrowserSmoke: flag,
+      });
+      expect(advertisedNames(off)).not.toContain('read_run_result');
+
+      const on = selectAdvertisedAgentHarnessTools({
+        registeredHandlerNames: ['list_files', 'read_file', 'search_workspace', 'read_run_result'],
+        enableWriteTools: flag,
+        enableValidationTools: flag,
+        enableBrowserSmoke: flag,
+      });
+      expect(advertisedNames(on)).toEqual([
+        'list_files',
+        'read_file',
+        'search_workspace',
+        'read_run_result',
+      ]);
+    }
+    expect(HARNESS_ADVERTISABLE_TOOL_IDS).toHaveLength(9);
+    const declaration = mapAgentHarnessToolDefinitionsToAdapterToolDeclarations([
+      getAgentHarnessToolDefinition('read_run_result')!,
+    ])[0];
+    expect(declaration.name).toBe('read_run_result');
+    expect(declaration.requiresApproval).toBe(false);
+    expect(declaration.inputSchema).toEqual({
+      type: 'object',
+      additionalProperties: false,
+      required: ['runId'],
+      properties: { runId: { type: 'string' } },
+    });
   });
 
   it('excludes disabled, planned, handlerless, browser, and preview tools when write and validation flags are on', () => {
@@ -331,6 +377,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'search_workspace',
       'search_knowledge',
       'read_knowledge',
+      'read_run_result',
     ]);
     expect(names).toContain('delete_file');
     expect(names).not.toContain('browser_smoke');

@@ -34,6 +34,13 @@ describe('toolProgressTarget', () => {
       }),
     ).toBe('doc-1');
     expect(
+      toolProgressTarget('read_run_result', {
+        runId: 'collab_abc-123',
+        userId: 'user-attacker',
+      }),
+    ).toBe('collab_abc-123');
+    expect(toolProgressTarget('read_run_result', { runId: 42 })).toBeUndefined();
+    expect(
       toolProgressTarget('search_knowledge', { query: 'q'.repeat(240) }),
     ).toBe('q'.repeat(200));
     expect(toolProgressTarget('run_validation', { command: 'npm test' })).toBe(

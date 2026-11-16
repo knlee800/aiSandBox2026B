@@ -307,6 +307,45 @@ export class ApiGatewayHttpClient {
   }
 
   /**
+   * Read the final answer of one of the owner's completed runs.
+   * RESULT-TOOL-01: ai-service → API Gateway POST
+   * /api/internal/collaboration/results/read. userId is the signed job's
+   * owner. Failures throw; the handler replaces the body with a fixed text.
+   */
+  async readRunResult(
+    input: {
+      userId: string;
+      runId: string;
+    },
+    signal?: AbortSignal,
+  ): Promise<{
+    runId: string;
+    status: 'completed';
+    finishedAt: string | null;
+    workflow: { name: string; testRun: boolean } | null;
+    answer: string;
+    truncated: boolean;
+  }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/collaboration/results/read`,
+        {
+          userId: input.userId,
+          runId: input.runId,
+        },
+        {
+          signal,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
    * Call one granted connector tool for the job owner.
    * CONN-GRANT-01: ai-service → API Gateway POST /api/internal/connectors/call.
    * The grant token is minted by the gateway and only passed back here; it is

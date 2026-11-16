@@ -101,6 +101,16 @@ export interface AiExecutionJob {
    */
   connectorGrantToken?: string;
 
+  /**
+   * RESULT-TOOL-01: signed grant for the read_run_result tool. The gateway
+   * sets it (true, never false) only while RUN_RESULT_TOOL_ENABLED is on, on
+   * a read-only harness v1 step of the Chief of Staff or a workflow. Part of
+   * the entitlement digest. The tool is registered only after the proof
+   * verifies, for the read profile and only when this is exactly true
+   * (worker/run-result-grant.ts).
+   */
+  runResultRead?: true;
+
   /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
   harnessEntitlementProof?: HarnessEntitlementProof;
 

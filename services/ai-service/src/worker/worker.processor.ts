@@ -60,6 +60,8 @@ import {
 import { createConnectorToolHandler } from '../agent-harness/tools/handlers/connector-tool-handlers';
 import { getConnectorToolDefinition } from '../agent-harness/tools/connector-tool-definitions';
 import { resolveConnectorGrants, withWorkerHarnessInstructions } from './connector-grants';
+import { createReadRunResultHandler } from '../agent-harness/tools/handlers/run-result-tool-handlers';
+import { resolveRunResultGrant } from './run-result-grant';
 import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
 import { createBrowserSmokeHandler } from '../agent-harness/tools/handlers/browser-smoke-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
@@ -1711,6 +1713,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           const knowledgeScopes = knowledgeResolution.scopes;
           // CONN-GRANT-01: read after the entitlement proof verified above.
           const connectorGrant = resolveConnectorGrants(job.data, signedToolProfile);
+          // RESULT-TOOL-01: read after the entitlement proof verified above.
+          const runResultGranted = resolveRunResultGrant(job.data, signedToolProfile);
           const harnessRequested = job.data.harnessVersion === 'v1';
           let routedAdapter: ReturnType<AIExecutionService['getAdapter']> | undefined;
           if (harnessRequested && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop) {
@@ -1766,6 +1770,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               const promptParts = useHarness
                 ? withWorkerHarnessInstructions(basePromptParts, {
                     connectorTools: connectorGrant.tools.length > 0,
+                    runResultTool: runResultGranted,
                   })
                 : basePromptParts;
               const executionRequest = buildAIExecutionRequest(
@@ -1940,6 +1945,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       registeredHandlerNames.push(connectorToolId);
                       connectorToolDefinitions.push(getConnectorToolDefinition(connectorToolId));
                     }
+                  }
+                  // RESULT-TOOL-01: the signed runResultRead grant, read profile only.
+                  if (signedToolProfile === 'read' && runResultGranted) {
+                    dispatcher.registerHandler(
+                      'read_run_result',
+                      wrapHarnessTool(
+                        'read_run_result',
+                        createReadRunResultHandler({
+                          client: this.apiGatewayHttpClient,
+                          userId: job.data.userId,
+                          maxToolResultBytes: resolvedConfig.maxToolResultBytes,
+                        }),
+                      ),
+                    );
+                    registeredHandlerNames.push('read_run_result');
                   }
                   const harnessReadOnly = job.data.harnessReadOnly === true;
                   const allowHarnessMutation =

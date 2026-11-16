@@ -15,6 +15,7 @@ export type AgentHarnessToolIdV1 =
   | 'search_workspace'
   | 'search_knowledge'
   | 'read_knowledge'
+  | 'read_run_result'
   | 'mail_list_unread_metadata'
   | 'calendar_list_today';
 

@@ -10,6 +10,7 @@ const TARGET_FIELDS: Readonly<Record<string, string>> = {
   search_workspace: 'query',
   search_knowledge: 'query',
   read_knowledge: 'documentId',
+  read_run_result: 'runId',
   run_validation: 'command',
   browser_smoke: 'url',
 };

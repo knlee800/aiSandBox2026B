@@ -74,7 +74,8 @@ describe('COS-EVAL-01 pin on the worker harness prompt path', () => {
         );
         const promptParts = useHarness
           ? withWorkerHarnessInstructions(basePromptParts, {
-              connectorTools: connectorGrant.tools.length > 0<,?>
+              connectorTools: connectorGrant.tools.length > 0,
+              runResultTool: runResultGranted<,?>
             })
           : basePromptParts;
         const executionRequest = buildAIExecutionRequest(
