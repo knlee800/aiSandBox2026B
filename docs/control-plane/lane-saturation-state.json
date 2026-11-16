@@ -15,7 +15,8 @@
         "services/api-gateway/src/orchestration/collaboration-results.spec.ts",
         "services/api-gateway/src/orchestration/internal-collaboration-results.controller.ts",
         "services/api-gateway/src/orchestration/internal-collaboration-results.controller.spec.ts",
-        "services/api-gateway/src/orchestration/orchestration.module.ts"
+        "services/api-gateway/src/orchestration/orchestration.module.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -7108,7 +7109,8 @@
         "services/api-gateway/src/orchestration/collaboration-results.spec.ts",
         "services/api-gateway/src/orchestration/internal-collaboration-results.controller.ts",
         "services/api-gateway/src/orchestration/internal-collaboration-results.controller.spec.ts",
-        "services/api-gateway/src/orchestration/orchestration.module.ts"
+        "services/api-gateway/src/orchestration/orchestration.module.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
