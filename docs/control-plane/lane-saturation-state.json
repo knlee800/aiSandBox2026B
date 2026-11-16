@@ -9,21 +9,20 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "RESULT-TOOL-01",
-      "mutexes": ["GATEWAY"],
+      "mutexes": ["GATEWAY", "ENV"],
       "writePaths": [
-        "services/api-gateway/src/orchestration/collaboration-results.ts",
-        "services/api-gateway/src/orchestration/collaboration-results.spec.ts",
-        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.ts",
-        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.spec.ts",
-        "services/api-gateway/src/orchestration/orchestration.module.ts",
-        "services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts"
+        "services/api-gateway/src/orchestration/collaboration-result-grant.ts",
+        "services/api-gateway/src/orchestration/collaboration-result-grant.spec.ts",
+        "services/api-gateway/src/orchestration/orchestration.service.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts",
+        "ops/clean-baseline/env/gateway.env.template"
       ],
       "hotfiles": [],
       "i18n": false,
       "evidenceClass": "LOCAL-TESTS",
-      "exclusiveCapacity": false,
+      "exclusiveCapacity": true,
       "sharedContractIds": [],
-      "mutatesSharedContractIds": [],
+      "mutatesSharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
       "runtimeNeeds": []
     },
     "lane2": {
@@ -7103,21 +7102,20 @@
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
       "dependsOn": ["TRIGGER-MORE-01"],
-      "mutexes": ["GATEWAY"],
+      "mutexes": ["GATEWAY", "ENV"],
       "writePaths": [
-        "services/api-gateway/src/orchestration/collaboration-results.ts",
-        "services/api-gateway/src/orchestration/collaboration-results.spec.ts",
-        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.ts",
-        "services/api-gateway/src/orchestration/internal-collaboration-results.controller.spec.ts",
-        "services/api-gateway/src/orchestration/orchestration.module.ts",
-        "services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts"
+        "services/api-gateway/src/orchestration/collaboration-result-grant.ts",
+        "services/api-gateway/src/orchestration/collaboration-result-grant.spec.ts",
+        "services/api-gateway/src/orchestration/orchestration.service.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts",
+        "ops/clean-baseline/env/gateway.env.template"
       ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
-      "mutatesSharedContractIds": [],
+      "mutatesSharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
       "evidenceClass": "LOCAL-TESTS",
-      "exclusiveCapacity": false,
+      "exclusiveCapacity": true,
       "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
