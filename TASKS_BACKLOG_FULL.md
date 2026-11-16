@@ -89327,23 +89327,23 @@ taskId=TRIGGER-MORE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — Step 2 (stage-start) — 2026-11-16 — by the control plane on Keith's "Start TRIGGER-MORE-01". Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** TRIGGER-MORE-01
 **Title:** Later triggers
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: Keith chooses. Keith decides. (Corrected 2026-11-15 by the TRIGGER-EVENT-01 LOCK, F13: the words about TRIGGER-MAIL-01 had been copied from that task.)
+**Start condition:** READY for Step 2 (Keith chose it, 2026-11-16, "Start TRIGGER-MORE-01"; TRIGGER-LIVE-01 LOCKED). Step 3 starts only after Keith approves the stage-start. Was: NOT_READY. Ready when: Keith chooses. Keith decides. (Corrected 2026-11-15 by the TRIGGER-EVENT-01 LOCK, F13: the words about TRIGGER-MAIL-01 had been copied from that task.)
 **Depends on:** TRIGGER-LIVE-01.
 **Primary write scope:** set at admission.
-**Mutexes / resources:** set at admission.
+**Mutexes / resources:** Step 2: none (write set docs/TRIGGER-MORE-01-STAGE-START.md, set 2026-11-16). Step 3: set when the stage-start is approved.
 **Hot-file leases:** set at admission.
 **Shared contracts:** set at admission.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT for Step 2 (the stage-start document only); Step 3 is set at its approval. **admissionUncertain:** false (set 2026-11-16).
 **Scope:** Later triggers (F6): after another workflow, a webhook, or a new knowledge file.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
