@@ -53,6 +53,7 @@ import {
   resolveConnectorGrantJobFields,
   type ConnectorGrantJobFields,
 } from './collaboration-connector-grants';
+import { runResultGrantJobFields } from './collaboration-result-grant';
 import {
   type AutoApprovalMode,
   type AutoApprovalWaitReason,
@@ -903,6 +904,7 @@ export class OrchestrationService {
         return {
           payload,
           workflowToolIds: workflowAccess ? workflowAccess.connectorToolIds : null,
+          workflowStep: workflowAccess !== null,
         };
       },
     );
@@ -911,8 +913,19 @@ export class OrchestrationService {
       jobPayload.payload,
       jobPayload.workflowToolIds,
     );
+    // RESULT-TOOL-01: runResultRead on a read-profile Chief of Staff or
+    // workflow step while RUN_RESULT_TOOL_ENABLED is exactly 'true'; absent
+    // otherwise. Added before the proof is made, so the proof covers it.
+    const runResultFields = runResultGrantJobFields(
+      jobPayload.payload,
+      jobPayload.workflowStep,
+    );
     await this.queueService.enqueueExecution(
-      this.withHarnessEntitlementProof({ ...jobPayload.payload, ...connectorGrantFields }),
+      this.withHarnessEntitlementProof({
+        ...jobPayload.payload,
+        ...connectorGrantFields,
+        ...runResultFields,
+      }),
     );
     const updatedEntity = await this.referralRepo.findOne({
       where: { referralId: input.referralId },

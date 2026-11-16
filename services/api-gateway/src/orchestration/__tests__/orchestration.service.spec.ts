@@ -16,6 +16,14 @@ import { QueueService } from '../../queue/queue.service';
 import { ExecutionResultService } from '../../ai/execution-result.service';
 import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { InMemoryOrchestrationAuditRecorder } from '../orchestration-audit.recorder';
+import { createHarnessEntitlementProof } from '../../ai/ai-execution.controller';
+import { AbortGuard } from '../../abort/abort.guard';
+import { CreditBalanceGuard } from '../../billing/credit-balance.guard';
+import { TokenQuotaGuard } from '../../quota/token-quota.guard';
+import { ExecutionSafetyGuard } from '../../safety/execution-safety.guard';
+import { CollaborationWorkflowService } from '../collaboration-workflow';
+import { COLLABORATION_USER_ACTOR } from '../collaboration-team';
+import type { ReferralPendingWorkflow } from '../orchestration.contracts';
 
 function cloneRow<T>(row: T): T {
   const copy = { ...(row as Record<string, unknown>) };
@@ -1823,5 +1831,289 @@ describe('COLLAB-INTERNAL-01: referral read-back and ledger intent', () => {
     expect(detail?.referrals).toHaveLength(1);
     expect(detail?.referrals[0].status).toBe('failed');
     expect(detail?.referrals[0].result?.summary).toBe('Failed to write execution intent');
+  });
+});
+
+describe('RESULT-TOOL-01 S2: runResultRead on the signed hand-off job', () => {
+  const OWNER = '11111111-1111-4111-8111-111111111111';
+  const WORKFLOW_ID = 'f0f0f0f0-0000-4000-8000-000000000001';
+  const HARNESS_SECRET = 'test-hmac-secret-result-tool-01-s2';
+  const originalSwitch = process.env.RUN_RESULT_TOOL_ENABLED;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+
+  let service: OrchestrationService;
+  let queue: { enqueueExecution: jest.Mock };
+  let workflowService: { assertCanApprove: jest.Mock };
+
+  beforeEach(async () => {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    delete process.env.RUN_RESULT_TOOL_ENABLED;
+    const fakes = createOrchestrationRepoFakes();
+    // approveReferral claims the waiting step with update().
+    const referralRepo = Object.assign(fakes.referralRepo, {
+      update: async (criteria: Record<string, unknown>, partial: Record<string, unknown>) => {
+        const rows = await fakes.referralRepo.find({ where: criteria });
+        for (const row of rows) {
+          await fakes.referralRepo.save({ ...row, ...partial } as CollaborationReferralEntity);
+        }
+        return { affected: rows.length, raw: [], generatedMaps: [] };
+      },
+    });
+    queue = { enqueueExecution: jest.fn().mockResolvedValue(undefined) };
+    workflowService = { assertCanApprove: jest.fn().mockResolvedValue(undefined) };
+    const allow = { canActivate: jest.fn().mockResolvedValue(true) };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OrchestrationService,
+        ...orchestrationRepositoryProviders({ runRepo: fakes.runRepo, referralRepo }),
+        { provide: QueueService, useValue: queue },
+        { provide: ExecutionResultService, useValue: { requestCancel: jest.fn() } },
+        {
+          provide: UsageLedgerService,
+          useValue: { writeExecutionIntent: jest.fn().mockResolvedValue(undefined) },
+        },
+        { provide: ExecutionSafetyGuard, useValue: allow },
+        { provide: AbortGuard, useValue: allow },
+        { provide: CreditBalanceGuard, useValue: allow },
+        { provide: TokenQuotaGuard, useValue: allow },
+        { provide: CollaborationWorkflowService, useValue: workflowService },
+      ],
+    }).compile();
+    service = module.get(OrchestrationService);
+  });
+
+  afterEach(() => {
+    if (originalSwitch === undefined) delete process.env.RUN_RESULT_TOOL_ENABLED;
+    else process.env.RUN_RESULT_TOOL_ENABLED = originalSwitch;
+    if (originalSecret === undefined) delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    else process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+  });
+
+  function snapshot(): ReferralPendingWorkflow {
+    return {
+      id: WORKFLOW_ID,
+      name: 'Morning brief',
+      version: 'v-test',
+      knowledgeScopeIds: ['policies'],
+      connectorToolIds: [],
+      model: { choice: 'server' },
+      testRun: false,
+      budgetPerRunCredits: null,
+      budgetPerDayCredits: null,
+    };
+  }
+
+  const waitingJob = {
+    sessionId: 'session-01',
+    conversationId: 'conv-01',
+    apiKeyId: 'apikey-01',
+    prompt: 'Brief me.',
+    provider: 'stub',
+    adapter: 'stub',
+  };
+
+  function lastJob(): Record<string, unknown> {
+    const calls = queue.enqueueExecution.mock.calls;
+    return calls[calls.length - 1][0] as Record<string, unknown>;
+  }
+
+  /** A hand-off started directly (startReferralExecution), as the Team page's approve does. */
+  async function startJob(input: {
+    id: string;
+    target: string;
+    fileAccess: boolean;
+    workflow?: ReferralPendingWorkflow;
+  }): Promise<Record<string, unknown>> {
+    await service.createCollaborationRun({
+      collaborationRunId: `run-${input.id}`,
+      userId: OWNER,
+      projectId: 'project-01',
+      initiatorAgent: COLLABORATION_USER_ACTOR,
+    });
+    const referral = await service.createReferral({
+      referralId: `ref-${input.id}`,
+      referralTraceId: `trace-${input.id}`,
+      collaborationRunId: `run-${input.id}`,
+      sourceBuilder: COLLABORATION_USER_ACTOR,
+      targetBuilder: { agentRole: 'builder', builderProfileId: input.target },
+      idempotencyKey: `key-${input.id}`,
+      pendingJob: {
+        ...waitingJob,
+        model: null,
+        workspaceContext: null,
+        globalInstructions: null,
+        projectInstructions: null,
+        orchestrationPriority: null,
+        decidedBy: null,
+        decisionReason: null,
+        fileAccess: input.fileAccess,
+        ...(input.workflow ? { workflow: input.workflow } : {}),
+      },
+    });
+    await service.startReferralExecution({
+      referralId: referral.referralId,
+      executionId: `exec-${input.id}`,
+      ...waitingJob,
+      userId: OWNER,
+      submittedAt: '2026-11-16T08:00:00.000Z',
+    });
+    return lastJob();
+  }
+
+  /**
+   * The path every trigger takes (schedule, event, mail, knowledge):
+   * CollaborationStartService.start makes the waiting first step with
+   * fileAccess, then approveStep approves it as the owner.
+   */
+  async function startTriggered(input: {
+    id: string;
+    target: string;
+    workflow?: ReferralPendingWorkflow;
+  }): Promise<Record<string, unknown>> {
+    const run = await service.createCollaborationRun({
+      userId: OWNER,
+      projectId: 'project-01',
+      initiatorAgent: COLLABORATION_USER_ACTOR,
+    });
+    const started = await service.createPendingReferral({
+      collaborationRunId: run.collaborationRunId,
+      sourceBuilder: COLLABORATION_USER_ACTOR,
+      targetBuilder: { agentRole: 'builder', builderProfileId: input.target },
+      idempotencyKey: `screen:${input.id}`,
+      ...waitingJob,
+      fileAccess: true,
+      ...(input.workflow ? { workflow: input.workflow } : {}),
+    });
+    await service.approveReferral({
+      collaborationRunId: run.collaborationRunId,
+      referralId: started.referral.referralId,
+      decidedBy: OWNER,
+      enforceTestsGate: true,
+      approveWithoutPassingTests: false,
+    });
+    return lastJob();
+  }
+
+  function expectProofCovers(job: Record<string, unknown>) {
+    const { harnessEntitlementProof, ...signed } = job;
+    const proofOf = (payload: Record<string, unknown>) =>
+      createHarnessEntitlementProof({
+        executionId: String(signed.executionId),
+        userId: String(signed.userId),
+        apiKeyId: String(signed.apiKeyId),
+        issuedAt: String(signed.submittedAt),
+        payloadWithoutProof: payload,
+        secret: HARNESS_SECRET,
+      });
+    expect(harnessEntitlementProof).toEqual(proofOf(signed));
+    const { runResultRead: _dropped, ...withoutField } = signed;
+    expect(proofOf(withoutField).payloadDigest).not.toBe(
+      (harnessEntitlementProof as { payloadDigest: string }).payloadDigest,
+    );
+  }
+
+  it('signs runResultRead: true on a read-profile Chief of Staff step, covered by the proof', async () => {
+    process.env.RUN_RESULT_TOOL_ENABLED = 'true';
+    const job = await startJob({ id: 'cos', target: 'chief-of-staff', fileAccess: true });
+    expect(job.harnessVersion).toBe('v1');
+    expect(job.harnessToolProfile).toBe('read');
+    expect(job.harnessReadOnly).toBe(true);
+    expect(job.runResultRead).toBe(true);
+    expectProofCovers(job);
+  });
+
+  it('signs runResultRead: true on a workflow step, covered by the proof', async () => {
+    process.env.RUN_RESULT_TOOL_ENABLED = 'true';
+    const job = await startJob({ id: 'wf', target: WORKFLOW_ID, fileAccess: true, workflow: snapshot() });
+    expect(job.builderProfileId).toBe(WORKFLOW_ID);
+    expect(job.harnessToolProfile).toBe('read');
+    expect(job.knowledgeScopes).toEqual(['policies']);
+    expect(job.runResultRead).toBe(true);
+    expectProofCovers(job);
+  });
+
+  it('signs it on the first step of a triggered start (start, then approved as the owner) for the Chief of Staff and a workflow', async () => {
+    process.env.RUN_RESULT_TOOL_ENABLED = 'true';
+    const cos = await startTriggered({ id: 'trigger-cos', target: 'chief-of-staff' });
+    expect(cos.builderProfileId).toBe('chief-of-staff');
+    expect(cos.runResultRead).toBe(true);
+    expectProofCovers(cos);
+
+    const wf = await startTriggered({ id: 'trigger-wf', target: WORKFLOW_ID, workflow: snapshot() });
+    expect(workflowService.assertCanApprove).toHaveBeenCalledTimes(1);
+    expect(wf.builderProfileId).toBe(WORKFLOW_ID);
+    expect(wf.runResultRead).toBe(true);
+    expectProofCovers(wf);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['builder', 'lead', 'writer', 'reviewer', 'advisors-lead', 'product-strategy', 'technology-advisor'])(
+    'never signs it for %s (coding roles, advisors, non-read profiles)',
+    async (target) => {
+      process.env.RUN_RESULT_TOOL_ENABLED = 'true';
+      const job = await startJob({ id: `role-${target}`, target, fileAccess: true });
+      expect(job.harnessVersion).toBe('v1');
+      expect(job).not.toHaveProperty('runResultRead');
+    },
+  );
+
+  it('never signs it on a step without file access (no harness fields, an Ask step)', async () => {
+    process.env.RUN_RESULT_TOOL_ENABLED = 'true';
+    const job = await startJob({ id: 'ask', target: 'chief-of-staff', fileAccess: false });
+    expect(job).not.toHaveProperty('harnessVersion');
+    expect(job).not.toHaveProperty('runResultRead');
+    expect(job).not.toHaveProperty('harnessEntitlementProof');
+  });
+
+  it.each([
+    ['unset', undefined],
+    ['false', 'false'],
+    ['TRUE', 'TRUE'],
+    [' true', ' true'],
+    ['1', '1'],
+  ])('leaves the field absent while the switch is %s', async (label, value) => {
+    if (value === undefined) delete process.env.RUN_RESULT_TOOL_ENABLED;
+    else process.env.RUN_RESULT_TOOL_ENABLED = value;
+    const id = label.trim() || 'blank';
+    const cos = await startJob({ id: `off-cos-${id}`, target: 'chief-of-staff', fileAccess: true });
+    const wf = await startJob({
+      id: `off-wf-${id}`,
+      target: WORKFLOW_ID,
+      fileAccess: true,
+      workflow: snapshot(),
+    });
+    const triggered = await startTriggered({ id: `off-trigger-${id}`, target: 'chief-of-staff' });
+    for (const job of [cos, wf, triggered]) {
+      expect(job).not.toHaveProperty('runResultRead');
+      expect(job.harnessToolProfile).toBe('read');
+    }
+  });
+
+  it('changes no other job field: the switch adds runResultRead and nothing else', async () => {
+    const idFields = [
+      'executionId',
+      'collaborationRunId',
+      'referralTraceId',
+      'referralId',
+      'harnessEntitlementProof',
+    ];
+    const strip = (job: Record<string, unknown>) => {
+      const copy = { ...job };
+      for (const key of idFields) delete copy[key];
+      return copy;
+    };
+    for (const [target, workflow] of [
+      ['chief-of-staff', undefined],
+      [WORKFLOW_ID, snapshot()],
+    ] as const) {
+      delete process.env.RUN_RESULT_TOOL_ENABLED;
+      const off = await startJob({ id: `same-off-${target}`, target, fileAccess: true, workflow });
+      process.env.RUN_RESULT_TOOL_ENABLED = 'true';
+      const on = await startJob({ id: `same-on-${target}`, target, fileAccess: true, workflow });
+      const { runResultRead, ...rest } = strip(on);
+      expect(runResultRead).toBe(true);
+      expect(rest).toEqual(strip(off));
+      expect(Object.keys(on).sort()).toEqual([...Object.keys(off), 'runResultRead'].sort());
+    }
   });
 });
