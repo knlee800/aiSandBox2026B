@@ -4,6 +4,8 @@ import { In, IsNull, Repository } from 'typeorm';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { collaborationTeamForTarget, type CollaborationRunTeamId } from './collaboration-teams';
+import { REPORT_BACK_ANSWER_MAX_CHARS } from './collaboration-front-door';
+import { parseHandoffRequest } from './handoff-request';
 import type { CollaborationRunStatus, ReferralPendingWorkflow } from './orchestration.contracts';
 
 /**
@@ -12,6 +14,9 @@ import type { CollaborationRunStatus, ReferralPendingWorkflow } from './orchestr
  * Reads collaboration_runs and collaboration_referrals directly; it never
  * settles, starts or changes a run (the sweep settles, D10). The only write is
  * result_seen_at, set once (D11). orchestration.service.ts is not used here.
+ *
+ * RESULT-TOOL-01 S1: readFinalAnswerForOwner is the read behind the internal
+ * route POST /api/internal/collaboration/results/read. It writes nothing.
  */
 
 /** D3 (DECISION B): runs that count as unread until opened. Cancelled and active never do. */
@@ -166,6 +171,74 @@ export function finalAnswerOf(ordered: readonly CollaborationReferralEntity[]): 
   return null;
 }
 
+/** RESULT-TOOL-01 (Q8): the report-back limit, counted in code points. */
+export const RUN_RESULT_ANSWER_MAX_CHARS = REPORT_BACK_ANSWER_MAX_CHARS;
+
+/**
+ * RESULT-TOOL-01 stage-start section 2: the only fields the internal route
+ * returns. Never the task text, other steps, ids other than the run id, the
+ * owner, costs, the stored job or the seen mark.
+ */
+export interface CollaborationRunResultRead {
+  runId: string;
+  status: 'completed';
+  finishedAt: string | null;
+  workflow: { name: string; testRun: boolean } | null;
+  answer: string;
+  truncated: boolean;
+}
+
+/**
+ * The final answer as the report-back step reads it: a trailing hand-off
+ * request is removed, the rest trimmed. Blank is null.
+ */
+export function runResultAnswerOf(summary: string | null | undefined): string | null {
+  if (typeof summary !== 'string') {
+    return null;
+  }
+  const parsed = parseHandoffRequest(summary);
+  const answer = parsed.kind === 'request' ? parsed.answerWithoutRequest : summary.trim();
+  return answer.length === 0 ? null : answer;
+}
+
+/** Cuts by code point so a surrogate pair is never split, and says whether it cut. */
+export function cutRunResultAnswer(
+  answer: string,
+  maxChars: number = RUN_RESULT_ANSWER_MAX_CHARS,
+): { answer: string; truncated: boolean } {
+  const points = Array.from(answer);
+  if (points.length <= maxChars) {
+    return { answer, truncated: false };
+  }
+  return { answer: points.slice(0, maxChars).join(''), truncated: true };
+}
+
+export function toRunResultRead(
+  run: CollaborationRunEntity,
+  referrals: readonly CollaborationReferralEntity[],
+): CollaborationRunResultRead | null {
+  const ordered = orderRunReferrals(run, referrals);
+  const answer = runResultAnswerOf(finalAnswerOf(ordered));
+  if (answer === null) {
+    return null;
+  }
+  const first = ordered[0];
+  const workflow = workflowOfReferral(first);
+  const team = collaborationTeamForTarget(first?.targetBuilderProfileId, workflow);
+  const cut = cutRunResultAnswer(answer);
+  return {
+    runId: run.collaborationRunId,
+    status: 'completed',
+    finishedAt: resultFinishedAt(run),
+    workflow:
+      team.id === 'workflow' && workflow
+        ? { name: workflow.name, testRun: workflow.testRun === true }
+        : null,
+    answer: cut.answer,
+    truncated: cut.truncated,
+  };
+}
+
 export function toResultListItem(
   run: CollaborationRunEntity,
   referrals: readonly CollaborationReferralEntity[],
@@ -253,6 +326,32 @@ export class CollaborationResultsService {
         status: In([...RESULTS_UNREAD_STATUSES]),
       },
     });
+  }
+
+  /**
+   * RESULT-TOOL-01 S1: the final answer of one of the owner's own completed
+   * runs. One run query by id, owner and status; then that run's hand-offs.
+   * Null for a missing run, another owner's run, a run that is not completed,
+   * a run with no completed step and a blank answer (the route answers one
+   * 404). Reads only: never settles a run and never sets result_seen_at.
+   */
+  async readFinalAnswerForOwner(
+    userId: string,
+    collaborationRunId: string,
+  ): Promise<CollaborationRunResultRead | null> {
+    const run = await this.runRepo.findOne({
+      where: { collaborationRunId, userId, status: 'completed' },
+    });
+    if (
+      !run ||
+      run.collaborationRunId !== collaborationRunId ||
+      run.userId !== userId ||
+      run.status !== 'completed'
+    ) {
+      return null;
+    }
+    const referrals = await this.referralRepo.find({ where: { collaborationRunId } });
+    return toRunResultRead(run, referrals);
   }
 
   /**

@@ -6,7 +6,10 @@ import {
   RESULTS_MARK_SEEN_SQL,
   RESULTS_UNREAD_STATUSES,
   RESULTS_WORKFLOW_FILTER_SQL,
+  RUN_RESULT_ANSWER_MAX_CHARS,
   cutResultText,
+  cutRunResultAnswer,
+  runResultAnswerOf,
   finalAnswerOf,
   orderRunReferrals,
   resultFinishedAt,
@@ -289,6 +292,275 @@ describe('collaboration results logic (RESULTS-01)', () => {
       await expect(service(runRepo).markSeen(OWNER, 'run-1')).rejects.toThrow(
         /Could not record that the result was opened/,
       );
+    });
+  });
+
+  describe('readFinalAnswerForOwner (RESULT-TOOL-01 S1)', () => {
+    const WRITE_METHODS = [
+      'save',
+      'insert',
+      'update',
+      'upsert',
+      'delete',
+      'remove',
+      'softDelete',
+      'softRemove',
+      'increment',
+      'decrement',
+      'query',
+      'createQueryBuilder',
+    ];
+
+    function readRepos(runs: CollaborationRunEntity[], referrals: CollaborationReferralEntity[]) {
+      const runRepo: Record<string, jest.Mock> = {
+        findOne: jest.fn(async (options: { where: Record<string, unknown> }) => {
+          return (
+            runs.find((row) =>
+              Object.entries(options.where).every(
+                ([key, value]) => (row as unknown as Record<string, unknown>)[key] === value,
+              ),
+            ) ?? null
+          );
+        }),
+      };
+      const referralRepo: Record<string, jest.Mock> = {
+        find: jest.fn(async (options: { where: { collaborationRunId: string } }) =>
+          referrals.filter((row) => row.collaborationRunId === options.where.collaborationRunId),
+        ),
+      };
+      for (const method of WRITE_METHODS) {
+        runRepo[method] = jest.fn();
+        referralRepo[method] = jest.fn();
+      }
+      return { runRepo, referralRepo };
+    }
+
+    function expectNoWrites(repos: { runRepo: Record<string, jest.Mock>; referralRepo: Record<string, jest.Mock> }) {
+      for (const method of WRITE_METHODS) {
+        expect(repos.runRepo[method]).not.toHaveBeenCalled();
+        expect(repos.referralRepo[method]).not.toHaveBeenCalled();
+      }
+    }
+
+    const completedAt = new Date('2026-11-01T00:20:00.000Z');
+
+    it('reads one completed run by id, owner and status in one query, then its hand-offs', async () => {
+      const repos = readRepos(
+        [run({ referralIds: ['ref-1'], completedAt })],
+        [referral({ resultSummary: '  The final report.  ' })],
+      );
+      const result = await service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(repos.runRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(repos.runRepo.findOne).toHaveBeenCalledWith({
+        where: { collaborationRunId: 'run-1', userId: OWNER, status: 'completed' },
+      });
+      expect(repos.referralRepo.find).toHaveBeenCalledWith({ where: { collaborationRunId: 'run-1' } });
+      expect(result).toEqual({
+        runId: 'run-1',
+        status: 'completed',
+        finishedAt: '2026-11-01T00:20:00.000Z',
+        workflow: null,
+        answer: 'The final report.',
+        truncated: false,
+      });
+      expectNoWrites(repos);
+    });
+
+    it("is null for another owner's run, also when a lookup returned it", async () => {
+      const foreign = run({ userId: 'someone-else', referralIds: ['ref-1'] });
+      const repos = readRepos([foreign], [referral({ resultSummary: 'secret' })]);
+      await expect(service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1')).resolves.toBeNull();
+      // A lookup that ignored the owner still cannot leak the run.
+      repos.runRepo.findOne.mockResolvedValueOnce(foreign);
+      await expect(service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1')).resolves.toBeNull();
+      expect(repos.referralRepo.find).not.toHaveBeenCalled();
+      expectNoWrites(repos);
+    });
+
+    it('is null for a missing run', async () => {
+      const repos = readRepos([], []);
+      await expect(service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-x')).resolves.toBeNull();
+      expect(repos.referralRepo.find).not.toHaveBeenCalled();
+      expectNoWrites(repos);
+    });
+
+    it.each(['active', 'failed', 'cancelled', 'timed_out'] as const)(
+      'is null for a %s run, also when a lookup returned it',
+      async (status) => {
+        const row = run({ status, referralIds: ['ref-1'] });
+        const repos = readRepos([row], [referral({ resultSummary: 'an intermediate answer' })]);
+        await expect(
+          service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1'),
+        ).resolves.toBeNull();
+        repos.runRepo.findOne.mockResolvedValueOnce(row);
+        await expect(
+          service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1'),
+        ).resolves.toBeNull();
+        expect(repos.referralRepo.find).not.toHaveBeenCalled();
+        expectNoWrites(repos);
+      },
+    );
+
+    it('is null for a completed run with no completed step or no hand-offs', async () => {
+      const failedOnly = readRepos(
+        [run({ referralIds: ['ref-1'] })],
+        [referral({ status: 'failed', resultSummary: 'boom' })],
+      );
+      await expect(
+        service(failedOnly.runRepo, failedOnly.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1'),
+      ).resolves.toBeNull();
+      const none = readRepos([run()], []);
+      await expect(service(none.runRepo, none.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1')).resolves.toBeNull();
+      expectNoWrites(failedOnly);
+      expectNoWrites(none);
+    });
+
+    it('is null for a blank answer, a missing answer, or an answer that is only a hand-off request', async () => {
+      for (const resultSummary of ['   \n  ', null, '<handoff to="writer">write it</handoff>']) {
+        const repos = readRepos([run({ referralIds: ['ref-1'] })], [referral({ resultSummary })]);
+        await expect(
+          service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1'),
+        ).resolves.toBeNull();
+        expectNoWrites(repos);
+      }
+    });
+
+    it('takes the last completed step, as the Results page does', async () => {
+      const repos = readRepos(
+        [run({ referralIds: ['a', 'b', 'c'] })],
+        [
+          referral({ referralId: 'c', status: 'failed', resultSummary: 'boom' }),
+          referral({ referralId: 'b', resultSummary: 'writer answer' }),
+          referral({ referralId: 'a', resultSummary: 'lead answer' }),
+        ],
+      );
+      const result = await service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(result?.answer).toBe('writer answer');
+    });
+
+    it('removes a trailing hand-off request as the report-back step does', async () => {
+      const repos = readRepos(
+        [run({ referralIds: ['ref-1'] })],
+        [referral({ resultSummary: 'The draft is ready.\n\n<handoff to="writer">polish it</handoff>\n' })],
+      );
+      const result = await service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(result?.answer).toBe('The draft is ready.');
+      expect(result?.answer).not.toContain('handoff');
+      expect(result?.answer).not.toContain('polish it');
+    });
+
+    it('cuts the answer to 12,000 code points and sets truncated', async () => {
+      expect(RUN_RESULT_ANSWER_MAX_CHARS).toBe(12000);
+      const exact = 'a'.repeat(12000);
+      const exactRepos = readRepos([run({ referralIds: ['ref-1'] })], [referral({ resultSummary: exact })]);
+      const whole = await service(exactRepos.runRepo, exactRepos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(whole?.answer).toBe(exact);
+      expect(whole?.truncated).toBe(false);
+
+      const long = `${'😀'.repeat(11999)}xyz`;
+      const longRepos = readRepos([run({ referralIds: ['ref-1'] })], [referral({ resultSummary: long })]);
+      const cut = await service(longRepos.runRepo, longRepos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(cut?.truncated).toBe(true);
+      expect(Array.from(cut?.answer ?? '')).toHaveLength(12000);
+      expect(cut?.answer).toBe(`${'😀'.repeat(11999)}x`);
+      expectNoWrites(longRepos);
+    });
+
+    it('cutRunResultAnswer never splits a surrogate pair', () => {
+      expect(cutRunResultAnswer('ab😀cd', 3)).toEqual({ answer: 'ab😀', truncated: true });
+      expect(cutRunResultAnswer('ab', 3)).toEqual({ answer: 'ab', truncated: false });
+    });
+
+    it('runResultAnswerOf keeps a malformed request as text, like the report-back step', () => {
+      expect(runResultAnswerOf('Please <handoff to="writer">x</handoff> now')).toBe(
+        'Please <handoff to="writer">x</handoff> now',
+      );
+      expect(runResultAnswerOf(undefined)).toBeNull();
+    });
+
+    it('returns only the listed fields: never the task, steps, ids, owner, costs, stored job or seen mark', async () => {
+      const repos = readRepos(
+        [
+          run({
+            referralIds: ['ref-1', 'ref-2'],
+            projectId: 'project-secret',
+            completedAt,
+            resultSeenAt: new Date('2026-11-02T00:00:00.000Z'),
+          }),
+        ],
+        [
+          referral({
+            referralId: 'ref-1',
+            targetBuilderProfileId: 'wf-1',
+            pendingJob: {
+              prompt: 'TASK-TEXT-SECRET',
+              workflow: { id: 'wf-1', name: 'Morning brief', testRun: true, version: 'v-secret' },
+            } as never,
+            resultSummary: 'first step answer',
+          }),
+          referral({ referralId: 'ref-2', resultSummary: 'final answer' }),
+        ],
+      );
+      const result = await service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(Object.keys(result ?? {}).sort()).toEqual(
+        ['answer', 'finishedAt', 'runId', 'status', 'truncated', 'workflow'].sort(),
+      );
+      expect(result?.workflow).toEqual({ name: 'Morning brief', testRun: true });
+      expect(Object.keys(result?.workflow ?? {}).sort()).toEqual(['name', 'testRun']);
+      const text = JSON.stringify(result);
+      for (const hidden of [
+        'TASK-TEXT-SECRET',
+        'first step answer',
+        'ref-1',
+        'ref-2',
+        'project-secret',
+        OWNER,
+        'wf-1',
+        'v-secret',
+        '2026-11-02T00:00:00.000Z',
+      ]) {
+        expect(text).not.toContain(hidden);
+      }
+      expectNoWrites(repos);
+    });
+
+    it('names no workflow when the snapshot is not for the step target, and testRun false when absent', async () => {
+      const mismatch = readRepos(
+        [run({ referralIds: ['ref-1'] })],
+        [
+          referral({
+            targetBuilderProfileId: 'chief-of-staff',
+            pendingJob: { prompt: 'p', workflow: { id: 'wf-1', name: 'n', testRun: true } } as never,
+            resultSummary: 'answer',
+          }),
+        ],
+      );
+      expect(
+        (await service(mismatch.runRepo, mismatch.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1'))?.workflow,
+      ).toBeNull();
+      const plain = readRepos(
+        [run({ referralIds: ['ref-1'] })],
+        [
+          referral({
+            targetBuilderProfileId: 'wf-2',
+            pendingJob: { prompt: 'p', workflow: { id: 'wf-2', name: 'Plain' } } as never,
+            resultSummary: 'answer',
+          }),
+        ],
+      );
+      expect((await service(plain.runRepo, plain.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1'))?.workflow).toEqual({
+        name: 'Plain',
+        testRun: false,
+      });
+    });
+
+    it('does not change result_seen_at or the run status', async () => {
+      const row = run({ referralIds: ['ref-1'], resultSeenAt: null });
+      const repos = readRepos([row], [referral({ resultSummary: 'answer' })]);
+      await service(repos.runRepo, repos.referralRepo).readFinalAnswerForOwner(OWNER, 'run-1');
+      expect(row.resultSeenAt).toBeNull();
+      expect(row.status).toBe('completed');
+      expectNoWrites(repos);
     });
   });
 

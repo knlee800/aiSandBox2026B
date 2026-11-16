@@ -29,6 +29,7 @@ import { CreditDeductionRecord } from '../entities/credit-deduction-record.entit
 import { CollaborationWorkflowService } from './collaboration-workflow';
 import { CollaborationResultsService } from './collaboration-results';
 import { CollaborationResultsController } from './collaboration-results.controller';
+import { InternalCollaborationResultsController } from './internal-collaboration-results.controller';
 import { CollaborationRosterEntity } from './collaboration-roster.entity';
 import { CollaborationRosterService } from './collaboration-roster';
 import { CollaborationRosterController } from './collaboration-roster.controller';
@@ -71,6 +72,8 @@ import { Session } from '../entities/session.entity';
     CollaborationResultsController,
     // COS-FRONTDOOR-01 D9: owner-scoped GET and PUT /api/collaboration/roster.
     CollaborationRosterController,
+    // RESULT-TOOL-01 S1: POST /api/internal/collaboration/results/read (internal key only).
+    InternalCollaborationResultsController,
   ],
   providers: [
     OrchestrationService,
