@@ -2309,6 +2309,117 @@
         "mail_trigger_workflow_not_found": "找不到該工作流程。",
         "mail_trigger_limit_reached": "您已達到 3 個郵件觸發器的上限。請先刪除一個才能新增。"
       }
+    },
+    "knowledge": {
+      "title": "新增檔案時",
+      "subtitle": "當檔案被新增或取代到您指定的知識資料夾時，啟動一次執行。",
+      "loading": "正在載入檔案觸發器…",
+      "loadError": "無法載入檔案觸發器。",
+      "retry": "再試一次",
+      "forbiddenTitle": "無法使用檔案觸發器",
+      "forbiddenBody": "您的帳號開啟團隊執行後，檔案觸發器就會顯示在這裡。",
+      "banner": {
+        "off": "檔案觸發器已關閉，不會啟動任何執行。",
+        "runsOff": "此平台已關閉執行功能，因此每次檔案啟動都會被略過。"
+      },
+      "batchNotice": "一起新增的檔案只會啟動一次執行，時間在最後一個檔案後的幾分鐘。平台只會查看最近一小時內新增或取代的檔案；資料夾裡原本就有的檔案不會啟動執行。",
+      "privacyNotice": "執行只會被告知資料夾、時間和文件編號，並由它自己讀取檔案。平台不會為了啟動執行而讀取檔案的標題或內容。",
+      "limit": "已使用 {count} / {limit} 個檔案觸發器",
+      "limitReached": "您已達到 {limit} 個檔案觸發器的上限。請先刪除一個才能新增。",
+      "new": "新增檔案觸發器",
+      "emptyTitle": "還沒有檔案觸發器",
+      "emptyBody": "建立檔案觸發器，即可在檔案被新增到知識資料夾時啟動幕僚長或您的其中一個工作流程。",
+      "notice": {
+        "saved": "檔案觸發器已儲存。",
+        "deleted": "檔案觸發器已刪除。",
+        "switchedOn": "檔案觸發器已開啟。",
+        "switchedOff": "檔案觸發器已關閉。"
+      },
+      "target": {
+        "chiefOfStaff": "幕僚長",
+        "workflowNamed": "工作流程：{name}",
+        "workflowGone": "工作流程已不存在"
+      },
+      "row": {
+        "on": "開啟",
+        "off": "關閉",
+        "switchOn": "開啟",
+        "switchOff": "關閉",
+        "folder": "資料夾",
+        "timeZone": "時區",
+        "lastRun": "上次執行",
+        "neverRan": "尚未執行",
+        "viewResult": "開啟結果",
+        "edit": "編輯",
+        "delete": "刪除",
+        "deleteConfirm": "要刪除這個檔案觸發器嗎？此操作無法復原。",
+        "deleteYes": "是，刪除",
+        "history": "歷史記錄",
+        "hideHistory": "隱藏歷史記錄"
+      },
+      "form": {
+        "createTitle": "新增檔案觸發器",
+        "editTitle": "編輯檔案觸發器",
+        "hint": "執行只會被告知資料夾、時間，以及新增或取代的文件編號，並由它自己使用知識工具讀取檔案內容。第一步不需點擊即會開始；後續步驟依工作流程的核准設定進行，並在團隊頁面等待。",
+        "target": "要啟動的對象",
+        "workflowWarning": "工作流程必須勾選了這個資料夾，才能讀取其中的檔案。工作流程勾選的資料夾日後可能會變更；若未勾選這個資料夾，執行將看不到檔案。",
+        "task": "任務",
+        "taskCount": "{count} / {max} 個字元",
+        "folder": "知識資料夾",
+        "folderRule": "幕僚長可以讀取這些資料夾：{folders}。其他資料夾只能由工作流程監看。",
+        "folderWorkflowOnly": "{name}（僅限工作流程）",
+        "timeZone": "時區",
+        "enabled": "已開啟",
+        "save": "儲存檔案觸發器",
+        "saving": "儲存中…",
+        "cancel": "取消"
+      },
+      "history": {
+        "title": "歷史記錄（最近 30 筆）",
+        "loading": "正在載入歷史記錄…",
+        "empty": "這個檔案觸發器還沒有發生任何事。",
+        "loadError": "無法載入歷史記錄。"
+      },
+      "outcomes": {
+        "claimed": "已認領，正在啟動",
+        "started": "已啟動",
+        "skipped": "已略過",
+        "unknown": "未知"
+      },
+      "reasons": {
+        "runs_off": "此平台已關閉執行功能。",
+        "inactive": "檔案觸發器已關閉。",
+        "not_entitled": "您的帳號已不再具有存取權限。",
+        "workflow_gone": "工作流程已不存在。",
+        "workflow_off": "工作流程已關閉。",
+        "workflow_not_tested": "工作流程尚未測試。",
+        "workflow_invalid": "工作流程無效。",
+        "workflow_budget": "工作流程已達點數預算上限。",
+        "over_cap": "進行中的執行過多。",
+        "provider_off": "AI 供應商已關閉。",
+        "no_credits": "點數不足。",
+        "interrupted": "啟動被中斷。",
+        "refused": "啟動被拒絕。",
+        "day_limit": "此觸發器已達當日啟動次數上限。",
+        "unknown": "啟動已被略過。"
+      },
+      "errors": {
+        "generic": "發生錯誤，請再試一次。",
+        "network": "網路錯誤。請檢查您的連線後再試一次。",
+        "knowledge_trigger_invalid_body": "請求無效。",
+        "knowledge_trigger_unknown_field": "請求包含不允許的欄位。",
+        "knowledge_trigger_missing_field": "缺少必填欄位。",
+        "knowledge_trigger_empty_change": "沒有任何變更。",
+        "knowledge_trigger_invalid_target": "請選擇幕僚長或您的其中一個工作流程。",
+        "knowledge_trigger_invalid_task": "任務必須為 1 到 7000 個字元。",
+        "knowledge_trigger_invalid_folder": "請選擇其中一個知識資料夾。",
+        "knowledge_trigger_folder_not_readable": "幕僚長無法讀取這個知識資料夾。請選擇其他資料夾，或改選工作流程。",
+        "knowledge_trigger_invalid_time_zone": "無法辨識這個時區。",
+        "knowledge_trigger_invalid_enabled": "開啟或關閉的設定無效。",
+        "knowledge_trigger_not_found": "這個檔案觸發器已不存在。",
+        "knowledge_trigger_workflow_not_found": "找不到該工作流程。",
+        "knowledge_trigger_limit_reached": "您已達到 3 個檔案觸發器的上限。請先刪除一個才能新增。"
+      }
     }
   }
 }

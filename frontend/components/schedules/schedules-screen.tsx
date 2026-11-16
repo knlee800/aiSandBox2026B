@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Spinner from '@/components/ui/Spinner';
 import EventTriggersSection from './event-triggers-section';
+import KnowledgeTriggersSection from './knowledge-triggers-section';
 import MailTriggersSection from './mail-triggers-section';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
@@ -98,6 +99,8 @@ export interface SchedulesScreenViewProps {
   eventsSection?: React.ReactNode;
   /** TRIGGER-MAIL-01 S4: the "When mail arrives" section, below "Before a meeting". It loads and fails on its own. */
   mailSection?: React.ReactNode;
+  /** TRIGGER-MORE-01 S3: the "When a file is added" section, below "When mail arrives". It loads and fails on its own. */
+  knowledgeSection?: React.ReactNode;
 }
 
 const QUIET_BUTTON =
@@ -655,6 +658,7 @@ export function SchedulesScreenView(props: SchedulesScreenViewProps): React.Reac
 
           {props.eventsSection ?? null}
           {props.mailSection ?? null}
+          {props.knowledgeSection ?? null}
         </div>
       </main>
     </div>
@@ -881,6 +885,7 @@ export default function SchedulesScreen({ locale, fetcher }: SchedulesScreenProp
       onToggleHistory={(id) => void onToggleHistory(id)}
       eventsSection={<EventTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
       mailSection={<MailTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
+      knowledgeSection={<KnowledgeTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
     />
   );
 }

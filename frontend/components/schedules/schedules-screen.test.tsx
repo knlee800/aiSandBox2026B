@@ -411,3 +411,29 @@ describe('schedules screen: the When mail arrives slot', () => {
     assert.doesNotMatch(render(), /mail-slot|mail-triggers-section/);
   });
 });
+
+describe('schedules screen: the When a file is added slot', () => {
+  test('the knowledge section renders below the mail section and does not change the schedules', () => {
+    const events = <section data-testid="events-slot">events</section>;
+    const mail = <section data-testid="mail-slot">mail</section>;
+    const knowledge = <section data-testid="knowledge-slot">knowledge</section>;
+    const html = render({ eventsSection: events, mailSection: mail, knowledgeSection: knowledge });
+    assert.match(html, /data-testid="knowledge-slot"/);
+    assert.ok(html.indexOf('data-testid="schedules-list"') < html.indexOf('data-testid="events-slot"'));
+    assert.ok(html.indexOf('data-testid="events-slot"') < html.indexOf('data-testid="mail-slot"'));
+    assert.ok(html.indexOf('data-testid="mail-slot"') < html.indexOf('data-testid="knowledge-slot"'));
+    assert.match(html, /data-testid="schedules-new"/);
+  });
+
+  test('the slot still shows when the schedules themselves failed to load, so each section fails on its own', () => {
+    const knowledge = <section data-testid="knowledge-slot">knowledge</section>;
+    for (const phase of ['failed', 'forbidden'] as const) {
+      const html = render({ phase, data: null, knowledgeSection: knowledge });
+      assert.match(html, /data-testid="knowledge-slot"/);
+    }
+  });
+
+  test('without the slot the page has no knowledge section', () => {
+    assert.doesNotMatch(render(), /knowledge-slot|knowledge-triggers-section/);
+  });
+});

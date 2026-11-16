@@ -2309,6 +2309,117 @@
         "mail_trigger_workflow_not_found": "That workflow was not found.",
         "mail_trigger_limit_reached": "You have reached the limit of 3 mail triggers. Delete one to add another."
       }
+    },
+    "knowledge": {
+      "title": "When a file is added",
+      "subtitle": "Start a run when files are added to, or replaced in, a Knowledge folder you choose.",
+      "loading": "Loading file triggers…",
+      "loadError": "File triggers could not be loaded.",
+      "retry": "Try again",
+      "forbiddenTitle": "File triggers are not available",
+      "forbiddenBody": "File triggers appear here once Team runs are turned on for your account.",
+      "banner": {
+        "off": "File triggers are switched off; nothing will start.",
+        "runsOff": "Runs are switched off on this platform, so every file start will be skipped."
+      },
+      "batchNotice": "Files added together start one run, a few minutes after the last one. The platform only looks at files added or replaced in the last hour; files that were already in the folder never start a run.",
+      "privacyNotice": "The run is told only the folder, the time and the documents’ ids, and reads the files itself. The platform never reads a file’s title or text to start a run.",
+      "limit": "{count} of {limit} file triggers used",
+      "limitReached": "You have reached the limit of {limit} file triggers. Delete one to add another.",
+      "new": "New file trigger",
+      "emptyTitle": "No file triggers yet",
+      "emptyBody": "Create a file trigger to start the Chief of Staff or one of your workflows when files are added to a Knowledge folder.",
+      "notice": {
+        "saved": "File trigger saved.",
+        "deleted": "File trigger deleted.",
+        "switchedOn": "File trigger switched on.",
+        "switchedOff": "File trigger switched off."
+      },
+      "target": {
+        "chiefOfStaff": "Chief of Staff",
+        "workflowNamed": "Workflow: {name}",
+        "workflowGone": "Workflow no longer available"
+      },
+      "row": {
+        "on": "On",
+        "off": "Off",
+        "switchOn": "Switch on",
+        "switchOff": "Switch off",
+        "folder": "Folder",
+        "timeZone": "Time zone",
+        "lastRun": "Last run",
+        "neverRan": "Has not run yet",
+        "viewResult": "Open Results",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this file trigger? This cannot be undone.",
+        "deleteYes": "Yes, delete",
+        "history": "History",
+        "hideHistory": "Hide history"
+      },
+      "form": {
+        "createTitle": "New file trigger",
+        "editTitle": "Edit file trigger",
+        "hint": "The run is told only the folder, the time and the ids of the added or replaced documents. It reads the files itself with its Knowledge tool. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
+        "target": "What to start",
+        "workflowWarning": "A workflow can read the files only if this folder is ticked for it. Its ticked folders can change later; if the folder is not ticked, the run will not see the files.",
+        "task": "Task",
+        "taskCount": "{count} of {max} characters",
+        "folder": "Knowledge folder",
+        "folderRule": "The Chief of Staff can read these folders: {folders}. The other folders can only be watched by a workflow.",
+        "folderWorkflowOnly": "{name} (workflow only)",
+        "timeZone": "Time zone",
+        "enabled": "Switched on",
+        "save": "Save file trigger",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "history": {
+        "title": "History (last 30)",
+        "loading": "Loading history…",
+        "empty": "Nothing has happened for this file trigger yet.",
+        "loadError": "The history could not be loaded."
+      },
+      "outcomes": {
+        "claimed": "Claimed, starting",
+        "started": "Started",
+        "skipped": "Skipped",
+        "unknown": "Unknown"
+      },
+      "reasons": {
+        "runs_off": "Runs are switched off on this platform.",
+        "inactive": "The file trigger was switched off.",
+        "not_entitled": "Your account no longer has access.",
+        "workflow_gone": "The workflow no longer exists.",
+        "workflow_off": "The workflow is switched off.",
+        "workflow_not_tested": "The workflow has not been tested yet.",
+        "workflow_invalid": "The workflow is not valid.",
+        "workflow_budget": "The workflow reached its credit budget.",
+        "over_cap": "Too many runs were already in progress.",
+        "provider_off": "The AI provider is switched off.",
+        "no_credits": "There were not enough credits.",
+        "interrupted": "The start was interrupted.",
+        "refused": "The start was refused.",
+        "day_limit": "The daily limit of starts for this trigger was reached.",
+        "unknown": "The start was skipped."
+      },
+      "errors": {
+        "generic": "Something went wrong. Try again.",
+        "network": "Network error. Check your connection and try again.",
+        "knowledge_trigger_invalid_body": "The request was not valid.",
+        "knowledge_trigger_unknown_field": "The request had a field that is not allowed.",
+        "knowledge_trigger_missing_field": "A required field is missing.",
+        "knowledge_trigger_empty_change": "There is nothing to change.",
+        "knowledge_trigger_invalid_target": "Choose the Chief of Staff or one of your workflows.",
+        "knowledge_trigger_invalid_task": "The task must be 1 to 7000 characters.",
+        "knowledge_trigger_invalid_folder": "Choose one of the Knowledge folders.",
+        "knowledge_trigger_folder_not_readable": "The Chief of Staff cannot read this Knowledge folder. Choose another folder, or choose a workflow.",
+        "knowledge_trigger_invalid_time_zone": "That time zone is not known.",
+        "knowledge_trigger_invalid_enabled": "The on or off setting was not valid.",
+        "knowledge_trigger_not_found": "This file trigger no longer exists.",
+        "knowledge_trigger_workflow_not_found": "That workflow was not found.",
+        "knowledge_trigger_limit_reached": "You have reached the limit of 3 file triggers. Delete one to add another."
+      }
     }
   }
 }
