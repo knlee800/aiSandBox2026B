@@ -24,7 +24,9 @@ import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
 import { ConnectorsModule } from '../connectors/connectors.module';
 import { ChainTriggerController } from './chain-trigger.controller';
+import { ChainTriggerRunService } from './chain-trigger-run.service';
 import { ChainTriggerService } from './chain-trigger.service';
+import { ChainTriggerTimer } from './chain-trigger-timer';
 import { EventTriggerCalendar } from './event-trigger-calendar';
 import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
@@ -501,6 +503,9 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         KnowledgeTriggerTimer,
         // TRIGGER-CHAIN-01 S1: the chain trigger service (no timer, no run read, no run start).
         ChainTriggerService,
+        // TRIGGER-CHAIN-01 S2: the chain run service (run read, depth, claim, start) and the chain timer.
+        ChainTriggerRunService,
+        ChainTriggerTimer,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
@@ -510,7 +515,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(moduleSource).toContain(
         // TRIGGER-MORE-01 S2: KnowledgeDocument, read by the knowledge run service only (five columns).
         // TRIGGER-CHAIN-01 S1: the two chain trigger tables.
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AgentChainTrigger, AgentChainTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User])',
+        // TRIGGER-CHAIN-01 S2: the two run tables, read by the chain run service only (ids, times, two JSON paths).
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AgentChainTrigger, AgentChainTriggerRun, CollaborationRunEntity, CollaborationReferralEntity, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -528,7 +534,11 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       const files = readdirSync(__dirname).filter((name) => name.endsWith('.ts') && !name.endsWith('.spec.ts'));
       expect(files.sort()).toEqual(
         [
+          'chain-trigger-match.ts',
+          'chain-trigger-reasons.ts',
+          'chain-trigger-run.service.ts',
           'chain-trigger-switch.ts',
+          'chain-trigger-timer.ts',
           'chain-trigger-validation.ts',
           'chain-trigger.controller.ts',
           'chain-trigger.service.ts',
@@ -688,6 +698,36 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       for (const name of readdirSync(__dirname).filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))) {
         if (name === 'knowledge-trigger-run.service.ts' || name === 'triggers.module.ts') continue;
         expect(source(name)).not.toMatch(/\bKnowledgeDocument\b|knowledge_documents/);
+      }
+      // TRIGGER-CHAIN-01 S2: the pure chain helpers have no timer, no run start and no table read;
+      // the chain interval and boot hook only in the chain timer; start and approve only in the chain
+      // run service, which alone reads collaboration_runs and the first hand-offs, once each a tick,
+      // never the pending_job column or result_summary; the chain flag read once in the timer and once
+      // in the run service, the result tool's switch once in the run service through its imported
+      // reader; the chain parts never reach the schedule, event, mail or knowledge run parts.
+      for (const name of ['chain-trigger-match.ts', 'chain-trigger-reasons.ts']) {
+        expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep|Repository|CollaborationRunEntity|CollaborationReferral/);
+      }
+      expect(source('chain-trigger-timer.ts')).toMatch(/OnModuleInit/);
+      expect(source('chain-trigger-timer.ts').match(/setInterval\(/g)).toHaveLength(1);
+      expect(source('chain-trigger-timer.ts')).not.toMatch(/CollaborationStartService|approveStep|setTimeout|OnApplicationBootstrap|CollaborationRunEntity|CollaborationReferral|isRunResultToolEnabled/);
+      expect(source('chain-trigger-run.service.ts')).toMatch(/this\.starts\.start\(/);
+      expect(source('chain-trigger-run.service.ts')).toMatch(/this\.starts\.approveStep\(/);
+      expect(source('chain-trigger-run.service.ts')).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|ConnectorBroker|result_summary|resultSummary|pendingJob/);
+      expect(source('chain-trigger-run.service.ts').match(/this\.collaborationRuns\.find\(/g)).toHaveLength(1);
+      expect(source('chain-trigger-run.service.ts').match(/this\.referrals\.query\(/g)).toHaveLength(1);
+      expect(source('chain-trigger-run.service.ts')).not.toMatch(/this\.(collaborationRuns|referrals)\.(findOne|findBy|createQueryBuilder|update|insert|save|delete)\(/);
+      expect(source('chain-trigger-timer.ts').match(/isChainTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('chain-trigger-run.service.ts').match(/isChainTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('chain-trigger-run.service.ts').match(/isRunResultToolEnabled\(\)/g)).toHaveLength(1);
+      expect(source('chain-trigger-run.service.ts')).toContain("import { isRunResultToolEnabled } from '../orchestration/collaboration-result-grant';");
+      expect(source('chain-trigger-run.service.ts')).not.toMatch(/isKnowledgeTriggersEnabled|isMailTriggersEnabled|isEventTriggersEnabled|isSchedulesEnabled/);
+      for (const name of ['chain-trigger-timer.ts', 'chain-trigger-run.service.ts', 'chain-trigger-match.ts', 'chain-trigger-reasons.ts']) {
+        expect(source(name)).not.toMatch(/ScheduleRunService|EventTriggerRunService|EventTriggerCalendar|MailTriggerRunService|MailTriggerMailbox|KnowledgeTriggerRunService|from '\.\/knowledge-trigger|from '\.\/mail-trigger|from '\.\/event-trigger/);
+      }
+      for (const name of readdirSync(__dirname).filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))) {
+        if (name === 'chain-trigger-run.service.ts' || name === 'triggers.module.ts') continue;
+        expect(source(name)).not.toMatch(/\bCollaborationRunEntity\b|\bCollaborationReferralEntity\b|collaboration_runs|collaboration_referrals/);
       }
     });
   });

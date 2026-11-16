@@ -17,10 +17,14 @@ import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { KnowledgeDocument } from '../entities/knowledge-document.entity';
 import { User } from '../entities/user.entity';
 import { UserAgent } from '../entities/user-agent.entity';
+import { CollaborationReferralEntity } from '../orchestration/collaboration-referral.entity';
+import { CollaborationRunEntity } from '../orchestration/collaboration-run.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { SafetyModule } from '../safety/safety.module';
 import { ChainTriggerController } from './chain-trigger.controller';
+import { ChainTriggerRunService } from './chain-trigger-run.service';
 import { ChainTriggerService } from './chain-trigger.service';
+import { ChainTriggerTimer } from './chain-trigger-timer';
 import { EventTriggerCalendar } from './event-trigger-calendar';
 import { EventTriggerController } from './event-trigger.controller';
 import { EventTriggerRunService } from './event-trigger-run.service';
@@ -115,10 +119,23 @@ import { ScheduleTimer } from './schedule-timer';
  * chain-trigger-validation.ts) and the CHAIN_TRIGGERS_ENABLED switch
  * (chain-trigger-switch.ts). No timer, no collaboration_runs read and no run
  * start in S1.
+ *
+ * TRIGGER-CHAIN-01 S2: the chain timer (chain-trigger-timer.ts; its own
+ * 60-second interval, silent unless CHAIN_TRIGGERS_ENABLED, runs and the run
+ * result tool's switch are all on), one read a tick of collaboration_runs and
+ * of those runs' first hand-offs through its own CollaborationRunEntity and
+ * CollaborationReferralEntity repositories (ids, the owner, the status, two
+ * times, a target id and two JSON paths of the first hand-off only; never a
+ * task, the pending_job column or an answer; nothing under orchestration/ is
+ * changed), the match, depth and task rule (chain-trigger-match.ts), the row
+ * cap, claim, depth bound, day limit, pre-checks, start and first approval
+ * through the same CollaborationStartService as schedules, and the skip
+ * reasons (chain-trigger-reasons.ts) with their audit rows
+ * (chain-trigger-run.service.ts).
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AgentChainTrigger, AgentChainTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User]),
+    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AgentChainTrigger, AgentChainTriggerRun, CollaborationRunEntity, CollaborationReferralEntity, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
     ConnectorsModule,
     OrchestrationModule,
@@ -141,6 +158,8 @@ import { ScheduleTimer } from './schedule-timer';
     KnowledgeTriggerRunService,
     KnowledgeTriggerTimer,
     ChainTriggerService,
+    ChainTriggerRunService,
+    ChainTriggerTimer,
   ],
   exports: [],
 })
