@@ -89483,13 +89483,13 @@ taskId=RESULT-TOOL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-16 — Keith said "go" after the STAGING-DEPLOY-RESULTTOOL-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-16 by the RESULT-TOOL-01 LOCK — not admitted.
 **Task ID:** RESULT-TOOL-LIVE-01
 **Title:** Live run-result tool check and its wording
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-RESULTTOOL-01 is locked and Keith opens a run window. Keith decides.
+**Start condition:** READY (Keith, 2026-11-16, "go"; the stored Anthropic test key is used, so no new key is needed). Was: NOT_READY. Ready when: STAGING-DEPLOY-RESULTTOOL-01 is locked and Keith opens a run window. Keith decides.
 **Depends on:** STAGING-DEPLOY-RESULTTOOL-01.
 **Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md lines (GOVERNANCE held in the LOCK record).
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT; GOVERNANCE for the wording.
