@@ -29,7 +29,9 @@ import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
 import { KnowledgeTriggerController } from './knowledge-trigger.controller';
+import { KnowledgeTriggerRunService } from './knowledge-trigger-run.service';
 import { KnowledgeTriggerService } from './knowledge-trigger.service';
+import { KnowledgeTriggerTimer } from './knowledge-trigger-timer';
 import { MailTriggerController } from './mail-trigger.controller';
 import { MailTriggerMailbox } from './mail-trigger-mailbox';
 import { MailTriggerRunService } from './mail-trigger-run.service';
@@ -491,6 +493,9 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
         MailTriggerTimer,
         // TRIGGER-MORE-01 S1: the knowledge trigger service (no timer, no document read, no run start).
         KnowledgeTriggerService,
+        // TRIGGER-MORE-01 S2: the knowledge run service (document read, batch, claim, start) and the knowledge timer.
+        KnowledgeTriggerRunService,
+        KnowledgeTriggerTimer,
       ]);
       expect(Reflect.getMetadata('exports', TriggersModule)).toEqual([]);
       expect(Reflect.getMetadata('imports', TriggersModule)).toEqual(
@@ -498,7 +503,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       );
       const moduleSource = readFileSync(join(__dirname, 'triggers.module.ts'), 'utf8');
       expect(moduleSource).toContain(
-        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User])',
+        // TRIGGER-MORE-01 S2: KnowledgeDocument, read by the knowledge run service only (five columns).
+        'TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User])',
       );
       expect(moduleSource).toContain('AuthModule');
 
@@ -525,7 +531,11 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
           'event-trigger-validation.ts',
           'event-trigger.controller.ts',
           'event-trigger.service.ts',
+          'knowledge-trigger-match.ts',
+          'knowledge-trigger-reasons.ts',
+          'knowledge-trigger-run.service.ts',
           'knowledge-trigger-switch.ts',
+          'knowledge-trigger-timer.ts',
           'knowledge-trigger-validation.ts',
           'knowledge-trigger.controller.ts',
           'knowledge-trigger.service.ts',
@@ -633,6 +643,31 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(source('knowledge-trigger.service.ts').match(/isKnowledgeTriggersEnabled\(\)/g)).toHaveLength(1);
       for (const name of ['schedule-timer.ts', 'schedule-run.service.ts', 'event-trigger-timer.ts', 'event-trigger-run.service.ts', 'mail-trigger-timer.ts', 'mail-trigger-run.service.ts']) {
         expect(source(name)).not.toMatch(/KnowledgeTrigger|isKnowledgeTriggersEnabled/);
+      }
+      // TRIGGER-MORE-01 S2: the pure knowledge helpers have no timer, no run start and no document
+      // read; the knowledge interval and boot hook only in the knowledge timer; start and approve
+      // only in the knowledge run service, which alone reads knowledge_documents, once a tick, and
+      // never through KnowledgeService; the knowledge flag read once in the timer and once in the run
+      // service; the knowledge parts never reach the schedule, event or mail run parts.
+      for (const name of ['knowledge-trigger-match.ts', 'knowledge-trigger-reasons.ts']) {
+        expect(source(name)).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|CollaborationStartService|OrchestrationModule|approveStep|Repository|KnowledgeService/);
+      }
+      expect(source('knowledge-trigger-timer.ts')).toMatch(/OnModuleInit/);
+      expect(source('knowledge-trigger-timer.ts').match(/setInterval\(/g)).toHaveLength(1);
+      expect(source('knowledge-trigger-timer.ts')).not.toMatch(/CollaborationStartService|approveStep|setTimeout|OnApplicationBootstrap|KnowledgeDocument/);
+      expect(source('knowledge-trigger-run.service.ts')).toMatch(/this\.starts\.start\(/);
+      expect(source('knowledge-trigger-run.service.ts')).toMatch(/this\.starts\.approveStep\(/);
+      expect(source('knowledge-trigger-run.service.ts')).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|KnowledgeService|ConnectorBroker/);
+      expect(source('knowledge-trigger-run.service.ts').match(/this\.documents\.find\(/g)).toHaveLength(1);
+      expect(source('knowledge-trigger-timer.ts').match(/isKnowledgeTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('knowledge-trigger-run.service.ts').match(/isKnowledgeTriggersEnabled\(\)/g)).toHaveLength(1);
+      expect(source('knowledge-trigger-run.service.ts')).not.toMatch(/isMailTriggersEnabled|isEventTriggersEnabled|isSchedulesEnabled/);
+      for (const name of ['knowledge-trigger-timer.ts', 'knowledge-trigger-run.service.ts', 'knowledge-trigger-match.ts', 'knowledge-trigger-reasons.ts']) {
+        expect(source(name)).not.toMatch(/ScheduleRunService|EventTriggerRunService|EventTriggerCalendar|MailTriggerRunService|MailTriggerMailbox/);
+      }
+      for (const name of readdirSync(__dirname).filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))) {
+        if (name === 'knowledge-trigger-run.service.ts' || name === 'triggers.module.ts') continue;
+        expect(source(name)).not.toMatch(/\bKnowledgeDocument\b|knowledge_documents/);
       }
     });
   });

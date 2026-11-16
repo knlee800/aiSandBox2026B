@@ -12,6 +12,7 @@ import { AgentSchedule } from '../entities/agent-schedule.entity';
 import { AgentScheduleRun } from '../entities/agent-schedule-run.entity';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
+import { KnowledgeDocument } from '../entities/knowledge-document.entity';
 import { User } from '../entities/user.entity';
 import { UserAgent } from '../entities/user-agent.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
@@ -22,7 +23,9 @@ import { EventTriggerRunService } from './event-trigger-run.service';
 import { EventTriggerService } from './event-trigger.service';
 import { EventTriggerTimer } from './event-trigger-timer';
 import { KnowledgeTriggerController } from './knowledge-trigger.controller';
+import { KnowledgeTriggerRunService } from './knowledge-trigger-run.service';
 import { KnowledgeTriggerService } from './knowledge-trigger.service';
+import { KnowledgeTriggerTimer } from './knowledge-trigger-timer';
 import { MailTriggerController } from './mail-trigger.controller';
 import { MailTriggerMailbox } from './mail-trigger-mailbox';
 import { MailTriggerRunService } from './mail-trigger-run.service';
@@ -89,10 +92,21 @@ import { ScheduleTimer } from './schedule-timer';
  * knowledge-trigger-validation.ts) and the KNOWLEDGE_TRIGGERS_ENABLED switch
  * (knowledge-trigger-switch.ts). No timer, no knowledge_documents read and no
  * run start in S1.
+ *
+ * TRIGGER-MORE-01 S2: the knowledge timer (knowledge-trigger-timer.ts; its own
+ * 60-second interval, silent while KNOWLEDGE_TRIGGERS_ENABLED is off), one
+ * read a tick of knowledge_documents through its own KnowledgeDocument
+ * repository (id, owner, folder, content hash and change time only; never a
+ * title or content; nothing under knowledge/ is used or changed), the match
+ * and batch rule (knowledge-trigger-match.ts), the row cap, claims, day
+ * limit, pre-checks, start and first approval through the same
+ * CollaborationStartService as schedules, and the skip reasons
+ * (knowledge-trigger-reasons.ts) with their audit rows
+ * (knowledge-trigger-run.service.ts).
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, AuditEventEntity, ConnectorConnection, UserAgent, User]),
+    TypeOrmModule.forFeature([AgentSchedule, AgentScheduleRun, AgentEventTrigger, AgentEventTriggerRun, AgentMailTrigger, AgentMailTriggerRun, AgentKnowledgeTrigger, AgentKnowledgeTriggerRun, KnowledgeDocument, AuditEventEntity, ConnectorConnection, UserAgent, User]),
     AuthModule,
     ConnectorsModule,
     OrchestrationModule,
@@ -112,6 +126,8 @@ import { ScheduleTimer } from './schedule-timer';
     MailTriggerRunService,
     MailTriggerTimer,
     KnowledgeTriggerService,
+    KnowledgeTriggerRunService,
+    KnowledgeTriggerTimer,
   ],
   exports: [],
 })
