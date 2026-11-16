@@ -2188,6 +2188,127 @@
         "event_trigger_workflow_not_found": "找不到該工作流程。",
         "event_trigger_limit_reached": "您已達到 3 個活動觸發器的上限。請先刪除一個才能新增。"
       }
+    },
+    "mail": {
+      "title": "郵件到達時",
+      "subtitle": "當您指定的寄件者寄來新的未讀郵件時，啟動一次唯讀執行。",
+      "loading": "正在載入郵件觸發器…",
+      "loadError": "無法載入郵件觸發器。",
+      "retry": "再試一次",
+      "forbiddenTitle": "無法使用郵件觸發器",
+      "forbiddenBody": "您的帳號開啟團隊執行後，郵件觸發器就會顯示在這裡。",
+      "banner": {
+        "off": "郵件觸發器已關閉，不會啟動任何執行。",
+        "runsOff": "此平台已關閉執行功能，因此每次郵件啟動都會被略過。"
+      },
+      "mailbox": {
+        "label": "信箱：",
+        "ok": "已連線，可以讀取。",
+        "connector_missing": "尚未連線。",
+        "read_failed": "已連線，但無法讀取。",
+        "openConnections": "前往連線頁面"
+      },
+      "readNotice": "觸發器開啟期間，平台約每 10 分鐘登入一次您的信箱來查看新郵件（連續失敗後約每小時一次）。",
+      "unreadNotice": "平台只查看未讀郵件，不會將郵件標示為已讀，也不會更動您的信箱。",
+      "limit": "已使用 {count} / {limit} 個郵件觸發器",
+      "limitReached": "您已達到 {limit} 個郵件觸發器的上限。請先刪除一個才能新增。",
+      "new": "新增郵件觸發器",
+      "emptyTitle": "還沒有郵件觸發器",
+      "emptyBody": "建立郵件觸發器，即可在指定寄件者的郵件到達時啟動幕僚長或您的其中一個工作流程。",
+      "notice": {
+        "saved": "郵件觸發器已儲存。",
+        "deleted": "郵件觸發器已刪除。",
+        "switchedOn": "郵件觸發器已開啟。",
+        "switchedOff": "郵件觸發器已關閉。"
+      },
+      "target": {
+        "chiefOfStaff": "幕僚長",
+        "workflowNamed": "工作流程：{name}",
+        "workflowGone": "工作流程已不存在"
+      },
+      "row": {
+        "on": "開啟",
+        "off": "關閉",
+        "switchOn": "開啟",
+        "switchOff": "關閉",
+        "sender": "寄件者",
+        "subjectWord": "主旨關鍵字",
+        "anySubject": "所有主旨",
+        "timeZone": "時區",
+        "lastRun": "上次執行",
+        "neverRan": "尚未執行",
+        "viewResult": "開啟結果",
+        "edit": "編輯",
+        "delete": "刪除",
+        "deleteConfirm": "要刪除這個郵件觸發器嗎？此操作無法復原。",
+        "deleteYes": "是，刪除",
+        "history": "歷史記錄",
+        "hideHistory": "隱藏歷史記錄"
+      },
+      "form": {
+        "createTitle": "新增郵件觸發器",
+        "editTitle": "編輯郵件觸發器",
+        "hint": "執行只會被告知有郵件到達以及該郵件的編號，並由它自己使用郵件工具讀取郵件內容。郵件執行為唯讀：第一步不需點擊即會開始；後續步驟依工作流程的核准設定進行，並在團隊頁面等待。",
+        "target": "要啟動的對象",
+        "workflowWarning": "工作流程必須具備郵件工具才能讀取郵件。請檢查該工作流程的工具；沒有此工具，執行將看不到郵件。",
+        "task": "任務",
+        "taskCount": "{count} / {max} 個字元",
+        "sender": "寄件者",
+        "senderHint": "填寫一個完整的電子郵件地址（name@example.com），或 @ 加網域（@example.com）。網域只會比對該網域本身，不含其子網域。不可使用顯示名稱、清單或萬用字元。",
+        "subjectFilter": "主旨關鍵字（選填）",
+        "subjectFilterHint": "只有主旨包含此關鍵字的郵件才會啟動執行。留空則適用於此寄件者的任何主旨。",
+        "timeZone": "時區",
+        "enabled": "已開啟",
+        "save": "儲存郵件觸發器",
+        "saving": "儲存中…",
+        "cancel": "取消"
+      },
+      "history": {
+        "title": "歷史記錄（最近 30 筆）",
+        "loading": "正在載入歷史記錄…",
+        "empty": "這個郵件觸發器還沒有發生任何事。",
+        "loadError": "無法載入歷史記錄。"
+      },
+      "outcomes": {
+        "claimed": "已認領，正在啟動",
+        "started": "已啟動",
+        "skipped": "已略過",
+        "unknown": "未知"
+      },
+      "reasons": {
+        "runs_off": "此平台已關閉執行功能。",
+        "inactive": "郵件觸發器已關閉。",
+        "not_entitled": "您的帳號已不再具有存取權限。",
+        "workflow_gone": "工作流程已不存在。",
+        "workflow_off": "工作流程已關閉。",
+        "workflow_not_tested": "工作流程尚未測試。",
+        "workflow_invalid": "工作流程無效。",
+        "workflow_budget": "工作流程已達點數預算上限。",
+        "over_cap": "進行中的執行過多。",
+        "provider_off": "AI 供應商已關閉。",
+        "no_credits": "點數不足。",
+        "interrupted": "啟動被中斷。",
+        "refused": "啟動被拒絕。",
+        "day_limit": "此觸發器已達當日啟動次數上限。",
+        "unknown": "啟動已被略過。"
+      },
+      "errors": {
+        "generic": "發生錯誤，請再試一次。",
+        "network": "網路錯誤。請檢查您的連線後再試一次。",
+        "mail_trigger_invalid_body": "請求無效。",
+        "mail_trigger_unknown_field": "請求包含不允許的欄位。",
+        "mail_trigger_missing_field": "缺少必填欄位。",
+        "mail_trigger_empty_change": "沒有任何變更。",
+        "mail_trigger_invalid_target": "請選擇幕僚長或您的其中一個工作流程。",
+        "mail_trigger_invalid_task": "任務必須為 1 到 7500 個字元。",
+        "mail_trigger_invalid_sender": "寄件者必須是一個電子郵件地址，或 @ 加網域，不可含名稱、清單或萬用字元。",
+        "mail_trigger_invalid_subject": "主旨關鍵字最多 100 個字元。",
+        "mail_trigger_invalid_time_zone": "無法辨識這個時區。",
+        "mail_trigger_invalid_enabled": "開啟或關閉的設定無效。",
+        "mail_trigger_not_found": "這個郵件觸發器已不存在。",
+        "mail_trigger_workflow_not_found": "找不到該工作流程。",
+        "mail_trigger_limit_reached": "您已達到 3 個郵件觸發器的上限。請先刪除一個才能新增。"
+      }
     }
   }
 }

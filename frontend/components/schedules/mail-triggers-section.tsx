@@ -1,0 +1,881 @@
+'use client';
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  EnvelopeIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  PencilSquareIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
+import Spinner from '@/components/ui/Spinner';
+import { useTranslations } from '@/hooks/useTranslations';
+import {
+  createMailTrigger,
+  deleteMailTrigger,
+  loadMailTriggerRuns,
+  loadMailTriggers,
+  updateMailTrigger,
+  type MailTriggersFetcher,
+} from './mail-triggers-api';
+import {
+  MAIL_TRIGGER_SENDER_FILTER_MAX_CHARS,
+  MAIL_TRIGGER_SUBJECT_FILTER_MAX_CHARS,
+  MAIL_TRIGGER_TASK_MAX_CHARS,
+  mailboxDisplayState,
+  mailboxNeedsAttention,
+  mailboxStateKey,
+  draftFromMailTrigger,
+  draftToBody,
+  emptyMailDraft,
+  mailLimitReached,
+  mailOutcomeKey,
+  mailReasonKey,
+  showWorkflowMailWarning,
+  type MailTriggerDraft,
+  type MailTriggerItem,
+  type MailTriggerLastRun,
+  type MailTriggerList,
+  type MailTriggerRun,
+} from './mail-triggers.logic';
+import { browserTimeZone, fillTemplate, taskPreview, type WorkflowOption } from './schedules.logic';
+
+/**
+ * TRIGGER-MAIL-01 S4: the "Before a meeting" section of the Schedules page.
+ * It loads and fails on its own, so a failure here never touches the
+ * schedules above it. An event trigger starts a read-only run as its owner a
+ * few minutes before a timed event on the owner's calendar; nothing here
+ * starts a run or reads the mailbox.
+ */
+
+export type MailTriggersPhase = 'loading' | 'ready' | 'failed' | 'forbidden';
+
+export interface MailTriggerFormState {
+  /** null while creating. */
+  editingId: string | null;
+  draft: MailTriggerDraft;
+  saving: boolean;
+  errorKey: string | null;
+}
+
+export interface MailTriggerHistoryState {
+  triggerId: string;
+  phase: 'loading' | 'ready' | 'failed';
+  runs: MailTriggerRun[];
+}
+
+export interface MailTriggersSectionViewProps {
+  /** Keys are inside the schedules.mail namespace. */
+  t: (key: string) => string;
+  locale: string;
+  phase: MailTriggersPhase;
+  data: MailTriggerList | null;
+  workflows: WorkflowOption[];
+  timeZones: string[];
+  form: MailTriggerFormState | null;
+  noticeKey: string | null;
+  rowError: { triggerId: string; errorKey: string } | null;
+  busyId: string | null;
+  confirmDeleteId: string | null;
+  history: MailTriggerHistoryState | null;
+  onRetry: () => void;
+  onNew: () => void;
+  onEdit: (trigger: MailTriggerItem) => void;
+  onDraftChange: (draft: MailTriggerDraft) => void;
+  onSave: () => void;
+  onCancelForm: () => void;
+  onSwitch: (trigger: MailTriggerItem) => void;
+  onAskDelete: (id: string) => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: (id: string) => void;
+  onToggleHistory: (id: string) => void;
+}
+
+const QUIET_BUTTON =
+  'inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
+const PRIMARY_BUTTON =
+  'inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
+const DANGER_BUTTON =
+  'inline-flex items-center gap-1.5 rounded-md border border-red-700/60 px-3 py-1.5 text-sm font-medium text-red-200 transition-colors hover:bg-red-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
+const FIELD =
+  'mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60';
+const LINK =
+  'text-indigo-300 underline underline-offset-2 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+
+function Banner({ testId, text }: { testId: string; text: string }) {
+  return (
+    <div
+      className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-3 py-2 text-amber-100"
+      role="status"
+      data-testid={testId}
+    >
+      <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      <p className="break-words text-sm">{text}</p>
+    </div>
+  );
+}
+
+function StatusPill({ on, t }: { on: boolean; t: (key: string) => string }) {
+  return on ? (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 px-2 py-0.5 text-[11px] font-medium text-emerald-200">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+      {t('row.on')}
+    </span>
+  ) : (
+    <span className="inline-flex items-center rounded-full border border-slate-600 px-2 py-0.5 text-[11px] font-medium text-slate-300">
+      {t('row.off')}
+    </span>
+  );
+}
+
+export function describeMailRun(
+  t: (key: string) => string,
+  run: MailTriggerLastRun,
+): { outcome: string; reason: string | null } {
+  return {
+    outcome: t(mailOutcomeKey(run.outcome)),
+    reason: run.reason ? t(mailReasonKey(run.reason)) : null,
+  };
+}
+
+function RunLine({
+  t,
+  locale,
+  run,
+  testId,
+}: {
+  t: (key: string) => string;
+  locale: string;
+  run: MailTriggerLastRun;
+  testId: string;
+}) {
+  const { outcome, reason } = describeMailRun(t, run);
+  return (
+    <span className="min-w-0 break-words text-sm text-slate-200" data-testid={testId}>
+      {run.localDate} {'·'} {outcome}
+      {reason ? ` · ${reason}` : ''}
+      {run.collaborationRunId ? (
+        <>
+          {' '}
+          <Link href={`/${locale}/results`} className={LINK} data-testid={`${testId}-result`}>
+            {t('row.viewResult')}
+          </Link>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
+function targetLabel(t: (key: string) => string, trigger: MailTriggerItem): string {
+  if (trigger.target.kind === 'chief-of-staff') return t('target.chiefOfStaff');
+  if (trigger.target.missing) return t('target.workflowGone');
+  return fillTemplate(t('target.workflowNamed'), { name: trigger.target.name ?? '' });
+}
+
+export function MailTriggerForm(props: {
+  t: (key: string) => string;
+  form: MailTriggerFormState;
+  workflows: WorkflowOption[];
+  timeZones: string[];
+  onDraftChange: (draft: MailTriggerDraft) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}): React.ReactElement {
+  const { t, form, workflows, timeZones, onDraftChange, onSave, onCancel } = props;
+  const { draft, saving, errorKey, editingId } = form;
+  const set = (patch: Partial<MailTriggerDraft>) => onDraftChange({ ...draft, ...patch });
+  return (
+    <form
+      className="flex min-w-0 flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5"
+      aria-labelledby="mail-trigger-form-title"
+      data-testid="mail-trigger-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSave();
+      }}
+    >
+      <h3 id="mail-trigger-form-title" className="text-sm font-semibold text-white">
+        {editingId ? t('form.editTitle') : t('form.createTitle')}
+      </h3>
+      <p className="text-sm text-slate-300" data-testid="mail-trigger-hint">
+        {t('form.hint')}
+      </p>
+
+      <div>
+        <label htmlFor="mail-trigger-target" className="text-xs font-medium text-slate-300">
+          {t('form.target')}
+        </label>
+        <select
+          id="mail-trigger-target"
+          className={FIELD}
+          value={draft.targetId}
+          disabled={saving}
+          onChange={(event) => set({ targetId: event.target.value })}
+          data-testid="mail-trigger-target"
+        >
+          <option value="">{t('target.chiefOfStaff')}</option>
+          {workflows.map((workflow) => (
+            <option key={workflow.id} value={workflow.id}>
+              {fillTemplate(t('target.workflowNamed'), { name: workflow.name })}
+            </option>
+          ))}
+          {draft.targetId !== '' && !workflows.some((workflow) => workflow.id === draft.targetId) ? (
+            <option value={draft.targetId}>{t('target.workflowGone')}</option>
+          ) : null}
+        </select>
+        {showWorkflowMailWarning(draft) ? (
+          <p
+            className="mt-2 flex items-start gap-2 text-sm text-amber-200"
+            role="status"
+            data-testid="mail-trigger-workflow-warning"
+          >
+            <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="break-words">{t('form.workflowWarning')}</span>
+          </p>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="mail-trigger-task" className="text-xs font-medium text-slate-300">
+          {t('form.task')}
+        </label>
+        <textarea
+          id="mail-trigger-task"
+          className={`${FIELD} min-h-[6rem]`}
+          value={draft.task}
+          maxLength={MAIL_TRIGGER_TASK_MAX_CHARS}
+          disabled={saving}
+          onChange={(event) => set({ task: event.target.value })}
+          data-testid="mail-trigger-task"
+        />
+        <p className="mt-1 text-xs text-slate-400">
+          {fillTemplate(t('form.taskCount'), { count: draft.task.length, max: MAIL_TRIGGER_TASK_MAX_CHARS })}
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="mail-trigger-sender" className="text-xs font-medium text-slate-300">
+          {t('form.sender')}
+        </label>
+        <input
+          id="mail-trigger-sender"
+          type="text"
+          inputMode="email"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          className={FIELD}
+          value={draft.senderFilter}
+          maxLength={MAIL_TRIGGER_SENDER_FILTER_MAX_CHARS}
+          disabled={saving}
+          aria-describedby="mail-trigger-sender-rule"
+          onChange={(event) => set({ senderFilter: event.target.value })}
+          data-testid="mail-trigger-sender"
+        />
+        <p id="mail-trigger-sender-rule" className="mt-1 text-xs text-slate-400" data-testid="mail-trigger-sender-rule">
+          {t('form.senderHint')}
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="mail-trigger-subject" className="text-xs font-medium text-slate-300">
+          {t('form.subjectFilter')}
+        </label>
+        <input
+          id="mail-trigger-subject"
+          type="text"
+          className={FIELD}
+          value={draft.subjectFilter}
+          maxLength={MAIL_TRIGGER_SUBJECT_FILTER_MAX_CHARS}
+          disabled={saving}
+          onChange={(event) => set({ subjectFilter: event.target.value })}
+          data-testid="mail-trigger-subject"
+        />
+        <p className="mt-1 text-xs text-slate-400">{t('form.subjectFilterHint')}</p>
+      </div>
+
+      <div>
+        <label htmlFor="mail-trigger-zone" className="text-xs font-medium text-slate-300">
+          {t('form.timeZone')}
+        </label>
+        <input
+          id="mail-trigger-zone"
+          type="text"
+          className={FIELD}
+          value={draft.timeZone}
+          list="mail-trigger-zone-list"
+          maxLength={64}
+          disabled={saving}
+          onChange={(event) => set({ timeZone: event.target.value })}
+          data-testid="mail-trigger-zone"
+        />
+        <datalist id="mail-trigger-zone-list">
+          {timeZones.map((zone) => (
+            <option key={zone} value={zone} />
+          ))}
+        </datalist>
+      </div>
+
+      <label className="inline-flex items-center gap-2 text-sm text-slate-200" htmlFor="mail-trigger-enabled">
+        <input
+          id="mail-trigger-enabled"
+          type="checkbox"
+          className="h-4 w-4 rounded border-slate-600 bg-slate-950 text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          checked={draft.enabled}
+          disabled={saving}
+          onChange={(event) => set({ enabled: event.target.checked })}
+          data-testid="mail-trigger-enabled"
+        />
+        {t('form.enabled')}
+      </label>
+
+      {errorKey ? (
+        <div
+          className="flex items-start gap-2 rounded-lg border border-red-700/40 bg-red-950/30 px-3 py-2"
+          role="alert"
+          data-testid="mail-trigger-form-error"
+        >
+          <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-red-300" aria-hidden="true" />
+          <p className="break-words text-sm text-red-200">{t(errorKey)}</p>
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className={PRIMARY_BUTTON} disabled={saving} data-testid="mail-trigger-save">
+          {saving ? <Spinner className="h-4 w-4 text-white" /> : null}
+          {saving ? t('form.saving') : t('form.save')}
+        </button>
+        <button
+          type="button"
+          className={QUIET_BUTTON}
+          disabled={saving}
+          onClick={onCancel}
+          data-testid="mail-trigger-cancel"
+        >
+          {t('form.cancel')}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function HistoryPanel({
+  t,
+  locale,
+  history,
+}: {
+  t: (key: string) => string;
+  locale: string;
+  history: MailTriggerHistoryState;
+}) {
+  return (
+    <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-3" data-testid="mail-trigger-history">
+      <h4 className="text-xs font-semibold text-slate-200">{t('history.title')}</h4>
+      {history.phase === 'loading' ? (
+        <p className="mt-2 text-sm text-slate-300" role="status" data-testid="mail-trigger-history-loading">
+          {t('history.loading')}
+        </p>
+      ) : history.phase === 'failed' ? (
+        <p className="mt-2 text-sm text-red-200" role="alert" data-testid="mail-trigger-history-error">
+          {t('history.loadError')}
+        </p>
+      ) : history.runs.length === 0 ? (
+        <p className="mt-2 text-sm text-slate-300" data-testid="mail-trigger-history-empty">
+          {t('history.empty')}
+        </p>
+      ) : (
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {history.runs.map((run) => (
+            <li key={run.id}>
+              <RunLine t={t} locale={locale} run={run} testId={`mail-trigger-history-run-${run.id}`} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function TriggerRow(props: MailTriggersSectionViewProps & { trigger: MailTriggerItem }): React.ReactElement {
+  const { t, locale, trigger, busyId, confirmDeleteId, rowError, history } = props;
+  const busy = busyId === trigger.id;
+  const asking = confirmDeleteId === trigger.id;
+  const historyOpen = history?.triggerId === trigger.id;
+  return (
+    <li
+      className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5"
+      data-testid={`mail-trigger-row-${trigger.id}`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h3
+            className="min-w-0 break-words text-sm font-semibold text-white"
+            data-testid={`mail-trigger-target-${trigger.id}`}
+          >
+            {targetLabel(t, trigger)}
+          </h3>
+          <StatusPill on={trigger.enabled} t={t} />
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={trigger.enabled}
+          aria-label={trigger.enabled ? t('row.switchOff') : t('row.switchOn')}
+          className={QUIET_BUTTON}
+          disabled={busy}
+          onClick={() => props.onSwitch(trigger)}
+          data-testid={`mail-trigger-switch-${trigger.id}`}
+        >
+          {trigger.enabled ? t('row.switchOff') : t('row.switchOn')}
+        </button>
+      </div>
+      <p className="mt-2 break-words text-sm text-slate-200" data-testid={`mail-trigger-task-${trigger.id}`}>
+        {taskPreview(trigger.task)}
+      </p>
+      <dl className="mt-3 flex flex-col gap-1.5">
+        <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-3">
+          <dt className="shrink-0 text-xs font-medium text-slate-400 sm:w-32">{t('row.sender')}</dt>
+          <dd className="min-w-0 break-words text-sm text-slate-100" data-testid={`mail-trigger-sender-${trigger.id}`}>
+            {trigger.senderFilter}
+          </dd>
+        </div>
+        <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-3">
+          <dt className="shrink-0 text-xs font-medium text-slate-400 sm:w-32">{t('row.subjectWord')}</dt>
+          <dd className="min-w-0 break-words text-sm text-slate-100" data-testid={`mail-trigger-subject-${trigger.id}`}>
+            {trigger.subjectFilter ?? t('row.anySubject')}
+          </dd>
+        </div>
+        <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-3">
+          <dt className="shrink-0 text-xs font-medium text-slate-400 sm:w-32">{t('row.timeZone')}</dt>
+          <dd className="min-w-0 break-words text-sm text-slate-100">{trigger.timeZone}</dd>
+        </div>
+        <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-3">
+          <dt className="shrink-0 text-xs font-medium text-slate-400 sm:w-32">{t('row.lastRun')}</dt>
+          <dd className="min-w-0">
+            {trigger.lastRun ? (
+              <RunLine t={t} locale={locale} run={trigger.lastRun} testId={`mail-trigger-last-${trigger.id}`} />
+            ) : (
+              <span className="text-sm text-slate-400" data-testid={`mail-trigger-last-${trigger.id}`}>
+                {t('row.neverRan')}
+              </span>
+            )}
+          </dd>
+        </div>
+      </dl>
+
+      {rowError && rowError.triggerId === trigger.id ? (
+        <p className="mt-3 text-sm text-red-200" role="alert" data-testid={`mail-trigger-row-error-${trigger.id}`}>
+          {t(rowError.errorKey)}
+        </p>
+      ) : null}
+
+      {asking ? (
+        <div className="mt-3 flex flex-col gap-2" data-testid={`mail-trigger-delete-confirm-${trigger.id}`}>
+          <p className="text-sm text-slate-200">{t('row.deleteConfirm')}</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={DANGER_BUTTON}
+              disabled={busy}
+              onClick={() => props.onConfirmDelete(trigger.id)}
+              data-testid={`mail-trigger-delete-yes-${trigger.id}`}
+            >
+              {t('row.deleteYes')}
+            </button>
+            <button
+              type="button"
+              className={QUIET_BUTTON}
+              disabled={busy}
+              onClick={props.onCancelDelete}
+              data-testid={`mail-trigger-delete-no-${trigger.id}`}
+            >
+              {t('form.cancel')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={QUIET_BUTTON}
+            disabled={busy}
+            onClick={() => props.onEdit(trigger)}
+            data-testid={`mail-trigger-edit-${trigger.id}`}
+          >
+            <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
+            {t('row.edit')}
+          </button>
+          <button
+            type="button"
+            className={QUIET_BUTTON}
+            aria-expanded={historyOpen}
+            onClick={() => props.onToggleHistory(trigger.id)}
+            data-testid={`mail-trigger-history-toggle-${trigger.id}`}
+          >
+            {historyOpen ? t('row.hideHistory') : t('row.history')}
+          </button>
+          <button
+            type="button"
+            className={DANGER_BUTTON}
+            disabled={busy}
+            onClick={() => props.onAskDelete(trigger.id)}
+            data-testid={`mail-trigger-delete-${trigger.id}`}
+          >
+            <TrashIcon className="h-4 w-4" aria-hidden="true" />
+            {t('row.delete')}
+          </button>
+        </div>
+      )}
+      {historyOpen && history ? <HistoryPanel t={t} locale={locale} history={history} /> : null}
+    </li>
+  );
+}
+
+function MailboxLine({
+  t,
+  locale,
+  data,
+}: {
+  t: (key: string) => string;
+  locale: string;
+  data: MailTriggerList;
+}) {
+  const state = mailboxDisplayState(data.mail);
+  const attention = mailboxNeedsAttention(data.mail);
+  return (
+    <p
+      className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-sm ${attention ? 'text-amber-200' : 'text-slate-300'}`}
+      data-testid="mail-triggers-mailbox"
+      data-mailbox-state={state}
+    >
+      <span className="font-medium">{t('mailbox.label')}</span>
+      <span>{t(mailboxStateKey(state))}</span>
+      {attention ? (
+        <Link href={`/${locale}/connections`} className={LINK} data-testid="mail-triggers-mailbox-link">
+          {t('mailbox.openConnections')}
+        </Link>
+      ) : null}
+    </p>
+  );
+}
+
+export function MailTriggersSectionView(props: MailTriggersSectionViewProps): React.ReactElement {
+  const { t, locale, phase, data, form } = props;
+  const full = data ? mailLimitReached(data) : false;
+
+  return (
+    <section
+      className="flex flex-col gap-4 border-t border-slate-800 pt-6"
+      aria-labelledby="mail-triggers-title"
+      data-testid="mail-triggers-section"
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/90 text-white">
+          <EnvelopeIcon className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <div className="min-w-0">
+          <h2 id="mail-triggers-title" className="text-base font-semibold text-white">
+            {t('title')}
+          </h2>
+          <p className="text-sm text-slate-300">{t('subtitle')}</p>
+        </div>
+      </div>
+
+      {phase === 'loading' ? (
+        <p className="flex items-center gap-2 text-sm text-slate-300" role="status" data-testid="mail-triggers-loading">
+          <Spinner className="h-4 w-4 text-slate-300" />
+          {t('loading')}
+        </p>
+      ) : null}
+
+      {phase === 'failed' ? (
+        <div
+          className="flex flex-col items-start gap-3 rounded-lg border border-red-700/40 bg-red-950/30 px-3 py-3"
+          data-testid="mail-triggers-error"
+        >
+          <p className="text-sm text-red-200" role="alert">
+            {t('loadError')}
+          </p>
+          <button type="button" className={QUIET_BUTTON} onClick={props.onRetry} data-testid="mail-triggers-retry">
+            {t('retry')}
+          </button>
+        </div>
+      ) : null}
+
+      {phase === 'forbidden' ? (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5" data-testid="mail-triggers-forbidden">
+          <h3 className="text-sm font-semibold text-white">{t('forbiddenTitle')}</h3>
+          <p className="mt-2 text-sm text-slate-300">{t('forbiddenBody')}</p>
+        </div>
+      ) : null}
+
+      {phase === 'ready' && data ? (
+        <>
+          {!data.enabled ? <Banner testId="mail-triggers-banner-off" text={t('banner.off')} /> : null}
+          {!data.runsEnabled ? <Banner testId="mail-triggers-banner-runs-off" text={t('banner.runsOff')} /> : null}
+
+          <MailboxLine t={t} locale={locale} data={data} />
+          <p className="text-sm text-slate-300" data-testid="mail-triggers-read-notice">
+            {t('readNotice')}
+          </p>
+          <p className="text-sm text-slate-300" data-testid="mail-triggers-unread-notice">
+            {t('unreadNotice')}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-slate-300" data-testid="mail-triggers-limit">
+              {fillTemplate(t('limit'), { count: data.triggers.length, limit: data.limit })}
+            </p>
+            <button
+              type="button"
+              className={PRIMARY_BUTTON}
+              disabled={full || form !== null}
+              onClick={props.onNew}
+              data-testid="mail-triggers-new"
+            >
+              <PlusIcon className="h-4 w-4" aria-hidden="true" />
+              {t('new')}
+            </button>
+          </div>
+          {full ? (
+            <p className="text-sm text-amber-200" role="status" data-testid="mail-triggers-limit-reached">
+              {fillTemplate(t('limitReached'), { limit: data.limit })}
+            </p>
+          ) : null}
+
+          {props.noticeKey ? (
+            <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="mail-triggers-notice">
+              <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
+              <span className="break-words">{t(props.noticeKey)}</span>
+            </p>
+          ) : null}
+
+          {form ? (
+            <MailTriggerForm
+              t={t}
+              form={form}
+              workflows={props.workflows}
+              timeZones={props.timeZones}
+              onDraftChange={props.onDraftChange}
+              onSave={props.onSave}
+              onCancel={props.onCancelForm}
+            />
+          ) : null}
+
+          {data.triggers.length === 0 ? (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5" data-testid="mail-triggers-empty">
+              <h3 className="text-sm font-semibold text-white">{t('emptyTitle')}</h3>
+              <p className="mt-2 text-sm text-slate-300">{t('emptyBody')}</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-3" data-testid="mail-triggers-list">
+              {data.triggers.map((trigger) => (
+                <TriggerRow key={trigger.id} {...props} trigger={trigger} />
+              ))}
+            </ul>
+          )}
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+export interface MailTriggersSectionProps {
+  locale: string;
+  fetcher?: MailTriggersFetcher;
+  /** The workflow picker data the Schedules page already loads. */
+  workflows: WorkflowOption[];
+}
+
+function listTimeZones(): string[] {
+  try {
+    const intl = Intl as unknown as { supportedValuesOf?: (key: string) => string[] };
+    return intl.supportedValuesOf ? intl.supportedValuesOf('timeZone') : [];
+  } catch {
+    return [];
+  }
+}
+
+export default function MailTriggersSection({
+  locale,
+  fetcher,
+  workflows,
+}: MailTriggersSectionProps): React.ReactElement {
+  const translate = useTranslations('schedules.mail');
+  const router = useRouter();
+  const [phase, setPhase] = useState<MailTriggersPhase>('loading');
+  const [data, setData] = useState<MailTriggerList | null>(null);
+  const [form, setForm] = useState<MailTriggerFormState | null>(null);
+  const [noticeKey, setNoticeKey] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<{ triggerId: string; errorKey: string } | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [history, setHistory] = useState<MailTriggerHistoryState | null>(null);
+  const timeZones = useMemo(() => listTimeZones(), []);
+
+  const toLogin = useCallback(() => {
+    router.replace(`/${locale}/login`);
+  }, [locale, router]);
+
+  const reload = useCallback(async () => {
+    setPhase('loading');
+    const result = await loadMailTriggers(fetcher);
+    if (result.type === 'unauthorized') {
+      toLogin();
+      return;
+    }
+    if (result.type === 'forbidden') {
+      setPhase('forbidden');
+      return;
+    }
+    if (result.type === 'failed') {
+      setPhase('failed');
+      return;
+    }
+    setData(result.value);
+    setPhase('ready');
+  }, [fetcher, toLogin]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  const handleFailure = useCallback(
+    (result: { type: string; errorKey?: string }): string | null => {
+      if (result.type === 'unauthorized') {
+        toLogin();
+        return null;
+      }
+      if (result.type === 'forbidden') {
+        setPhase('forbidden');
+        return null;
+      }
+      return result.errorKey ?? 'errors.generic';
+    },
+    [toLogin],
+  );
+
+  const onSave = useCallback(async () => {
+    if (!form) return;
+    const parsed = draftToBody(form.draft);
+    if (!parsed.ok) {
+      setForm({ ...form, errorKey: parsed.errorKey });
+      return;
+    }
+    setForm({ ...form, saving: true, errorKey: null });
+    const result = form.editingId
+      ? await updateMailTrigger(form.editingId, parsed.body, fetcher)
+      : await createMailTrigger(parsed.body, fetcher);
+    if (result.type !== 'ok') {
+      const errorKey = handleFailure(result);
+      if (errorKey) setForm({ ...form, saving: false, errorKey });
+      return;
+    }
+    setForm(null);
+    setNoticeKey('notice.saved');
+    await reload();
+  }, [fetcher, form, handleFailure, reload]);
+
+  const onSwitch = useCallback(
+    async (trigger: MailTriggerItem) => {
+      setBusyId(trigger.id);
+      setRowError(null);
+      const result = await updateMailTrigger(trigger.id, { enabled: !trigger.enabled }, fetcher);
+      setBusyId(null);
+      if (result.type !== 'ok') {
+        const errorKey = handleFailure(result);
+        if (errorKey) setRowError({ triggerId: trigger.id, errorKey });
+        return;
+      }
+      setNoticeKey(result.value.enabled ? 'notice.switchedOn' : 'notice.switchedOff');
+      setData((current) =>
+        current
+          ? { ...current, triggers: current.triggers.map((entry) => (entry.id === trigger.id ? result.value : entry)) }
+          : current,
+      );
+    },
+    [fetcher, handleFailure],
+  );
+
+  const onConfirmDelete = useCallback(
+    async (id: string) => {
+      setBusyId(id);
+      setRowError(null);
+      const result = await deleteMailTrigger(id, fetcher);
+      setBusyId(null);
+      if (result.type !== 'ok') {
+        const errorKey = handleFailure(result);
+        if (errorKey) setRowError({ triggerId: id, errorKey });
+        return;
+      }
+      setConfirmDeleteId(null);
+      setHistory((current) => (current?.triggerId === id ? null : current));
+      setNoticeKey('notice.deleted');
+      await reload();
+    },
+    [fetcher, handleFailure, reload],
+  );
+
+  const onToggleHistory = useCallback(
+    async (id: string) => {
+      if (history?.triggerId === id) {
+        setHistory(null);
+        return;
+      }
+      setHistory({ triggerId: id, phase: 'loading', runs: [] });
+      const result = await loadMailTriggerRuns(id, fetcher);
+      if (result.type === 'unauthorized') {
+        toLogin();
+        return;
+      }
+      setHistory((current) =>
+        current?.triggerId !== id
+          ? current
+          : result.type === 'ok'
+            ? { triggerId: id, phase: 'ready', runs: result.value }
+            : { triggerId: id, phase: 'failed', runs: [] },
+      );
+    },
+    [fetcher, history, toLogin],
+  );
+
+  return (
+    <MailTriggersSectionView
+      t={translate}
+      locale={locale}
+      phase={phase}
+      data={data}
+      workflows={workflows}
+      timeZones={timeZones}
+      form={form}
+      noticeKey={noticeKey}
+      rowError={rowError}
+      busyId={busyId}
+      confirmDeleteId={confirmDeleteId}
+      history={history}
+      onRetry={() => void reload()}
+      onNew={() => {
+        setNoticeKey(null);
+        setForm({ editingId: null, draft: emptyMailDraft(browserTimeZone()), saving: false, errorKey: null });
+      }}
+      onEdit={(trigger) => {
+        setNoticeKey(null);
+        setForm({ editingId: trigger.id, draft: draftFromMailTrigger(trigger), saving: false, errorKey: null });
+      }}
+      onDraftChange={(draft) => setForm((current) => (current ? { ...current, draft } : current))}
+      onSave={() => void onSave()}
+      onCancelForm={() => setForm(null)}
+      onSwitch={(trigger) => void onSwitch(trigger)}
+      onAskDelete={(id) => {
+        setRowError(null);
+        setConfirmDeleteId(id);
+      }}
+      onCancelDelete={() => setConfirmDeleteId(null)}
+      onConfirmDelete={(id) => void onConfirmDelete(id)}
+      onToggleHistory={(id) => void onToggleHistory(id)}
+    />
+  );
+}

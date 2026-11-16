@@ -2188,6 +2188,127 @@
         "event_trigger_workflow_not_found": "找不到该工作流。",
         "event_trigger_limit_reached": "您已达到 3 个活动触发器的上限。请先删除一个才能新增。"
       }
+    },
+    "mail": {
+      "title": "邮件到达时",
+      "subtitle": "当您指定的发件人发来新的未读邮件时，启动一次只读运行。",
+      "loading": "正在加载邮件触发器…",
+      "loadError": "无法加载邮件触发器。",
+      "retry": "重试",
+      "forbiddenTitle": "无法使用邮件触发器",
+      "forbiddenBody": "您的账号开启团队运行后，邮件触发器就会显示在这里。",
+      "banner": {
+        "off": "邮件触发器已关闭，不会启动任何运行。",
+        "runsOff": "此平台已关闭运行功能，因此每次邮件启动都会被跳过。"
+      },
+      "mailbox": {
+        "label": "邮箱：",
+        "ok": "已连接，可以读取。",
+        "connector_missing": "尚未连接。",
+        "read_failed": "已连接，但无法读取。",
+        "openConnections": "前往连接页面"
+      },
+      "readNotice": "触发器开启期间，平台约每 10 分钟登录一次您的邮箱来查看新邮件（连续失败后约每小时一次）。",
+      "unreadNotice": "平台只查看未读邮件，不会将邮件标记为已读，也不会改动您的邮箱。",
+      "limit": "已使用 {count} / {limit} 个邮件触发器",
+      "limitReached": "您已达到 {limit} 个邮件触发器的上限。请先删除一个才能新增。",
+      "new": "新增邮件触发器",
+      "emptyTitle": "还没有邮件触发器",
+      "emptyBody": "创建邮件触发器，即可在指定发件人的邮件到达时启动幕僚长或您的某个工作流。",
+      "notice": {
+        "saved": "邮件触发器已保存。",
+        "deleted": "邮件触发器已删除。",
+        "switchedOn": "邮件触发器已开启。",
+        "switchedOff": "邮件触发器已关闭。"
+      },
+      "target": {
+        "chiefOfStaff": "幕僚长",
+        "workflowNamed": "工作流：{name}",
+        "workflowGone": "工作流已不存在"
+      },
+      "row": {
+        "on": "开启",
+        "off": "关闭",
+        "switchOn": "开启",
+        "switchOff": "关闭",
+        "sender": "发件人",
+        "subjectWord": "主题关键词",
+        "anySubject": "所有主题",
+        "timeZone": "时区",
+        "lastRun": "上次运行",
+        "neverRan": "尚未运行",
+        "viewResult": "打开结果",
+        "edit": "编辑",
+        "delete": "删除",
+        "deleteConfirm": "要删除这个邮件触发器吗？此操作无法撤销。",
+        "deleteYes": "是，删除",
+        "history": "历史记录",
+        "hideHistory": "隐藏历史记录"
+      },
+      "form": {
+        "createTitle": "新增邮件触发器",
+        "editTitle": "编辑邮件触发器",
+        "hint": "运行只会被告知有邮件到达以及该邮件的编号，并由它自己使用邮件工具读取邮件内容。邮件运行为只读：第一步无需点击即会开始；后续步骤按工作流的审批设置进行，并在团队页面等待。",
+        "target": "要启动的对象",
+        "workflowWarning": "工作流必须具备邮件工具才能读取邮件。请检查该工作流的工具；没有此工具，运行将看不到邮件。",
+        "task": "任务",
+        "taskCount": "{count} / {max} 个字符",
+        "sender": "发件人",
+        "senderHint": "填写一个完整的电子邮件地址（name@example.com），或 @ 加域名（@example.com）。域名只会匹配该域名本身，不含其子域名。不可使用显示名称、列表或通配符。",
+        "subjectFilter": "主题关键词（选填）",
+        "subjectFilterHint": "只有主题包含此关键词的邮件才会启动运行。留空则适用于此发件人的任何主题。",
+        "timeZone": "时区",
+        "enabled": "已开启",
+        "save": "保存邮件触发器",
+        "saving": "保存中…",
+        "cancel": "取消"
+      },
+      "history": {
+        "title": "历史记录（最近 30 条）",
+        "loading": "正在加载历史记录…",
+        "empty": "这个邮件触发器还没有发生任何事。",
+        "loadError": "无法加载历史记录。"
+      },
+      "outcomes": {
+        "claimed": "已认领，正在启动",
+        "started": "已启动",
+        "skipped": "已跳过",
+        "unknown": "未知"
+      },
+      "reasons": {
+        "runs_off": "此平台已关闭运行功能。",
+        "inactive": "邮件触发器已关闭。",
+        "not_entitled": "您的账号已不再具有访问权限。",
+        "workflow_gone": "工作流已不存在。",
+        "workflow_off": "工作流已关闭。",
+        "workflow_not_tested": "工作流尚未测试。",
+        "workflow_invalid": "工作流无效。",
+        "workflow_budget": "工作流已达积分预算上限。",
+        "over_cap": "进行中的运行过多。",
+        "provider_off": "AI 提供商已关闭。",
+        "no_credits": "积分不足。",
+        "interrupted": "启动被中断。",
+        "refused": "启动被拒绝。",
+        "day_limit": "此触发器已达当日启动次数上限。",
+        "unknown": "启动已被跳过。"
+      },
+      "errors": {
+        "generic": "出现错误，请重试。",
+        "network": "网络错误。请检查您的连接后重试。",
+        "mail_trigger_invalid_body": "请求无效。",
+        "mail_trigger_unknown_field": "请求包含不允许的字段。",
+        "mail_trigger_missing_field": "缺少必填字段。",
+        "mail_trigger_empty_change": "没有任何更改。",
+        "mail_trigger_invalid_target": "请选择幕僚长或您的某个工作流。",
+        "mail_trigger_invalid_task": "任务必须为 1 到 7500 个字符。",
+        "mail_trigger_invalid_sender": "发件人必须是一个电子邮件地址，或 @ 加域名，不可含名称、列表或通配符。",
+        "mail_trigger_invalid_subject": "主题关键词最多 100 个字符。",
+        "mail_trigger_invalid_time_zone": "无法识别这个时区。",
+        "mail_trigger_invalid_enabled": "开启或关闭的设置无效。",
+        "mail_trigger_not_found": "这个邮件触发器已不存在。",
+        "mail_trigger_workflow_not_found": "找不到该工作流。",
+        "mail_trigger_limit_reached": "您已达到 3 个邮件触发器的上限。请先删除一个才能新增。"
+      }
     }
   }
 }

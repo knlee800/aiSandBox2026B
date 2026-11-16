@@ -2188,6 +2188,127 @@
         "event_trigger_workflow_not_found": "That workflow was not found.",
         "event_trigger_limit_reached": "You have reached the limit of 3 event triggers. Delete one to add another."
       }
+    },
+    "mail": {
+      "title": "When mail arrives",
+      "subtitle": "Start a read-only run when new unread mail arrives from a sender you choose.",
+      "loading": "Loading mail triggers…",
+      "loadError": "Mail triggers could not be loaded.",
+      "retry": "Try again",
+      "forbiddenTitle": "Mail triggers are not available",
+      "forbiddenBody": "Mail triggers appear here once Team runs are turned on for your account.",
+      "banner": {
+        "off": "Mail triggers are switched off; nothing will start.",
+        "runsOff": "Runs are switched off on this platform, so every mail start will be skipped."
+      },
+      "mailbox": {
+        "label": "Mailbox:",
+        "ok": "Connected and readable.",
+        "connector_missing": "Not connected.",
+        "read_failed": "Connected, but it could not be read.",
+        "openConnections": "Open Connections"
+      },
+      "readNotice": "While a trigger is on, the platform signs in to your mailbox about every 10 minutes (about once an hour after repeated failures) to look for new mail.",
+      "unreadNotice": "It only looks at unread mail, never marks mail as read, and never changes your mailbox.",
+      "limit": "{count} of {limit} mail triggers used",
+      "limitReached": "You have reached the limit of {limit} mail triggers. Delete one to add another.",
+      "new": "New mail trigger",
+      "emptyTitle": "No mail triggers yet",
+      "emptyBody": "Create a mail trigger to start the Chief of Staff or one of your workflows when mail from a chosen sender arrives.",
+      "notice": {
+        "saved": "Mail trigger saved.",
+        "deleted": "Mail trigger deleted.",
+        "switchedOn": "Mail trigger switched on.",
+        "switchedOff": "Mail trigger switched off."
+      },
+      "target": {
+        "chiefOfStaff": "Chief of Staff",
+        "workflowNamed": "Workflow: {name}",
+        "workflowGone": "Workflow no longer available"
+      },
+      "row": {
+        "on": "On",
+        "off": "Off",
+        "switchOn": "Switch on",
+        "switchOff": "Switch off",
+        "sender": "Sender",
+        "subjectWord": "Subject word",
+        "anySubject": "Every subject",
+        "timeZone": "Time zone",
+        "lastRun": "Last run",
+        "neverRan": "Has not run yet",
+        "viewResult": "Open Results",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this mail trigger? This cannot be undone.",
+        "deleteYes": "Yes, delete",
+        "history": "History",
+        "hideHistory": "Hide history"
+      },
+      "form": {
+        "createTitle": "New mail trigger",
+        "editTitle": "Edit mail trigger",
+        "hint": "The run is told only that mail arrived and its message number. It reads the mail itself with its own mail tool. Mail runs are read-only: the first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
+        "target": "What to start",
+        "workflowWarning": "A workflow can read the mail only if it has the mail tool. Check the workflow’s tools; without it the run will not see the mail.",
+        "task": "Task",
+        "taskCount": "{count} of {max} characters",
+        "sender": "Sender",
+        "senderHint": "One full address (name@example.com) or @ and a domain (@example.com). A domain matches that domain only, not its subdomains. Display names, lists and wildcards are not allowed.",
+        "subjectFilter": "Subject word (optional)",
+        "subjectFilterHint": "Only mail whose subject contains this word starts a run. Leave empty for any subject from this sender.",
+        "timeZone": "Time zone",
+        "enabled": "Switched on",
+        "save": "Save mail trigger",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "history": {
+        "title": "History (last 30)",
+        "loading": "Loading history…",
+        "empty": "Nothing has happened for this mail trigger yet.",
+        "loadError": "The history could not be loaded."
+      },
+      "outcomes": {
+        "claimed": "Claimed, starting",
+        "started": "Started",
+        "skipped": "Skipped",
+        "unknown": "Unknown"
+      },
+      "reasons": {
+        "runs_off": "Runs are switched off on this platform.",
+        "inactive": "The mail trigger was switched off.",
+        "not_entitled": "Your account no longer has access.",
+        "workflow_gone": "The workflow no longer exists.",
+        "workflow_off": "The workflow is switched off.",
+        "workflow_not_tested": "The workflow has not been tested yet.",
+        "workflow_invalid": "The workflow is not valid.",
+        "workflow_budget": "The workflow reached its credit budget.",
+        "over_cap": "Too many runs were already in progress.",
+        "provider_off": "The AI provider is switched off.",
+        "no_credits": "There were not enough credits.",
+        "interrupted": "The start was interrupted.",
+        "refused": "The start was refused.",
+        "day_limit": "The daily limit of starts for this trigger was reached.",
+        "unknown": "The start was skipped."
+      },
+      "errors": {
+        "generic": "Something went wrong. Try again.",
+        "network": "Network error. Check your connection and try again.",
+        "mail_trigger_invalid_body": "The request was not valid.",
+        "mail_trigger_unknown_field": "The request had a field that is not allowed.",
+        "mail_trigger_missing_field": "A required field is missing.",
+        "mail_trigger_empty_change": "There is nothing to change.",
+        "mail_trigger_invalid_target": "Choose the Chief of Staff or one of your workflows.",
+        "mail_trigger_invalid_task": "The task must be 1 to 7500 characters.",
+        "mail_trigger_invalid_sender": "The sender must be one email address or @ and a domain, with no name, list or wildcard.",
+        "mail_trigger_invalid_subject": "The subject word must be at most 100 characters.",
+        "mail_trigger_invalid_time_zone": "That time zone is not known.",
+        "mail_trigger_invalid_enabled": "The on or off setting was not valid.",
+        "mail_trigger_not_found": "This mail trigger no longer exists.",
+        "mail_trigger_workflow_not_found": "That workflow was not found.",
+        "mail_trigger_limit_reached": "You have reached the limit of 3 mail triggers. Delete one to add another."
+      }
     }
   }
 }

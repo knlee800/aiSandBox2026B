@@ -387,3 +387,27 @@ describe('schedules screen: the Before a meeting slot', () => {
     assert.doesNotMatch(render(), /events-slot|event-triggers-section/);
   });
 });
+
+describe('schedules screen: the When mail arrives slot', () => {
+  test('the mail section renders below the events section and does not change the schedules', () => {
+    const events = <section data-testid="events-slot">events</section>;
+    const mail = <section data-testid="mail-slot">mail</section>;
+    const html = render({ eventsSection: events, mailSection: mail });
+    assert.match(html, /data-testid="mail-slot"/);
+    assert.ok(html.indexOf('data-testid="schedules-list"') < html.indexOf('data-testid="events-slot"'));
+    assert.ok(html.indexOf('data-testid="events-slot"') < html.indexOf('data-testid="mail-slot"'));
+    assert.match(html, /data-testid="schedules-new"/);
+  });
+
+  test('the slot still shows when the schedules themselves failed to load, so each section fails on its own', () => {
+    const mail = <section data-testid="mail-slot">mail</section>;
+    for (const phase of ['failed', 'forbidden'] as const) {
+      const html = render({ phase, data: null, mailSection: mail });
+      assert.match(html, /data-testid="mail-slot"/);
+    }
+  });
+
+  test('without the slot the page has no mail section', () => {
+    assert.doesNotMatch(render(), /mail-slot|mail-triggers-section/);
+  });
+});

@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Spinner from '@/components/ui/Spinner';
 import EventTriggersSection from './event-triggers-section';
+import MailTriggersSection from './mail-triggers-section';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   createSchedule,
@@ -95,6 +96,8 @@ export interface SchedulesScreenViewProps {
   onToggleHistory: (id: string) => void;
   /** TRIGGER-EVENT-01 S4: the "Before a meeting" section, below the schedules. It loads and fails on its own. */
   eventsSection?: React.ReactNode;
+  /** TRIGGER-MAIL-01 S4: the "When mail arrives" section, below "Before a meeting". It loads and fails on its own. */
+  mailSection?: React.ReactNode;
 }
 
 const QUIET_BUTTON =
@@ -651,6 +654,7 @@ export function SchedulesScreenView(props: SchedulesScreenViewProps): React.Reac
           ) : null}
 
           {props.eventsSection ?? null}
+          {props.mailSection ?? null}
         </div>
       </main>
     </div>
@@ -876,6 +880,7 @@ export default function SchedulesScreen({ locale, fetcher }: SchedulesScreenProp
       onConfirmDelete={(id) => void onConfirmDelete(id)}
       onToggleHistory={(id) => void onToggleHistory(id)}
       eventsSection={<EventTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
+      mailSection={<MailTriggersSection locale={locale} fetcher={fetcher} workflows={workflows} />}
     />
   );
 }
