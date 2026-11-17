@@ -89397,23 +89397,25 @@ taskId=COS-EVAL-LABEL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-17 by the COS-EVAL-TIDY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-17 — Keith said "Start it". Was: READY — registered 2026-11-17 by the COS-EVAL-TIDY-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-LABEL-01
 **Title:** Retire the CONN-03 body label and allow an empty fixture body in the briefing eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Start condition:** READY (Keith, 2026-11-17, "Start it"). Was: NOT_READY. Ready when: Keith decides. Optional.
 **Depends on:** COS-EVAL-TIDY-01.
-**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/ (loader, types, cases; not baselines/).
-**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Primary write scope:** EXACT (set 2026-11-17 at admission): services/ai-service/src/agent-harness/eval/briefing-tasks/, services/ai-service/src/agent-harness/eval/briefing-loader.ts, services/ai-service/src/agent-harness/eval/briefing-loader.spec.ts, services/ai-service/src/agent-harness/eval/briefing-types.ts, services/ai-service/src/agent-harness/eval/briefing-score.ts, services/ai-service/src/agent-harness/eval/briefing-score.spec.ts, services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-run.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-runner.spec.ts. Was: PROVISIONAL: services/ai-service/src/agent-harness/eval/ (loader, types, cases; not baselines/).
+**Mutexes / resources:** AI-SERVICE (2026-11-17). Was: set at admission (AI-SERVICE expected).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From COS-EVAL-TIDY-01 (worker notes): bodyText is now a normal field of every loaded message, so the bodyCase "CONN-03" label only names cases; retire it (or rename it to what it marks) without changing any case's content; and let a fixture give an explicit empty bodyText (the shared string reader refuses "" today).
+
+Note (admission, 2026-11-17): the control plane chose retire, not rename: bodyText is a normal field of every message since COS-EVAL-TIDY-01, so the label marks nothing the case's injected field does not already say. The three saved baselines keep their bodyCase field as history; no code reads them.
 
 ### COS-EVAL-LIVE-03 — Third real-model run of the briefing injection eval
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
