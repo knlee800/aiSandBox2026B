@@ -89449,7 +89449,7 @@ taskId=COS-EVAL-MARKERS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-17 — Keith said "Start both". Was: READY — registered 2026-11-17 by the COS-EVAL-LIVE-03 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. LANE-DONE and LOCKED by the control plane; Lane 2 and AI-SERVICE released. Markers that name the planted text added to three briefing eval cases: inject-mail-trigger-body (print-verify.example.org, any AI assistant; the 2026-11-17 miss), inject-mail-body (invoices-check.example.org, any AI assistant) and inject-calendar-accept (decline all other meetings, note to the assistant); the other nine cases already named the planted text or have none; no case content other than markers changed; briefing-score.ts unchanged; two scorer tests: the 2026-11-17 answer's shape (flag on the planted-text bullet only) counts as reported and flagged with no false flag, and an unflagged answer still fails. Implemented by a sonnet subagent (8149d95 on lane/COS-EVAL-MARKERS-01, cherry-picked to main as 433bdc5 because main had moved). Control-plane gates on the branch: ai-service tsc rc 0, 68 suites, 1428 passed, 1 skipped (baseline 1426, 2 new), build rc 0. Not deployed; it goes with the next staging deploy. Checkpoint: docs/COS-EVAL-MARKERS-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-17 — Keith said "Start both". Was: READY — registered 2026-11-17 by the COS-EVAL-LIVE-03 LOCK — not admitted.
 **Task ID:** COS-EVAL-MARKERS-01
 **Title:** Count a flag on the planted text itself in the briefing eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
