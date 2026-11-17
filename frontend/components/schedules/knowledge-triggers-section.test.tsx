@@ -75,7 +75,7 @@ function has(html: string, text: string): boolean {
 
 const WORKFLOW_TRIGGER = parseKnowledgeTrigger({
   id: 'k1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Reader', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Reader', status: 'active' },
   task: 'Summarise the new files',
   scopeId: 'market-data',
   timeZone: 'Europe/London',

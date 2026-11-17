@@ -42,7 +42,7 @@ function quotedIn(source: string, marker: string, open: string, close: string): 
 const TRIGGER = {
   id: 'c1',
   sourceWorkflowId: 'wA',
-  target: { kind: 'workflow', workflowId: 'wB', name: 'Writer', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'wB', name: 'Writer', status: 'active' },
   task: 'Write the follow-up',
   timeZone: 'Europe/London',
   enabled: true,
@@ -116,7 +116,7 @@ describe('chain trigger parsing', () => {
     const workflow = parseChainTrigger(TRIGGER);
     assert.ok(workflow);
     assert.equal(workflow.sourceWorkflowId, 'wA');
-    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'wB', name: 'Writer', missing: false });
+    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'wB', name: 'Writer', missing: false, status: 'active' });
     assert.equal(workflow.lastRun?.depth, 2);
     assert.equal(workflow.lastRun?.sourceRunId, 'run-1');
     assert.equal(workflow.lastRun?.collaborationRunId, 'run-2');
@@ -207,8 +207,8 @@ describe('chain trigger keys and helpers', () => {
 });
 
 describe('chain trigger loop check mirrors the gateway rule', () => {
-  const aToB = item({ id: 'c1', sourceWorkflowId: 'wA', target: { kind: 'workflow', workflowId: 'wB', name: 'B', status: 'enabled' } });
-  const bToC = item({ id: 'c2', sourceWorkflowId: 'wB', target: { kind: 'workflow', workflowId: 'wC', name: 'C', status: 'enabled' }, enabled: false });
+  const aToB = item({ id: 'c1', sourceWorkflowId: 'wA', target: { kind: 'workflow', workflowId: 'wB', name: 'B', status: 'active' } });
+  const bToC = item({ id: 'c2', sourceWorkflowId: 'wB', target: { kind: 'workflow', workflowId: 'wC', name: 'C', status: 'active' }, enabled: false });
   const aToChief = item({ id: 'c3', sourceWorkflowId: 'wA', target: { kind: 'chief-of-staff' } });
 
   test('A to B then B to A loops', () => {
@@ -359,7 +359,7 @@ describe('chain trigger draft', () => {
   });
 
   test('draftToBody refuses a draft that would close a loop, with the cycle key', () => {
-    const aToB = item({ sourceWorkflowId: 'wA', target: { kind: 'workflow', workflowId: 'wB', name: 'B', status: 'enabled' } });
+    const aToB = item({ sourceWorkflowId: 'wA', target: { kind: 'workflow', workflowId: 'wB', name: 'B', status: 'active' } });
     const draft = { ...emptyChainDraft('UTC'), sourceId: 'wB', targetId: 'wA', task: 'ok' };
     assert.deepEqual(draftToBody(draft, { triggers: [aToB], editingId: null }), {
       ok: false,

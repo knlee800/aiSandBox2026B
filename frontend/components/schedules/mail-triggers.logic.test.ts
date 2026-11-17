@@ -36,7 +36,7 @@ function quotedIn(source: string, marker: string, open: string, close: string): 
 
 const TRIGGER = {
   id: 'm1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Mail prep', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Mail prep', status: 'active' },
   task: 'Summarise the new mail',
   senderFilter: 'boss@example.com',
   subjectFilter: 'invoice',
@@ -108,7 +108,7 @@ describe('mail trigger parsing', () => {
   test('parseMailTrigger reads a workflow trigger and a Chief of Staff trigger', () => {
     const workflow = parseMailTrigger(TRIGGER);
     assert.ok(workflow);
-    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Mail prep', missing: false });
+    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Mail prep', missing: false, status: 'active' });
     assert.equal(workflow.senderFilter, 'boss@example.com');
     assert.equal(workflow.subjectFilter, 'invoice');
     assert.equal(workflow.lastRun?.collaborationRunId, 'run-1');

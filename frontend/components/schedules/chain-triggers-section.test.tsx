@@ -74,7 +74,7 @@ function has(html: string, text: string): boolean {
 const WORKFLOW_TRIGGER = parseChainTrigger({
   id: 'c1',
   sourceWorkflowId: 'wA',
-  target: { kind: 'workflow', workflowId: 'wB', name: 'Writer', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'wB', name: 'Writer', status: 'active' },
   task: 'Write the follow-up',
   timeZone: 'Europe/London',
   enabled: true,

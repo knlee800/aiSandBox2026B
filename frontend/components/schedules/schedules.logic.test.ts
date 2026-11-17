@@ -43,7 +43,7 @@ function quotedIn(source: string, marker: string, open: string, close: string): 
 
 const SCHEDULE = {
   id: 's1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Digest', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Digest', status: 'active' },
   task: 'Summarise\n  the   news',
   timeOfDay: '07:30',
   days: [1, 3, 5],
@@ -110,7 +110,7 @@ describe('schedules parsing', () => {
   test('parseSchedule reads a workflow schedule and a Chief of Staff schedule', () => {
     const workflow = parseSchedule(SCHEDULE);
     assert.ok(workflow);
-    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Digest', missing: false });
+    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Digest', missing: false, status: 'active' });
     assert.equal(workflow.lastRun?.collaborationRunId, 'run-1');
     const chief = parseSchedule({ ...SCHEDULE, target: { kind: 'chief-of-staff' }, lastRun: null });
     assert.deepEqual(chief?.target, { kind: 'chief-of-staff' });

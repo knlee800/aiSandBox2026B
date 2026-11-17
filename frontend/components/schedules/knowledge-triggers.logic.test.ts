@@ -36,7 +36,7 @@ function quotedIn(source: string, marker: string, open: string, close: string): 
 
 const TRIGGER = {
   id: 'k1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Reader', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Reader', status: 'active' },
   task: 'Summarise the new files',
   scopeId: 'policies',
   timeZone: 'Europe/London',
@@ -117,7 +117,7 @@ describe('knowledge trigger parsing', () => {
   test('parseKnowledgeTrigger reads a workflow trigger and a Chief of Staff trigger', () => {
     const workflow = parseKnowledgeTrigger(TRIGGER);
     assert.ok(workflow);
-    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Reader', missing: false });
+    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Reader', missing: false, status: 'active' });
     assert.equal(workflow.scopeId, 'policies');
     assert.equal(workflow.lastRun?.collaborationRunId, 'run-1');
     const chief = parseKnowledgeTrigger({ ...TRIGGER, target: { kind: 'chief-of-staff' }, lastRun: null });

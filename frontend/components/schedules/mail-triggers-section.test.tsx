@@ -74,7 +74,7 @@ function has(html: string, text: string): boolean {
 
 const WORKFLOW_TRIGGER = parseMailTrigger({
   id: 'e1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Mail prep', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Mail prep', status: 'active' },
   task: 'Summarise the new mail',
   senderFilter: 'boss@example.com',
   subjectFilter: 'invoice',

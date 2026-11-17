@@ -73,7 +73,7 @@ function has(html: string, text: string): boolean {
 
 const WORKFLOW_SCHEDULE = parseSchedule({
   id: 's1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Morning digest', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Morning digest', status: 'active' },
   task: 'Summarise the overnight news',
   timeOfDay: '07:30',
   days: [1, 3, 5],

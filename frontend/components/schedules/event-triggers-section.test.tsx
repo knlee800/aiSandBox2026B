@@ -74,7 +74,7 @@ function has(html: string, text: string): boolean {
 
 const WORKFLOW_TRIGGER = parseEventTrigger({
   id: 'e1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Meeting prep', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Meeting prep', status: 'active' },
   task: 'Prepare me for the meeting',
   leadMinutes: 20,
   titleFilter: 'standup',

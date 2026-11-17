@@ -36,7 +36,7 @@ function quotedIn(source: string, marker: string, open: string, close: string): 
 
 const TRIGGER = {
   id: 'e1',
-  target: { kind: 'workflow', workflowId: 'w1', name: 'Prep', status: 'enabled' },
+  target: { kind: 'workflow', workflowId: 'w1', name: 'Prep', status: 'active' },
   task: 'Prepare me',
   leadMinutes: 20,
   titleFilter: 'standup',
@@ -110,7 +110,7 @@ describe('event trigger parsing', () => {
   test('parseEventTrigger reads a workflow trigger and a Chief of Staff trigger', () => {
     const workflow = parseEventTrigger(TRIGGER);
     assert.ok(workflow);
-    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Prep', missing: false });
+    assert.deepEqual(workflow.target, { kind: 'workflow', workflowId: 'w1', name: 'Prep', missing: false, status: 'active' });
     assert.equal(workflow.leadMinutes, 20);
     assert.equal(workflow.titleFilter, 'standup');
     assert.equal(workflow.lastRun?.collaborationRunId, 'run-1');
