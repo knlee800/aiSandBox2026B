@@ -89805,13 +89805,13 @@ taskId=STAGING-DEPLOY-SRCOFF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SRCOFF-01
 **Title:** Deploy the switched-off source warning and the eval tidy-ups, and Keith checks the section
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Start condition:** READY (Keith, 2026-11-17, "Yes, deploy"). Was: NOT_READY. Ready when: Keith approves the deploy. Keith decides.
 **Depends on:** CHAIN-SOURCE-OFF-01, COS-EVAL-MARKERS-01, COS-EVAL-LABEL-01.
 **Primary write scope:** records; host state (deploy only; no migration and no env change expected).
 **Mutexes / resources:** STAGING.
