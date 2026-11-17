@@ -7,13 +7,19 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COS-MAIL-BODY-RULE-01",
+      "mutexes": ["GATEWAY", "AI-SERVICE"],
+      "writePaths": [
+        "services/api-gateway/src/system-agents/system-agent-registry.ts",
+        "services/api-gateway/src/system-agents/system-agent-registry.spec.ts",
+        "services/api-gateway/src/user-agent/user-workflow-rules.ts",
+        "services/api-gateway/src/user-agent/__tests__/",
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -6877,14 +6883,20 @@
       "taskId": "COS-MAIL-BODY-RULE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["TRIGGER-MAIL-01"],
       "mutexes": ["GATEWAY", "AI-SERVICE"],
-      "writePaths": [],
+      "writePaths": [
+        "services/api-gateway/src/system-agents/system-agent-registry.ts",
+        "services/api-gateway/src/system-agents/system-agent-registry.spec.ts",
+        "services/api-gateway/src/user-agent/user-workflow-rules.ts",
+        "services/api-gateway/src/user-agent/__tests__/",
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -6892,8 +6904,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "CONN-MAIL-READ-01",

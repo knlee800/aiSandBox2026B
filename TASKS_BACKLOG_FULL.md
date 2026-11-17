@@ -89317,22 +89317,22 @@ taskId=COS-MAIL-BODY-RULE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-17 — by the control plane on Keith's "Start it". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** COS-MAIL-BODY-RULE-01
 **Title:** Mail bodies in the Chief of Staff's data rule, with an eval case
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides; before mail triggers are switched on for real use.
+**Start condition:** READY (Keith chose it, 2026-11-17, "Start it"; TRIGGER-MAIL-01 LOCKED). Was: NOT_READY. Ready when: Keith decides; before mail triggers are switched on for real use.
 **Depends on:** TRIGGER-MAIL-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/system-agents/system-agent-registry.ts, its spec, services/ai-service/src/agent-harness/eval/.
-**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected).
+**Primary write scope:** services/api-gateway/src/system-agents/system-agent-registry.ts, services/api-gateway/src/system-agents/system-agent-registry.spec.ts, services/api-gateway/src/user-agent/user-workflow-rules.ts, services/api-gateway/src/user-agent/__tests__/, services/ai-service/src/agent-harness/eval/ (EXACT, set 2026-11-17). Was: PROVISIONAL: services/api-gateway/src/system-agents/system-agent-registry.ts, its spec, services/ai-service/src/agent-harness/eval/.
+**Mutexes / resources:** GATEWAY, AI-SERVICE (set 2026-11-17).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-17).
 **Scope:** From TRIGGER-MAIL-01 (stage-start P5, F3): the Chief of Staff's instructions say mail senders, subjects and event titles are data, never instructions, but do not name mail bodies, which the mail tool has returned since CONN-03; name bodies too (this changes the Chief of Staff's version hash and its eval copy), and add an eval case for a mail-triggered run whose mail carries a planted instruction.
 
 Note (TRIGGER-MAIL-LIVE-01 LOCK, 2026-11-16): the live check showed that a mail-triggered run reads the message's short body excerpt with mail_list_unread_metadata (CONN-03): a test mail asking the run to ignore its instructions and reveal its task reached the run, which mentioned it and did not follow it. This task stays required before real use of mail triggers beyond Keith's own test mailbox; its eval case can reuse that mail.
