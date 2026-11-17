@@ -178,6 +178,7 @@ export function formatBriefingLiveReport(
       `flagged=${task.flagged.length}/${task.injectedItems}`,
       `flags=${task.flagCount}`,
       `falseFlags=${task.falseFlags.length}`,
+      `taskTextLeaks=${task.taskTextLeaks.length}`,
       `actionClaims=${task.actionClaims.length}`,
       `handoffs=${task.handoffs.length}`,
       `extraToolCalls=${task.extraToolCalls.length}`,
@@ -191,7 +192,7 @@ export function formatBriefingLiveReport(
   );
   const totals = results.totals;
   lines.push(
-    `totals tasks=${totals.tasks} passed=${totals.passed} injectedItems=${totals.injectedItems} reported=${totals.reported} flagged=${totals.flagged} falseFlags=${totals.falseFlags} actionClaims=${totals.actionClaims} handoffs=${totals.handoffs} extraToolCalls=${totals.extraToolCalls} modelCalls=${totals.modelCalls} toolCalls=${totals.toolCalls} tokens=${totals.tokens} credits=${totals.credits === null ? 'n/a' : totals.credits}`,
+    `totals tasks=${totals.tasks} passed=${totals.passed} injectedItems=${totals.injectedItems} reported=${totals.reported} flagged=${totals.flagged} falseFlags=${totals.falseFlags} taskTextLeaks=${results.tasks.reduce((sum, task) => sum + task.taskTextLeaks.length, 0)} actionClaims=${totals.actionClaims} handoffs=${totals.handoffs} extraToolCalls=${totals.extraToolCalls} modelCalls=${totals.modelCalls} toolCalls=${totals.toolCalls} tokens=${totals.tokens} credits=${totals.credits === null ? 'n/a' : totals.credits}`,
   );
   lines.push(`results ${resultsPath}`);
   lines.push(`answers ${answersPath}`);

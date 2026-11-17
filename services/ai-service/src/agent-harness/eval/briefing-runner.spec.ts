@@ -569,6 +569,37 @@ describe('COS-EVAL-01 briefing runner on scripted models', () => {
     expect(wrapped).toContain('"bodyText":"Hello, please find invoice INV-2291');
     expect(wrapped).toBe(wrapConnectorResult(CONNECTOR_MAIL_TOOL_ID, t.mail));
   });
+
+  it('every message in every case reaches the model with the real mail tool shape, bodyText and bodyTruncated included', async () => {
+    for (const t of tasks) {
+      const seen: Seen[] = [];
+      await run(t, scripted((x) => [toolStep(), answer(goodBriefing(x))], t, seen));
+      const wrapped = String(seen[1].options?.toolResults?.[0].content?.connectorResult);
+      const expected = {
+        messages: t.mail.messages.map((m) => ({
+          id: m.id,
+          from: m.from,
+          toCount: m.toCount,
+          subject: m.subject,
+          date: m.date,
+          bodyText: m.bodyText,
+          bodyTruncated: m.bodyTruncated,
+        })),
+      };
+      expect({ task: t.id, wrapped }).toEqual({
+        task: t.id,
+        wrapped: wrapConnectorResult(CONNECTOR_MAIL_TOOL_ID, expected),
+      });
+      for (const m of t.mail.messages) {
+        expect(typeof m.bodyText).toBe('string');
+        expect(typeof m.bodyTruncated).toBe('boolean');
+        expect(wrapped).toContain('"bodyText":');
+        expect(wrapped).toContain('"bodyTruncated":');
+      }
+    }
+    const plain = task('inject-mail-subject');
+    expect(plain.mail.messages.every((m) => m.bodyText === '' && m.bodyTruncated === false)).toBe(true);
+  });
 });
 
 /** What a careful agent writes for the mail-trigger case: the mail, the flag in the same paragraph, a next step. */

@@ -69,15 +69,21 @@ describe('COS-EVAL-01 briefing loader', () => {
     }
   });
 
-  it('rejects unknown fields, a body field outside a CONN-03 case, and bad markers', () => {
+  it('rejects unknown fields, a bad body field, and bad markers', () => {
     const unknown = { ...base(), extra: true };
     expect(() => parseBriefingTask(unknown, 'x.json')).toThrow('task has unknown field extra');
 
     const withBody = base();
     const mail = withBody.mail as { messages: Array<Record<string, unknown>> };
-    mail.messages[0].bodyText = 'hello';
+    mail.messages[0].bodyText = 5;
     expect(() => parseBriefingTask(withBody, 'x.json')).toThrow(
-      'mail.messages[0].bodyText is only allowed on a bodyCase "CONN-03" case',
+      'mail.messages[0].bodyText must be a non-empty string',
+    );
+
+    const badTruncated = base();
+    (badTruncated.mail as { messages: Array<Record<string, unknown>> }).messages[0].bodyTruncated = 'yes';
+    expect(() => parseBriefingTask(badTruncated, 'x.json')).toThrow(
+      'mail.messages[0].bodyTruncated must be a boolean',
     );
 
     const extraHeader = base();
@@ -106,6 +112,25 @@ describe('COS-EVAL-01 briefing loader', () => {
     expect(() => parseBriefingTask(bodyCaseNoBody, 'x.json')).toThrow(
       'bodyCase "CONN-03" needs an injected item in bodyText',
     );
+  });
+
+  it('fills bodyText with "" and bodyTruncated with false, and passes a fixture bodyTruncated through', () => {
+    const plain = parseBriefingTask(base(), 'x.json');
+    expect(
+      plain.mail.messages.every((m) => m.bodyText === '' && m.bodyTruncated === false),
+    ).toBe(true);
+    expect(Object.keys(plain.mail.messages[0])).toEqual([
+      'id', 'from', 'toCount', 'subject', 'date', 'bodyText', 'bodyTruncated',
+    ]);
+
+    const truncated = base();
+    const first = (truncated.mail as { messages: Array<Record<string, unknown>> }).messages[0];
+    first.bodyText = 'Short excerpt';
+    first.bodyTruncated = true;
+    const parsed = parseBriefingTask(truncated, 'x.json');
+    expect(parsed.mail.messages[0].bodyText).toBe('Short excerpt');
+    expect(parsed.mail.messages[0].bodyTruncated).toBe(true);
+    expect(parsed.mail.messages[1]?.bodyTruncated ?? false).toBe(false);
   });
 
   it('COS-MAIL-BODY-RULE-01: loads the mail-trigger and chain-trigger cases with their request and run result', () => {

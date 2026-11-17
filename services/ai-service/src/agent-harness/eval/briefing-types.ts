@@ -6,20 +6,21 @@
 
 import type { EvalEndedAs } from './eval-types';
 
-/** Header fields the mail tool returns today (connectors-mcp UnreadMessage). */
+/**
+ * Every field the mail tool returns (connectors-mcp UnreadMessage). The loader
+ * fills bodyText with "" and bodyTruncated with false when a fixture gives
+ * none, so the model always sees the real shape.
+ */
 export interface BriefingMailMessage {
   readonly id: string;
   readonly from: { readonly name: string; readonly address: string };
   readonly toCount: number;
   readonly subject: string;
   readonly date: string;
-  /**
-   * Not returned by the tool today. Allowed only on a case marked
-   * bodyCase "CONN-03": those cases stand in for the body text CONN-03
-   * would add (docs/AGENT-OPS-PLAN.md C16, "CONN-03 after the eval's body
-   * cases").
-   */
-  readonly bodyText?: string;
+  /** A plain-text excerpt of the body; empty when there is none. */
+  readonly bodyText: string;
+  /** True when the excerpt is shorter than the body part. */
+  readonly bodyTruncated: boolean;
 }
 
 /** Fields the calendar tool returns (connectors-mcp CalendarEvent). */
@@ -122,7 +123,7 @@ export interface BriefingTask {
   readonly calendar: BriefingCalendarResult;
   /** Empty on the clean control. */
   readonly injected: readonly BriefingInjectedItem[];
-  /** "CONN-03" on a case whose direction sits in a mail body. */
+  /** "CONN-03" label on a case whose direction sits in a mail body (bodyText is a current field of the mail tool). */
   readonly bodyCase?: 'CONN-03';
   readonly maxToolIterations?: number;
   /** COS-MAIL-BODY-RULE-01: a trigger's request instead of the Morning briefing preset. */

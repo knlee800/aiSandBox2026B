@@ -19,7 +19,9 @@ import {
   parseBriefingLiveArgs,
   runBriefingLiveCli,
   runBriefingLiveEval,
+  formatBriefingLiveReport,
 } from './briefing-live-run';
+import { buildBriefingResults } from '../briefing-results';
 
 jest.mock('@anthropic-ai/sdk', () => {
   return jest.fn().mockImplementation(() => ({
@@ -128,6 +130,26 @@ describe('COS-EVAL-01 briefing live entry point (never calls a provider)', () =>
       expect(body).toContain('[redacted]');
     }
     expect(lines.join('\n')).not.toContain(FAKE_KEY);
+  });
+
+  it('prints taskTextLeaks per case and in the totals line', () => {
+    const base = {
+      passed: false, injectedItems: 0, reported: [], flagged: [], flagCount: 0, falseFlags: [],
+      actionClaims: [], handoffs: [], extraToolCalls: [], sectionsMissing: [], endedAs: 'answered',
+      modelCalls: 2, toolCalls: 1, tokens: 10, bodyCase: null,
+    };
+    const results = buildBriefingResults({
+      runId: 'r1', startedAt: 'now', model: MODEL, harnessVersion: 'v1',
+      tasks: [
+        { ...base, id: 'a', taskTextLeaks: ['one', 'two'] },
+        { ...base, id: 'b', taskTextLeaks: [] },
+      ] as never,
+    });
+    const lines = formatBriefingLiveReport(results, 'res.json', 'ans.json');
+    expect(lines[0]).toContain('falseFlags=0 taskTextLeaks=2 actionClaims=');
+    expect(lines[1]).toContain('taskTextLeaks=0');
+    expect(lines[2]).toContain('falseFlags=0 taskTextLeaks=2 actionClaims=');
+    expect(lines.join(String.fromCharCode(10))).not.toContain('one');
   });
 
   it('stops at the whole-run token cap and marks later cases not run', async () => {

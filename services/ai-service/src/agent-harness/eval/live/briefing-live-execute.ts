@@ -8,8 +8,9 @@ import {
 } from './live-execute';
 
 /**
- * Whole-run cap for the briefing injection eval (nine cases, two or three
- * model calls each). Same as the reviewer eval's cap.
+ * Whole-run cap for the briefing injection eval (twelve cases, two or three
+ * model calls each). Same as the reviewer eval's cap. The last live run used
+ * 57,417 tokens for nine cases, so twelve cases fit well under 150,000.
  */
 export const DEFAULT_BRIEFING_MAX_TOTAL_TOKENS = 150_000;
 

@@ -25,9 +25,9 @@ const TASK_FIELDS = [
   'runResult',
 ];
 const INJECTED_FIELDS = ['id', 'tool', 'index', 'field', 'direction', 'markers'];
-/** connectors-mcp UnreadMessage fields. bodyText only on a CONN-03 body case. */
+/** connectors-mcp UnreadMessage fields. bodyText and bodyTruncated are optional in a fixture and always present once loaded. */
 const MESSAGE_FIELDS = ['id', 'from', 'toCount', 'subject', 'date'];
-const MESSAGE_BODY_FIELD = 'bodyText';
+const MESSAGE_BODY_FIELDS = ['bodyText', 'bodyTruncated'] as const;
 /** connectors-mcp CalendarEvent fields. */
 const EVENT_FIELDS = ['title', 'start', 'end', 'organizer', 'attendeeCount', 'ownerResponse'];
 const PERSON_FIELDS = ['name', 'address'];
@@ -99,7 +99,7 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
     }
     bodyCase = 'CONN-03';
   }
-  const mail = readMail(record.mail, bodyCase !== undefined, fail);
+  const mail = readMail(record.mail, fail);
   const calendar = readCalendar(record.calendar, fail);
   const request =
     record.request === undefined ? undefined : readRequest(record.request, mail, fail);
@@ -225,7 +225,6 @@ function readRunResult(
 
 function readMail(
   value: unknown,
-  allowBody: boolean,
   fail: (message: string) => never,
 ): BriefingMailResult {
   const record = readObject(value, 'mail', fail);
@@ -233,15 +232,12 @@ function readMail(
   if (!Array.isArray(record.messages) || record.messages.length > MAX_MESSAGES) {
     fail(`mail.messages must be an array of at most ${MAX_MESSAGES}`);
   }
-  const allowed = allowBody ? [...MESSAGE_FIELDS, MESSAGE_BODY_FIELD] : MESSAGE_FIELDS;
+  const allowed = [...MESSAGE_FIELDS, ...MESSAGE_BODY_FIELDS];
   const messages: BriefingMailMessage[] = [];
   const ids = new Set<string>();
   (record.messages as unknown[]).forEach((entry, index) => {
     const label = `mail.messages[${index}]`;
     const message = readObject(entry, label, fail);
-    if (!allowBody && Object.prototype.hasOwnProperty.call(message, MESSAGE_BODY_FIELD)) {
-      fail(`${label}.bodyText is only allowed on a bodyCase "CONN-03" case`);
-    }
     assertOnlyKeys(message, allowed, label, fail);
     const id = readString(message.id, `${label}.id`, fail);
     if (ids.has(id)) {
@@ -258,12 +254,28 @@ function readMail(
       toCount: toCount as number,
       subject: readString(message.subject, `${label}.subject`, fail),
       date: readString(message.date, `${label}.date`, fail),
-      ...(message.bodyText !== undefined
-        ? { bodyText: readString(message.bodyText, `${label}.bodyText`, fail) }
-        : {}),
+      bodyText:
+        message.bodyText !== undefined
+          ? readString(message.bodyText, `${label}.bodyText`, fail)
+          : '',
+      bodyTruncated: readBodyTruncated(message.bodyTruncated, `${label}.bodyTruncated`, fail),
     });
   });
   return { messages };
+}
+
+function readBodyTruncated(
+  value: unknown,
+  label: string,
+  fail: (message: string) => never,
+): boolean {
+  if (value === undefined) {
+    return false;
+  }
+  if (typeof value !== 'boolean') {
+    fail(`${label} must be a boolean`);
+  }
+  return value as boolean;
 }
 
 function readCalendar(
