@@ -89373,22 +89373,22 @@ taskId=COS-EVAL-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-17 — by the control plane on Keith's "Start it". Was: READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-TIDY-01
 **Title:** Bring the briefing eval fixtures and live runner up to date
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides; before COS-EVAL-LIVE-03.
+**Start condition:** READY (Keith chose it, 2026-11-17, "Start it"; COS-MAIL-BODY-RULE-01 LOCKED). Was: NOT_READY. Ready when: Keith decides; before COS-EVAL-LIVE-03.
 **Depends on:** COS-MAIL-BODY-RULE-01.
-**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/ (fixtures, loader, live/briefing-live-execute.ts and its report line).
-**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Primary write scope:** services/ai-service/src/agent-harness/eval/ (EXACT, set 2026-11-17). Was: PROVISIONAL: services/ai-service/src/agent-harness/eval/ (fixtures, loader, live/briefing-live-execute.ts and its report line).
+**Mutexes / resources:** AI-SERVICE (set 2026-11-17).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-17).
 **Scope:** From COS-MAIL-BODY-RULE-01 (worker F1 to F3): (1) the mail fixtures still treat bodyText as a future CONN-03 field and do not model bodyTruncated, which the real mail tool (connectors-mcp UnreadMessage) returns on every message: model both as current; (2) the briefing live token cap (150,000) and its "nine cases" comment in live/briefing-live-execute.ts predate the twelve cases: size the cap for twelve; (3) the live report line does not print taskTextLeaks: print it.
 
 ### COS-EVAL-LIVE-03 — Third real-model run of the briefing injection eval
