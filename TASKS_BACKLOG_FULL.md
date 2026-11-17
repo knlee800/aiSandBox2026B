@@ -89627,7 +89627,7 @@ taskId=TRIGGER-CHAIN-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith said "go" after the STAGING-DEPLOY-CHAIN-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1 and the four mutexes released; the three authorizations false. One phased run window on 2026-11-17 (08:24:50 to 09:27:23 UTC) with the stored Anthropic test key (never shown), write tools off, runs of Keith's source workflow started from the host through POST /api/collaboration/runs with temporary API keys on his account (all 6 revoked) and approved as the owner. Keith's trigger first pointed at a workflow switched off since 2026-11-11; he edited it to his active, tested workflow 71f32136 (saved 08:58:49, re-armed). With CHAIN_TRIGGERS_ENABLED on and RUN_RESULT_TOOL_ENABLED off a completed run started nothing; with the result tool switched on inside the hour, the chain started one read-only Chief of Staff run 58 seconds later (depth 1, first step approved as the owner), which read the finished run with read_run_result (its answer carries the run's marker) and flagged, without following, a planted ignore-instructions line; a gateway restart 16 seconds after the start made no second run; a test run and the chained run started nothing; a run finished while the chain switch was off was claimed after switch-on and skipped as over_cap with MAX_DAILY_CREDITS_PER_USER=1. 4 executions, 35 credits (9, 8, 9, 9); no marker or workflow name in audit rows or the app services' journal. Env files restored byte for byte to 616841ca and 721f4772; all trigger switches, the run-result tool, schedules and runs off; Discord on. Not live: a two-step chain (needs two more triggers), cancelled and member-only runs (proven by tests). PRD.md (chain triggers GATED row, front-door sentence) and ARCHITECTURE.md (sections 2, 3, 7, 8, 13.1, 13.7 and 15) amended in Keith's approved words ("Approved"), GOVERNANCE held for this record and released. Checkpoint: docs/TRIGGER-CHAIN-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CHAIN-SOURCE-OFF-01, OPTIONAL by Keith) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-17 — Keith said "go" after the STAGING-DEPLOY-CHAIN-01 lock named this task as next; the window uses the stored Anthropic test key. Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-LIVE-01
 **Title:** Live chain-trigger check and the chain-trigger wording
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89646,6 +89646,30 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-CHAIN-01 (stage-start section 6, F1): in a run window with the stored Anthropic test key, write tools off, CHAIN_TRIGGERS_ENABLED and RUN_RESULT_TOOL_ENABLED on: a workflow run started from the host with a temporary harness key and approved as the owner completes and starts the chained run, which reads the finished run with read_run_result; with the result tool off the chain does nothing; a restart makes no second start; a run that used the source only as a member starts nothing; the depth limit and the daily cap skips; no task text or workflow name in logs or audit rows; credits recorded; both switches back off and env files restored byte for byte. The LOCK lands the wording of stage-start section 7 in Keith's words, holding GOVERNANCE.
 
 Note (STAGING-DEPLOY-CHAIN-01 LOCK, 2026-11-17): staging runs 12598e7 with CHAIN_TRIGGERS_ENABLED=false, RUN_RESULT_TOOL_ENABLED=false and runs off; the gateway.env baseline is now 616841ca (ai.env 721f4772); the run window turns both switches on and restores the files byte for byte. Keith's PINEAPPLE60 trigger (source workflow ab4cb6ae, an active, tested workflow; target the Chief of Staff; Asia/Hong_Kong) is on his account; the live check starts a run of that workflow from the host with a temporary harness key and approves it as the owner.
+
+### CHAIN-SOURCE-OFF-01 — Show and check a chain trigger's switched-off source workflow
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAIN-SOURCE-OFF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-17 by the TRIGGER-CHAIN-LIVE-01 LOCK — not admitted.
+**Task ID:** CHAIN-SOURCE-OFF-01
+**Title:** Show and check a chain trigger's switched-off source workflow
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TRIGGER-CHAIN-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger service and validation), frontend/components/schedules/ (chain-trigger section), the three message files.
+**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (Keith, 2026-11-17). **productClass:** APPROVED_FUTURE per PRD.md section 11 (chain triggers are GATED, not current).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-CHAIN-LIVE-01 (the window's setup finding): Keith's chain trigger was saved with a source workflow switched off since 2026-11-11, and the After a workflow finishes section showed nothing about it, so the trigger could never fire. The list shows only a target workflow's status. Show the source workflow's status (switched off, deleted) as the section does for a target, and refuse or warn when a trigger is saved or switched on with a switched-off source; texts in en, zh-TW and zh-CN.
 
 ### RUN-FINISH-EVENT-01 — Settle a run at its last step or emit a run-finished event
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
