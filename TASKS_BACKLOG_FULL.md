@@ -89829,7 +89829,7 @@ taskId=TRIGGER-TARGET-OFF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith said "Start it". Was: READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. Frontend only (the gateway already answers each target's status in all five trigger lists): the schedule, calendar-event, mail and knowledge sections, and the chain section for its target, show an amber line on a trigger whose target workflow is switched off or not yet switched on (a deleted target keeps its label), warn under the target picker when such a workflow is chosen (Save stays enabled), and after switching on such a trigger show an amber notice that it will not start anything until the workflow is on (chain: one combined notice when source and target are both off); shared helpers in schedules.logic.ts; 26 new strings in each of en, zh-TW and zh-CN. Implemented by a sonnet subagent (lane/TRIGGER-TARGET-OFF-01, fast-forwarded to main as c1f641f and 29f4043, the second a send-back replacing the non-gateway fixture status 'enabled' with 'active'). Control-plane gates on the branch: frontend tsc rc 0, 2234 of 2234 (49 new), build rc 0 (tsbuildinfo restored). The worker read both advisory skills only in part (recorded). Not deployed. Checkpoint: docs/TRIGGER-TARGET-OFF-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-TGTOFF-01) / 1 superseded (the stale target fixtures, fixed in this task) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-17 — Keith said "Start it". Was: READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
 **Task ID:** TRIGGER-TARGET-OFF-01
 **Title:** Show a switched-off workflow in the other trigger sections
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89848,6 +89848,30 @@ nature=IMPLEMENTATION
 **Scope:** From CHAIN-SOURCE-OFF-01 (worker note): the schedule, event, mail and knowledge sections now receive each workflow's status in their workflow options but do not use it. A trigger whose target workflow is switched off or not yet switched on is refused at run time with a reason code; the page could show it beforehand, as the chain section now shows a switched-off source. Check what each section already shows for its target first; warn, do not refuse.
 
 Note (admission, 2026-11-17): the gateway already answers each target's status in all five trigger lists (schedule, event, mail, knowledge and chain services' targetView), so no gateway change. The chain section's target is included, since it shares the target type and has the same gap. Warn, not refuse, as for the chain source. The api test files are in the write set only for expected values that change because the parsed target now carries its status.
+
+### STAGING-DEPLOY-TGTOFF-01 — Deploy the switched-off target warnings, and Keith checks the trigger sections
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-TGTOFF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-17 by the TRIGGER-TARGET-OFF-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-TGTOFF-01
+**Title:** Deploy the switched-off target warnings, and Keith checks the trigger sections
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** TRIGGER-TARGET-OFF-01.
+**Primary write scope:** records; host state (deploy only; no migration and no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-TARGET-OFF-01 (UI checklist item 9): deploy main to staging with the earlier deploy checks (frontend only; runs stay off; no migration; env files unchanged at the baselines); a host check that each trigger list answers its target's status. Then Keith opens the Schedules page and checks, in at least the schedule section and one trigger section, a switched-off test trigger whose target is the switched-off workflow ab4cb6ae: the row's amber line, the form warning with Save available, the amber switch-on notice (nothing can fire: runs and every trigger switch are off), the three languages and the phone width; the test triggers are deleted afterwards and confirmed gone from the host.
 
 ### RUN-FINISH-EVENT-01 — Settle a run at its last step or emit a run-finished event
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
