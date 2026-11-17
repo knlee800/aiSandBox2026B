@@ -89829,23 +89829,25 @@ taskId=TRIGGER-TARGET-OFF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith said "Start it". Was: READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
 **Task ID:** TRIGGER-TARGET-OFF-01
 **Title:** Show a switched-off workflow in the other trigger sections
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Start condition:** READY (Keith, 2026-11-17, "Start it"). Was: NOT_READY. Ready when: Keith decides. Optional.
 **Depends on:** CHAIN-SOURCE-OFF-01.
-**Primary write scope:** PROVISIONAL: frontend/components/schedules/ (the schedule, event, mail and knowledge sections and their logic and tests), the three message files.
-**Mutexes / resources:** set at admission (FRONTEND, I18N expected).
+**Primary write scope:** EXACT (set 2026-11-17 at admission): frontend/components/schedules/schedules.logic.ts, frontend/components/schedules/schedules.logic.test.ts, frontend/components/schedules/schedules-screen.tsx, frontend/components/schedules/schedules-screen.test.tsx, frontend/components/schedules/schedules-api.test.ts, frontend/components/schedules/event-triggers.logic.ts, frontend/components/schedules/event-triggers.logic.test.ts, frontend/components/schedules/event-triggers-section.tsx, frontend/components/schedules/event-triggers-section.test.tsx, frontend/components/schedules/event-triggers-api.test.ts, frontend/components/schedules/mail-triggers.logic.ts, frontend/components/schedules/mail-triggers.logic.test.ts, frontend/components/schedules/mail-triggers-section.tsx, frontend/components/schedules/mail-triggers-section.test.tsx, frontend/components/schedules/mail-triggers-api.test.ts, frontend/components/schedules/knowledge-triggers.logic.ts, frontend/components/schedules/knowledge-triggers.logic.test.ts, frontend/components/schedules/knowledge-triggers-section.tsx, frontend/components/schedules/knowledge-triggers-section.test.tsx, frontend/components/schedules/knowledge-triggers-api.test.ts, frontend/components/schedules/chain-triggers.logic.ts, frontend/components/schedules/chain-triggers.logic.test.ts, frontend/components/schedules/chain-triggers-section.tsx, frontend/components/schedules/chain-triggers-section.test.tsx, frontend/components/schedules/chain-triggers-api.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Was: PROVISIONAL: frontend/components/schedules/ (the schedule, event, mail and knowledge sections and their logic and tests), the three message files.
+**Mutexes / resources:** FRONTEND, I18N (2026-11-17). Was: set at admission (FRONTEND, I18N expected).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAIN-SOURCE-OFF-01 (worker note): the schedule, event, mail and knowledge sections now receive each workflow's status in their workflow options but do not use it. A trigger whose target workflow is switched off or not yet switched on is refused at run time with a reason code; the page could show it beforehand, as the chain section now shows a switched-off source. Check what each section already shows for its target first; warn, do not refuse.
+
+Note (admission, 2026-11-17): the gateway already answers each target's status in all five trigger lists (schedule, event, mail, knowledge and chain services' targetView), so no gateway change. The chain section's target is included, since it shares the target type and has the same gap. Warn, not refuse, as for the chain source. The api test files are in the write set only for expected values that change because the parsed target now carries its status.
 
 ### RUN-FINISH-EVENT-01 — Settle a run at its last step or emit a run-finished event
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
