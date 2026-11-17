@@ -12,13 +12,18 @@ import {
   isConnectorToolId,
 } from '../tools/connector-tool-definitions';
 import { createConnectorToolHandler } from '../tools/handlers/connector-tool-handlers';
+import {
+  createReadRunResultHandler,
+  READ_RUN_RESULT_TOOL_ID,
+} from '../tools/handlers/run-result-tool-handlers';
 import { ToolDispatcher, type ToolHandler } from '../tools/tool-dispatcher';
 import { mergeAdvertisedToolsIntoExecuteOptions } from '../../worker/worker.processor';
 import { createRunId } from './eval-runner';
 import type { EvalEndedAs } from './eval-types';
 import {
   advertisedBriefingTools,
-  BRIEFING_WORKER_REGISTERED_TOOL_IDS,
+  briefingRegisteredToolIds,
+  briefingRunResultToolOn,
   buildBriefingExecutionRequest,
 } from './briefing-prompt';
 import { buildBriefingResults } from './briefing-results';
@@ -54,6 +59,13 @@ export const BRIEFING_EVAL_GRANT_TOKEN = 'eval-grant.eval-signature';
 export const BRIEFING_NON_CONNECTOR_REFUSAL =
   'refused: the briefing eval serves only the connector tools';
 
+/**
+ * COS-MAIL-BODY-RULE-01: what the fake gateway client throws for a run id
+ * other than the case's; the real handler turns any failure into
+ * RUN_RESULT_NOT_FOUND_MESSAGE.
+ */
+export const BRIEFING_RUN_RESULT_MISS = 'eval: no such run';
+
 export function briefingExecutionId(taskId: string): string {
   return `eval-${taskId}`;
 }
@@ -83,6 +95,14 @@ export interface BriefingRunOptions {
   readonly tokensToCredits?: (tokens: number) => number;
   /** Sees each connector call the real handler makes. Tests use it. */
   readonly onConnectorCall?: (call: BriefingConnectorCall) => void;
+  /** Sees each run-result read the real handler makes. Tests use it. */
+  readonly onRunResultCall?: (call: BriefingRunResultCall) => void;
+}
+
+/** One run-result read the fake gateway client received, as the real handler sent it. */
+export interface BriefingRunResultCall {
+  readonly userId: string;
+  readonly runId: string;
 }
 
 /**
@@ -93,9 +113,11 @@ export interface BriefingRunOptions {
  * executeFn does. mail_list_unread_metadata and calendar_list_today use the
  * real createConnectorToolHandler with a fake gateway client that returns
  * the case's fixture, so the model receives results wrapped exactly as in
- * the worker (<connector_result tool="..."> with <, > and & escaped). The
- * worker's other read-profile tools are registered to refuse. Every tool name
- * the model asks for is recorded and scored.
+ * the worker (<connector_result tool="..."> with <, > and & escaped). On a
+ * chain-trigger case read_run_result uses the real createReadRunResultHandler
+ * with a fake client that returns the case's runResult (<run_result> tags).
+ * The worker's other read-profile tools are registered to refuse. Every tool
+ * name the model asks for is recorded and scored.
  */
 export async function runBriefingTask(
   task: BriefingTask,
@@ -114,8 +136,14 @@ export async function runBriefingTask(
     options.config?.maxToolIterations ??
     EVAL_LIMITS.maxToolIterations;
 
-  const dispatcher = buildDispatcher(task, executionId, maxToolResultBytes, options.onConnectorCall);
-  const advertisedTools = advertisedBriefingTools();
+  const dispatcher = buildDispatcher(
+    task,
+    executionId,
+    maxToolResultBytes,
+    options.onConnectorCall,
+    options.onRunResultCall,
+  );
+  const advertisedTools = advertisedBriefingTools(task);
   const toolCallNames: string[] = [];
   let modelCalls = 0;
   let toolCalls = 0;
@@ -227,11 +255,32 @@ export function createBriefingGatewayClient(
   };
 }
 
+/**
+ * COS-MAIL-BODY-RULE-01: the gateway's run-result route for a chain-trigger
+ * case. It returns a copy of the case's runResult for that run id and throws
+ * for any other id (as the route's 404 does).
+ */
+export function createBriefingRunResultClient(
+  task: BriefingTask,
+  onCall?: (call: BriefingRunResultCall) => void,
+): Pick<ApiGatewayHttpClient, 'readRunResult'> {
+  return {
+    readRunResult: async (input) => {
+      onCall?.({ userId: input.userId, runId: input.runId });
+      if (task.runResult === undefined || input.runId !== task.runResult.runId) {
+        throw new Error(BRIEFING_RUN_RESULT_MISS);
+      }
+      return JSON.parse(JSON.stringify(task.runResult)) as NonNullable<BriefingTask['runResult']>;
+    },
+  };
+}
+
 function buildDispatcher(
   task: BriefingTask,
   executionId: string,
   maxToolResultBytes: number,
   onConnectorCall: ((call: BriefingConnectorCall) => void) | undefined,
+  onRunResultCall: ((call: BriefingRunResultCall) => void) | undefined,
 ): ToolDispatcher {
   const dispatcher = new ToolDispatcher({
     toolTimeoutMs: EVAL_LIMITS.toolTimeoutMs,
@@ -250,8 +299,19 @@ function buildDispatcher(
       }),
     );
   }
-  for (const name of BRIEFING_WORKER_REGISTERED_TOOL_IDS) {
-    if (!isConnectorToolId(name)) {
+  // RESULT-TOOL-01 as the worker registers it: the real handler, owner from the job.
+  if (briefingRunResultToolOn(task)) {
+    dispatcher.registerHandler(
+      READ_RUN_RESULT_TOOL_ID,
+      createReadRunResultHandler({
+        client: createBriefingRunResultClient(task, onRunResultCall),
+        userId: EVAL_USER_ID,
+        maxToolResultBytes,
+      }),
+    );
+  }
+  for (const name of briefingRegisteredToolIds(task)) {
+    if (!isConnectorToolId(name) && name !== READ_RUN_RESULT_TOOL_ID) {
       dispatcher.registerHandler(name, refusingHandler());
     }
   }

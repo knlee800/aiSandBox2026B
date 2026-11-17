@@ -46,17 +46,66 @@ export type BriefingInjectedField =
   | 'from.name'
   | 'bodyText'
   | 'title'
-  | 'organizer.name';
+  | 'organizer.name'
+  | 'answer';
 
 /**
- * One item that carries a direction. tool + index name the message or event;
+ * COS-MAIL-BODY-RULE-01: the owner request a mail trigger sends
+ * (services/api-gateway/src/triggers/mail-trigger-match.ts mailTriggerTask):
+ * the saved task, then fixed platform lines with the arrival time and the
+ * message's number.
+ */
+export interface BriefingMailTriggerRequest {
+  readonly kind: 'mail-trigger';
+  /** The owner's saved task text. */
+  readonly savedTask: string;
+  /** Arrival time in the case's time zone as the gateway prints it: YYYY-MM-DD HH:MM. */
+  readonly arrivedAt: string;
+  /** The message's IMAP UID; the mail fixture holds a message with this id. */
+  readonly messageUid: number;
+}
+
+/**
+ * COS-MAIL-BODY-RULE-01: the owner request a chain trigger sends
+ * (services/api-gateway/src/triggers/chain-trigger-match.ts chainTriggerTask).
+ */
+export interface BriefingChainTriggerRequest {
+  readonly kind: 'chain-trigger';
+  readonly savedTask: string;
+  /** Completion time in the case's time zone as the gateway prints it: YYYY-MM-DD HH:MM. */
+  readonly completedAt: string;
+  /** The finished run's id; equals runResult.runId. */
+  readonly sourceRunId: string;
+}
+
+/** A case without request sends the Team page Morning briefing preset. */
+export type BriefingOwnerRequest = BriefingMailTriggerRequest | BriefingChainTriggerRequest;
+
+/**
+ * COS-MAIL-BODY-RULE-01: what the gateway's run-result route returns for
+ * the finished run (the fields createReadRunResultHandler keeps). Only on a
+ * chain-trigger case; read_run_result is then registered and advertised, as
+ * with RUN_RESULT_TOOL_ENABLED on.
+ */
+export interface BriefingRunResultFixture {
+  readonly runId: string;
+  readonly status: 'completed';
+  readonly finishedAt: string | null;
+  readonly workflow: { readonly name: string; readonly testRun: boolean } | null;
+  readonly answer: string;
+  readonly truncated: boolean;
+}
+
+/**
+ * One item that carries a direction. tool + index name the message or event
+ * (run_result: index 0, field answer, the case's runResult);
  * field is where the direction sits. markers are text from that same item
  * (the sender name, a subject or title fragment) that a briefing listing
  * the item would repeat; the loader checks each marker appears in the item.
  */
 export interface BriefingInjectedItem {
   readonly id: string;
-  readonly tool: 'mail' | 'calendar';
+  readonly tool: 'mail' | 'calendar' | 'run_result';
   readonly index: number;
   readonly field: BriefingInjectedField;
   /** Short label of what the direction asks for, for reports only. */
@@ -76,6 +125,10 @@ export interface BriefingTask {
   /** "CONN-03" on a case whose direction sits in a mail body. */
   readonly bodyCase?: 'CONN-03';
   readonly maxToolIterations?: number;
+  /** COS-MAIL-BODY-RULE-01: a trigger's request instead of the Morning briefing preset. */
+  readonly request?: BriefingOwnerRequest;
+  /** COS-MAIL-BODY-RULE-01: the finished run read_run_result returns. Chain-trigger cases only. */
+  readonly runResult?: BriefingRunResultFixture;
 }
 
 export interface BriefingTaskResult {
@@ -97,9 +150,15 @@ export interface BriefingTaskResult {
   readonly actionClaims: readonly string[];
   /** Hand-off markers found in the answer. */
   readonly handoffs: readonly string[];
+  /**
+   * COS-MAIL-BODY-RULE-01: fragments of the agent's own prompt found in the
+   * answer (TASK_TEXT_LEAK_MARKERS). Checked on trigger cases only; always
+   * empty on Morning briefing cases.
+   */
+  readonly taskTextLeaks: readonly string[];
   /** Every tool name the model asked for, in order. */
   readonly toolCallNames: readonly string[];
-  /** Tool names other than the two connector tools. */
+  /** Tool names the case does not allow (the two connector tools, plus read_run_result on a chain-trigger case). */
   readonly extraToolCalls: readonly string[];
   readonly sectionsMissing: readonly string[];
   readonly passed: boolean;

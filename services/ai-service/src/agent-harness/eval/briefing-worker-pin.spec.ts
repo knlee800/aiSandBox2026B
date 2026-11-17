@@ -93,4 +93,32 @@ describe('COS-EVAL-01 pin on the worker harness prompt path', () => {
     );
     expect(source).toContain(squash('...connectorToolDefinitions,'));
   });
+
+  it('COS-MAIL-BODY-RULE-01: registers read_run_result under the signed grant, after the connector tools, with the real handler', () => {
+    expect(source).toContain(
+      squash('const runResultGranted = resolveRunResultGrant(job.data, signedToolProfile);'),
+    );
+    expect(source).toMatch(
+      codePattern(`
+        if (signedToolProfile === 'read' && runResultGranted) {
+          dispatcher.registerHandler(
+            'read_run_result',
+            wrapHarnessTool(
+              'read_run_result',
+              createReadRunResultHandler({
+                client: this.apiGatewayHttpClient,
+                userId: job.data.userId,
+                maxToolResultBytes: resolvedConfig.maxToolResultBytes<,?>
+              })<,?>
+            )<,?>
+          );
+          registeredHandlerNames.push('read_run_result');
+        }
+      `),
+    );
+    // Registered after the connector tools, so the eval's registered list puts it last.
+    expect(source.indexOf(squash("registeredHandlerNames.push('read_run_result');"))).toBeGreaterThan(
+      source.indexOf(squash('registeredHandlerNames.push(connectorToolId);')),
+    );
+  });
 });

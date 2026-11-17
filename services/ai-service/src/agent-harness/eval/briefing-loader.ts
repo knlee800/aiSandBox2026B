@@ -7,6 +7,8 @@ import type {
   BriefingInjectedItem,
   BriefingMailMessage,
   BriefingMailResult,
+  BriefingOwnerRequest,
+  BriefingRunResultFixture,
   BriefingTask,
 } from './briefing-types';
 
@@ -19,6 +21,8 @@ const TASK_FIELDS = [
   'injected',
   'bodyCase',
   'maxToolIterations',
+  'request',
+  'runResult',
 ];
 const INJECTED_FIELDS = ['id', 'tool', 'index', 'field', 'direction', 'markers'];
 /** connectors-mcp UnreadMessage fields. bodyText only on a CONN-03 body case. */
@@ -29,6 +33,17 @@ const EVENT_FIELDS = ['title', 'start', 'end', 'organizer', 'attendeeCount', 'ow
 const PERSON_FIELDS = ['name', 'address'];
 const MAIL_FIELDS: readonly BriefingInjectedField[] = ['subject', 'from.name', 'bodyText'];
 const CALENDAR_FIELDS: readonly BriefingInjectedField[] = ['title', 'organizer.name'];
+const RUN_RESULT_INJECTED_FIELDS: readonly BriefingInjectedField[] = ['answer'];
+/** COS-MAIL-BODY-RULE-01: request fields by kind. */
+const MAIL_TRIGGER_REQUEST_FIELDS = ['kind', 'savedTask', 'arrivedAt', 'messageUid'];
+const CHAIN_TRIGGER_REQUEST_FIELDS = ['kind', 'savedTask', 'completedAt', 'sourceRunId'];
+/** The gateway's run-result response fields (createReadRunResultHandler keeps these). */
+const RUN_RESULT_FIELDS = ['runId', 'status', 'finishedAt', 'workflow', 'answer', 'truncated'];
+const RUN_RESULT_WORKFLOW_FIELDS = ['name', 'testRun'];
+/** The gateway's local time text (mailLocalTimeText, chainLocalTimeText). */
+const LOCAL_TIME_TEXT = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
+/** The gateway's run id rule (chain-trigger-match.ts, run-result-tool-handlers.ts). */
+const RUN_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 /** The mail tool returns at most 25 messages. */
 const MAX_MESSAGES = 25;
 
@@ -86,7 +101,20 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
   }
   const mail = readMail(record.mail, bodyCase !== undefined, fail);
   const calendar = readCalendar(record.calendar, fail);
-  const injected = readInjected(record.injected, mail, calendar, fail);
+  const request =
+    record.request === undefined ? undefined : readRequest(record.request, mail, fail);
+  const runResult =
+    record.runResult === undefined ? undefined : readRunResult(record.runResult, fail);
+  if (request?.kind === 'chain-trigger') {
+    if (runResult === undefined) {
+      fail('a chain-trigger request needs runResult');
+    } else if (runResult.runId !== request.sourceRunId) {
+      fail('runResult.runId must equal request.sourceRunId');
+    }
+  } else if (runResult !== undefined) {
+    fail('runResult is only allowed with a chain-trigger request');
+  }
+  const injected = readInjected(record.injected, mail, calendar, runResult, fail);
   const usesBody = injected.some((item) => item.field === 'bodyText');
   if (bodyCase !== undefined && !usesBody) {
     fail('bodyCase "CONN-03" needs an injected item in bodyText');
@@ -108,6 +136,90 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
     injected,
     ...(bodyCase !== undefined ? { bodyCase } : {}),
     ...(maxToolIterations !== undefined ? { maxToolIterations } : {}),
+    ...(request !== undefined ? { request } : {}),
+    ...(runResult !== undefined ? { runResult } : {}),
+  };
+}
+
+/** COS-MAIL-BODY-RULE-01: a mail-trigger or chain-trigger request. */
+function readRequest(
+  value: unknown,
+  mail: BriefingMailResult,
+  fail: (message: string) => never,
+): BriefingOwnerRequest {
+  const record = readObject(value, 'request', fail);
+  const kind = record.kind;
+  if (kind === 'mail-trigger') {
+    assertOnlyKeys(record, MAIL_TRIGGER_REQUEST_FIELDS, 'request', fail);
+    const savedTask = readString(record.savedTask, 'request.savedTask', fail);
+    const arrivedAt = readString(record.arrivedAt, 'request.arrivedAt', fail);
+    if (!LOCAL_TIME_TEXT.test(arrivedAt)) {
+      fail('request.arrivedAt must be YYYY-MM-DD HH:MM');
+    }
+    const messageUid = record.messageUid;
+    if (typeof messageUid !== 'number' || !Number.isInteger(messageUid) || messageUid < 1) {
+      fail('request.messageUid must be a positive whole number');
+    }
+    if (!mail.messages.some((message) => message.id === String(messageUid))) {
+      fail('request.messageUid names no message in mail.messages');
+    }
+    return { kind, savedTask, arrivedAt, messageUid: messageUid as number };
+  }
+  if (kind === 'chain-trigger') {
+    assertOnlyKeys(record, CHAIN_TRIGGER_REQUEST_FIELDS, 'request', fail);
+    const savedTask = readString(record.savedTask, 'request.savedTask', fail);
+    const completedAt = readString(record.completedAt, 'request.completedAt', fail);
+    if (!LOCAL_TIME_TEXT.test(completedAt)) {
+      fail('request.completedAt must be YYYY-MM-DD HH:MM');
+    }
+    const sourceRunId = readString(record.sourceRunId, 'request.sourceRunId', fail);
+    if (!RUN_ID_PATTERN.test(sourceRunId)) {
+      fail('request.sourceRunId must be 1 to 128 letters, digits, _ or -');
+    }
+    return { kind, savedTask, completedAt, sourceRunId };
+  }
+  return fail('request.kind must be "mail-trigger" or "chain-trigger"');
+}
+
+/** COS-MAIL-BODY-RULE-01: the finished run read_run_result returns. */
+function readRunResult(
+  value: unknown,
+  fail: (message: string) => never,
+): BriefingRunResultFixture {
+  const record = readObject(value, 'runResult', fail);
+  assertOnlyKeys(record, RUN_RESULT_FIELDS, 'runResult', fail);
+  const runId = readString(record.runId, 'runResult.runId', fail);
+  if (!RUN_ID_PATTERN.test(runId)) {
+    fail('runResult.runId must be 1 to 128 letters, digits, _ or -');
+  }
+  if (record.status !== 'completed') {
+    fail('runResult.status must be "completed"');
+  }
+  const finishedAt =
+    record.finishedAt === null ? null : readString(record.finishedAt, 'runResult.finishedAt', fail);
+  let workflow: BriefingRunResultFixture['workflow'] = null;
+  if (record.workflow !== null) {
+    const raw = readObject(record.workflow, 'runResult.workflow', fail);
+    assertOnlyKeys(raw, RUN_RESULT_WORKFLOW_FIELDS, 'runResult.workflow', fail);
+    if (typeof raw.testRun !== 'boolean') {
+      fail('runResult.workflow.testRun must be a boolean');
+    }
+    workflow = {
+      name: readString(raw.name, 'runResult.workflow.name', fail),
+      testRun: raw.testRun as boolean,
+    };
+  }
+  const answer = readString(record.answer, 'runResult.answer', fail);
+  if (typeof record.truncated !== 'boolean') {
+    fail('runResult.truncated must be a boolean');
+  }
+  return {
+    runId,
+    status: 'completed',
+    finishedAt,
+    workflow,
+    answer,
+    truncated: record.truncated as boolean,
   };
 }
 
@@ -197,6 +309,7 @@ function readInjected(
   value: unknown,
   mail: BriefingMailResult,
   calendar: BriefingCalendarResult,
+  runResult: BriefingRunResultFixture | undefined,
   fail: (message: string) => never,
 ): readonly BriefingInjectedItem[] {
   if (!Array.isArray(value)) {
@@ -215,8 +328,11 @@ function readInjected(
     }
     ids.add(id);
     const tool = record.tool;
-    if (tool !== 'mail' && tool !== 'calendar') {
-      fail(`${label}.tool must be "mail" or "calendar"`);
+    if (tool !== 'mail' && tool !== 'calendar' && tool !== 'run_result') {
+      fail(`${label}.tool must be "mail", "calendar" or "run_result"`);
+    }
+    if (tool === 'run_result' && runResult === undefined) {
+      fail(`${label}.tool run_result needs the case's runResult`);
     }
     const itemIndex = record.index;
     if (typeof itemIndex !== 'number' || !Number.isInteger(itemIndex) || itemIndex < 0) {
@@ -225,11 +341,16 @@ function readInjected(
     const source =
       tool === 'mail'
         ? mail.messages[itemIndex as number]
-        : calendar.events[itemIndex as number];
+        : tool === 'calendar'
+          ? calendar.events[itemIndex as number]
+          : itemIndex === 0
+            ? runResult
+            : undefined;
     if (source === undefined) {
       fail(`${label}.index has no ${tool} item`);
     }
-    const allowedFields = tool === 'mail' ? MAIL_FIELDS : CALENDAR_FIELDS;
+    const allowedFields =
+      tool === 'mail' ? MAIL_FIELDS : tool === 'calendar' ? CALENDAR_FIELDS : RUN_RESULT_INJECTED_FIELDS;
     const field = record.field as BriefingInjectedField;
     if (!allowedFields.includes(field)) {
       fail(`${label}.field must be one of ${allowedFields.join(', ')} for ${tool}`);
@@ -248,7 +369,11 @@ function readInjected(
       fail(`${label}.markers must be a non-empty array`);
     }
     const itemText = JSON.stringify(source).toLowerCase();
-    const otherTexts = [...mail.messages, ...calendar.events]
+    const otherTexts = [
+      ...mail.messages,
+      ...calendar.events,
+      ...(runResult !== undefined ? [runResult] : []),
+    ]
       .filter((other) => other !== source)
       .map((other) => JSON.stringify(other).toLowerCase());
     const markers: string[] = [];
@@ -270,7 +395,7 @@ function readInjected(
     }
     items.push({
       id,
-      tool: tool as 'mail' | 'calendar',
+      tool: tool as BriefingInjectedItem['tool'],
       index: itemIndex as number,
       field,
       direction,
