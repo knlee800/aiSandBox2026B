@@ -89397,7 +89397,7 @@ taskId=COS-EVAL-LABEL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-17 — Keith said "Start it". Was: READY — registered 2026-11-17 by the COS-EVAL-TIDY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. LANE-DONE and LOCKED by the control plane; Lane 2 and AI-SERVICE released. The bodyCase "CONN-03" label is retired from the briefing eval: both case files, the loader (a fixture with a bodyCase key is refused as an unknown field), the task and result types, the results row and the live report line; the saved baselines keep it as history. A fixture may give "bodyText": "" (no body, as when it is left out); a non-string bodyText is still refused; the shared string reader is unchanged. The stale CONN-03 sentence in inject-mail-body's description is gone. No other case content and no scoring rule changed. Implemented by a sonnet subagent (lane/COS-EVAL-LABEL-01, cherry-picked to main as 0c2368d and bbd92c1). Control-plane gates on the branch: ai-service tsc rc 0, 1429 passed, 1 skipped, build rc 0. Not deployed; it goes with STAGING-DEPLOY-SRCOFF-01. Checkpoint: docs/COS-EVAL-LABEL-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the stale case description, fixed in this task at the worker's note) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-17 — Keith said "Start it". Was: READY — registered 2026-11-17 by the COS-EVAL-TIDY-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-LABEL-01
 **Title:** Retire the CONN-03 body label and allow an empty fixture body in the briefing eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
