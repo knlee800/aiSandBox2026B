@@ -21,7 +21,11 @@
         "frontend/components/schedules/chain-triggers-api.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "frontend/components/results/results-api.ts",
+        "frontend/components/results/results-api.test.ts",
+        "frontend/components/schedules/schedules.logic.ts",
+        "frontend/components/schedules/schedules.logic.test.ts"
       ],
       "hotfiles": [],
       "i18n": true,
@@ -7347,7 +7351,11 @@
         "frontend/components/schedules/chain-triggers-api.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "frontend/components/results/results-api.ts",
+        "frontend/components/results/results-api.test.ts",
+        "frontend/components/schedules/schedules.logic.ts",
+        "frontend/components/schedules/schedules.logic.test.ts"
       ],
       "hotfiles": [],
       "i18n": true,
