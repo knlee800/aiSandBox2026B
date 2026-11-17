@@ -89779,7 +89779,7 @@ taskId=CHAIN-SOURCE-OFF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith said "Start both". Was: READY — registered 2026-11-17 by the TRIGGER-CHAIN-LIVE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND, I18N released. The chain-trigger list, and the create and update answers, carry source { workflowId, name, status } built as the target's view is (active, draft, disabled, or missing with name null); sourceWorkflowId unchanged; list() reads source and target workflows in one query; no refusal, route, guard, entity, migration, timer or run-service change; no workflow name or task in audit rows or logs. The After a workflow finishes section shows an amber line on a trigger whose source is switched off, not yet switched on, or deleted (existing test id kept), warns in the form when the chosen source is not on (saving still works), and after switching on such a trigger says it will not start anything until the source is on; the page's workflow loader now passes through the status the workflows route already sends; older gateways fall back to the workflow list; six new strings in en, zh-TW and zh-CN. Implemented by an opus subagent (99a59a7 on lane/CHAIN-SOURCE-OFF-01, cherry-picked to main as c948115); the worker stopped once on a pinned loader test outside its write set, which the control plane added (16 paths). Control-plane gates on the branch: gateway tsc rc 0, 6559 passed, 7 skipped, 14 failed (the known smoke.integration only), build rc 0; frontend tsc rc 0, 2185 of 2185, build rc 0 (tsbuildinfo restored). Not deployed. Checkpoint: docs/CHAIN-SOURCE-OFF-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (STAGING-DEPLOY-SRCOFF-01, TRIGGER-TARGET-OFF-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-17 — Keith said "Start both". Was: READY — registered 2026-11-17 by the TRIGGER-CHAIN-LIVE-01 LOCK — not admitted.
 **Task ID:** CHAIN-SOURCE-OFF-01
 **Title:** Show and check a chain trigger's switched-off source workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89798,6 +89798,54 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-CHAIN-LIVE-01 (the window's setup finding): Keith's chain trigger was saved with a source workflow switched off since 2026-11-11, and the After a workflow finishes section showed nothing about it, so the trigger could never fire. The list shows only a target workflow's status. Show the source workflow's status (switched off, deleted) as the section does for a target, and refuse or warn when a trigger is saved or switched on with a switched-off source; texts in en, zh-TW and zh-CN.
 
 Note (admission, 2026-11-17): the control plane chose warn, not refuse: a trigger may still be saved and switched on with a switched-off source (the owner may set a chain up first), but the page says the trigger will not fire until the source is switched on. Keith may ask for a refusal instead.
+
+### STAGING-DEPLOY-SRCOFF-01 — Deploy the switched-off source warning and the eval tidy-ups, and Keith checks the section
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SRCOFF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SRCOFF-01
+**Title:** Deploy the switched-off source warning and the eval tidy-ups, and Keith checks the section
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** CHAIN-SOURCE-OFF-01, COS-EVAL-MARKERS-01, COS-EVAL-LABEL-01.
+**Primary write scope:** records; host state (deploy only; no migration and no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From CHAIN-SOURCE-OFF-01 (UI checklist item 9) and the two eval tasks locked beside it: deploy main to staging with the earlier deploy checks (runs stay off; no migration; env files unchanged at the baselines); then Keith opens the Schedules page and checks the After a workflow finishes section: his trigger's source line (its source 71f32136 is active, so no line; a test can use the switched-off workflow ab4cb6ae as a source in a second, switched-off trigger, deleted afterwards), the form warning when a switched-off workflow is picked, the amber switch-on notice, the three languages and the phone width. The eval cases (COS-EVAL-MARKERS-01, COS-EVAL-LABEL-01) reach the host with the same deploy; no eval run here.
+
+### TRIGGER-TARGET-OFF-01 — Show a switched-off workflow in the other trigger sections
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-TARGET-OFF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
+**Task ID:** TRIGGER-TARGET-OFF-01
+**Title:** Show a switched-off workflow in the other trigger sections
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** CHAIN-SOURCE-OFF-01.
+**Primary write scope:** PROVISIONAL: frontend/components/schedules/ (the schedule, event, mail and knowledge sections and their logic and tests), the three message files.
+**Mutexes / resources:** set at admission (FRONTEND, I18N expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAIN-SOURCE-OFF-01 (worker note): the schedule, event, mail and knowledge sections now receive each workflow's status in their workflow options but do not use it. A trigger whose target workflow is switched off or not yet switched on is refused at run time with a reason code; the page could show it beforehand, as the chain section now shows a switched-off source. Check what each section already shows for its target first; warn, do not refuse.
 
 ### RUN-FINISH-EVENT-01 — Settle a run at its last step or emit a run-finished event
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
