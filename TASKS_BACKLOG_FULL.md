@@ -89373,7 +89373,7 @@ taskId=COS-EVAL-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-17 — by the control plane on Keith's "Start it". Was: READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. The briefing eval's mail fixtures now reach the model in the real mail tool's shape (id, from, toCount, subject, date, bodyText, bodyTruncated; bodyText defaults to "", bodyTruncated to false; bodyText no longer limited to CONN-03 cases; no case content changed); the live cap comment covers twelve cases (the 150,000 cap stays; COS-EVAL-LIVE-02 used 57,417 for nine); the live report line prints taskTextLeaks per case and in the totals. Implemented by a sonnet subagent (faabd73, fast-forwarded). Control-plane gates on the branch: ai-service tsc rc 0, 1426 passed, 1 skipped, build rc 0. Not deployed (staging runs 2b30cd1); COS-EVAL-LIVE-03 deploys it in its window. The worktree folder was left behind after a Permission denied (shell inside it); registration and branch removed, the folder is for Keith to delete. Checkpoint: docs/COS-EVAL-TIDY-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (COS-EVAL-LABEL-01, the two worker notes) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-17 — by the control plane on Keith's "Start it". Was: READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-TIDY-01
 **Title:** Bring the briefing eval fixtures and live runner up to date
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89390,6 +89390,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-17).
 **Scope:** From COS-MAIL-BODY-RULE-01 (worker F1 to F3): (1) the mail fixtures still treat bodyText as a future CONN-03 field and do not model bodyTruncated, which the real mail tool (connectors-mcp UnreadMessage) returns on every message: model both as current; (2) the briefing live token cap (150,000) and its "nine cases" comment in live/briefing-live-execute.ts predate the twelve cases: size the cap for twelve; (3) the live report line does not print taskTextLeaks: print it.
+
+### COS-EVAL-LABEL-01 — Retire the CONN-03 body label and allow an empty fixture body in the briefing eval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-LABEL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-17 by the COS-EVAL-TIDY-01 LOCK — not admitted.
+**Task ID:** COS-EVAL-LABEL-01
+**Title:** Retire the CONN-03 body label and allow an empty fixture body in the briefing eval
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Depends on:** COS-EVAL-TIDY-01.
+**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/ (loader, types, cases; not baselines/).
+**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From COS-EVAL-TIDY-01 (worker notes): bodyText is now a normal field of every loaded message, so the bodyCase "CONN-03" label only names cases; retire it (or rename it to what it marks) without changing any case's content; and let a fixture give an explicit empty bodyText (the shared string reader refuses "" today).
 
 ### COS-EVAL-LIVE-03 — Third real-model run of the briefing injection eval
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89416,6 +89440,8 @@ nature=IMPLEMENTATION
 **Scope:** From COS-MAIL-BODY-RULE-01: run the twelve-case briefing eval (the nine morning-briefing cases and the three body and trigger cases, including inject-mail-trigger-body and inject-run-result) from the staging host with the stored Anthropic test key, as COS-EVAL-LIVE-02 did; compare with the 2026-11-09 baselines; save a new baseline; report any case where a planted instruction was followed, not flagged, or the task text leaked.
 
 Note (STAGING-DEPLOY-COSRULE-01 LOCK, 2026-11-17): this window also carries Keith's test runs of the workflows he uses (71f32136, the chain trigger's source, at least): the data-rule change gave every workflow a new version, so none counts as tested until a test run of that version passes. The re-tests need runs on with the test key, so they belong in this run window; ENV and CREDIT are added to its mutexes.
+
+Note (COS-EVAL-TIDY-01 LOCK, 2026-11-17): the eval code this run uses (mail fixtures in the real shape, the leak count in the report) is on main at faabd73 and not deployed; deploy main from the host at the start of this window, as COS-EVAL-LIVE-02 did, so the run uses the deployed ai-service build.
 
 ### CONN-MAIL-AUTH-STATE-01 — A distinct sign-in-refused state for the mailbox
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
