@@ -47,9 +47,19 @@ export const SCHEDULE_TIME_ZONE_MAX_CHARS = 64;
 export const SCHEDULE_DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7] as const;
 const TASK_PREVIEW_CHARS = 90;
 
+/** TRIGGER-TARGET-OFF-01: a target workflow's status as the gateway answers it (a deleted one is `missing`, not listed here). */
+export type TargetWorkflowStatus = 'active' | 'draft' | 'disabled';
+
 export type ScheduleTarget =
   | { kind: 'chief-of-staff' }
-  | { kind: 'workflow'; workflowId: string; name: string | null; missing: boolean };
+  | {
+      kind: 'workflow';
+      workflowId: string;
+      name: string | null;
+      missing: boolean;
+      /** TRIGGER-TARGET-OFF-01: absent when the gateway did not send it or sent an unknown value. */
+      status?: TargetWorkflowStatus;
+    };
 
 export interface ScheduleLastRun {
   localDate: string;
@@ -85,7 +95,7 @@ export interface WorkflowOption {
   id: string;
   name: string;
   /** CHAIN-SOURCE-OFF-01: passed through from the workflows route; absent when unknown. */
-  status?: 'active' | 'draft' | 'disabled';
+  status?: TargetWorkflowStatus;
 }
 
 /** The form's state. `targetId` is '' for the Chief of Staff, else a workflow id. */
@@ -115,19 +125,66 @@ function readText(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
+/** The status of a workflow target; undefined for an absent, `missing` or unknown value (then nothing new is shown). */
+export function readTargetStatus(value: unknown): TargetWorkflowStatus | undefined {
+  return value === 'active' || value === 'draft' || value === 'disabled' ? value : undefined;
+}
+
 function readTarget(value: unknown): ScheduleTarget | null {
   if (!isRecord(value)) return null;
   if (value.kind === 'chief-of-staff') return { kind: 'chief-of-staff' };
   if (value.kind === 'workflow' && typeof value.workflowId === 'string') {
+    const status = readTargetStatus(value.status);
     return {
       kind: 'workflow',
       workflowId: value.workflowId,
       name: readText(value.name),
       missing: value.status === 'missing' || typeof value.name !== 'string',
+      ...(status ? { status } : {}),
     };
   }
   return null;
 }
+
+/**
+ * TRIGGER-TARGET-OFF-01: the saved trigger's target status, or null for the
+ * Chief of Staff, a deleted workflow, or a status the gateway did not send.
+ */
+export function targetWorkflowStatus(target: ScheduleTarget): TargetWorkflowStatus | null {
+  return target.kind === 'workflow' && !target.missing ? target.status ?? null : null;
+}
+
+/** True for a target that exists but is not switched on: the trigger will not start anything until it is. */
+export function targetNotOn(status: TargetWorkflowStatus | null): status is 'draft' | 'disabled' {
+  return status === 'draft' || status === 'disabled';
+}
+
+/**
+ * The status of the target chosen in the form, from the page's workflow list.
+ * When the list carries no status, the saved trigger's own target answers for
+ * its saved workflow. null when the Chief of Staff is chosen, the workflow is
+ * not listed (the picker's deleted label covers that), or the status is unknown.
+ */
+export function draftTargetStatus(
+  workflows: readonly WorkflowOption[],
+  targetId: string,
+  saved: ScheduleTarget | null = null,
+): TargetWorkflowStatus | null {
+  if (targetId === '') return null;
+  const found = workflows.find((workflow) => workflow.id === targetId);
+  if (!found) return null;
+  if (found.status) return found.status;
+  return saved && saved.kind === 'workflow' && saved.workflowId === targetId ? targetWorkflowStatus(saved) : null;
+}
+
+/** The notice key after a switch: switched on with a target that is not on says it will not run. */
+export function targetSwitchNoticeKey(enabled: boolean, target: ScheduleTarget): string {
+  if (!enabled) return 'notice.switchedOff';
+  return targetNotOn(targetWorkflowStatus(target)) ? 'notice.switchedOnTargetOff' : 'notice.switchedOn';
+}
+
+/** The notices that carry a warning (shown amber, not as a success). */
+export const TARGET_WARNING_NOTICE_KEYS: readonly string[] = ['notice.switchedOnTargetOff'];
 
 function readLastRun(value: unknown): ScheduleLastRun | null {
   if (!isRecord(value) || typeof value.localDate !== 'string' || typeof value.outcome !== 'string') {

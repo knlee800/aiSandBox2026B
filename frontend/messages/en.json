@@ -1970,12 +1970,15 @@
       "saved": "Schedule saved.",
       "deleted": "Schedule deleted.",
       "switchedOn": "Schedule switched on.",
-      "switchedOff": "Schedule switched off."
+      "switchedOff": "Schedule switched off.",
+      "switchedOnTargetOff": "Schedule switched on, but it will not start anything until the workflow it starts is switched on."
     },
     "target": {
       "chiefOfStaff": "Chief of Staff",
       "workflowNamed": "Workflow: {name}",
-      "workflowGone": "Workflow no longer available"
+      "workflowGone": "Workflow no longer available",
+      "offNote": "The workflow this schedule starts is switched off, so it will not start anything until that workflow is switched on.",
+      "draftNote": "The workflow this schedule starts has not been switched on yet, so it will not start anything until that workflow is switched on."
     },
     "days": {
       "1": "Mon",
@@ -2006,6 +2009,8 @@
     "form": {
       "createTitle": "New schedule",
       "editTitle": "Edit schedule",
+      "targetOffWarning": "This workflow is switched off. You can still save, but the schedule will not start anything until the workflow is switched on.",
+      "targetDraftWarning": "This workflow has not been switched on yet. You can still save, but the schedule will not start anything until the workflow is switched on.",
       "readOnlyHint": "Scheduled runs are read-only. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
       "target": "What to start",
       "task": "Task",
@@ -2093,12 +2098,15 @@
         "saved": "Event trigger saved.",
         "deleted": "Event trigger deleted.",
         "switchedOn": "Event trigger switched on.",
-        "switchedOff": "Event trigger switched off."
+        "switchedOff": "Event trigger switched off.",
+        "switchedOnTargetOff": "Event trigger switched on, but it will not start anything until the workflow it starts is switched on."
       },
       "target": {
         "chiefOfStaff": "Chief of Staff",
         "workflowNamed": "Workflow: {name}",
-        "workflowGone": "Workflow no longer available"
+        "workflowGone": "Workflow no longer available",
+        "offNote": "The workflow this trigger starts is switched off, so it will not start anything until that workflow is switched on.",
+        "draftNote": "The workflow this trigger starts has not been switched on yet, so it will not start anything until that workflow is switched on."
       },
       "row": {
         "on": "On",
@@ -2123,6 +2131,8 @@
       "form": {
         "createTitle": "New event trigger",
         "editTitle": "Edit event trigger",
+        "targetOffWarning": "This workflow is switched off. You can still save, but the trigger will not start anything until the workflow is switched on.",
+        "targetDraftWarning": "This workflow has not been switched on yet. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "hint": "The run is told the time of the event. It reads the event itself with its calendar tool. Event runs are read-only: the first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
         "target": "What to start",
         "workflowWarning": "A workflow can read the event only if it has the calendar tool. Check the workflow’s tools; without it the run will not see the event.",
@@ -2219,12 +2229,15 @@
         "saved": "Mail trigger saved.",
         "deleted": "Mail trigger deleted.",
         "switchedOn": "Mail trigger switched on.",
-        "switchedOff": "Mail trigger switched off."
+        "switchedOff": "Mail trigger switched off.",
+        "switchedOnTargetOff": "Mail trigger switched on, but it will not start anything until the workflow it starts is switched on."
       },
       "target": {
         "chiefOfStaff": "Chief of Staff",
         "workflowNamed": "Workflow: {name}",
-        "workflowGone": "Workflow no longer available"
+        "workflowGone": "Workflow no longer available",
+        "offNote": "The workflow this trigger starts is switched off, so it will not start anything until that workflow is switched on.",
+        "draftNote": "The workflow this trigger starts has not been switched on yet, so it will not start anything until that workflow is switched on."
       },
       "row": {
         "on": "On",
@@ -2248,6 +2261,8 @@
       "form": {
         "createTitle": "New mail trigger",
         "editTitle": "Edit mail trigger",
+        "targetOffWarning": "This workflow is switched off. You can still save, but the trigger will not start anything until the workflow is switched on.",
+        "targetDraftWarning": "This workflow has not been switched on yet. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "hint": "The run is told only that mail arrived and its message number. It reads the mail itself with its own mail tool. Mail runs are read-only: the first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
         "target": "What to start",
         "workflowWarning": "A workflow can read the mail only if it has the mail tool. Check the workflow’s tools; without it the run will not see the mail.",
@@ -2333,12 +2348,15 @@
         "saved": "File trigger saved.",
         "deleted": "File trigger deleted.",
         "switchedOn": "File trigger switched on.",
-        "switchedOff": "File trigger switched off."
+        "switchedOff": "File trigger switched off.",
+        "switchedOnTargetOff": "File trigger switched on, but it will not start anything until the workflow it starts is switched on."
       },
       "target": {
         "chiefOfStaff": "Chief of Staff",
         "workflowNamed": "Workflow: {name}",
-        "workflowGone": "Workflow no longer available"
+        "workflowGone": "Workflow no longer available",
+        "offNote": "The workflow this trigger starts is switched off, so it will not start anything until that workflow is switched on.",
+        "draftNote": "The workflow this trigger starts has not been switched on yet, so it will not start anything until that workflow is switched on."
       },
       "row": {
         "on": "On",
@@ -2360,6 +2378,8 @@
       "form": {
         "createTitle": "New file trigger",
         "editTitle": "Edit file trigger",
+        "targetOffWarning": "This workflow is switched off. You can still save, but the trigger will not start anything until the workflow is switched on.",
+        "targetDraftWarning": "This workflow has not been switched on yet. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "hint": "The run is told only the folder, the time and the ids of the added or replaced documents. It reads the files itself with its Knowledge tool. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
         "target": "What to start",
         "workflowWarning": "A workflow can read the files only if this folder is ticked for it. Its ticked folders can change later; if the folder is not ticked, the run will not see the files.",
@@ -2447,12 +2467,16 @@
         "switchedOn": "Workflow trigger switched on.",
         "switchedOff": "Workflow trigger switched off.",
         "switchedOnSourceOff": "Workflow trigger switched on, but it will not start anything until its source workflow is switched on.",
-        "switchedOnSourceGone": "Workflow trigger switched on, but its source workflow no longer exists, so it cannot start anything."
+        "switchedOnSourceGone": "Workflow trigger switched on, but its source workflow no longer exists, so it cannot start anything.",
+        "switchedOnTargetOff": "Workflow trigger switched on, but it will not start anything until the workflow it starts is switched on.",
+        "switchedOnBothOff": "Workflow trigger switched on, but it will not start anything until its source workflow and the workflow it starts are both switched on."
       },
       "target": {
         "chiefOfStaff": "Chief of Staff",
         "workflowNamed": "Workflow: {name}",
-        "workflowGone": "Workflow no longer available"
+        "workflowGone": "Workflow no longer available",
+        "offNote": "The workflow this trigger starts is switched off, so it will not start anything until that workflow is switched on.",
+        "draftNote": "The workflow this trigger starts has not been switched on yet, so it will not start anything until that workflow is switched on."
       },
       "source": {
         "workflowGone": "(deleted workflow)",
@@ -2481,6 +2505,8 @@
       "form": {
         "createTitle": "New workflow trigger",
         "editTitle": "Edit workflow trigger",
+        "targetOffWarning": "This workflow is switched off. You can still save, but the trigger will not start anything until the workflow is switched on.",
+        "targetDraftWarning": "This workflow has not been switched on yet. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "hint": "The next run is told only the id and the time of the finished run. It reads that run’s answer itself, as data and never as instructions. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
         "source": "When this workflow finishes",
         "sourcePlaceholder": "Choose a workflow",

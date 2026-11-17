@@ -42,7 +42,18 @@ import {
   type EventTriggerList,
   type EventTriggerRun,
 } from './event-triggers.logic';
-import { browserTimeZone, fillTemplate, taskPreview, type WorkflowOption } from './schedules.logic';
+import {
+  TARGET_WARNING_NOTICE_KEYS,
+  browserTimeZone,
+  draftTargetStatus,
+  fillTemplate,
+  targetNotOn,
+  targetSwitchNoticeKey,
+  targetWorkflowStatus,
+  taskPreview,
+  type ScheduleTarget,
+  type WorkflowOption,
+} from './schedules.logic';
 
 /**
  * TRIGGER-EVENT-01 S4: the "Before a meeting" section of the Schedules page.
@@ -176,18 +187,51 @@ function targetLabel(t: (key: string) => string, trigger: EventTriggerItem): str
   return fillTemplate(t('target.workflowNamed'), { name: trigger.target.name ?? '' });
 }
 
+/**
+ * TRIGGER-TARGET-OFF-01: the amber line under a trigger whose target workflow
+ * is switched off or not switched on yet. Nothing for an active target, the
+ * Chief of Staff, or a deleted workflow (its label already says so).
+ */
+function TargetStatusLine({
+  t,
+  trigger,
+}: {
+  t: (key: string) => string;
+  trigger: EventTriggerItem;
+}): React.ReactElement | null {
+  const status = targetWorkflowStatus(trigger.target);
+  if (!targetNotOn(status)) return null;
+  return (
+    <p
+      className="mt-1 flex items-start gap-1.5 text-xs text-amber-200"
+      data-testid={`event-trigger-target-status-${trigger.id}`}
+      data-status={status}
+    >
+      <ExclamationTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 break-words">{t(status === 'disabled' ? 'target.offNote' : 'target.draftNote')}</span>
+    </p>
+  );
+}
+
 export function EventTriggerForm(props: {
   t: (key: string) => string;
   form: EventTriggerFormState;
   workflows: WorkflowOption[];
+  /** The edited trigger's saved target, which answers for its status when the workflow list carries none. */
+  savedTarget?: ScheduleTarget | null;
   timeZones: string[];
   onDraftChange: (draft: EventTriggerDraft) => void;
   onSave: () => void;
   onCancel: () => void;
 }): React.ReactElement {
-  const { t, form, workflows, timeZones, onDraftChange, onSave, onCancel } = props;
+  const { t, form, workflows, savedTarget = null, timeZones, onDraftChange, onSave, onCancel } = props;
   const { draft, saving, errorKey, editingId } = form;
   const set = (patch: Partial<EventTriggerDraft>) => onDraftChange({ ...draft, ...patch });
+  // TRIGGER-TARGET-OFF-01: warn, not refuse, when the chosen target workflow is not switched on.
+  const targetStatus = draftTargetStatus(workflows, draft.targetId, savedTarget);
+  const targetWarning = targetNotOn(targetStatus)
+    ? t(targetStatus === 'disabled' ? 'form.targetOffWarning' : 'form.targetDraftWarning')
+    : null;
   return (
     <form
       className="flex min-w-0 flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5"
@@ -215,6 +259,7 @@ export function EventTriggerForm(props: {
           value={draft.targetId}
           disabled={saving}
           onChange={(event) => set({ targetId: event.target.value })}
+          aria-describedby={targetWarning ? 'event-trigger-target-warning' : undefined}
           data-testid="event-trigger-target"
         >
           <option value="">{t('target.chiefOfStaff')}</option>
@@ -227,6 +272,17 @@ export function EventTriggerForm(props: {
             <option value={draft.targetId}>{t('target.workflowGone')}</option>
           ) : null}
         </select>
+        {targetWarning ? (
+          <p
+            id="event-trigger-target-warning"
+            className="mt-2 flex items-start gap-2 text-sm text-amber-200"
+            role="status"
+            data-testid="event-trigger-target-warning"
+          >
+            <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="break-words">{targetWarning}</span>
+          </p>
+        ) : null}
         {showWorkflowCalendarWarning(draft) ? (
           <p
             className="mt-2 flex items-start gap-2 text-sm text-amber-200"
@@ -435,6 +491,7 @@ function TriggerRow(props: EventTriggersSectionViewProps & { trigger: EventTrigg
           {trigger.enabled ? t('row.switchOff') : t('row.switchOn')}
         </button>
       </div>
+      <TargetStatusLine t={t} trigger={trigger} />
       <p className="mt-2 break-words text-sm text-slate-200" data-testid={`event-trigger-task-${trigger.id}`}>
         {taskPreview(trigger.task)}
       </p>
@@ -647,10 +704,22 @@ export function EventTriggersSectionView(props: EventTriggersSectionViewProps): 
           ) : null}
 
           {props.noticeKey ? (
-            <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="event-triggers-notice">
-              <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
-              <span className="break-words">{t(props.noticeKey)}</span>
-            </p>
+            TARGET_WARNING_NOTICE_KEYS.includes(props.noticeKey) ? (
+              <p
+                className="flex items-start gap-2 text-sm text-amber-200"
+                role="status"
+                data-testid="event-triggers-notice"
+                data-tone="warning"
+              >
+                <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                <span className="break-words">{t(props.noticeKey)}</span>
+              </p>
+            ) : (
+              <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="event-triggers-notice">
+                <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
+                <span className="break-words">{t(props.noticeKey)}</span>
+              </p>
+            )
           ) : null}
 
           {form ? (
@@ -658,6 +727,9 @@ export function EventTriggersSectionView(props: EventTriggersSectionViewProps): 
               t={t}
               form={form}
               workflows={props.workflows}
+              savedTarget={
+                form.editingId ? data.triggers.find((entry) => entry.id === form.editingId)?.target ?? null : null
+              }
               timeZones={props.timeZones}
               onDraftChange={props.onDraftChange}
               onSave={props.onSave}
@@ -790,7 +862,8 @@ export default function EventTriggersSection({
         if (errorKey) setRowError({ triggerId: trigger.id, errorKey });
         return;
       }
-      setNoticeKey(result.value.enabled ? 'notice.switchedOn' : 'notice.switchedOff');
+      // TRIGGER-TARGET-OFF-01: still switches on; the notice says it will not start anything until the target is on.
+      setNoticeKey(targetSwitchNoticeKey(result.value.enabled, result.value.target));
       setData((current) =>
         current
           ? { ...current, triggers: current.triggers.map((entry) => (entry.id === trigger.id ? result.value : entry)) }

@@ -32,7 +32,7 @@ import {
   chainSourceName,
   chainSourceNotOn,
   chainSourceStatus,
-  chainSwitchNoticeKey,
+  chainSwitchNoticeKeyFor,
   chainWouldLoop,
   draftFromChainTrigger,
   draftToBody,
@@ -43,7 +43,15 @@ import {
   type ChainTriggerList,
   type ChainTriggerRun,
 } from './chain-triggers.logic';
-import { browserTimeZone, fillTemplate, taskPreview, type WorkflowOption } from './schedules.logic';
+import {
+  browserTimeZone,
+  draftTargetStatus,
+  fillTemplate,
+  targetNotOn,
+  targetWorkflowStatus,
+  taskPreview,
+  type WorkflowOption,
+} from './schedules.logic';
 
 /**
  * TRIGGER-CHAIN-01 S3: the "After a workflow finishes" section of the
@@ -228,6 +236,33 @@ function SourceStatusLine({
   );
 }
 
+/**
+ * TRIGGER-TARGET-OFF-01: the amber line under the target of a trigger whose
+ * target workflow is switched off or not switched on yet. Distinct from the
+ * source line above. Nothing for an active target, the Chief of Staff, or a
+ * deleted workflow (its label already says so).
+ */
+function TargetStatusLine({
+  t,
+  trigger,
+}: {
+  t: (key: string) => string;
+  trigger: ChainTriggerItem;
+}): React.ReactElement | null {
+  const status = targetWorkflowStatus(trigger.target);
+  if (!targetNotOn(status)) return null;
+  return (
+    <p
+      className="mt-1 flex items-start gap-1.5 text-xs text-amber-200"
+      data-testid={`chain-trigger-target-status-${trigger.id}`}
+      data-status={status}
+    >
+      <ExclamationTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 break-words">{t(status === 'disabled' ? 'target.offNote' : 'target.draftNote')}</span>
+    </p>
+  );
+}
+
 export function ChainTriggerForm(props: {
   t: (key: string) => string;
   form: ChainTriggerFormState;
@@ -248,6 +283,12 @@ export function ChainTriggerForm(props: {
   const sourceStatus = chainDraftSourceStatus(workflows, draft.sourceId, saved);
   const sourceWarning = chainSourceNotOn(sourceStatus)
     ? t(sourceStatus === 'disabled' ? 'form.sourceOffWarning' : 'form.sourceDraftWarning')
+    : null;
+  // TRIGGER-TARGET-OFF-01: the same for the chosen target workflow.
+  const savedTarget = editingId ? triggers.find((entry) => entry.id === editingId)?.target ?? null : null;
+  const targetStatus = draftTargetStatus(workflows, draft.targetId, savedTarget);
+  const targetWarning = targetNotOn(targetStatus)
+    ? t(targetStatus === 'disabled' ? 'form.targetOffWarning' : 'form.targetDraftWarning')
     : null;
   return (
     <form
@@ -307,6 +348,7 @@ export function ChainTriggerForm(props: {
           value={draft.targetId}
           disabled={saving}
           onChange={(event) => set({ targetId: event.target.value })}
+          aria-describedby={targetWarning ? 'chain-trigger-loop-rule chain-trigger-target-warning' : 'chain-trigger-loop-rule'}
           data-testid="chain-trigger-target"
         >
           <option value="">{t('target.chiefOfStaff')}</option>
@@ -322,6 +364,9 @@ export function ChainTriggerForm(props: {
         <p id="chain-trigger-loop-rule" className="mt-1 text-xs text-slate-400" data-testid="chain-trigger-loop-rule">
           {t('form.loopRule')}
         </p>
+        {targetWarning ? (
+          <Refusal id="chain-trigger-target-warning" testId="chain-trigger-target-warning" text={targetWarning} />
+        ) : null}
         {sameWorkflow ? (
           <Refusal testId="chain-trigger-same-refusal" text={t('errors.chain_trigger_same_workflow')} />
         ) : null}
@@ -490,6 +535,7 @@ function TriggerRow(props: ChainTriggersSectionViewProps & { trigger: ChainTrigg
           <dt className="shrink-0 text-xs font-medium text-slate-400 sm:w-32">{t('row.startsNext')}</dt>
           <dd className="min-w-0 break-words text-sm text-slate-100" data-testid={`chain-trigger-target-${trigger.id}`}>
             {targetLabel(t, trigger)}
+            <TargetStatusLine t={t} trigger={trigger} />
           </dd>
         </div>
         <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-3">
@@ -823,7 +869,10 @@ export default function ChainTriggersSection({
       }
       // CHAIN-SOURCE-OFF-01: switched on with a source that is not on, it still
       // switches on, and the notice says it will not fire until the source is on.
-      setNoticeKey(chainSwitchNoticeKey(result.value.enabled, chainSourceStatus(result.value, workflows)));
+      // TRIGGER-TARGET-OFF-01: the same for the target; with both off, one combined notice.
+      setNoticeKey(
+        chainSwitchNoticeKeyFor(result.value.enabled, chainSourceStatus(result.value, workflows), result.value.target),
+      );
       setData((current) =>
         current
           ? { ...current, triggers: current.triggers.map((entry) => (entry.id === trigger.id ? result.value : entry)) }

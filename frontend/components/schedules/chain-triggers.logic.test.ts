@@ -12,6 +12,7 @@ import {
   chainSourceNotOn,
   chainSourceStatus,
   chainSwitchNoticeKey,
+  chainSwitchNoticeKeyFor,
   chainOutcomeKey,
   chainReasonKey,
   chainSameWorkflow,
@@ -316,7 +317,11 @@ describe('chain trigger source status (CHAIN-SOURCE-OFF-01)', () => {
     for (const status of ['active', 'draft', 'disabled', 'missing'] as const) {
       assert.equal(chainSwitchNoticeKey(false, status), 'notice.switchedOff');
     }
-    assert.deepEqual([...CHAIN_WARNING_NOTICE_KEYS], ['notice.switchedOnSourceOff', 'notice.switchedOnSourceGone']);
+    // TRIGGER-TARGET-OFF-01 added the two target notices to the amber list.
+    assert.deepEqual(
+      [...CHAIN_WARNING_NOTICE_KEYS],
+      ['notice.switchedOnSourceOff', 'notice.switchedOnSourceGone', 'notice.switchedOnTargetOff', 'notice.switchedOnBothOff'],
+    );
   });
 });
 
@@ -370,5 +375,65 @@ describe('chain trigger draft', () => {
     assert.equal(draft.timeZone, 'Europe/London');
     assert.equal(draft.task, 'Write the follow-up');
     assert.equal(draftFromChainTrigger(item({ target: { kind: 'chief-of-staff' } })).targetId, '');
+  });
+});
+
+describe('chain trigger target status (TRIGGER-TARGET-OFF-01)', () => {
+  const trigger = (target: Record<string, unknown>) =>
+    parseChainTrigger({
+      id: 'c1',
+      sourceWorkflowId: 'wA',
+      target,
+      task: 'x',
+      timeZone: 'UTC',
+      enabled: true,
+      lastRun: null,
+    }) as ChainTriggerItem;
+
+  test('the parsed target carries its status; absent, unknown and missing add nothing', () => {
+    for (const status of ['active', 'draft', 'disabled']) {
+      assert.deepEqual(trigger({ kind: 'workflow', workflowId: 'wB', name: 'Writer', status }).target, {
+        kind: 'workflow',
+        workflowId: 'wB',
+        name: 'Writer',
+        missing: false,
+        status,
+      });
+    }
+    for (const status of [undefined, 'paused', 'enabled']) {
+      assert.deepEqual(
+        trigger({ kind: 'workflow', workflowId: 'wB', name: 'Writer', ...(status ? { status } : {}) }).target,
+        { kind: 'workflow', workflowId: 'wB', name: 'Writer', missing: false },
+      );
+    }
+    assert.deepEqual(trigger({ kind: 'workflow', workflowId: 'wB', name: null, status: 'missing' }).target, {
+      kind: 'workflow',
+      workflowId: 'wB',
+      name: null,
+      missing: true,
+    });
+  });
+
+  const off = trigger({ kind: 'workflow', workflowId: 'wB', name: 'Writer', status: 'disabled' }).target;
+  const active = trigger({ kind: 'workflow', workflowId: 'wB', name: 'Writer', status: 'active' }).target;
+  const chief = trigger({ kind: 'chief-of-staff' }).target;
+
+  test('chainSwitchNoticeKeyFor: the source decides first, then the target, and both off gets one combined notice', () => {
+    // Switch off is always the plain notice.
+    assert.equal(chainSwitchNoticeKeyFor(false, 'disabled', off), 'notice.switchedOff');
+    // Both fine, or the Chief of Staff as target: as before.
+    assert.equal(chainSwitchNoticeKeyFor(true, 'active', active), 'notice.switchedOn');
+    assert.equal(chainSwitchNoticeKeyFor(true, 'active', chief), 'notice.switchedOn');
+    assert.equal(chainSwitchNoticeKeyFor(true, 'disabled', chief), 'notice.switchedOnSourceOff');
+    assert.equal(chainSwitchNoticeKeyFor(true, 'missing', chief), 'notice.switchedOnSourceGone');
+    // Only the target is off.
+    assert.equal(chainSwitchNoticeKeyFor(true, 'active', off), 'notice.switchedOnTargetOff');
+    // Both off: one combined notice (draft or disabled source).
+    assert.equal(chainSwitchNoticeKeyFor(true, 'disabled', off), 'notice.switchedOnBothOff');
+    assert.equal(chainSwitchNoticeKeyFor(true, 'draft', off), 'notice.switchedOnBothOff');
+    // A gone source wins: nothing the target does can help.
+    assert.equal(chainSwitchNoticeKeyFor(true, 'missing', off), 'notice.switchedOnSourceGone');
+    // The old function is unchanged.
+    assert.equal(chainSwitchNoticeKey(true, 'disabled'), 'notice.switchedOnSourceOff');
   });
 });

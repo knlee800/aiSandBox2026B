@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -478,6 +479,166 @@ describe('event triggers form', () => {
       assert.ok(has(html, readMessage(messages, 'schedules.events.banner.off') as string));
       assert.ok(has(html, readMessage(messages, 'schedules.events.calendar.connector_missing') as string));
       assert.doesNotMatch(html, /schedules\.events\./);
+    }
+  });
+});
+
+describe('a switched-off target (TRIGGER-TARGET-OFF-01: warn, not refuse)', () => {
+  const NEW_KEYS = [
+    'target.offNote',
+    'target.draftNote',
+    'form.targetOffWarning',
+    'form.targetDraftWarning',
+    'notice.switchedOnTargetOff',
+  ];
+
+  const WITH_STATUS = [
+    { id: 'wA', name: 'Researcher', status: 'active' as const },
+    { id: 'wD', name: 'Drafter', status: 'draft' as const },
+    { id: 'wO', name: 'Night shift', status: 'disabled' as const },
+  ];
+
+  function trigger(id: string, target: Record<string, unknown>): EventTriggerItem {
+    return parseEventTrigger({
+      id,
+      target,
+      task: `Task ${id}`,
+      leadMinutes: 15,
+      titleFilter: null,
+      timeZone: 'UTC',
+      enabled: true,
+      lastRun: null,
+    }) as EventTriggerItem;
+  }
+
+  const ACTIVE = trigger('t1', { kind: 'workflow', workflowId: 'wA', name: 'Researcher', status: 'active' });
+  const OFF = trigger('t2', { kind: 'workflow', workflowId: 'wO', name: 'Night shift', status: 'disabled' });
+  const DRAFT = trigger('t3', { kind: 'workflow', workflowId: 'wD', name: 'Drafter', status: 'draft' });
+  const GONE = trigger('t4', { kind: 'workflow', workflowId: 'wG', name: null, status: 'missing' });
+  const CHIEF = trigger('t5', { kind: 'chief-of-staff' });
+  const NO_STATUS = trigger('t6', { kind: 'workflow', workflowId: 'wA', name: 'Researcher' });
+  const UNKNOWN = trigger('t7', { kind: 'workflow', workflowId: 'wA', name: 'Researcher', status: 'paused' });
+
+  test('the new strings are in all three locales, real Chinese, and say the trigger will not start until the workflow is on', () => {
+    for (const { code, messages } of LOCALES) {
+      for (const key of NEW_KEYS) {
+        const value = readMessage(messages, `schedules.events.${key}`);
+        assert.ok(value && value.trim().length > 0, `missing ${key} in ${code}`);
+        if (code !== 'en') {
+          assert.ok(/[\u4e00-\u9fff]/.test(value), `${key} is not Chinese in ${code}`);
+          assert.notEqual(value, en(key));
+        }
+      }
+    }
+    for (const key of NEW_KEYS) {
+      assert.notEqual(
+        readMessage(zhTwMessages as Messages, `schedules.events.${key}`),
+        readMessage(zhCnMessages as Messages, `schedules.events.${key}`),
+        key,
+      );
+      assert.match(en(key), /will not start anything until/);
+    }
+  });
+
+  test('a row shows an amber target line for a switched-off and a draft target, and nothing for the others', () => {
+    const html = render({
+      data: list([ACTIVE, OFF, DRAFT, GONE, CHIEF, NO_STATUS, UNKNOWN], { limit: 8 }),
+      workflows: WITH_STATUS,
+    });
+    assert.match(html, /data-testid="event-trigger-target-status-t2" data-status="disabled"/);
+    assert.ok(has(html, en('target.offNote')));
+    assert.match(html, /data-testid="event-trigger-target-status-t3" data-status="draft"/);
+    assert.ok(has(html, en('target.draftNote')));
+    for (const id of ['t1', 't4', 't5', 't6', 't7']) {
+      assert.doesNotMatch(html, new RegExp(`event-trigger-target-status-${id}"`), id);
+    }
+    // The deleted target keeps its label and test id.
+    assert.ok(has(html, en('target.workflowGone')));
+    assert.match(html, /data-testid="event-trigger-target-t4"/);
+    const line = html.slice(html.indexOf('data-testid="event-trigger-target-status-t2"'));
+    assert.match(line.slice(0, 600), /<svg[^>]*aria-hidden="true"/);
+  });
+
+  test('the form warns under the target picker when the chosen workflow is not on; saving stays possible', () => {
+    const form = (targetId: string) => ({
+      editingId: null,
+      draft: { ...emptyEventDraft('UTC'), targetId, task: 'Brief me' },
+      saving: false,
+      errorKey: null,
+    });
+    const off = render({ form: form('wO'), data: list([]), workflows: WITH_STATUS });
+    assert.match(off, /data-testid="event-trigger-target-warning"/);
+    assert.ok(has(off, en('form.targetOffWarning')));
+    assert.match(off, /aria-describedby="event-trigger-target-warning"/);
+    assert.match(off, /id="event-trigger-target-warning"/);
+    assert.doesNotMatch(off, /<button[^>]*disabled=""[^>]*data-testid="event-trigger-save"/);
+    assert.doesNotMatch(off, /data-testid="event-trigger-form-error"/);
+
+    const draft = render({ form: form('wD'), data: list([]), workflows: WITH_STATUS });
+    assert.ok(has(draft, en('form.targetDraftWarning')));
+    assert.doesNotMatch(draft, new RegExp(escapeHtml(en('form.targetOffWarning'))));
+
+    for (const html of [
+      render({ form: form('wA'), data: list([]), workflows: WITH_STATUS }),
+      render({ form: form(''), data: list([]), workflows: WITH_STATUS }),
+      render({ form: form('wA'), data: list([]), workflows: [{ id: 'wA', name: 'Researcher' }] }),
+    ]) {
+      assert.doesNotMatch(html, /data-testid="event-trigger-target-warning"/);
+    }
+  });
+
+  test("editing a trigger whose list entry has no status warns from the trigger's own target", () => {
+    const html = render({
+      form: { editingId: 't2', draft: draftFromEventTrigger(OFF), saving: false, errorKey: null },
+      data: list([OFF]),
+      workflows: [{ id: 'wO', name: 'Night shift' }],
+    });
+    assert.match(html, /data-testid="event-trigger-target-warning"/);
+    assert.ok(has(html, en('form.targetOffWarning')));
+    // Picking another, active workflow in the same form clears it.
+    const moved = render({
+      form: { editingId: 't2', draft: { ...draftFromEventTrigger(OFF), targetId: 'wA' }, saving: false, errorKey: null },
+      data: list([OFF]),
+      workflows: WITH_STATUS,
+    });
+    assert.doesNotMatch(moved, /data-testid="event-trigger-target-warning"/);
+  });
+
+  test('the switch-on notice for a target that is not on is its own amber notice; the others stay as they were', () => {
+    const warn = render({ noticeKey: 'notice.switchedOnTargetOff' });
+    assert.match(warn, /data-testid="event-triggers-notice" data-tone="warning"/);
+    assert.ok(has(warn, en('notice.switchedOnTargetOff')));
+    assert.match(warn, /text-amber-200/);
+    assert.notEqual(en('notice.switchedOnTargetOff'), en('notice.switchedOn'));
+    for (const key of ['notice.saved', 'notice.deleted', 'notice.switchedOn', 'notice.switchedOff']) {
+      const html = render({ noticeKey: key });
+      assert.match(html, /data-testid="event-triggers-notice"/);
+      assert.doesNotMatch(html, /data-tone="warning"/);
+    }
+  });
+
+  test('the switch handler picks the notice from the answered target and never blocks the switch', () => {
+    const source = readFileSync(new URL('./event-triggers-section.tsx', import.meta.url), 'utf8');
+    assert.match(source, /setNoticeKey\(targetSwitchNoticeKey\(result\.value\.enabled, result\.value\.target\)\)/);
+    assert.match(source, /setNoticeKey\('notice\.saved'\)/);
+    assert.doesNotMatch(source, /errorKey: [^\n]*target(Off|Draft)Warning/);
+  });
+
+  test('the new lines render in Traditional and Simplified Chinese without English chrome', () => {
+    for (const { messages } of LOCALES.filter((locale) => locale.code !== 'en')) {
+      const html = render(
+        {
+          data: list([OFF, DRAFT]),
+          workflows: WITH_STATUS,
+          noticeKey: 'notice.switchedOnTargetOff',
+          form: { editingId: null, draft: { ...emptyEventDraft('UTC'), targetId: 'wO', task: 'x' }, saving: false, errorKey: null },
+        },
+        messages,
+      );
+      for (const key of ['target.offNote', 'target.draftNote', 'form.targetOffWarning', 'notice.switchedOnTargetOff']) {
+        assert.ok(has(html, readMessage(messages, `schedules.events.${key}`) as string), key);
+      }
+      assert.doesNotMatch(html, /schedules\.(events|mail|knowledge)\./);
     }
   });
 });

@@ -30,20 +30,26 @@ import {
 import {
   SCHEDULE_DAY_NUMBERS,
   SCHEDULE_TASK_MAX_CHARS,
+  TARGET_WARNING_NOTICE_KEYS,
   browserTimeZone,
   draftFromSchedule,
+  draftTargetStatus,
   draftToBody,
   emptyDraft,
   fillTemplate,
   limitReached,
   outcomeKey,
   reasonKey,
+  targetNotOn,
+  targetSwitchNoticeKey,
+  targetWorkflowStatus,
   taskPreview,
   toggleDay,
   type ScheduleDraft,
   type ScheduleItem,
   type ScheduleLastRun,
   type ScheduleRun,
+  type ScheduleTarget,
   type SchedulesList,
   type WorkflowOption,
 } from './schedules.logic';
@@ -193,6 +199,32 @@ function targetLabel(t: (key: string) => string, schedule: ScheduleItem): string
   return fillTemplate(t('target.workflowNamed'), { name: schedule.target.name ?? '' });
 }
 
+/**
+ * TRIGGER-TARGET-OFF-01: the amber line under a schedule whose target workflow
+ * is switched off or not switched on yet. Nothing for an active target, the
+ * Chief of Staff, or a deleted workflow (its label already says so).
+ */
+function TargetStatusLine({
+  t,
+  schedule,
+}: {
+  t: (key: string) => string;
+  schedule: ScheduleItem;
+}): React.ReactElement | null {
+  const status = targetWorkflowStatus(schedule.target);
+  if (!targetNotOn(status)) return null;
+  return (
+    <p
+      className="mt-1 flex items-start gap-1.5 text-xs text-amber-200"
+      data-testid={`schedule-target-status-${schedule.id}`}
+      data-status={status}
+    >
+      <ExclamationTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 break-words">{t(status === 'disabled' ? 'target.offNote' : 'target.draftNote')}</span>
+    </p>
+  );
+}
+
 function daysLabel(t: (key: string) => string, days: number[]): string {
   return days.map((day) => t(`days.${day}`)).join(', ');
 }
@@ -201,14 +233,21 @@ export function ScheduleForm(props: {
   t: (key: string) => string;
   form: ScheduleFormState;
   workflows: WorkflowOption[];
+  /** The edited schedule's saved target, which answers for its status when the workflow list carries none. */
+  savedTarget?: ScheduleTarget | null;
   timeZones: string[];
   onDraftChange: (draft: ScheduleDraft) => void;
   onSave: () => void;
   onCancel: () => void;
 }): React.ReactElement {
-  const { t, form, workflows, timeZones, onDraftChange, onSave, onCancel } = props;
+  const { t, form, workflows, savedTarget = null, timeZones, onDraftChange, onSave, onCancel } = props;
   const { draft, saving, errorKey, editingId } = form;
   const set = (patch: Partial<ScheduleDraft>) => onDraftChange({ ...draft, ...patch });
+  // TRIGGER-TARGET-OFF-01: warn, not refuse, when the chosen target workflow is not switched on.
+  const targetStatus = draftTargetStatus(workflows, draft.targetId, savedTarget);
+  const targetWarning = targetNotOn(targetStatus)
+    ? t(targetStatus === 'disabled' ? 'form.targetOffWarning' : 'form.targetDraftWarning')
+    : null;
   // A workflow the owner no longer has stays selectable only while it is the saved target.
   return (
     <form
@@ -237,6 +276,7 @@ export function ScheduleForm(props: {
           value={draft.targetId}
           disabled={saving}
           onChange={(event) => set({ targetId: event.target.value })}
+          aria-describedby={targetWarning ? 'schedule-target-warning' : undefined}
           data-testid="schedule-target"
         >
           <option value="">{t('target.chiefOfStaff')}</option>
@@ -249,6 +289,17 @@ export function ScheduleForm(props: {
             <option value={draft.targetId}>{t('target.workflowGone')}</option>
           ) : null}
         </select>
+        {targetWarning ? (
+          <p
+            id="schedule-target-warning"
+            className="mt-2 flex items-start gap-2 text-sm text-amber-200"
+            role="status"
+            data-testid="schedule-target-warning"
+          >
+            <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="break-words">{targetWarning}</span>
+          </p>
+        ) : null}
       </div>
 
       <div>
@@ -430,6 +481,7 @@ function ScheduleRow(props: SchedulesScreenViewProps & { schedule: ScheduleItem 
           {schedule.enabled ? t('row.switchOff') : t('row.switchOn')}
         </button>
       </div>
+      <TargetStatusLine t={t} schedule={schedule} />
       <p className="mt-2 break-words text-sm text-slate-200" data-testid={`schedule-task-${schedule.id}`}>
         {taskPreview(schedule.task)}
       </p>
@@ -626,10 +678,22 @@ export function SchedulesScreenView(props: SchedulesScreenViewProps): React.Reac
               ) : null}
 
               {props.noticeKey ? (
-                <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="schedules-notice">
-                  <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
-                  <span className="break-words">{t(props.noticeKey)}</span>
-                </p>
+                TARGET_WARNING_NOTICE_KEYS.includes(props.noticeKey) ? (
+                  <p
+                    className="flex items-start gap-2 text-sm text-amber-200"
+                    role="status"
+                    data-testid="schedules-notice"
+                    data-tone="warning"
+                  >
+                    <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                    <span className="break-words">{t(props.noticeKey)}</span>
+                  </p>
+                ) : (
+                  <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="schedules-notice">
+                    <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
+                    <span className="break-words">{t(props.noticeKey)}</span>
+                  </p>
+                )
               ) : null}
 
               {form ? (
@@ -637,6 +701,9 @@ export function SchedulesScreenView(props: SchedulesScreenViewProps): React.Reac
                   t={t}
                   form={form}
                   workflows={props.workflows}
+                  savedTarget={
+                    form.editingId ? data.schedules.find((entry) => entry.id === form.editingId)?.target ?? null : null
+                  }
                   timeZones={props.timeZones}
                   onDraftChange={props.onDraftChange}
                   onSave={props.onSave}
@@ -800,7 +867,9 @@ export default function SchedulesScreen({ locale, fetcher }: SchedulesScreenProp
         if (errorKey) setRowError({ scheduleId: schedule.id, errorKey });
         return;
       }
-      setNoticeKey(result.value.enabled ? 'notice.switchedOn' : 'notice.switchedOff');
+      // TRIGGER-TARGET-OFF-01: switched on with a target that is not on, it still
+      // switches on, and the notice says it will not start anything until the target is on.
+      setNoticeKey(targetSwitchNoticeKey(result.value.enabled, result.value.target));
       setData((current) =>
         current
           ? { ...current, schedules: current.schedules.map((entry) => (entry.id === schedule.id ? result.value : entry)) }

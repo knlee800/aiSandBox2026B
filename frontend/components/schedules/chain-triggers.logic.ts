@@ -2,6 +2,9 @@ import {
   SCHEDULE_OUTCOMES,
   SCHEDULE_SKIP_REASONS,
   browserTimeZone,
+  readTargetStatus,
+  targetNotOn,
+  targetWorkflowStatus,
   type ScheduleTarget,
   type WorkflowOption,
 } from './schedules.logic';
@@ -122,11 +125,13 @@ function readTarget(value: unknown): ScheduleTarget | null {
   if (!isRecord(value)) return null;
   if (value.kind === 'chief-of-staff') return { kind: 'chief-of-staff' };
   if (value.kind === 'workflow' && typeof value.workflowId === 'string') {
+    const status = readTargetStatus(value.status);
     return {
       kind: 'workflow',
       workflowId: value.workflowId,
       name: readText(value.name),
       missing: value.status === 'missing' || typeof value.name !== 'string',
+      ...(status ? { status } : {}),
     };
   }
   return null;
@@ -388,5 +393,29 @@ export function chainSwitchNoticeKey(enabled: boolean, sourceStatus: ChainSource
   return chainSourceNotOn(sourceStatus) ? 'notice.switchedOnSourceOff' : 'notice.switchedOn';
 }
 
+/**
+ * TRIGGER-TARGET-OFF-01: the notice key after a switch, with the target too.
+ * When both are off, one combined notice says neither will be there; a gone
+ * source wins (nothing the target does can help); otherwise the one that is off.
+ */
+export function chainSwitchNoticeKeyFor(
+  enabled: boolean,
+  sourceStatus: ChainSourceStatus,
+  target: ScheduleTarget,
+): string {
+  if (!enabled) return 'notice.switchedOff';
+  const targetOff = targetNotOn(targetWorkflowStatus(target));
+  if (sourceStatus === 'missing') return 'notice.switchedOnSourceGone';
+  if (chainSourceNotOn(sourceStatus)) {
+    return targetOff ? 'notice.switchedOnBothOff' : 'notice.switchedOnSourceOff';
+  }
+  return targetOff ? 'notice.switchedOnTargetOff' : 'notice.switchedOn';
+}
+
 /** The notices that carry a warning (shown amber, not as a success). */
-export const CHAIN_WARNING_NOTICE_KEYS: readonly string[] = ['notice.switchedOnSourceOff', 'notice.switchedOnSourceGone'];
+export const CHAIN_WARNING_NOTICE_KEYS: readonly string[] = [
+  'notice.switchedOnSourceOff',
+  'notice.switchedOnSourceGone',
+  'notice.switchedOnTargetOff',
+  'notice.switchedOnBothOff',
+];

@@ -5,7 +5,9 @@ import {
   SCHEDULE_ERROR_CODES,
   SCHEDULE_OUTCOMES,
   SCHEDULE_SKIP_REASONS,
+  TARGET_WARNING_NOTICE_KEYS,
   draftFromSchedule,
+  draftTargetStatus,
   draftToBody,
   emptyDraft,
   limitReached,
@@ -13,10 +15,15 @@ import {
   parseSchedule,
   parseScheduleRuns,
   parseSchedulesList,
+  readTargetStatus,
   reasonKey,
   scheduleErrorKey,
+  targetNotOn,
+  targetSwitchNoticeKey,
+  targetWorkflowStatus,
   taskPreview,
   toggleDay,
+  type ScheduleTarget,
   type WorkflowOption,
 } from '@/components/schedules/schedules.logic';
 import type { ResultsWorkflowOption } from '@/components/results/results-api';
@@ -207,5 +214,101 @@ describe('schedules draft', () => {
     assert.equal(draft.targetId, 'w1');
     assert.equal(draft.timeZone, 'Europe/London');
     assert.deepEqual(draft.days, [1, 3, 5]);
+  });
+});
+
+describe('target workflow status (TRIGGER-TARGET-OFF-01)', () => {
+  const target = (status?: unknown, extra: Record<string, unknown> = {}) =>
+    parseSchedule({
+      id: 's1',
+      target: { kind: 'workflow', workflowId: 'w1', name: 'Digest', ...(status === undefined ? {} : { status }), ...extra },
+      task: 'x',
+      timeOfDay: '09:00',
+      days: [1],
+      timeZone: 'UTC',
+      enabled: true,
+      lastRun: null,
+    })?.target as ScheduleTarget;
+
+  test('readTargetStatus keeps active, draft and disabled and drops anything else', () => {
+    assert.equal(readTargetStatus('active'), 'active');
+    assert.equal(readTargetStatus('draft'), 'draft');
+    assert.equal(readTargetStatus('disabled'), 'disabled');
+    for (const value of ['missing', 'enabled', '', 3, null, undefined, {}]) {
+      assert.equal(readTargetStatus(value), undefined, String(value));
+    }
+  });
+
+  test('a parsed workflow target carries its status; an absent or unknown one behaves as before', () => {
+    assert.deepEqual(target('disabled'), { kind: 'workflow', workflowId: 'w1', name: 'Digest', missing: false, status: 'disabled' });
+    assert.equal((target('draft') as { status?: string }).status, 'draft');
+    assert.equal((target('active') as { status?: string }).status, 'active');
+    // Absent, unknown and missing add no status key at all.
+    for (const status of [undefined, 'paused', 'enabled']) {
+      const parsed = target(status);
+      assert.deepEqual(parsed, { kind: 'workflow', workflowId: 'w1', name: 'Digest', missing: false });
+      assert.equal('status' in parsed, false);
+    }
+    const gone = parseSchedule({
+      id: 's2',
+      target: { kind: 'workflow', workflowId: 'w2', name: null, status: 'missing' },
+      task: 'x',
+      timeOfDay: '09:00',
+      days: [1],
+      timeZone: 'UTC',
+      enabled: true,
+      lastRun: null,
+    })?.target;
+    assert.deepEqual(gone, { kind: 'workflow', workflowId: 'w2', name: null, missing: true });
+  });
+
+  test('targetWorkflowStatus is null for the Chief of Staff, a deleted workflow and an unknown status', () => {
+    assert.equal(targetWorkflowStatus({ kind: 'chief-of-staff' }), null);
+    assert.equal(targetWorkflowStatus({ kind: 'workflow', workflowId: 'w', name: null, missing: true, status: 'disabled' }), null);
+    assert.equal(targetWorkflowStatus(target(undefined)), null);
+    assert.equal(targetWorkflowStatus(target('active')), 'active');
+    assert.equal(targetWorkflowStatus(target('draft')), 'draft');
+    assert.equal(targetWorkflowStatus(target('disabled')), 'disabled');
+  });
+
+  test('targetNotOn is true only for draft and disabled', () => {
+    assert.equal(targetNotOn('draft'), true);
+    assert.equal(targetNotOn('disabled'), true);
+    assert.equal(targetNotOn('active'), false);
+    assert.equal(targetNotOn(null), false);
+  });
+
+  test("draftTargetStatus reads the page's list, falls back to the saved target, and is null otherwise", () => {
+    const withStatus: WorkflowOption[] = [
+      { id: 'a', name: 'A', status: 'active' },
+      { id: 'd', name: 'D', status: 'draft' },
+      { id: 'o', name: 'O', status: 'disabled' },
+    ];
+    assert.equal(draftTargetStatus(withStatus, 'a'), 'active');
+    assert.equal(draftTargetStatus(withStatus, 'd'), 'draft');
+    assert.equal(draftTargetStatus(withStatus, 'o'), 'disabled');
+    assert.equal(draftTargetStatus(withStatus, ''), null);
+    assert.equal(draftTargetStatus(withStatus, 'zzz'), null);
+    // A list without statuses: the saved target answers for its own workflow only.
+    const plain: WorkflowOption[] = [{ id: 'w1', name: 'Digest' }, { id: 'w2', name: 'Other' }];
+    const saved = target('disabled');
+    assert.equal(draftTargetStatus(plain, 'w1', saved), 'disabled');
+    assert.equal(draftTargetStatus(plain, 'w2', saved), null);
+    assert.equal(draftTargetStatus(plain, 'w1', null), null);
+    assert.equal(draftTargetStatus(plain, 'w1', { kind: 'chief-of-staff' }), null);
+    // The list wins over the saved target.
+    assert.equal(draftTargetStatus([{ id: 'w1', name: 'Digest', status: 'active' }], 'w1', saved), 'active');
+  });
+
+  test('targetSwitchNoticeKey: only a switch-on with a target that is not on gets the amber notice', () => {
+    assert.equal(targetSwitchNoticeKey(true, target('active')), 'notice.switchedOn');
+    assert.equal(targetSwitchNoticeKey(true, target('disabled')), 'notice.switchedOnTargetOff');
+    assert.equal(targetSwitchNoticeKey(true, target('draft')), 'notice.switchedOnTargetOff');
+    assert.equal(targetSwitchNoticeKey(true, target(undefined)), 'notice.switchedOn');
+    assert.equal(targetSwitchNoticeKey(true, { kind: 'chief-of-staff' }), 'notice.switchedOn');
+    for (const status of ['active', 'disabled', 'draft']) {
+      assert.equal(targetSwitchNoticeKey(false, target(status)), 'notice.switchedOff');
+    }
+    assert.deepEqual([...TARGET_WARNING_NOTICE_KEYS], ['notice.switchedOnTargetOff']);
   });
 });

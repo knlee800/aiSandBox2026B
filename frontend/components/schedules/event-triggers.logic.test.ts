@@ -245,3 +245,42 @@ describe('event trigger draft', () => {
     assert.equal(draft.timeZone, 'Europe/London');
   });
 });
+
+describe('trigger target status (TRIGGER-TARGET-OFF-01)', () => {
+  const parseTarget = (target: Record<string, unknown>) =>
+    parseEventTrigger({
+      id: 't1',
+      target,
+      task: 'x',
+      leadMinutes: 15, titleFilter: null,
+      timeZone: 'UTC',
+      enabled: true,
+      lastRun: null,
+    })?.target;
+
+  test('a workflow target carries its status when the gateway sends a known one', () => {
+    for (const status of ['active', 'draft', 'disabled']) {
+      assert.deepEqual(parseTarget({ kind: 'workflow', workflowId: 'w1', name: 'Digest', status }), {
+        kind: 'workflow',
+        workflowId: 'w1',
+        name: 'Digest',
+        missing: false,
+        status,
+      });
+    }
+  });
+
+  test('an absent, unknown or missing status adds nothing and the Chief of Staff has none', () => {
+    for (const status of [undefined, 'paused', 'enabled']) {
+      const parsed = parseTarget({ kind: 'workflow', workflowId: 'w1', name: 'Digest', ...(status ? { status } : {}) });
+      assert.deepEqual(parsed, { kind: 'workflow', workflowId: 'w1', name: 'Digest', missing: false });
+    }
+    assert.deepEqual(parseTarget({ kind: 'workflow', workflowId: 'w1', name: null, status: 'missing' }), {
+      kind: 'workflow',
+      workflowId: 'w1',
+      name: null,
+      missing: true,
+    });
+    assert.deepEqual(parseTarget({ kind: 'chief-of-staff' }), { kind: 'chief-of-staff' });
+  });
+});

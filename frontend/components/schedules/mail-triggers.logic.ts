@@ -2,6 +2,7 @@ import {
   SCHEDULE_OUTCOMES,
   SCHEDULE_SKIP_REASONS,
   browserTimeZone,
+  readTargetStatus,
   type ScheduleTarget,
 } from './schedules.logic';
 
@@ -120,11 +121,13 @@ function readTarget(value: unknown): ScheduleTarget | null {
   if (!isRecord(value)) return null;
   if (value.kind === 'chief-of-staff') return { kind: 'chief-of-staff' };
   if (value.kind === 'workflow' && typeof value.workflowId === 'string') {
+    const status = readTargetStatus(value.status);
     return {
       kind: 'workflow',
       workflowId: value.workflowId,
       name: readText(value.name),
       missing: value.status === 'missing' || typeof value.name !== 'string',
+      ...(status ? { status } : {}),
     };
   }
   return null;
