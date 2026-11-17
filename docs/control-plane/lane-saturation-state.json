@@ -25,7 +25,8 @@
         "frontend/components/results/results-api.ts",
         "frontend/components/results/results-api.test.ts",
         "frontend/components/schedules/schedules.logic.ts",
-        "frontend/components/schedules/schedules.logic.test.ts"
+        "frontend/components/schedules/schedules.logic.test.ts",
+        "frontend/components/schedules/schedules-api.test.ts"
       ],
       "hotfiles": [],
       "i18n": true,
@@ -7369,7 +7370,8 @@
         "frontend/components/results/results-api.ts",
         "frontend/components/results/results-api.test.ts",
         "frontend/components/schedules/schedules.logic.ts",
-        "frontend/components/schedules/schedules.logic.test.ts"
+        "frontend/components/schedules/schedules.logic.test.ts",
+        "frontend/components/schedules/schedules-api.test.ts"
       ],
       "hotfiles": [],
       "i18n": true,
