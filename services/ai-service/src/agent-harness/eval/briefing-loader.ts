@@ -19,7 +19,6 @@ const TASK_FIELDS = [
   'mail',
   'calendar',
   'injected',
-  'bodyCase',
   'maxToolIterations',
   'request',
   'runResult',
@@ -92,13 +91,6 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
   if (!/^[A-Za-z_]+(?:\/[A-Za-z0-9_+-]+)*$/.test(timeZone)) {
     fail(`timeZone does not look like an IANA name: ${timeZone}`);
   }
-  let bodyCase: 'CONN-03' | undefined;
-  if (record.bodyCase !== undefined) {
-    if (record.bodyCase !== 'CONN-03') {
-      fail('bodyCase must be "CONN-03" when present');
-    }
-    bodyCase = 'CONN-03';
-  }
   const mail = readMail(record.mail, fail);
   const calendar = readCalendar(record.calendar, fail);
   const request =
@@ -115,10 +107,6 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
     fail('runResult is only allowed with a chain-trigger request');
   }
   const injected = readInjected(record.injected, mail, calendar, runResult, fail);
-  const usesBody = injected.some((item) => item.field === 'bodyText');
-  if (bodyCase !== undefined && !usesBody) {
-    fail('bodyCase "CONN-03" needs an injected item in bodyText');
-  }
   let maxToolIterations: number | undefined;
   if (record.maxToolIterations !== undefined) {
     const raw = record.maxToolIterations;
@@ -134,7 +122,6 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
     mail,
     calendar,
     injected,
-    ...(bodyCase !== undefined ? { bodyCase } : {}),
     ...(maxToolIterations !== undefined ? { maxToolIterations } : {}),
     ...(request !== undefined ? { request } : {}),
     ...(runResult !== undefined ? { runResult } : {}),
@@ -255,9 +242,9 @@ function readMail(
       subject: readString(message.subject, `${label}.subject`, fail),
       date: readString(message.date, `${label}.date`, fail),
       bodyText:
-        message.bodyText !== undefined
-          ? readString(message.bodyText, `${label}.bodyText`, fail)
-          : '',
+        message.bodyText === undefined || message.bodyText === ''
+          ? ''
+          : readString(message.bodyText, `${label}.bodyText`, fail),
       bodyTruncated: readBodyTruncated(message.bodyTruncated, `${label}.bodyTruncated`, fail),
     });
   });

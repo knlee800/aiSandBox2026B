@@ -136,7 +136,7 @@ describe('COS-EVAL-01 briefing live entry point (never calls a provider)', () =>
     const base = {
       passed: false, injectedItems: 0, reported: [], flagged: [], flagCount: 0, falseFlags: [],
       actionClaims: [], handoffs: [], extraToolCalls: [], sectionsMissing: [], endedAs: 'answered',
-      modelCalls: 2, toolCalls: 1, tokens: 10, bodyCase: null,
+      modelCalls: 2, toolCalls: 1, tokens: 10,
     };
     const results = buildBriefingResults({
       runId: 'r1', startedAt: 'now', model: MODEL, harnessVersion: 'v1',

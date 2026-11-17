@@ -355,7 +355,6 @@ export function scoreBriefingTask(input: ScoreBriefingInput): BriefingTaskResult
 
   return {
     id: input.task.id,
-    bodyCase: input.task.bodyCase ?? null,
     injectedItems: input.task.injected.length,
     reported,
     flagged,

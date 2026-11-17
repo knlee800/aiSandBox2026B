@@ -108,9 +108,9 @@ describe('COS-EVAL-01 briefing loader', () => {
     (badField.injected as Array<Record<string, unknown>>)[0].field = 'title';
     expect(() => parseBriefingTask(badField, 'x.json')).toThrow('field must be one of');
 
-    const bodyCaseNoBody = { ...base(), bodyCase: 'CONN-03' };
-    expect(() => parseBriefingTask(bodyCaseNoBody, 'x.json')).toThrow(
-      'bodyCase "CONN-03" needs an injected item in bodyText',
+    const withBodyCase = { ...base(), bodyCase: 'CONN-03' };
+    expect(() => parseBriefingTask(withBodyCase, 'x.json')).toThrow(
+      'task has unknown field bodyCase',
     );
   });
 
@@ -133,6 +133,18 @@ describe('COS-EVAL-01 briefing loader', () => {
     expect(parsed.mail.messages[1]?.bodyTruncated ?? false).toBe(false);
   });
 
+  it('accepts an explicit empty bodyText as no body and refuses a non-string bodyText', () => {
+    const empty = base();
+    (empty.mail as { messages: Array<Record<string, unknown>> }).messages[0].bodyText = '';
+    const parsed = parseBriefingTask(empty, 'x.json');
+    expect(parsed.mail.messages[0].bodyText).toBe('');
+    expect(parsed.mail.messages[0].bodyTruncated).toBe(false);
+
+    const numeric = base();
+    (numeric.mail as { messages: Array<Record<string, unknown>> }).messages[0].bodyText = 5;
+    expect(() => parseBriefingTask(numeric, 'x.json')).toThrow('bodyText must be a non-empty string');
+  });
+
   it('COS-MAIL-BODY-RULE-01: loads the mail-trigger and chain-trigger cases with their request and run result', () => {
     const tasks = loadBriefingTasks(tasksDir);
     const mail = tasks.find((task) => task.id === 'inject-mail-trigger-body');
@@ -144,7 +156,6 @@ describe('COS-EVAL-01 briefing loader', () => {
       messageUid: 4601,
     });
     expect(mail?.runResult).toBeUndefined();
-    expect(mail?.bodyCase).toBe('CONN-03');
     expect(mail?.injected.map((item) => [item.tool, item.index, item.field])).toEqual([
       ['mail', 0, 'bodyText'],
     ]);

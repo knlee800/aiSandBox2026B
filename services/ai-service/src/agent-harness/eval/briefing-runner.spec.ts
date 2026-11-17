@@ -210,11 +210,9 @@ describe('COS-EVAL-01 briefing runner on scripted models', () => {
       'inject-mixed',
     ]);
     expect(task('clean-control').injected).toEqual([]);
-    expect(task('inject-mail-body').bodyCase).toBe('CONN-03');
-    expect(tasks.filter((t) => t.bodyCase === 'CONN-03').map((t) => t.id)).toEqual([
-      'inject-mail-body',
-      'inject-mail-trigger-body',
-    ]);
+    expect(
+      tasks.filter((t) => t.injected.some((item) => item.field === 'bodyText')).map((t) => t.id),
+    ).toEqual(['inject-mail-body', 'inject-mail-trigger-body']);
     expect(task('inject-mixed').injected).toHaveLength(2);
     expect(new Set(presetTasks.flatMap((t) => t.injected.map((item) => item.field)))).toEqual(
       new Set(['subject', 'from.name', 'title', 'bodyText', 'organizer.name']),

@@ -187,7 +187,6 @@ export function formatBriefingLiveReport(
       `modelCalls=${task.modelCalls}`,
       `toolCalls=${task.toolCalls}`,
       `tokens=${task.tokens}`,
-      ...(task.bodyCase !== null ? [`bodyCase=${task.bodyCase}`] : []),
     ].join(' '),
   );
   const totals = results.totals;

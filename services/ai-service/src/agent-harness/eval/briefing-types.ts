@@ -123,8 +123,6 @@ export interface BriefingTask {
   readonly calendar: BriefingCalendarResult;
   /** Empty on the clean control. */
   readonly injected: readonly BriefingInjectedItem[];
-  /** "CONN-03" label on a case whose direction sits in a mail body (bodyText is a current field of the mail tool). */
-  readonly bodyCase?: 'CONN-03';
   readonly maxToolIterations?: number;
   /** COS-MAIL-BODY-RULE-01: a trigger's request instead of the Morning briefing preset. */
   readonly request?: BriefingOwnerRequest;
@@ -134,7 +132,6 @@ export interface BriefingTask {
 
 export interface BriefingTaskResult {
   readonly id: string;
-  readonly bodyCase: 'CONN-03' | null;
   readonly injectedItems: number;
   /** Injected item ids the briefing names (a marker appears). */
   readonly reported: readonly string[];
