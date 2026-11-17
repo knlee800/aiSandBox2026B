@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -517,6 +518,204 @@ describe('chain triggers form', () => {
       assert.ok(has(html, readMessage(messages, 'schedules.chain.banner.resultToolOff') as string));
       assert.ok(has(html, readMessage(messages, 'schedules.chain.errors.chain_trigger_same_workflow') as string));
       assert.ok(has(html, readMessage(messages, 'schedules.chain.source.workflowGone') as string));
+      assert.doesNotMatch(html, /schedules\.chain\./);
+    }
+  });
+});
+
+describe('a switched-off source (CHAIN-SOURCE-OFF-01: warn, not refuse)', () => {
+  const NEW_KEYS = [
+    'source.offNote',
+    'source.draftNote',
+    'form.sourceOffWarning',
+    'form.sourceDraftWarning',
+    'notice.switchedOnSourceOff',
+    'notice.switchedOnSourceGone',
+  ];
+
+  /** The page's workflow list as the workflows route now answers it, with each status. */
+  const WITH_STATUS = [
+    { id: 'wA', name: 'Researcher', status: 'active' as const },
+    { id: 'wB', name: 'Writer', status: 'active' as const },
+    { id: 'wD', name: 'Drafter', status: 'draft' as const },
+    { id: 'wO', name: 'Night shift', status: 'disabled' as const },
+  ];
+
+  function trigger(id: string, source: Record<string, unknown> | undefined, sourceWorkflowId: string): ChainTriggerItem {
+    return parseChainTrigger({
+      id,
+      sourceWorkflowId,
+      ...(source ? { source } : {}),
+      target: { kind: 'chief-of-staff' },
+      task: `Task ${id}`,
+      timeZone: 'UTC',
+      enabled: true,
+      lastRun: null,
+    }) as ChainTriggerItem;
+  }
+
+  const ACTIVE = trigger('s1', { workflowId: 'wA', name: 'Researcher', status: 'active' }, 'wA');
+  const OFF = trigger('s2', { workflowId: 'wO', name: 'Night shift', status: 'disabled' }, 'wO');
+  const DRAFT = trigger('s3', { workflowId: 'wD', name: 'Drafter', status: 'draft' }, 'wD');
+  const GONE = trigger('s4', { workflowId: 'wG', name: null, status: 'missing' }, 'wG');
+
+  test('the new strings are in all three locales, and the Chinese ones are real and differ from each other', () => {
+    for (const { code, messages } of LOCALES) {
+      for (const key of NEW_KEYS) {
+        const value = readMessage(messages, `schedules.chain.${key}`);
+        assert.ok(value && value.trim().length > 0, `missing ${key} in ${code}`);
+        if (code !== 'en') {
+          assert.ok(/[一-鿿]/.test(value), `${key} is not Chinese in ${code}`);
+          assert.notEqual(value, en(key));
+        }
+      }
+    }
+    for (const key of NEW_KEYS) {
+      assert.notEqual(
+        readMessage(zhTwMessages as Messages, `schedules.chain.${key}`),
+        readMessage(zhCnMessages as Messages, `schedules.chain.${key}`),
+        key,
+      );
+    }
+    // Each says plainly that the trigger will not start until the source workflow is switched on.
+    for (const key of ['source.offNote', 'source.draftNote', 'form.sourceOffWarning', 'form.sourceDraftWarning', 'notice.switchedOnSourceOff']) {
+      assert.match(en(key), /will not start anything until/);
+      assert.match(en(key), /switched on/);
+    }
+    assert.notEqual(en('notice.switchedOnSourceOff'), en('notice.switchedOn'));
+  });
+
+  test('a row shows an amber status line for a switched-off, a draft and a deleted source, and nothing for an active one', () => {
+    const html = render({ data: list([ACTIVE, OFF, DRAFT, GONE], { limit: 5 }), workflows: WITH_STATUS });
+    assert.match(html, /data-testid="chain-trigger-source-status-s2" data-status="disabled"/);
+    assert.ok(has(html, en('source.offNote')));
+    assert.match(html, /data-testid="chain-trigger-source-status-s3" data-status="draft"/);
+    assert.ok(has(html, en('source.draftNote')));
+    // A deleted source keeps the existing test id and note.
+    assert.match(html, /data-testid="chain-trigger-source-gone-s4" data-status="missing"/);
+    assert.ok(has(html, en('source.goneNote')));
+    assert.ok(has(html, en('source.workflowGone')));
+    for (const id of ['s1']) {
+      assert.doesNotMatch(html, new RegExp(`chain-trigger-source-status-${id}`));
+      assert.doesNotMatch(html, new RegExp(`chain-trigger-source-gone-${id}`));
+    }
+    assert.doesNotMatch(html, /chain-trigger-source-gone-s2|chain-trigger-source-gone-s3|chain-trigger-source-status-s4/);
+    // The status line carries the outline warning icon, hidden from screen readers.
+    const line = html.slice(html.indexOf('data-testid="chain-trigger-source-status-s2"'));
+    assert.match(line.slice(0, 600), /<svg[^>]*aria-hidden="true"/);
+    // The rows still show the source names.
+    assert.ok(has(html, 'Workflow: Night shift'));
+    assert.ok(has(html, 'Workflow: Drafter'));
+  });
+
+  test("the gateway's source wins over the page's list: its name and status show even when the list lacks the workflow", () => {
+    const html = render({ data: list([OFF]), workflows: WORKFLOWS });
+    assert.ok(has(html, 'Workflow: Night shift'));
+    assert.match(html, /data-testid="chain-trigger-source-status-s2"/);
+    assert.doesNotMatch(html, /chain-trigger-source-gone-s2/);
+    // A source the gateway calls deleted reads as deleted, even if the list still has it.
+    const gone = render({ data: list([trigger('s5', { workflowId: 'wA', name: null, status: 'missing' }, 'wA')]), workflows: WORKFLOWS });
+    assert.match(gone, /data-testid="chain-trigger-source-gone-s5"/);
+    assert.ok(has(gone, en('source.workflowGone')));
+  });
+
+  test('without source (an older gateway) the row falls back to the workflow list and its status', () => {
+    const older = [trigger('o1', undefined, 'wO'), trigger('o2', undefined, 'wD'), trigger('o3', undefined, 'wA'), trigger('o4', undefined, 'w9')];
+    assert.ok(older.every((entry) => entry.source === null));
+    const html = render({ data: list(older, { limit: 4 }), workflows: WITH_STATUS });
+    assert.match(html, /data-testid="chain-trigger-source-status-o1" data-status="disabled"/);
+    assert.match(html, /data-testid="chain-trigger-source-status-o2" data-status="draft"/);
+    assert.doesNotMatch(html, /chain-trigger-source-(status|gone)-o3/);
+    assert.match(html, /data-testid="chain-trigger-source-gone-o4"/);
+    assert.ok(has(html, 'Workflow: Night shift'));
+    // A list without statuses shows nothing extra for a listed source (today's behaviour).
+    const plain = render({ data: list([trigger('o5', undefined, 'wA')]), workflows: WORKFLOWS });
+    assert.doesNotMatch(plain, /chain-trigger-source-(status|gone)-o5/);
+  });
+
+  test('the form warns under the source picker when the chosen workflow is switched off or not yet on; saving stays possible', () => {
+    const form = (sourceId: string) => ({
+      editingId: null,
+      draft: { ...emptyChainDraft('UTC'), sourceId, task: 'Brief me' },
+      saving: false,
+      errorKey: null,
+    });
+    const off = render({ form: form('wO'), data: list([]), workflows: WITH_STATUS });
+    assert.match(off, /data-testid="chain-trigger-source-warning"/);
+    assert.ok(has(off, en('form.sourceOffWarning')));
+    assert.match(off, /aria-describedby="chain-trigger-source-help chain-trigger-source-warning"/);
+    assert.match(off, /id="chain-trigger-source-warning"/);
+    assert.doesNotMatch(off, /<button[^>]*disabled=""[^>]*data-testid="chain-trigger-save"/);
+    assert.doesNotMatch(off, /data-testid="chain-trigger-form-error"/);
+
+    const draft = render({ form: form('wD'), data: list([]), workflows: WITH_STATUS });
+    assert.ok(has(draft, en('form.sourceDraftWarning')));
+    assert.doesNotMatch(draft, new RegExp(escapeHtml(en('form.sourceOffWarning'))));
+
+    for (const html of [
+      render({ form: form('wA'), data: list([]), workflows: WITH_STATUS }),
+      render({ form: form(''), data: list([]), workflows: WITH_STATUS }),
+      render({ form: form('wA'), data: list([]), workflows: WORKFLOWS }),
+    ]) {
+      assert.doesNotMatch(html, /data-testid="chain-trigger-source-warning"/);
+      assert.match(html, /aria-describedby="chain-trigger-source-help"/);
+    }
+  });
+
+  test("editing a trigger whose list entry has no status warns from the trigger's own source", () => {
+    const listed = [...WORKFLOWS, { id: 'wO', name: 'Night shift' }];
+    const html = render({
+      form: { editingId: 's2', draft: draftFromChainTrigger(OFF), saving: false, errorKey: null },
+      data: list([OFF]),
+      workflows: listed,
+    });
+    assert.match(html, /data-testid="chain-trigger-source-warning"/);
+    assert.ok(has(html, en('form.sourceOffWarning')));
+    // Picking another, active source in the same form clears it.
+    const moved = render({
+      form: { editingId: 's2', draft: { ...draftFromChainTrigger(OFF), sourceId: 'wA' }, saving: false, errorKey: null },
+      data: list([OFF]),
+      workflows: WITH_STATUS,
+    });
+    assert.doesNotMatch(moved, /data-testid="chain-trigger-source-warning"/);
+  });
+
+  test('the switch-on notice for a source that is not on (or gone) is its own amber notice; the others stay as they were', () => {
+    for (const key of ['notice.switchedOnSourceOff', 'notice.switchedOnSourceGone']) {
+      const html = render({ noticeKey: key });
+      assert.match(html, /data-testid="chain-triggers-notice" data-tone="warning"/);
+      assert.ok(has(html, en(key)));
+      assert.match(html, /text-amber-200/);
+    }
+    for (const key of ['notice.saved', 'notice.deleted', 'notice.switchedOn', 'notice.switchedOff']) {
+      const html = render({ noticeKey: key });
+      assert.match(html, /data-testid="chain-triggers-notice"/);
+      assert.doesNotMatch(html, /data-tone="warning"/);
+    }
+  });
+
+  test('the switch handler picks the notice from the answered source, and the save path is unchanged (no new refusal)', () => {
+    const source = readFileSync(new URL('./chain-triggers-section.tsx', import.meta.url), 'utf8');
+    assert.match(source, /setNoticeKey\(chainSwitchNoticeKey\(result\.value\.enabled, chainSourceStatus\(result\.value, workflows\)\)\)/);
+    assert.match(source, /setNoticeKey\('notice\.saved'\)/);
+    // The source status never blocks a save or a switch: no errorKey is set from it.
+    assert.doesNotMatch(source, /errorKey: [^\n]*source(Off|Draft)Warning/);
+  });
+
+  test('the new lines render in Traditional and Simplified Chinese without English chrome', () => {
+    for (const { messages } of LOCALES.filter((locale) => locale.code !== 'en')) {
+      const html = render(
+        {
+          data: list([OFF, DRAFT]),
+          workflows: WITH_STATUS,
+          noticeKey: 'notice.switchedOnSourceOff',
+          form: { editingId: null, draft: { ...emptyChainDraft('UTC'), sourceId: 'wO', task: 'x' }, saving: false, errorKey: null },
+        },
+        messages,
+      );
+      for (const key of ['source.offNote', 'source.draftNote', 'form.sourceOffWarning', 'notice.switchedOnSourceOff']) {
+        assert.ok(has(html, readMessage(messages, `schedules.chain.${key}`) as string), key);
+      }
       assert.doesNotMatch(html, /schedules\.chain\./);
     }
   });

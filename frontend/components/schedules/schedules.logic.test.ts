@@ -17,7 +17,10 @@ import {
   scheduleErrorKey,
   taskPreview,
   toggleDay,
+  type WorkflowOption,
 } from '@/components/schedules/schedules.logic';
+import type { ResultsWorkflowOption } from '@/components/results/results-api';
+import type { CollaborationWorkflowStatus } from '@/components/collaboration/collaboration-workflows';
 
 const backend = (file: string) =>
   readFileSync(new URL(`../../../services/api-gateway/src/${file}`, import.meta.url), 'utf8');
@@ -49,6 +52,21 @@ const SCHEDULE = {
     at: '2026-11-14T07:30:01.000Z',
   },
 };
+
+describe('workflow options (CHAIN-SOURCE-OFF-01)', () => {
+  test('a status is optional, and the option types stay interchangeable with the workflows route status', () => {
+    // Compile-time: the three shapes agree, with and without a status.
+    const status: CollaborationWorkflowStatus = 'disabled';
+    const fromResults: ResultsWorkflowOption = { id: 'w1', name: 'Digest', status };
+    const asOption: WorkflowOption = fromResults;
+    const back: ResultsWorkflowOption = asOption;
+    const plain: WorkflowOption[] = [{ id: 'w2', name: 'Writer' }, back];
+    assert.deepEqual(
+      plain.map((option) => option.status ?? null),
+      [null, 'disabled'],
+    );
+  });
+});
 
 describe('schedules code lists are pinned to the backend source', () => {
   test('error codes match SCHEDULE_ERROR_CODES', () => {

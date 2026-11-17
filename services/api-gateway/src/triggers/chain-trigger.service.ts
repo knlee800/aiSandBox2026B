@@ -7,7 +7,7 @@ import { AgentChainTriggerRun, AgentChainTriggerRunOutcome } from '../entities/a
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { UserAgent } from '../entities/user-agent.entity';
 import { isRunResultToolEnabled } from '../orchestration/collaboration-result-grant';
-import { workflowStatus } from '../orchestration/collaboration-workflow';
+import { WorkflowStatus, workflowStatus } from '../orchestration/collaboration-workflow';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { isChainTriggersEnabled } from './chain-trigger-switch';
 import {
@@ -47,6 +47,18 @@ export const CHAIN_TRIGGER_LIMIT_LOCK_NAMESPACE = 1814;
 /** The schedule target shape (stage-start section 4). */
 export type ChainTriggerTargetView = ScheduleTargetView;
 
+/**
+ * CHAIN-SOURCE-OFF-01: the source workflow, built as the target's workflow
+ * view is. A trigger whose source is not active never fires; the page says so.
+ */
+export interface ChainTriggerSourceView {
+  workflowId: string;
+  /** null when the workflow is gone or no longer the owner's. */
+  name: string | null;
+  /** 'missing' when the workflow is gone or no longer the owner's. */
+  status: WorkflowStatus | 'missing';
+}
+
 export interface ChainTriggerLastRunView {
   sourceRunId: string;
   sourceCompletedAt: string;
@@ -65,6 +77,7 @@ export interface ChainTriggerRunView extends ChainTriggerLastRunView {
 export interface ChainTriggerView {
   id: string;
   sourceWorkflowId: string;
+  source: ChainTriggerSourceView;
   target: ChainTriggerTargetView;
   task: string;
   timeZone: string;
@@ -127,8 +140,13 @@ export class ChainTriggerService {
 
   async list(userId: string): Promise<ChainTriggerListView> {
     const rows = await this.triggers.find({ where: { userId }, order: { createdAt: 'ASC' } });
+    // CHAIN-SOURCE-OFF-01: the source and target workflows in one query.
     const workflowIds = [
-      ...new Set(rows.map((row) => row.workflowId).filter((id): id is string => typeof id === 'string')),
+      ...new Set(
+        rows
+          .flatMap((row) => [row.sourceWorkflowId, row.workflowId])
+          .filter((id): id is string => typeof id === 'string'),
+      ),
     ];
     const workflows = workflowIds.length > 0 ? await this.workflowsFor(userId, workflowIds) : new Map();
     const triggers: ChainTriggerView[] = [];
@@ -161,9 +179,9 @@ export class ChainTriggerService {
       createdAt: now,
       updatedAt: now,
     };
-    const workflow = await this.triggers.manager.transaction(async (manager: EntityManager) => {
+    const { source, workflow } = await this.triggers.manager.transaction(async (manager: EntityManager) => {
       await this.lockOwner(manager, userId);
-      await this.ownSource(manager, userId, input.sourceWorkflowId);
+      const ownedSource = await this.ownSource(manager, userId, input.sourceWorkflowId);
       const found = await this.ownTarget(manager, userId, input.target);
       const repository = manager.getRepository(AgentChainTrigger);
       const count = await repository.count({ where: { userId } });
@@ -175,10 +193,10 @@ export class ChainTriggerService {
       await this.assertNoCycle(manager, userId, row);
       await repository.insert(row);
       await this.audit(manager, CHAIN_TRIGGER_AUDIT_EVENTS.created, row);
-      return found;
+      return { source: ownedSource, workflow: found };
     });
     this.logger.log(`chain trigger created ${logParts(row)}`);
-    return this.view(row, workflowMap(workflow), null);
+    return this.view(row, workflowMap(source, workflow), null);
   }
 
   async update(userId: string, id: string, body: unknown): Promise<ChainTriggerView> {
@@ -187,7 +205,7 @@ export class ChainTriggerService {
     }
     const patch = readChainTriggerPatch(body);
     const edgeChange = patch.sourceWorkflowId !== undefined || patch.target !== undefined;
-    const { row, workflow } = await this.triggers.manager.transaction(async (manager: EntityManager) => {
+    const { row, source, workflow } = await this.triggers.manager.transaction(async (manager: EntityManager) => {
       if (edgeChange) {
         // Stage-start section 3: the cycle check of a source or target
         // change runs under the same per-owner lock as the limit.
@@ -207,9 +225,8 @@ export class ChainTriggerService {
       // The same-workflow rule on the merged row: a source change onto the
       // stored target, or a target change onto the stored source.
       assertNotSameWorkflow(sourceWorkflowId, target);
-      if (patch.sourceWorkflowId !== undefined) {
-        await this.ownSource(manager, userId, patch.sourceWorkflowId);
-      }
+      const ownedSource =
+        patch.sourceWorkflowId !== undefined ? await this.ownSource(manager, userId, patch.sourceWorkflowId) : null;
       const found = patch.target ? await this.ownTarget(manager, userId, patch.target) : null;
 
       const now = new Date();
@@ -246,13 +263,20 @@ export class ChainTriggerService {
         },
       );
       await this.audit(manager, CHAIN_TRIGGER_AUDIT_EVENTS.updated, next);
-      return { row: next, workflow: found };
+      return { row: next, source: ownedSource, workflow: found };
     });
     this.logger.log(`chain trigger updated ${logParts(row)}`);
-    const workflows =
-      workflow !== null || row.workflowId === null
-        ? workflowMap(workflow)
-        : await this.workflowsFor(userId, [row.workflowId]);
+    // The source and target the change did not check are read in one query
+    // (CHAIN-SOURCE-OFF-01), so a stored source shows its status now.
+    const workflows = workflowMap(source, workflow);
+    const unread = [row.sourceWorkflowId, row.workflowId].filter(
+      (workflowId): workflowId is string => workflowId !== null && !workflows.has(workflowId),
+    );
+    if (unread.length > 0) {
+      for (const [workflowId, found] of await this.workflowsFor(userId, [...new Set(unread)])) {
+        workflows.set(workflowId, found);
+      }
+    }
     return this.view(row, workflows, await this.lastRun(id, userId));
   }
 
@@ -314,9 +338,13 @@ export class ChainTriggerService {
     }
   }
 
-  /** The owner's own, not deleted workflow as the source, or 404. */
-  private async ownSource(manager: EntityManager, userId: string, workflowId: string): Promise<void> {
-    await this.ownWorkflow(manager, userId, workflowId);
+  /**
+   * The owner's own, not deleted workflow as the source, or 404. Any status is
+   * accepted (CHAIN-SOURCE-OFF-01: a switched-off source is warned about on
+   * the page, not refused); the summary feeds the answer's source view.
+   */
+  private async ownSource(manager: EntityManager, userId: string, workflowId: string): Promise<WorkflowSummary> {
+    return this.ownWorkflow(manager, userId, workflowId);
   }
 
   /** The owner's own, not deleted workflow as the target, or 404. null for the Chief of Staff. */
@@ -363,6 +391,7 @@ export class ChainTriggerService {
     return {
       id: row.id,
       sourceWorkflowId: row.sourceWorkflowId,
+      source: sourceView(row.sourceWorkflowId, workflows),
       target: targetView(row.targetKind, row.workflowId, workflows),
       task: row.task,
       timeZone: row.timeZone,
@@ -390,6 +419,16 @@ export class ChainTriggerService {
       occurredAt: new Date(),
     });
   }
+}
+
+/** The source workflow's id, name and status; name null and status 'missing' when it is gone. */
+function sourceView(workflowId: string, workflows: Map<string, WorkflowSummary>): ChainTriggerSourceView {
+  const workflow = workflows.get(workflowId);
+  return {
+    workflowId,
+    name: workflow ? workflow.name : null,
+    status: workflow ? workflowStatus(workflow.status) : 'missing',
+  };
 }
 
 function targetView(
@@ -423,8 +462,12 @@ function runView(run: AgentChainTriggerRun): ChainTriggerLastRunView {
   };
 }
 
-function workflowMap(workflow: WorkflowSummary | null): Map<string, WorkflowSummary> {
-  return workflow ? new Map([[workflow.id, workflow]]) : new Map();
+function workflowMap(...found: Array<WorkflowSummary | null>): Map<string, WorkflowSummary> {
+  const map = new Map<string, WorkflowSummary>();
+  for (const workflow of found) {
+    if (workflow) map.set(workflow.id, workflow);
+  }
+  return map;
 }
 
 /** The ids and the target kind: never the task or a workflow name. */

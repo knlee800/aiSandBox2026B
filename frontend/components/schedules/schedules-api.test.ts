@@ -113,7 +113,7 @@ describe('schedules api', () => {
 
   test('loadWorkflowOptions reuses the workflow list and falls back to empty', async () => {
     const { fetcher, calls } = stub(200, { workflows: [{ id: 'w1', name: 'Digest', role: 'r', status: 'enabled' }] });
-    assert.deepEqual(await loadWorkflowOptions(fetcher), [{ id: 'w1', name: 'Digest' }]);
+    assert.deepEqual(await loadWorkflowOptions(fetcher), [{ id: 'w1', name: 'Digest', status: 'disabled' }]);
     assert.equal(calls[0].path, '/api/collaboration/workflows');
     assert.deepEqual(await loadWorkflowOptions(failing), []);
   });

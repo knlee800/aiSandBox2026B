@@ -5,7 +5,13 @@ import {
   CHAIN_TRIGGER_ERROR_CODES,
   CHAIN_TRIGGER_OUTCOMES,
   CHAIN_TRIGGER_SKIP_REASONS,
+  CHAIN_WARNING_NOTICE_KEYS,
+  chainDraftSourceStatus,
   chainLimitReached,
+  chainSourceName,
+  chainSourceNotOn,
+  chainSourceStatus,
+  chainSwitchNoticeKey,
   chainOutcomeKey,
   chainReasonKey,
   chainSameWorkflow,
@@ -223,6 +229,94 @@ describe('chain trigger loop check mirrors the gateway rule', () => {
     assert.equal(chainWouldLoop([aToB], { sourceId: 'wA', targetId: 'wC' }, 'c1'), false);
     assert.equal(chainWouldLoop([aToB, bToC], { sourceId: 'wB', targetId: 'wA' }, 'c2'), true);
     assert.equal(chainWouldLoop([aToB, bToC], { sourceId: 'wB', targetId: 'wC' }, 'c2'), false);
+  });
+});
+
+describe('chain trigger source status (CHAIN-SOURCE-OFF-01)', () => {
+  const WORKFLOWS = [
+    { id: 'wA', name: 'Researcher', status: 'active' as const },
+    { id: 'wD', name: 'Drafted', status: 'draft' as const },
+    { id: 'wO', name: 'Switched off', status: 'disabled' as const },
+    { id: 'wU', name: 'No status' },
+  ];
+
+  test('parseChainTrigger reads the source view for each status, and null when absent or for another id', () => {
+    for (const status of ['active', 'draft', 'disabled'] as const) {
+      assert.deepEqual(item({ source: { workflowId: 'wA', name: 'Researcher', status } }).source, {
+        workflowId: 'wA',
+        name: 'Researcher',
+        status,
+      });
+    }
+    assert.deepEqual(item({ source: { workflowId: 'wA', name: null, status: 'missing' } }).source, {
+      workflowId: 'wA',
+      name: null,
+      status: 'missing',
+    });
+    // An unknown status fails closed, as the workflows route reads one.
+    assert.equal(item({ source: { workflowId: 'wA', name: 'Researcher', status: 'archived' } }).source?.status, 'disabled');
+    assert.equal(item().source, null);
+    assert.equal(item({ source: null }).source, null);
+    assert.equal(item({ source: 'wA' }).source, null);
+    assert.equal(item({ source: { workflowId: 'wZ', name: 'Other', status: 'active' } }).source, null);
+    // A malformed source never drops the trigger.
+    assert.equal(item({ source: { nope: true } }).sourceWorkflowId, 'wA');
+  });
+
+  test('chainSourceStatus prefers the gateway source, and falls back to the workflow list without it', () => {
+    const off = item({ source: { workflowId: 'wA', name: 'Researcher', status: 'disabled' } });
+    // The gateway's answer wins over the list.
+    assert.equal(chainSourceStatus(off, WORKFLOWS), 'disabled');
+    assert.equal(chainSourceStatus(item({ source: { workflowId: 'wA', name: null, status: 'missing' } }), WORKFLOWS), 'missing');
+    // Without it: the list's status, 'active' when the list carries none, 'missing' when not listed.
+    assert.equal(chainSourceStatus(item(), WORKFLOWS), 'active');
+    assert.equal(chainSourceStatus(item({ sourceWorkflowId: 'wD' }), WORKFLOWS), 'draft');
+    assert.equal(chainSourceStatus(item({ sourceWorkflowId: 'wO' }), WORKFLOWS), 'disabled');
+    assert.equal(chainSourceStatus(item({ sourceWorkflowId: 'wU' }), WORKFLOWS), 'active');
+    assert.equal(chainSourceStatus(item({ sourceWorkflowId: 'w9' }), WORKFLOWS), 'missing');
+    assert.equal(chainSourceStatus(item(), [{ id: 'wA', name: 'Researcher' }]), 'active');
+  });
+
+  test('chainSourceName uses the gateway name, then the list, and null for a gone source', () => {
+    assert.equal(chainSourceName(item({ source: { workflowId: 'wA', name: 'Renamed', status: 'disabled' } }), WORKFLOWS), 'Renamed');
+    assert.equal(chainSourceName(item({ source: { workflowId: 'wA', name: 'Renamed', status: 'disabled' } }), []), 'Renamed');
+    assert.equal(chainSourceName(item(), WORKFLOWS), 'Researcher');
+    assert.equal(chainSourceName(item({ sourceWorkflowId: 'w9' }), WORKFLOWS), null);
+    assert.equal(chainSourceName(item({ source: { workflowId: 'wA', name: null, status: 'missing' } }), WORKFLOWS), null);
+  });
+
+  test('chainDraftSourceStatus reads the chosen workflow from the list, with the saved source as a fallback', () => {
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, ''), null);
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wA'), 'active');
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wD'), 'draft');
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wO'), 'disabled');
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wU'), null);
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'w9'), null);
+    const saved = { workflowId: 'wU', name: 'No status', status: 'disabled' as const };
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wU', saved), 'disabled');
+    // The saved source answers only for itself, and the list's own status wins.
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wA', { ...saved, workflowId: 'wA' }), 'active');
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wU', { ...saved, workflowId: 'wO' }), null);
+    assert.equal(chainDraftSourceStatus(WORKFLOWS, 'wU', { ...saved, status: 'missing' }), null);
+  });
+
+  test('chainSourceNotOn is true for draft and disabled only', () => {
+    assert.equal(chainSourceNotOn('draft'), true);
+    assert.equal(chainSourceNotOn('disabled'), true);
+    assert.equal(chainSourceNotOn('active'), false);
+    assert.equal(chainSourceNotOn('missing'), false);
+    assert.equal(chainSourceNotOn(null), false);
+  });
+
+  test('chainSwitchNoticeKey: a switch-on with a source that is not on (or gone) gets its own notice', () => {
+    assert.equal(chainSwitchNoticeKey(true, 'active'), 'notice.switchedOn');
+    assert.equal(chainSwitchNoticeKey(true, 'disabled'), 'notice.switchedOnSourceOff');
+    assert.equal(chainSwitchNoticeKey(true, 'draft'), 'notice.switchedOnSourceOff');
+    assert.equal(chainSwitchNoticeKey(true, 'missing'), 'notice.switchedOnSourceGone');
+    for (const status of ['active', 'draft', 'disabled', 'missing'] as const) {
+      assert.equal(chainSwitchNoticeKey(false, status), 'notice.switchedOff');
+    }
+    assert.deepEqual([...CHAIN_WARNING_NOTICE_KEYS], ['notice.switchedOnSourceOff', 'notice.switchedOnSourceGone']);
   });
 });
 

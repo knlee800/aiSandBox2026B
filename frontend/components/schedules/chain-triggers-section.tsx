@@ -23,10 +23,16 @@ import {
 } from './chain-triggers-api';
 import {
   CHAIN_TRIGGER_TASK_MAX_CHARS,
+  CHAIN_WARNING_NOTICE_KEYS,
+  chainDraftSourceStatus,
   chainLimitReached,
   chainOutcomeKey,
   chainReasonKey,
   chainSameWorkflow,
+  chainSourceName,
+  chainSourceNotOn,
+  chainSourceStatus,
+  chainSwitchNoticeKey,
   chainWouldLoop,
   draftFromChainTrigger,
   draftToBody,
@@ -114,9 +120,9 @@ function Banner({ testId, text }: { testId: string; text: string }) {
   );
 }
 
-function Refusal({ testId, text }: { testId: string; text: string }) {
+function Refusal({ testId, text, id }: { testId: string; text: string; id?: string }) {
   return (
-    <p className="mt-2 flex items-start gap-2 text-sm text-amber-200" role="status" data-testid={testId}>
+    <p id={id} className="mt-2 flex items-start gap-2 text-sm text-amber-200" role="status" data-testid={testId}>
       <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
       <span className="break-words">{text}</span>
     </p>
@@ -186,10 +192,40 @@ function targetLabel(t: (key: string) => string, trigger: ChainTriggerItem): str
   return workflowLabel(t, trigger.target.name ?? '');
 }
 
-/** The source's name from the workflows the page already loads, or the deleted-workflow label. */
-function sourceLabel(t: (key: string) => string, workflows: WorkflowOption[], sourceId: string): string {
-  const found = workflows.find((workflow) => workflow.id === sourceId);
-  return found ? workflowLabel(t, found.name) : t('source.workflowGone');
+/**
+ * The source's name from the trigger's `source` (or, from an older gateway,
+ * the workflows the page already loads), or the deleted-workflow label.
+ */
+function sourceLabel(t: (key: string) => string, workflows: WorkflowOption[], trigger: ChainTriggerItem): string {
+  const name = chainSourceName(trigger, workflows);
+  return name !== null ? workflowLabel(t, name) : t('source.workflowGone');
+}
+
+/**
+ * CHAIN-SOURCE-OFF-01: the amber line under a trigger whose source will keep it
+ * from firing (deleted, switched off, or not switched on yet). Nothing for an
+ * active source.
+ */
+function SourceStatusLine({
+  t,
+  trigger,
+  workflows,
+}: {
+  t: (key: string) => string;
+  trigger: ChainTriggerItem;
+  workflows: WorkflowOption[];
+}): React.ReactElement | null {
+  const status = chainSourceStatus(trigger, workflows);
+  if (status !== 'missing' && !chainSourceNotOn(status)) return null;
+  const testId =
+    status === 'missing' ? `chain-trigger-source-gone-${trigger.id}` : `chain-trigger-source-status-${trigger.id}`;
+  const text = t(status === 'missing' ? 'source.goneNote' : status === 'disabled' ? 'source.offNote' : 'source.draftNote');
+  return (
+    <p className="mt-1 flex items-start gap-1.5 text-xs text-amber-200" data-testid={testId} data-status={status}>
+      <ExclamationTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 break-words">{text}</span>
+    </p>
+  );
 }
 
 export function ChainTriggerForm(props: {
@@ -207,6 +243,12 @@ export function ChainTriggerForm(props: {
   const set = (patch: Partial<ChainTriggerDraft>) => onDraftChange({ ...draft, ...patch });
   const sameWorkflow = chainSameWorkflow(draft);
   const loops = chainWouldLoop(triggers, draft, editingId);
+  // CHAIN-SOURCE-OFF-01: warn, not refuse, when the chosen source is not switched on.
+  const saved = editingId ? triggers.find((entry) => entry.id === editingId)?.source ?? null : null;
+  const sourceStatus = chainDraftSourceStatus(workflows, draft.sourceId, saved);
+  const sourceWarning = chainSourceNotOn(sourceStatus)
+    ? t(sourceStatus === 'disabled' ? 'form.sourceOffWarning' : 'form.sourceDraftWarning')
+    : null;
   return (
     <form
       className="flex min-w-0 flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5"
@@ -234,6 +276,7 @@ export function ChainTriggerForm(props: {
           value={draft.sourceId}
           disabled={saving}
           onChange={(event) => set({ sourceId: event.target.value })}
+          aria-describedby={sourceWarning ? 'chain-trigger-source-help chain-trigger-source-warning' : 'chain-trigger-source-help'}
           data-testid="chain-trigger-source"
         >
           <option value="">{t('form.sourcePlaceholder')}</option>
@@ -246,7 +289,12 @@ export function ChainTriggerForm(props: {
             <option value={draft.sourceId}>{t('source.workflowGone')}</option>
           ) : null}
         </select>
-        <p className="mt-1 text-xs text-slate-400">{t('form.sourceHelp')}</p>
+        <p id="chain-trigger-source-help" className="mt-1 text-xs text-slate-400">
+          {t('form.sourceHelp')}
+        </p>
+        {sourceWarning ? (
+          <Refusal id="chain-trigger-source-warning" testId="chain-trigger-source-warning" text={sourceWarning} />
+        ) : null}
       </div>
 
       <div>
@@ -405,7 +453,6 @@ function TriggerRow(props: ChainTriggersSectionViewProps & { trigger: ChainTrigg
   const busy = busyId === trigger.id;
   const asking = confirmDeleteId === trigger.id;
   const historyOpen = history?.triggerId === trigger.id;
-  const sourceGone = !workflows.some((workflow) => workflow.id === trigger.sourceWorkflowId);
   return (
     <li
       className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5"
@@ -417,7 +464,7 @@ function TriggerRow(props: ChainTriggersSectionViewProps & { trigger: ChainTrigg
             className="min-w-0 break-words text-sm font-semibold text-white"
             data-testid={`chain-trigger-source-${trigger.id}`}
           >
-            {sourceLabel(t, workflows, trigger.sourceWorkflowId)}
+            {sourceLabel(t, workflows, trigger)}
           </h3>
           <StatusPill on={trigger.enabled} t={t} />
         </div>
@@ -434,11 +481,7 @@ function TriggerRow(props: ChainTriggersSectionViewProps & { trigger: ChainTrigg
           {trigger.enabled ? t('row.switchOff') : t('row.switchOn')}
         </button>
       </div>
-      {sourceGone ? (
-        <p className="mt-1 text-xs text-amber-200" data-testid={`chain-trigger-source-gone-${trigger.id}`}>
-          {t('source.goneNote')}
-        </p>
-      ) : null}
+      <SourceStatusLine t={t} trigger={trigger} workflows={workflows} />
       <p className="mt-2 break-words text-sm text-slate-200" data-testid={`chain-trigger-task-${trigger.id}`}>
         {taskPreview(trigger.task)}
       </p>
@@ -622,10 +665,22 @@ export function ChainTriggersSectionView(props: ChainTriggersSectionViewProps): 
           ) : null}
 
           {props.noticeKey ? (
-            <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="chain-triggers-notice">
-              <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
-              <span className="break-words">{t(props.noticeKey)}</span>
-            </p>
+            CHAIN_WARNING_NOTICE_KEYS.includes(props.noticeKey) ? (
+              <p
+                className="flex items-start gap-2 text-sm text-amber-200"
+                role="status"
+                data-testid="chain-triggers-notice"
+                data-tone="warning"
+              >
+                <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                <span className="break-words">{t(props.noticeKey)}</span>
+              </p>
+            ) : (
+              <p className="flex items-start gap-2 text-sm text-emerald-200" role="status" data-testid="chain-triggers-notice">
+                <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
+                <span className="break-words">{t(props.noticeKey)}</span>
+              </p>
+            )
           ) : null}
 
           {form ? (
@@ -766,14 +821,16 @@ export default function ChainTriggersSection({
         if (errorKey) setRowError({ triggerId: trigger.id, errorKey });
         return;
       }
-      setNoticeKey(result.value.enabled ? 'notice.switchedOn' : 'notice.switchedOff');
+      // CHAIN-SOURCE-OFF-01: switched on with a source that is not on, it still
+      // switches on, and the notice says it will not fire until the source is on.
+      setNoticeKey(chainSwitchNoticeKey(result.value.enabled, chainSourceStatus(result.value, workflows)));
       setData((current) =>
         current
           ? { ...current, triggers: current.triggers.map((entry) => (entry.id === trigger.id ? result.value : entry)) }
           : current,
       );
     },
-    [fetcher, handleFailure],
+    [fetcher, handleFailure, workflows],
   );
 
   const onConfirmDelete = useCallback(

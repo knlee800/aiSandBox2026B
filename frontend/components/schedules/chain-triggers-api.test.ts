@@ -113,6 +113,54 @@ describe('chain triggers api', () => {
     });
   });
 
+  test('CHAIN-SOURCE-OFF-01: the list, a save and a switch-on carry the source view; absent, it reads as null', async () => {
+    const off = { workflowId: 'wA', name: 'Researcher', status: 'disabled' };
+    const listed = await loadChainTriggers(
+      stub(200, {
+        enabled: true,
+        runsEnabled: true,
+        resultToolEnabled: true,
+        limit: 3,
+        triggers: [
+          { ...TRIGGER, source: off },
+          { ...TRIGGER, id: 'c2', sourceWorkflowId: 'wD', source: { workflowId: 'wD', name: 'Drafted', status: 'draft' } },
+          { ...TRIGGER, id: 'c3', sourceWorkflowId: 'wG', source: { workflowId: 'wG', name: null, status: 'missing' } },
+          { ...TRIGGER, id: 'c4' },
+        ],
+      }).fetcher,
+    );
+    assert.equal(listed.type, 'ok');
+    const triggers = listed.type === 'ok' ? listed.value.triggers : [];
+    assert.deepEqual(
+      triggers.map((trigger) => trigger.source),
+      [
+        { workflowId: 'wA', name: 'Researcher', status: 'disabled' },
+        { workflowId: 'wD', name: 'Drafted', status: 'draft' },
+        { workflowId: 'wG', name: null, status: 'missing' },
+        null,
+      ],
+    );
+    // sourceWorkflowId is still read as before.
+    assert.deepEqual(
+      triggers.map((trigger) => trigger.sourceWorkflowId),
+      ['wA', 'wD', 'wG', 'wA'],
+    );
+
+    // A save with a switched-off source is an ordinary 201 (warn, not refuse).
+    const draft = draftToBody({ ...emptyChainDraft('UTC'), sourceId: 'wA', task: 'Prepare me' });
+    assert.ok(draft.ok);
+    const created = await createChainTrigger(draft.body, stub(201, { ...TRIGGER, source: off }).fetcher);
+    assert.equal(created.type === 'ok' && created.value.source?.status, 'disabled');
+
+    // A switch-on with a switched-off source is an ordinary 200.
+    const { fetcher, calls } = stub(200, { ...TRIGGER, enabled: true, source: off });
+    const on = await updateChainTrigger('c1', { enabled: true }, fetcher);
+    assert.equal(on.type, 'ok');
+    assert.equal(on.type === 'ok' && on.value.enabled, true);
+    assert.deepEqual(on.type === 'ok' && on.value.source, { workflowId: 'wA', name: 'Researcher', status: 'disabled' });
+    assert.deepEqual(calls, [{ path: '/api/chain-triggers/c1', method: 'PATCH', body: { enabled: true } }]);
+  });
+
   test('deleteChainTrigger uses DELETE', async () => {
     const { fetcher, calls } = stub(200, { id: 'c1', deleted: true });
     assert.deepEqual(await deleteChainTrigger('c1', fetcher), { type: 'ok', value: null });

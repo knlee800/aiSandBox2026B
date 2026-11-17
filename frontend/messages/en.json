@@ -2445,7 +2445,9 @@
         "saved": "Workflow trigger saved.",
         "deleted": "Workflow trigger deleted.",
         "switchedOn": "Workflow trigger switched on.",
-        "switchedOff": "Workflow trigger switched off."
+        "switchedOff": "Workflow trigger switched off.",
+        "switchedOnSourceOff": "Workflow trigger switched on, but it will not start anything until its source workflow is switched on.",
+        "switchedOnSourceGone": "Workflow trigger switched on, but its source workflow no longer exists, so it cannot start anything."
       },
       "target": {
         "chiefOfStaff": "Chief of Staff",
@@ -2454,7 +2456,9 @@
       },
       "source": {
         "workflowGone": "(deleted workflow)",
-        "goneNote": "The source workflow no longer exists, so this trigger cannot start anything. Edit it to choose another workflow, or delete it."
+        "goneNote": "The source workflow no longer exists, so this trigger cannot start anything. Edit it to choose another workflow, or delete it.",
+        "offNote": "The source workflow is switched off, so this trigger will not start anything until that workflow is switched on.",
+        "draftNote": "The source workflow has not been switched on yet, so this trigger will not start anything until that workflow is switched on."
       },
       "row": {
         "on": "On",
@@ -2481,6 +2485,8 @@
         "source": "When this workflow finishes",
         "sourcePlaceholder": "Choose a workflow",
         "sourceHelp": "A run of this workflow that finishes normally counts, however it was started. Test runs do not.",
+        "sourceOffWarning": "This workflow is switched off. You can still save, but the trigger will not start anything until the workflow is switched on.",
+        "sourceDraftWarning": "This workflow has not been switched on yet. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "target": "Then start",
         "loopRule": "A chain cannot loop back: a trigger is refused if it would lead back to a workflow that already starts it.",
         "task": "Task",

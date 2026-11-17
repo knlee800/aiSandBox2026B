@@ -3,6 +3,7 @@ import {
   SCHEDULE_SKIP_REASONS,
   browserTimeZone,
   type ScheduleTarget,
+  type WorkflowOption,
 } from './schedules.logic';
 
 /**
@@ -62,9 +63,21 @@ export interface ChainTriggerRun extends ChainTriggerLastRun {
   id: string;
 }
 
+/** CHAIN-SOURCE-OFF-01: a source workflow's status; 'missing' when it is deleted or not the owner's. */
+export type ChainSourceStatus = 'active' | 'draft' | 'disabled' | 'missing';
+
+/** The trigger's `source` view (CHAIN-SOURCE-OFF-01), built by the gateway as the target's is. */
+export interface ChainTriggerSource {
+  workflowId: string;
+  name: string | null;
+  status: ChainSourceStatus;
+}
+
 export interface ChainTriggerItem {
   id: string;
   sourceWorkflowId: string;
+  /** null when the gateway did not send it (an older gateway): the page then uses its workflow list. */
+  source: ChainTriggerSource | null;
   target: ScheduleTarget;
   task: string;
   timeZone: string;
@@ -119,6 +132,22 @@ function readTarget(value: unknown): ScheduleTarget | null {
   return null;
 }
 
+/**
+ * The source view, or null when it is absent or not for this trigger's source.
+ * An unknown status reads as disabled, as the workflows route reads one (fail
+ * closed: the page warns rather than says nothing).
+ */
+function readSource(value: unknown, sourceWorkflowId: string): ChainTriggerSource | null {
+  if (!isRecord(value) || value.workflowId !== sourceWorkflowId) return null;
+  const missing = value.status === 'missing';
+  const status: ChainSourceStatus = missing
+    ? 'missing'
+    : value.status === 'active' || value.status === 'draft'
+      ? value.status
+      : 'disabled';
+  return { workflowId: sourceWorkflowId, name: missing ? null : readText(value.name), status };
+}
+
 function readLastRun(value: unknown): ChainTriggerLastRun | null {
   if (!isRecord(value) || typeof value.localDate !== 'string' || typeof value.outcome !== 'string') {
     return null;
@@ -152,6 +181,7 @@ export function parseChainTrigger(value: unknown): ChainTriggerItem | null {
   return {
     id: value.id,
     sourceWorkflowId: value.sourceWorkflowId,
+    source: readSource(value.source, value.sourceWorkflowId),
     target,
     task: value.task,
     timeZone: value.timeZone,
@@ -302,3 +332,61 @@ export function draftToBody(
 export function chainLimitReached(list: ChainTriggerList): boolean {
   return list.triggers.length >= list.limit;
 }
+
+/**
+ * CHAIN-SOURCE-OFF-01: the saved trigger's source status. The gateway's
+ * `source` wins; without it (an older gateway) the page's workflow list
+ * decides: absent there is 'missing', present without a status is 'active'
+ * (today's behaviour: nothing shown).
+ */
+export function chainSourceStatus(
+  trigger: Pick<ChainTriggerItem, 'sourceWorkflowId' | 'source'>,
+  workflows: readonly WorkflowOption[],
+): ChainSourceStatus {
+  if (trigger.source) return trigger.source.status;
+  const found = workflows.find((workflow) => workflow.id === trigger.sourceWorkflowId);
+  return found ? found.status ?? 'active' : 'missing';
+}
+
+/** The saved trigger's source name, from the gateway or the workflow list; null when it is gone. */
+export function chainSourceName(
+  trigger: Pick<ChainTriggerItem, 'sourceWorkflowId' | 'source'>,
+  workflows: readonly WorkflowOption[],
+): string | null {
+  if (chainSourceStatus(trigger, workflows) === 'missing') return null;
+  const listed = workflows.find((workflow) => workflow.id === trigger.sourceWorkflowId);
+  return trigger.source?.name ?? listed?.name ?? null;
+}
+
+/**
+ * The status of the source chosen in the form, from the page's workflow list.
+ * When the list carries no status, the saved trigger's own `source` answers for
+ * its saved source. null when nothing is chosen, the workflow is not listed
+ * (the picker's deleted label covers that), or the status is unknown.
+ */
+export function chainDraftSourceStatus(
+  workflows: readonly WorkflowOption[],
+  sourceId: string,
+  saved: ChainTriggerSource | null = null,
+): ChainSourceStatus | null {
+  if (sourceId === '') return null;
+  const found = workflows.find((workflow) => workflow.id === sourceId);
+  if (!found) return null;
+  if (found.status) return found.status;
+  return saved && saved.workflowId === sourceId && saved.status !== 'missing' ? saved.status : null;
+}
+
+/** True for a source that exists but is not switched on: the trigger will not fire until it is. */
+export function chainSourceNotOn(status: ChainSourceStatus | null): status is 'draft' | 'disabled' {
+  return status === 'draft' || status === 'disabled';
+}
+
+/** The notice key after a switch: switched on with a source that is not on (or gone) says it will not fire. */
+export function chainSwitchNoticeKey(enabled: boolean, sourceStatus: ChainSourceStatus): string {
+  if (!enabled) return 'notice.switchedOff';
+  if (sourceStatus === 'missing') return 'notice.switchedOnSourceGone';
+  return chainSourceNotOn(sourceStatus) ? 'notice.switchedOnSourceOff' : 'notice.switchedOn';
+}
+
+/** The notices that carry a warning (shown amber, not as a success). */
+export const CHAIN_WARNING_NOTICE_KEYS: readonly string[] = ['notice.switchedOnSourceOff', 'notice.switchedOnSourceGone'];

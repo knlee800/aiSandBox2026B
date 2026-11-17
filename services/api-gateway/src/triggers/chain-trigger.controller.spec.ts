@@ -252,10 +252,11 @@ describe('ChainTriggerController (TRIGGER-CHAIN-01 S1)', () => {
         .send(triggerBody({ target: { kind: 'workflow', workflowId: WF_B } }))
         .expect(201);
       expect(Object.keys(created.body).sort()).toEqual(
-        ['createdAt', 'enabled', 'id', 'lastRun', 'sourceWorkflowId', 'target', 'task', 'timeZone', 'updatedAt'].sort(),
+        ['createdAt', 'enabled', 'id', 'lastRun', 'source', 'sourceWorkflowId', 'target', 'task', 'timeZone', 'updatedAt'].sort(),
       );
       expect(created.body).toMatchObject({
         sourceWorkflowId: WF_A,
+        source: { workflowId: WF_A, name: 'Research desk', status: 'active' },
         target: { kind: 'workflow', workflowId: WF_B, name: 'Weekly digest', status: 'active' },
         task: `${MARKER} summarise it`,
         timeZone: 'Asia/Taipei',
@@ -275,6 +276,7 @@ describe('ChainTriggerController (TRIGGER-CHAIN-01 S1)', () => {
       expect(changed.body).toMatchObject({
         id,
         sourceWorkflowId: WF_A,
+        source: { workflowId: WF_A, name: 'Research desk', status: 'active' },
         target: { kind: 'chief-of-staff' },
         timeZone: 'Europe/London',
         enabled: false,
@@ -453,6 +455,44 @@ describe('ChainTriggerController (TRIGGER-CHAIN-01 S1)', () => {
       expect((await patch({ userId: OTHER })).body.code).toBe('chain_trigger_unknown_field');
       expect(snapshot()).toBe(before);
     });
+  });
+
+  it('CHAIN-SOURCE-OFF-01: a switched-off or draft source is saved and switched on (no refusal); the answers carry its status', async () => {
+    const WF_OFF = '3ddddddd-3333-4333-8333-333333333333';
+    const WF_DRAFT = '3eeeeeee-3333-4333-8333-333333333333';
+    store.workflows.rows.push(
+      { id: WF_OFF, userId: OWNER, name: 'Switched off flow', status: 'disabled', deletedAt: null } as UserAgent,
+      { id: WF_DRAFT, userId: OWNER, name: 'Draft flow', status: 'draft', deletedAt: null } as UserAgent,
+    );
+    const owner = as('owner-token');
+    const created = await owner
+      .post('/api/chain-triggers')
+      .send(triggerBody({ sourceWorkflowId: WF_OFF, enabled: false }))
+      .expect(201);
+    expect(created.body.sourceWorkflowId).toBe(WF_OFF);
+    expect(created.body.source).toEqual({ workflowId: WF_OFF, name: 'Switched off flow', status: 'disabled' });
+
+    const on = await owner.patch(`/api/chain-triggers/${created.body.id}`).send({ enabled: true }).expect(200);
+    expect(on.body).toMatchObject({
+      enabled: true,
+      sourceWorkflowId: WF_OFF,
+      source: { workflowId: WF_OFF, name: 'Switched off flow', status: 'disabled' },
+    });
+
+    const draft = await owner.post('/api/chain-triggers').send(triggerBody({ sourceWorkflowId: WF_DRAFT })).expect(201);
+    expect(draft.body.source).toEqual({ workflowId: WF_DRAFT, name: 'Draft flow', status: 'draft' });
+
+    store.workflows.rows.find((row) => row.id === WF_OFF)!.deletedAt = new Date();
+    const listed = await owner.get('/api/chain-triggers').expect(200);
+    expect(listed.body.triggers.map((trigger: { source: unknown }) => trigger.source)).toEqual([
+      { workflowId: WF_OFF, name: null, status: 'missing' },
+      { workflowId: WF_DRAFT, name: 'Draft flow', status: 'draft' },
+    ]);
+    expect(store.triggers.rows.map((row) => row.enabled)).toEqual([true, true]);
+    for (const secret of ['Switched off flow', 'Draft flow', MARKER]) {
+      expect(JSON.stringify(store.audit.rows)).not.toContain(secret);
+      expect(logs.join('\n')).not.toContain(secret);
+    }
   });
 
   it('a save that closes a cycle is 409 chain_trigger_cycle, on create and on change', async () => {

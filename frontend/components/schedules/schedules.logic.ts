@@ -84,6 +84,8 @@ export interface SchedulesList {
 export interface WorkflowOption {
   id: string;
   name: string;
+  /** CHAIN-SOURCE-OFF-01: passed through from the workflows route; absent when unknown. */
+  status?: 'active' | 'draft' | 'disabled';
 }
 
 /** The form's state. `targetId` is '' for the Chief of Staff, else a workflow id. */

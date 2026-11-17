@@ -273,9 +273,31 @@ describe('results api', () => {
 
   test('the workflow filter options come from the workflows route; failure leaves none', async () => {
     const ok = stub(200, { workflows: [{ id: 'w1', name: 'Digest', status: 'active' }, { id: '', name: 'x' }] });
-    assert.deepEqual(await loadResultsWorkflows(ok.fetcher), [{ id: 'w1', name: 'Digest' }]);
+    assert.deepEqual(await loadResultsWorkflows(ok.fetcher), [{ id: 'w1', name: 'Digest', status: 'active' }]);
     assert.deepEqual(ok.calls, [{ path: '/api/collaboration/workflows', method: 'GET' }]);
     assert.deepEqual(await loadResultsWorkflows(stub(403, {}).fetcher), []);
     assert.deepEqual(await loadResultsWorkflows(throwing), []);
+  });
+
+  test('CHAIN-SOURCE-OFF-01: each option carries the status the workflows route answers', async () => {
+    const ok = stub(200, {
+      workflows: [
+        { id: 'w1', name: 'Digest', status: 'active' },
+        { id: 'w2', name: 'Drafted', status: 'draft' },
+        { id: 'w3', name: 'Switched off', status: 'disabled' },
+        // An unknown or absent status reads as disabled, as readCollaborationWorkflows reads it.
+        { id: 'w4', name: 'Odd', status: 'archived' },
+      ],
+    });
+    const options = await loadResultsWorkflows(ok.fetcher);
+    assert.deepEqual(
+      options.map((option) => [option.id, option.name, option.status]),
+      [
+        ['w1', 'Digest', 'active'],
+        ['w2', 'Drafted', 'draft'],
+        ['w3', 'Switched off', 'disabled'],
+        ['w4', 'Odd', 'disabled'],
+      ],
+    );
   });
 });

@@ -33,6 +33,11 @@ export type ResultsLoad<T> =
 export interface ResultsWorkflowOption {
   id: string;
   name: string;
+  /**
+   * CHAIN-SOURCE-OFF-01: the workflow's status as GET /api/collaboration/workflows
+   * answers it. Optional, so callers that build options themselves keep working.
+   */
+  status?: 'active' | 'draft' | 'disabled';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -241,6 +246,7 @@ export async function loadResultsWorkflows(
     return readCollaborationWorkflows(await readJson(response)).map((workflow) => ({
       id: workflow.id,
       name: workflow.name,
+      status: workflow.status,
     }));
   } catch {
     return [];

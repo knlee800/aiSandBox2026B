@@ -128,6 +128,7 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
       expect(view).toEqual({
         id: row.id,
         sourceWorkflowId: WF_A,
+        source: { workflowId: WF_A, name: 'Research desk', status: 'active' },
         target: { kind: 'chief-of-staff' },
         task: `${MARKER} summarise the finished run`,
         timeZone: 'Asia/Taipei',
@@ -711,7 +712,123 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
       for (const row of store.workflows.rows) row.deletedAt = new Date();
       const view = await service.list(OWNER);
       expect(view.triggers[0].sourceWorkflowId).toBe(WF_A);
+      expect(view.triggers[0].source).toEqual({ workflowId: WF_A, name: null, status: 'missing' });
       expect(view.triggers[0].target).toEqual({ kind: 'workflow', workflowId: WF_B, name: null, status: 'missing' });
+    });
+  });
+
+  describe('the source view (CHAIN-SOURCE-OFF-01: warn, not refuse)', () => {
+    const WF_OFF = '3ddddddd-3333-4333-8333-333333333333';
+    const OFF_NAME = 'Switched off flow';
+
+    beforeEach(() => {
+      store.workflows.rows.push(workflowRow(WF_OFF, OWNER, OFF_NAME, 'disabled'));
+    });
+
+    it('the list carries each source with its status (active, draft, disabled, deleted) from one workflow query', async () => {
+      store.triggers.rows.push(
+        triggerRow('t-active', OWNER, WF_A, WF_B),
+        triggerRow('t-draft', OWNER, WF_C, null),
+        triggerRow('t-off', OWNER, WF_OFF, WF_A),
+        triggerRow('t-gone', OWNER, DELETED_WORKFLOW, null),
+        triggerRow('t-unknown', OWNER, UNKNOWN_ID, null),
+      );
+      store.calls.length = 0;
+      const view = await service.list(OWNER);
+      expect(store.calls.filter((call) => call.startsWith('workflows.'))).toEqual(['workflows.find']);
+      const byId = new Map(view.triggers.map((trigger) => [trigger.id, trigger]));
+      expect(byId.get('t-active')!.source).toEqual({ workflowId: WF_A, name: 'Research desk', status: 'active' });
+      expect(byId.get('t-draft')!.source).toEqual({ workflowId: WF_C, name: 'Billing review', status: 'draft' });
+      expect(byId.get('t-off')!.source).toEqual({ workflowId: WF_OFF, name: OFF_NAME, status: 'disabled' });
+      expect(byId.get('t-gone')!.source).toEqual({ workflowId: DELETED_WORKFLOW, name: null, status: 'missing' });
+      expect(byId.get('t-unknown')!.source).toEqual({ workflowId: UNKNOWN_ID, name: null, status: 'missing' });
+      for (const trigger of view.triggers) {
+        expect(trigger.sourceWorkflowId).toBe(trigger.source.workflowId);
+      }
+      // The target view is unchanged and comes from the same query.
+      expect(byId.get('t-active')!.target).toEqual({ kind: 'workflow', workflowId: WF_B, name: 'Weekly digest', status: 'active' });
+      expect(byId.get('t-off')!.target).toEqual({ kind: 'workflow', workflowId: WF_A, name: 'Research desk', status: 'active' });
+    });
+
+    it("another owner's workflow as a stored source reads as missing (the lookup is by owner)", async () => {
+      store.triggers.rows.push(triggerRow('t-theirs', OWNER, OTHER_WORKFLOW, null));
+      const view = await service.list(OWNER);
+      expect(view.triggers[0].source).toEqual({ workflowId: OTHER_WORKFLOW, name: null, status: 'missing' });
+    });
+
+    it.each([
+      ['switched-off', WF_OFF, OFF_NAME, 'disabled'],
+      ['not yet switched-on', WF_C, 'Billing review', 'draft'],
+    ])('a create with a %s source is saved, switched on, and answers its status', async (_label, sourceWorkflowId, name, status) => {
+      const view = await service.create(OWNER, body({ sourceWorkflowId, target: toWorkflow(WF_B) }));
+      expect(view).toMatchObject({
+        sourceWorkflowId,
+        source: { workflowId: sourceWorkflowId, name, status },
+        target: { kind: 'workflow', workflowId: WF_B, name: 'Weekly digest', status: 'active' },
+        enabled: true,
+      });
+      expect(store.triggers.rows).toHaveLength(1);
+      expect(store.triggers.rows[0]).toMatchObject({ sourceWorkflowId, enabled: true });
+    });
+
+    it('switching on a trigger whose source is switched off succeeds and answers the stored source with its status', async () => {
+      const created = await service.create(OWNER, body({ sourceWorkflowId: WF_OFF, enabled: false }));
+      expect(created.source.status).toBe('disabled');
+      const on = await service.update(OWNER, created.id, { enabled: true });
+      expect(on).toMatchObject({
+        enabled: true,
+        sourceWorkflowId: WF_OFF,
+        source: { workflowId: WF_OFF, name: OFF_NAME, status: 'disabled' },
+        target: { kind: 'chief-of-staff' },
+      });
+      expect(store.triggers.rows[0].enabled).toBe(true);
+    });
+
+    it('a change of the source to a switched-off workflow is saved; a later switch of the workflow shows on the next answer', async () => {
+      const created = await service.create(OWNER, body({ target: toWorkflow(WF_B) }));
+      const changed = await service.update(OWNER, created.id, { sourceWorkflowId: WF_OFF });
+      expect(changed.source).toEqual({ workflowId: WF_OFF, name: OFF_NAME, status: 'disabled' });
+      expect(changed.target).toEqual({ kind: 'workflow', workflowId: WF_B, name: 'Weekly digest', status: 'active' });
+      store.workflows.rows.find((row) => row.id === WF_OFF)!.status = 'active';
+      const later = await service.update(OWNER, created.id, { task: 'later' });
+      expect(later.source).toEqual({ workflowId: WF_OFF, name: OFF_NAME, status: 'active' });
+      store.workflows.rows.find((row) => row.id === WF_OFF)!.deletedAt = new Date();
+      const gone = await service.update(OWNER, created.id, { timeZone: 'UTC' });
+      expect(gone.source).toEqual({ workflowId: WF_OFF, name: null, status: 'missing' });
+      expect(gone.sourceWorkflowId).toBe(WF_OFF);
+    });
+
+    it('a change that checks neither workflow reads the stored source and target in one query', async () => {
+      const created = await service.create(OWNER, body({ sourceWorkflowId: WF_OFF, target: toWorkflow(WF_B) }));
+      store.calls.length = 0;
+      const view = await service.update(OWNER, created.id, { task: 'other' });
+      expect(store.calls.filter((call) => call.startsWith('workflows.'))).toEqual(['workflows.find']);
+      expect(view.source.status).toBe('disabled');
+      expect(view.target).toMatchObject({ workflowId: WF_B, status: 'active' });
+    });
+
+    it('a change that checked the source and the target reads no workflow again', async () => {
+      const created = await service.create(OWNER, body());
+      store.calls.length = 0;
+      const view = await service.update(OWNER, created.id, { sourceWorkflowId: WF_OFF, target: toWorkflow(WF_B) });
+      expect(store.calls.filter((call) => call.startsWith('workflows.'))).toEqual(['workflows.findOne', 'workflows.findOne']);
+      expect(view.source.status).toBe('disabled');
+    });
+
+    it('no audit row or log line carries a source workflow name, and the audit payload keys are unchanged', async () => {
+      const created = await service.create(OWNER, body({ sourceWorkflowId: WF_OFF, enabled: false }));
+      await service.update(OWNER, created.id, { enabled: true });
+      await service.update(OWNER, created.id, { sourceWorkflowId: WF_C });
+      await service.list(OWNER);
+      for (const row of store.audit.rows) {
+        expect(Object.keys(row.payload).sort()).toEqual(['sourceWorkflowId', 'targetKind', 'triggerId', 'workflowId']);
+      }
+      const audit = JSON.stringify(store.audit.rows);
+      const logText = logs.join('\n');
+      for (const secret of [OFF_NAME, 'Billing review', MARKER, 'disabled', 'draft']) {
+        expect(audit).not.toContain(secret);
+        expect(logText).not.toContain(secret);
+      }
     });
   });
 
