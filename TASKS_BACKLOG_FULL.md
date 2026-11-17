@@ -89421,13 +89421,13 @@ taskId=COS-EVAL-LIVE-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith said "Go"; the eval and the window use the stored Anthropic test key. Was: READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-LIVE-03
 **Title:** Third real-model run of the briefing injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-COSRULE-01 and COS-EVAL-TIDY-01 are locked and Keith opens a run window. Keith decides.
+**Start condition:** READY (Keith, 2026-11-17, "Go"; the stored Anthropic test key is used, so no new key is needed). Was: NOT_READY. Ready when: STAGING-DEPLOY-COSRULE-01 and COS-EVAL-TIDY-01 are locked and Keith opens a run window. Keith decides.
 **Depends on:** STAGING-DEPLOY-COSRULE-01, COS-EVAL-TIDY-01.
 **Primary write scope:** records; services/ai-service/src/agent-harness/eval/baselines/briefing/ (the new baseline file); host state during the window, restored afterwards.
 **Mutexes / resources:** AI-SERVICE (the baseline file), STAGING, ENV, PROVIDER-LIVE, CREDIT (ENV and CREDIT added 2026-11-17 by the STAGING-DEPLOY-COSRULE-01 LOCK for Keith's workflow re-tests).
