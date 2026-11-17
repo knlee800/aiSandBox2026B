@@ -89805,7 +89805,7 @@ taskId=STAGING-DEPLOY-SRCOFF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. Result: passed (deploy and Keith's check). LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released; stagingAuthorized false. Deployed ea75557 to 0427246 on 2026-11-17 (rc 0 at 13:55:46Z; no migration, hash unchanged at 0f91cfda; configuration unchanged at the baselines gateway.env 616841ca, ai.env 721f4772, Caddyfile 205770cf; all earlier checks as before; the gateway source view, the new strings in three languages and the form warning in the builds; no bodyCase label left in the eval cases, the new marker present, twelve cases). Keith checked the After a workflow finishes section: no line on his active-source trigger, the form warning with Save available, the switched-off line on a test trigger, the amber switch-on notice, both Chinese texts; he deleted the test trigger on request (it had been left switched on; nothing could fire). Afterwards one chain trigger, 0 chain runs, nothing open, env files at the baselines, runs and chain switch off. Checkpoint: docs/STAGING-DEPLOY-SRCOFF-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-17 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-17 by the CHAIN-SOURCE-OFF-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SRCOFF-01
 **Title:** Deploy the switched-off source warning and the eval tidy-ups, and Keith checks the section
 **Workstream:** AGENT (taxonomy only; zero admission weight)
