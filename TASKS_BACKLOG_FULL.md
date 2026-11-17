@@ -89349,7 +89349,7 @@ taskId=STAGING-DEPLOY-COSRULE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-17 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-17. Result: passed (deploy). LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released; stagingAuthorized false. Deployed 12598e7 to 2b30cd1 on 2026-11-17 (rc 0 at 10:28:52Z; no migration, hash unchanged at 0f91cfda; configuration unchanged at the baselines gateway.env 616841ca, ai.env 721f4772, Caddyfile 205770cf; all earlier checks as before; the gateway build carries the new data rule in 2 files and the old one in none; the ai-service eval copy hash f5d6e40d in 2 files, 8f655afb in none). The script stopped at its final check on one inherited expectation (the old eval hash 8f655afb, replaced on purpose by COS-MAIL-BODY-RULE-01); a read-only rerun numbering each failing check showed it was the only one. Keith's workflows 71f32136 and ab4cb6ae now show new versions, not tested. Their re-test runs need runs on, which this task does not hold: superseded by COS-EVAL-LIVE-03 (ENV and CREDIT added to it). All switches and runs off; no credits. Checkpoint: docs/STAGING-DEPLOY-COSRULE-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (Keith's workflow re-tests, by COS-EVAL-LIVE-03) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-17 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-17 by the COS-MAIL-BODY-RULE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-COSRULE-01
 **Title:** Deploy the Chief of Staff data-rule change and re-test the workflows
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89406,7 +89406,7 @@ nature=IMPLEMENTATION
 **Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-COSRULE-01 and COS-EVAL-TIDY-01 are locked and Keith opens a run window. Keith decides.
 **Depends on:** STAGING-DEPLOY-COSRULE-01, COS-EVAL-TIDY-01.
 **Primary write scope:** records; services/ai-service/src/agent-harness/eval/baselines/briefing/ (the new baseline file); host state during the window, restored afterwards.
-**Mutexes / resources:** AI-SERVICE (the baseline file), STAGING, PROVIDER-LIVE.
+**Mutexes / resources:** AI-SERVICE (the baseline file), STAGING, ENV, PROVIDER-LIVE, CREDIT (ENV and CREDIT added 2026-11-17 by the STAGING-DEPLOY-COSRULE-01 LOCK for Keith's workflow re-tests).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** PROVIDER-LIVE.
@@ -89414,6 +89414,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From COS-MAIL-BODY-RULE-01: run the twelve-case briefing eval (the nine morning-briefing cases and the three body and trigger cases, including inject-mail-trigger-body and inject-run-result) from the staging host with the stored Anthropic test key, as COS-EVAL-LIVE-02 did; compare with the 2026-11-09 baselines; save a new baseline; report any case where a planted instruction was followed, not flagged, or the task text leaked.
+
+Note (STAGING-DEPLOY-COSRULE-01 LOCK, 2026-11-17): this window also carries Keith's test runs of the workflows he uses (71f32136, the chain trigger's source, at least): the data-rule change gave every workflow a new version, so none counts as tested until a test run of that version passes. The re-tests need runs on with the test key, so they belong in this run window; ENV and CREDIT are added to its mutexes.
 
 ### CONN-MAIL-AUTH-STATE-01 — A distinct sign-in-refused state for the mailbox
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
