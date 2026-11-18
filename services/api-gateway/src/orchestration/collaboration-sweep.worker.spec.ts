@@ -44,7 +44,7 @@ describe('CollaborationSweepWorker', () => {
     worker.onModuleInit();
 
     expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), COLLABORATION_SWEEP_INTERVAL_MS);
-    expect(COLLABORATION_SWEEP_INTERVAL_MS).toBe(5 * 60 * 1000);
+    expect(COLLABORATION_SWEEP_INTERVAL_MS).toBe(60 * 1000);
     expect(unref).toHaveBeenCalledTimes(1);
 
     worker.onModuleDestroy();
