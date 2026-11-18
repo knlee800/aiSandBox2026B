@@ -90016,24 +90016,25 @@ taskId=RUN-FINISH-EVENT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith said "You pick one", then "Sweep every minute". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
 **Task ID:** RUN-FINISH-EVENT-01
 **Title:** Settle a run at its last step or emit a run-finished event
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (only if the few-minute delay matters).
+**Lifecycle:** 3-STEP (2026-11-18: the one-constant fix needs no frozen-contract change and no stage-start). Was: 4-STEP.
+**Start condition:** READY (Keith, 2026-11-18). Was: NOT_READY. Ready when: Keith decides (only if the few-minute delay matters).
 **Depends on:** TRIGGER-CHAIN-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ (settleCollaborationRun and the step completion path), the triggers that read finished runs.
-**Mutexes / resources:** set at admission (GATEWAY expected; HARNESS_ENTITLEMENT_PROOF_V1 includes orchestration.service.ts).
+**Primary write scope:** EXACT (2026-11-18): services/api-gateway/src/orchestration/collaboration-sweep.constants.ts, services/api-gateway/src/orchestration/collaboration-sweep.worker.spec.ts. Was: PROVISIONAL: services/api-gateway/src/orchestration/ (settleCollaborationRun and the step completion path), the triggers that read finished runs.
+**Mutexes / resources:** GATEWAY (2026-11-18). Was: set at admission (GATEWAY expected; HARNESS_ENTITLEMENT_PROOF_V1 includes orchestration.service.ts).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From TRIGGER-CHAIN-01 (stage-start F8): a run is settled only when someone reads it or the 5-minute sweep runs, so a chain trigger and the Results badge see a finished run up to about 6 minutes late. Settle the run when its last step completes, or emit a run-finished event, so they react at once.
 
+Keith's choice (2026-11-18, "Sweep every minute"): instead of settling at the last step inside orchestration.service.ts (a HARNESS_ENTITLEMENT_PROOF_V1 file), COLLABORATION_SWEEP_INTERVAL_MS goes from 5 minutes to 1 minute. The sweep already syncs in-progress steps from their executions, recovers hand-offs and settles finished runs; it now does so every minute. Unchanged: orchestration.service.ts, the frozen contract, the 24-hour hand-off timeout, the chain-trigger timer.
 ### TRIGGER-CHAIN-FAILED-01 — Tell the Chief of Staff when a workflow fails
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-CHAIN-FAILED-01
