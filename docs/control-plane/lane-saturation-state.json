@@ -22,7 +22,8 @@
         "services/api-gateway/src/triggers/chain-trigger.controller.spec.ts",
         "services/api-gateway/src/triggers/chain-trigger-run.service.ts",
         "services/api-gateway/src/triggers/chain-trigger-run.service.spec.ts",
-        "services/api-gateway/src/triggers/schedule.controller.spec.ts"
+        "services/api-gateway/src/triggers/schedule.controller.spec.ts",
+        "services/api-gateway/src/migrations/__tests__/1814000000000-CreateAgentChainTriggerTables.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -7422,7 +7423,8 @@
         "services/api-gateway/src/triggers/chain-trigger.controller.spec.ts",
         "services/api-gateway/src/triggers/chain-trigger-run.service.ts",
         "services/api-gateway/src/triggers/chain-trigger-run.service.spec.ts",
-        "services/api-gateway/src/triggers/schedule.controller.spec.ts"
+        "services/api-gateway/src/triggers/schedule.controller.spec.ts",
+        "services/api-gateway/src/migrations/__tests__/1814000000000-CreateAgentChainTriggerTables.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
