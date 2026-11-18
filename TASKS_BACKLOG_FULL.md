@@ -89293,7 +89293,7 @@ taskId=CONN-MAIL-READ-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith said "With the mail grant". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, AI-SERVICE and the five HOTFILE leases released. A read-only agent tool mail_read_message reads one Inbox message by its id (the IMAP UID the unread tool and the mail trigger give), read or unread: EXAMINE, one UID FETCH, the same BODY.PEEK, the unread tool's fields, 800-character excerpt, cap and redaction; an unknown id gives the fixed not-found text. It is a companion tool: never in the catalogue, a saved workflow or a system agent; the per-job grant adds it beside mail_list_unread_metadata, in connectorGrants and in the token, and the token, broker and internal route accept it only then. The AI service registers it from the signed grant; the briefing eval answers it from the fixture and lets it satisfy the mail requirement on the mail-trigger profile only. Mail trigger text, Chief of Staff hash, eval baselines, frontend, migrations and the frozen entitlement contract unchanged. Implemented by an opus subagent (lane/CONN-MAIL-READ-01, one stop that widened the write set by collaboration-workflow.spec.ts; cherry-picked to main as 2f3c32f). Control-plane gates on the branch: connectors-mcp 145 of 145, build rc 0; gateway tsc rc 0, 6590 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0; ai-service 1441 passed, 1 skipped, build rc 0. Not deployed. Checkpoint: docs/CONN-MAIL-READ-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (STAGING-DEPLOY-MREAD-01, MAIL-READ-LIVE-01) / 2 superseded (the numeric messageId and the trigger text, by MAIL-READ-LIVE-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-18 — Keith said "With the mail grant". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** CONN-MAIL-READ-01
 **Title:** An agent mail tool that reads one message by its number
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89312,6 +89312,54 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-MAIL-01 (stage-start D7, F2): a mail-triggered run is told the message number, but the agent's mail tool lists only the 25 newest unread; if the owner opens the message or 25 newer unread arrive first, the agent cannot find it. A read-only agent tool that reads one message by its number, read or not.
 
 Design (admission, 2026-11-18; Keith chose the grant model, "With the mail grant"): D1 a new tool mail_read_message in connectors-mcp with input messageId (the decimal UID string the unread-mail tool returns as id) plus the gateway-added mailbox fields; EXAMINE INBOX read-only, UID FETCH with BODY.PEEK, the same fields, 800-character body excerpt, JSON cap and redaction as mail_list_unread_metadata; an unknown id answers a fixed not-found message with no mail content. D2 the tool is readOnly and kind imap in the gateway allowlist, but it is a companion: it is never in the connector tool catalogue, never accepted in a saved workflow or system-agent list, and is added only when the per-job grant is minted for a job that holds mail_list_unread_metadata (resolveConnectorGrantJobFields); the grant token, the broker and the internal call route accept it only from such a grant. D3 the AI service registers it like the other connector tools when the job's signed grant lists it; the briefing eval answers it from the case's mail fixture. D4 unchanged: the mail trigger's task text, the Chief of Staff's instructions and version hash, the eval baselines, the frontend, the frozen contract HARNESS_ENTITLEMENT_PROOF_V1 and its files, and every migration. 3-STEP: the design follows CONN-03's read path and Keith made the one product choice.
+
+### STAGING-DEPLOY-MREAD-01 — Deploy the one-message mail tool
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-MREAD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-MREAD-01
+**Title:** Deploy the one-message mail tool
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** CONN-MAIL-READ-01.
+**Primary write scope:** records; host state (deploy only; no migration and no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From CONN-MAIL-READ-01: deploy main to staging with the earlier deploy checks (no migration; env files unchanged at the baselines; runs and every trigger switch stay off); the build carries mail_read_message in connectors-mcp, the gateway allowlist companion and the ai-service definition; the connector child lists five tools; no run is started.
+
+### MAIL-READ-LIVE-01 — Live check of the one-message mail tool
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=MAIL-READ-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
+**Task ID:** MAIL-READ-LIVE-01
+**Title:** Live check of the one-message mail tool
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-MREAD-01 is locked and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-MREAD-01.
+**Primary write scope:** records; host state during the window, restored afterwards.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the mail trigger it uses is GATED per PRD.md).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From CONN-MAIL-READ-01 (live-only flows and two worker follow-ups): in a run window with the stored Anthropic test key and write tools off, a Chief of Staff or workflow run with the mail grant reads one already-read message by its id from Keith's real mailbox and the message stays read and unchanged; a mail-triggered run reads the message that started it; an unknown id gives the fixed not-found text; record which tool the triggered run uses and whether the model sends messageId as text (a refusal of a number, or a run that fails to read its message, is a finding and gets a registered fix: the trigger text or the argument rule); no mail text in gateway logs or audit rows; env files restored byte for byte.
 
 ### COS-MAIL-BODY-RULE-01 — Mail bodies in the Chief of Staff's data rule, with an eval case
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
