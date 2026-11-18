@@ -89319,7 +89319,7 @@ taskId=STAGING-DEPLOY-MREAD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Result: passed (deploy and host checks). LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released; stagingAuthorized false. Deployed e759b9c to 355e6db on 2026-11-18 (rc 0 at 03:08:08Z; the admission record on top of the CONN-MAIL-READ-01 code and lock: connectors-mcp, gateway and ai-service; no migration, hash unchanged at 0f91cfda; configuration unchanged at the baselines gateway.env 616841ca, ai.env 721f4772, Caddyfile 205770cf; all earlier checks as before; the connector child lists five tools with mail_read_message; the three builds carry the tool, the gateway companion helper and the not-found text; no connector audit rows). Afterwards the trigger lists unchanged, no audit rows and 0 runs since the deploy, nothing open, env files at the baselines, runs and every trigger switch off. No mailbox read and no run: the live check is MAIL-READ-LIVE-01. Checkpoint: docs/STAGING-DEPLOY-MREAD-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-MREAD-01
 **Title:** Deploy the one-message mail tool
 **Workstream:** AGENT (taxonomy only; zero admission weight)
