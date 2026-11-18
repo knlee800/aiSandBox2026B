@@ -89343,13 +89343,13 @@ taskId=MAIL-READ-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith opened the run window ("Yes, run it"). Was: READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
 **Task ID:** MAIL-READ-LIVE-01
 **Title:** Live check of the one-message mail tool
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-MREAD-01 is locked and Keith opens a run window. Keith decides.
+**Start condition:** READY (Keith, 2026-11-18, "Yes, run it"). Was: NOT_READY. Ready when: STAGING-DEPLOY-MREAD-01 is locked and Keith opens a run window. Keith decides.
 **Depends on:** STAGING-DEPLOY-MREAD-01.
 **Primary write scope:** records; host state during the window, restored afterwards.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
