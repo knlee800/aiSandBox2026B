@@ -5,6 +5,10 @@ import {
   CALENDAR_WINDOW_TOOL,
   CALENDAR_WINDOW_TOOL_ID,
   CONNECTOR_SERVERS,
+  MAIL_CHILD_SIGN_IN_REFUSED_TEXT,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
+  MAIL_VERIFY_FAILED_MESSAGE,
+  MAIL_VERIFY_REFUSED_MESSAGE,
   MAIL_RECENT_MAX_LOOKBACK_MS,
   MAIL_RECENT_MAX_MESSAGES,
   MAIL_RECENT_TOOL,
@@ -215,5 +219,22 @@ describe('the companion one-message mail tool (CONN-MAIL-READ-01)', () => {
     expect(withCompanionToolIds([MAIL_READ_TOOL_ID])).toEqual([]);
     expect(withCompanionToolIds([MAIL_READ_TOOL_ID, CALENDAR_TOOL_ID, 'not_a_tool'])).toEqual([CALENDAR_TOOL_ID]);
     expect(withCompanionToolIds([])).toEqual([]);
+  });
+});
+
+describe('the refused mail sign-in texts (CONN-MAIL-AUTH-STATE-01 D1 and D3)', () => {
+  it('names the fixed texts exactly', () => {
+    expect(MAIL_CHILD_SIGN_IN_REFUSED_TEXT).toBe('The mail server refused the sign-in.');
+    expect(MAIL_SIGN_IN_REFUSED_MESSAGE).toBe(
+      'The mail server refused the saved password. The owner needs to reconnect the mailbox on the Connections page.',
+    );
+    expect(MAIL_VERIFY_REFUSED_MESSAGE).toBe('the mail server refused the app password');
+  });
+
+  it('the broker 409 text is a fixed failure (passed by publicError, quiet in logs); the child text is not', () => {
+    expect(isFixedConnectorFailure(MAIL_SIGN_IN_REFUSED_MESSAGE)).toBe(true);
+    expect(isFixedConnectorFailure(MAIL_CHILD_SIGN_IN_REFUSED_TEXT)).toBe(false);
+    expect(isFixedConnectorFailure(MAIL_VERIFY_REFUSED_MESSAGE)).toBe(false);
+    expect(isFixedConnectorFailure(MAIL_VERIFY_FAILED_MESSAGE)).toBe(false);
   });
 });

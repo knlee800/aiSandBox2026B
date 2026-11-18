@@ -2,6 +2,7 @@ import type { ApiGatewayHttpClient } from '../../../clients/api-gateway-http.cli
 import type { ToolHandler } from '../tool-dispatcher';
 import {
   CONNECTOR_MAIL_READ_TOOL_ID,
+  CONNECTOR_MAIL_TOOL_ID,
   type ConnectorToolId,
   pickConnectorToolArguments,
 } from '../connector-tool-definitions';
@@ -13,6 +14,19 @@ export const CONNECTOR_CALL_NOT_GRANTED_MESSAGE = 'The connector call is not gra
  * that is not in the Inbox. It carries no mail content; the model sees it as is.
  */
 export const CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE = 'No Inbox message has that id.';
+/**
+ * CONN-MAIL-AUTH-STATE-01 D6: the gateway's fixed 409 text while the mail server
+ * refuses the saved password. It carries no mail content or credential; the model
+ * sees it as is and can tell the owner to reconnect.
+ */
+export const CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE =
+  'The mail server refused the saved password. The owner needs to reconnect the mailbox on the Connections page.';
+
+/** CONN-MAIL-AUTH-STATE-01 D6: the mail tools that pass the refused-password text on. */
+const MAIL_SIGN_IN_TOOL_IDS: ReadonlySet<ConnectorToolId> = new Set<ConnectorToolId>([
+  CONNECTOR_MAIL_TOOL_ID,
+  CONNECTOR_MAIL_READ_TOOL_ID,
+]);
 
 export interface ConnectorToolHandlerDeps {
   readonly client: Pick<ApiGatewayHttpClient, 'callConnectorTool'>;
@@ -72,6 +86,14 @@ export function createConnectorToolHandler(deps: ConnectorToolHandlerDeps): Tool
         responseMessage(error) === CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE
       ) {
         throw new Error(CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+      }
+      // CONN-MAIL-AUTH-STATE-01 D6: only the gateway's exact refused-password text is passed on.
+      if (
+        MAIL_SIGN_IN_TOOL_IDS.has(deps.toolId) &&
+        status === 409 &&
+        responseMessage(error) === CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE
+      ) {
+        throw new Error(CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE);
       }
       throw new Error(CONNECTOR_CALL_FAILED_MESSAGE);
     }

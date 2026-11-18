@@ -1,6 +1,7 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ConflictException,
   GatewayTimeoutException,
   HttpException,
   Inject,
@@ -54,11 +55,13 @@ import {
   CONNECTOR_TOOL_MISSING_MESSAGE,
   CONNECTOR_UNAVAILABLE_MESSAGE,
   ConnectorToolDefinition,
+  MAIL_CHILD_SIGN_IN_REFUSED_TEXT,
   MAIL_MESSAGE_NOT_FOUND_MESSAGE,
   MAIL_READ_TOOL_ID,
   MAIL_RECENT_MAX_LOOKBACK_MS,
   MAIL_RECENT_MAX_MESSAGES,
   MAIL_RECENT_TOOL,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
   MAIL_TOOL,
   findCompanionTool,
   findGrantableTool,
@@ -201,6 +204,11 @@ export class ConnectorBroker implements OnModuleDestroy {
       const modelArgs = readModelArguments(tool, input.args);
       const row = await this.loadConnection(userId, tool.kind);
       connectionId = row.id;
+      // CONN-MAIL-AUTH-STATE-01 D3: no sign-in while the server's refusal stands. The
+      // Test button (connector_verify) still signs in: it is one way to reconnect.
+      if (tool.kind === 'imap' && input.action === 'connector_call' && isSignInRefusedRow(row)) {
+        throw new ConflictException(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      }
       const secret = decryptConnectorSecret(userId, tool.kind, row.secretCiphertext);
       secrets.push(secret);
       if (typeof row.username === 'string' && row.username.length > 0) {
@@ -221,6 +229,10 @@ export class ConnectorBroker implements OnModuleDestroy {
         throw new ServiceUnavailableException(CONNECTOR_TOOL_MISSING_MESSAGE);
       }
       const raw = await this.invoke(session, tool.id, childArguments(tool, row, secret, modelArgs));
+      if (tool.kind === 'imap' && isChildErrorText(raw, MAIL_CHILD_SIGN_IN_REFUSED_TEXT)) {
+        await this.markSignInRefused(row);
+        throw new ConflictException(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      }
       if (tool.id === MAIL_READ_TOOL_ID && isMailMessageNotFound(raw)) {
         throw new NotFoundException(MAIL_MESSAGE_NOT_FOUND_MESSAGE);
       }
@@ -362,6 +374,10 @@ export class ConnectorBroker implements OnModuleDestroy {
       const sinceText = readSince(since, started);
       const row = await this.loadConnection(userId, tool.kind);
       connectionId = row.id;
+      // CONN-MAIL-AUTH-STATE-01 D3: no sign-in while the server's refusal stands.
+      if (isSignInRefusedRow(row)) {
+        throw new ConflictException(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      }
       const secret = decryptConnectorSecret(userId, tool.kind, row.secretCiphertext);
       secrets.push(secret);
       if (typeof row.username === 'string' && row.username.length > 0) {
@@ -389,6 +405,10 @@ export class ConnectorBroker implements OnModuleDestroy {
         appPassword: secret,
         since: sinceText,
       });
+      if (isChildErrorText(raw, MAIL_CHILD_SIGN_IN_REFUSED_TEXT)) {
+        await this.markSignInRefused(row);
+        throw new ConflictException(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      }
       // The username is not scrubbed from the result: it is the owner's own address,
       // which is a valid sender. It is scrubbed from every log line.
       const read = this.readResult(raw, [secret], secrets);
@@ -548,6 +568,28 @@ export class ConnectorBroker implements OnModuleDestroy {
     return row;
   }
 
+  /**
+   * CONN-MAIL-AUTH-STATE-01 D2: marks the connection refused with one guarded
+   * update: only this row, and only while its updated_at is still the value this
+   * call loaded, so a password saved while the read was in flight is never marked.
+   * updated_at is compared at millisecond precision (the loaded Date carries no
+   * microseconds) and is left unchanged. The secret column is not read. A failed
+   * update is logged and does not change the caller's answer.
+   */
+  private async markSignInRefused(row: ConnectorConnection): Promise<void> {
+    try {
+      await this.connections
+        .createQueryBuilder()
+        .update(ConnectorConnection)
+        .set({ signInRefusedAt: () => 'now()', updatedAt: () => '"updated_at"' })
+        .where('"id" = :id', { id: row.id })
+        .andWhere(`date_trunc('milliseconds', "updated_at") = :updatedAt`, { updatedAt: row.updatedAt })
+        .execute();
+    } catch {
+      this.logger.warn('connector sign-in refusal could not be recorded');
+    }
+  }
+
   private async writeAudit(
     action: ConnectorAuditEvent,
     userId: string,
@@ -703,11 +745,24 @@ function isMailMessageId(value: unknown): value is string {
  * Any other result goes through readResult as before.
  */
 function isMailMessageNotFound(raw: unknown): boolean {
+  return isChildErrorText(raw, MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+}
+
+/**
+ * True only for a child error result whose whole text is `text` (one text block).
+ * CONN-MAIL-AUTH-STATE-01: also how the broker spots the child's refused sign-in.
+ */
+function isChildErrorText(raw: unknown, text: string): boolean {
   if (!raw || typeof raw !== 'object') return false;
   const record = raw as { content?: unknown; isError?: unknown };
   if (record.isError !== true || !Array.isArray(record.content) || record.content.length !== 1) return false;
   const block = record.content[0] as { type?: unknown; text?: unknown } | null;
-  return !!block && block.type === 'text' && block.text === MAIL_MESSAGE_NOT_FOUND_MESSAGE;
+  return !!block && block.type === 'text' && block.text === text;
+}
+
+/** CONN-MAIL-AUTH-STATE-01 D3: the connection carries a refusal that no save or Test has cleared. */
+function isSignInRefusedRow(row: ConnectorConnection): boolean {
+  return row.signInRefusedAt !== null && row.signInRefusedAt !== undefined;
 }
 
 function isTimeZone(value: unknown): value is string {

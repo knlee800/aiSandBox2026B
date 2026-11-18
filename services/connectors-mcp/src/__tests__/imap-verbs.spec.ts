@@ -16,6 +16,7 @@ import {
 import {
   FORBIDDEN_IMAP_VERBS,
   MAIL_PRESETS,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
   MAIL_TIMEOUT_MS,
   MAX_BODY_CHARS,
   MAX_BODY_FETCH_BYTES,
@@ -440,6 +441,8 @@ describe('IMAP read-only metadata', () => {
         doSTARTTLS: false,
       }, { username: USERNAME, appPassword: PASSWORD }, 25, 5_000).then(() => null, (caught) => caught);
       expect(error).toBeInstanceOf(Error);
+      // CONN-MAIL-AUTH-STATE-01 D1: a refused sign-in is the fixed text.
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
       expect(error.message).not.toContain(PASSWORD);
       expect(error.message).not.toContain(USERNAME);
       expect(logs.join('\n')).not.toContain(PASSWORD);
@@ -834,6 +837,8 @@ describe('TRIGGER-MAIL-01 S1 mail_list_recent over IMAP', () => {
       const error = await fetchRecentHeaders(localTarget(imap.port), { username: USERNAME, appPassword: PASSWORD }, SINCE, 5_000)
         .then(() => null, (caught) => caught);
       expect(error).toBeInstanceOf(Error);
+      // CONN-MAIL-AUTH-STATE-01 D1: a refused sign-in is the fixed text.
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
       expect(error.message).not.toContain(PASSWORD);
       expect(error.message).not.toContain(USERNAME);
       expect(logs.join('\n')).not.toContain(PASSWORD);
@@ -1019,6 +1024,8 @@ describe('CONN-MAIL-READ-01 mail_read_message over IMAP', () => {
       const error = await fetchOneMessage(localTarget(imap.port), { username: USERNAME, appPassword: PASSWORD }, 7, 5_000)
         .then(() => null, (caught) => caught);
       expect(error).toBeInstanceOf(Error);
+      // CONN-MAIL-AUTH-STATE-01 D1: a refused sign-in is the fixed text.
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
       expect(error.message).not.toContain(PASSWORD);
       expect(error.message).not.toContain(USERNAME);
       expect(logs.join('\n')).not.toContain(PASSWORD);

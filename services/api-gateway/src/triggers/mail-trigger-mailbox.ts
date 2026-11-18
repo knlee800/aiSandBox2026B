@@ -50,7 +50,16 @@ export interface MailTriggerMailboxSummary {
   failed: number;
   connectorMissing: number;
   skippedOwners: number;
+  /**
+   * CONN-MAIL-AUTH-STATE-01 D4: owners skipped because the mail server refused the
+   * saved password (no sign-in), or whose read the broker answered with that 409.
+   * Not failures.
+   */
+  signInRefused: number;
 }
+
+/** CONN-MAIL-AUTH-STATE-01 D4: the owner's mail connection as the timer needs it. */
+type MailConnectionState = 'missing' | 'sign_in_refused' | 'ready';
 
 /** Per owner, in this process only: when it was last tried and how many reads failed in a row. No mail. */
 interface OwnerPace {
@@ -89,8 +98,10 @@ function timeOf(value: Date | string | null | undefined): number {
  *
  * Nothing is read when: MAIL_TRIGGERS_ENABLED is off; runs are off (Keith's
  * Q14); the owner is missing, inactive or has no harness access; the owner
- * has no imap connector_connections row (counted first, so no failing broker
- * call; the owner's triggers then show connector_missing).
+ * has no imap connector_connections row (looked up first, so no failing broker
+ * call; the owner's triggers then show connector_missing); CONN-MAIL-AUTH-STATE-01
+ * D4: the row is marked sign_in_refused (the server refused the saved password;
+ * no sign-in, not a failure, until the owner saves a new one or a Test succeeds).
  *
  * Mailbox state: a good read sets ok; 3 failed reads in a row set
  * read_failed and the hourly pace; no connection (or a broker 404) sets
@@ -125,7 +136,13 @@ export class MailTriggerMailbox {
     now: Date,
     handle: (read: MailTriggerOwnerRead) => Promise<void>,
   ): Promise<MailTriggerMailboxSummary> {
-    const summary: MailTriggerMailboxSummary = { read: 0, failed: 0, connectorMissing: 0, skippedOwners: 0 };
+    const summary: MailTriggerMailboxSummary = {
+      read: 0,
+      failed: 0,
+      connectorMissing: 0,
+      skippedOwners: 0,
+      signInRefused: 0,
+    };
     const owners = new Map<string, AgentMailTrigger[]>();
     for (const trigger of enabled) {
       if (trigger.enabled !== true) continue;
@@ -162,10 +179,19 @@ export class MailTriggerMailbox {
         summary.skippedOwners += 1;
         continue;
       }
-      if (!(await this.hasConnection(userId))) {
+      const connection = await this.connectionState(userId);
+      if (connection === 'missing') {
         entry.failures = 0;
         summary.connectorMissing += 1;
         await this.setState(userId, 'connector_missing', now);
+        continue;
+      }
+      if (connection === 'sign_in_refused') {
+        // CONN-MAIL-AUTH-STATE-01 D4: the server refused the saved password; no
+        // sign-in until the owner saves a new one or a Test succeeds. Not a failure,
+        // so the read after a reconnect comes at the normal pace.
+        entry.failures = 0;
+        summary.signInRefused += 1;
         continue;
       }
       let read: MailTriggerOwnerRead;
@@ -173,11 +199,18 @@ export class MailTriggerMailbox {
         const mail = await this.broker.readRecentMail(userId, sinceFor(rows, now));
         read = { userId, uidValidity: mail.uidValidity, messages: mail.messages };
       } catch (error) {
-        if (mailReadFailureOf(error) === 'connector_missing') {
-          // The connection went between the count and the read.
+        const failure = mailReadFailureOf(error);
+        if (failure === 'connector_missing') {
+          // The connection went between the lookup and the read.
           entry.failures = 0;
           summary.connectorMissing += 1;
           await this.setState(userId, 'connector_missing', now);
+          continue;
+        }
+        if (failure === 'sign_in_refused') {
+          // CONN-MAIL-AUTH-STATE-01 D4: the broker has marked the connection refused.
+          entry.failures = 0;
+          summary.signInRefused += 1;
           continue;
         }
         entry.failures += 1;
@@ -218,9 +251,20 @@ export class MailTriggerMailbox {
     }
   }
 
-  /** Whether the owner has a mail connection row: a count only, the secret column is never read. */
-  private async hasConnection(userId: string): Promise<boolean> {
-    return (await this.connections.count({ where: { userId, kind: MAIL_TRIGGER_MAIL_CONNECTOR_KIND } })) > 0;
+  /**
+   * Whether the owner has a mail connection row and whether the server refused its
+   * saved password (CONN-MAIL-AUTH-STATE-01 D4). Reads only `id` and
+   * `sign_in_refused_at`; the secret column is never read.
+   */
+  private async connectionState(userId: string): Promise<MailConnectionState> {
+    const row = await this.connections.findOne({
+      where: { userId, kind: MAIL_TRIGGER_MAIL_CONNECTOR_KIND },
+      select: ['id', 'signInRefusedAt'],
+    });
+    if (!row) {
+      return 'missing';
+    }
+    return row.signInRefusedAt !== null && row.signInRefusedAt !== undefined ? 'sign_in_refused' : 'ready';
   }
 
   private entryFor(userId: string, rows: AgentMailTrigger[], now: Date): OwnerPace {

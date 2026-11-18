@@ -1,4 +1,4 @@
-import { Logger, NotFoundException } from '@nestjs/common';
+import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { createHmac, randomBytes, randomUUID } from 'crypto';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { ConnectorBroker } from './connector-broker';
@@ -26,8 +26,10 @@ import {
   CONNECTOR_TOOL_MESSAGE,
   CONNECTOR_TOOL_MISSING_MESSAGE,
   CONNECTOR_UNAVAILABLE_MESSAGE,
+  MAIL_CHILD_SIGN_IN_REFUSED_TEXT,
   MAIL_MESSAGE_NOT_FOUND_MESSAGE,
   MAIL_READ_TOOL_ID,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
   MAIL_RECENT_MAX_LOOKBACK_MS,
   MAIL_RECENT_MAX_MESSAGES,
   MAIL_RECENT_TOOL_ID,
@@ -46,6 +48,8 @@ describe('connector broker', () => {
   const logs: string[] = [];
   let rows: ConnectorConnection[];
   let audits: Array<Record<string, unknown>>;
+  let updates: RecordedUpdate[];
+  let updateControl: { failUpdate: Error | null };
   let opener: jest.Mock;
   let timers: ManualTimers;
   let broker: ConnectorBroker;
@@ -58,9 +62,16 @@ describe('connector broker', () => {
     restoreLogs = watchLogs(logs);
     rows = [];
     audits = [];
+    updates = [];
+    updateControl = { failUpdate: null };
     opener = jest.fn(async () => new FakeSession());
     timers = new ManualTimers();
-    broker = new ConnectorBroker(connections(rows) as never, auditRepo(audits) as never, opener, timers);
+    broker = new ConnectorBroker(
+      connections(rows, updates, updateControl) as never,
+      auditRepo(audits) as never,
+      opener,
+      timers,
+    );
   });
 
   afterEach(() => {
@@ -1220,7 +1231,215 @@ describe('connector broker', () => {
       expect(session.calls).toHaveLength(0);
     });
   });
+
+  describe('refused mail sign-in (CONN-MAIL-AUTH-STATE-01 D2 and D3)', () => {
+    const REFUSED_RESULT = { isError: true, content: [{ type: 'text', text: MAIL_CHILD_SIGN_IN_REFUSED_TEXT }] };
+
+    function mailSession(result: unknown = REFUSED_RESULT): FakeSession {
+      const session = new FakeSession();
+      session.tools.push(
+        { name: MAIL_READ_TOOL_ID, description: 'SERVER_READ_DESCRIPTION_DO_NOT_PASS' },
+        { name: MAIL_RECENT_TOOL_ID, description: 'SERVER_RECENT_DESCRIPTION_DO_NOT_PASS' },
+      );
+      session.result = result;
+      opener.mockImplementation(async () => session);
+      return session;
+    }
+
+    function call(toolId: string, args: unknown, action: 'connector_call' | 'connector_verify' = 'connector_call') {
+      return broker.callConnectorTool({ userId: OWNER, toolId, args, action });
+    }
+
+    async function caught(promise: Promise<unknown>): Promise<{ message: string; getStatus(): number }> {
+      const error = await promise.then(() => null, (value: unknown) => value);
+      expect(error).not.toBeNull();
+      return error as { message: string; getStatus(): number };
+    }
+
+    function expectGuardedUpdate(row: ConnectorConnection, loadedUpdatedAt: Date) {
+      expect(updates).toHaveLength(1);
+      const [update] = updates;
+      expect(update.entity).toBe(ConnectorConnection);
+      expect(Object.keys(update.set).sort()).toEqual(['signInRefusedAt', 'updatedAt']);
+      expect((update.set.signInRefusedAt as () => string)()).toBe('now()');
+      expect((update.set.updatedAt as () => string)()).toBe('"updated_at"');
+      expect(update.where).toEqual([
+        ['"id" = :id', { id: row.id }],
+        [`date_trunc('milliseconds', "updated_at") = :updatedAt`, { updatedAt: loadedUpdatedAt }],
+      ]);
+      expect(JSON.stringify(update).includes('secret')).toBe(false);
+    }
+
+    it.each([
+      ['mail_list_unread_metadata', { limit: 1 }],
+      [MAIL_READ_TOOL_ID, { messageId: '4601' }],
+    ])(
+      'an agent call to %s whose sign-in the server refuses marks the connection (guarded) and answers the fixed 409',
+      async (toolId, args) => {
+        const row = imapRow();
+        rows.push(row);
+        const loadedUpdatedAt = row.updatedAt;
+        const session = mailSession();
+        const error = await caught(call(toolId, args));
+        expect(error).toBeInstanceOf(ConflictException);
+        expect(error.getStatus()).toBe(409);
+        expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+        expect(session.calls).toHaveLength(1);
+        expectGuardedUpdate(row, loadedUpdatedAt);
+        expect(rows[0].signInRefusedAt).toBeInstanceOf(Date);
+        expect(rows[0].updatedAt).toBe(loadedUpdatedAt);
+        expect(audits).toHaveLength(1);
+        expect(audits[0].eventType).toBe('connector.call');
+        expect(Object.keys(audits[0].payload as object).sort()).toEqual([
+          'action',
+          'durationMs',
+          'itemCount',
+          'outcome',
+          'resultBytes',
+          'toolId',
+          'userId',
+        ]);
+        expect(audits[0].payload).toMatchObject({ action: 'connector_call', toolId, outcome: 'error', itemCount: 0, resultBytes: 0 });
+        // The fixed text is quiet, like the other fixed failures; nothing secret is logged.
+        expect(logs.join('\n')).not.toContain('connector call failed');
+        expectNoSecrets(logs.join('\n'));
+      },
+    );
+
+    it.each([
+      ['mail_list_unread_metadata', { limit: 1 }],
+      [MAIL_READ_TOOL_ID, { messageId: '4601' }],
+    ])('while the connection is marked refused, an agent call to %s never reaches the child and answers the 409', async (toolId, args) => {
+      const row = imapRow();
+      row.signInRefusedAt = new Date('2026-11-18T01:00:00.000Z');
+      rows.push(row);
+      const session = mailSession({ content: [{ type: 'text', text: JSON.stringify({ messages: [] }) }] });
+      const error = await caught(call(toolId, args));
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(opener).not.toHaveBeenCalled();
+      expect(session.calls).toHaveLength(0);
+      expect(updates).toHaveLength(0);
+      expect(audits).toHaveLength(1);
+      expect(audits[0].payload).toMatchObject({ action: 'connector_call', toolId, outcome: 'error' });
+      expect(logs.join('\n')).not.toContain('connector call failed');
+    });
+
+    it('the calendar is unchanged while the mailbox is marked refused, and a calendar error with the same text marks nothing', async () => {
+      const mail = imapRow();
+      mail.signInRefusedAt = new Date();
+      const calendar = icalRow();
+      rows.push(mail, calendar);
+      const session = mailSession({ content: [{ type: 'text', text: JSON.stringify({ events: [] }) }] });
+      await expect(call('calendar_list_today', { timeZone: 'UTC' })).resolves.toEqual({ result: { events: [] } });
+      session.result = REFUSED_RESULT;
+      const error = await caught(call('calendar_list_today', { timeZone: 'UTC' }));
+      expect(error).not.toBeInstanceOf(ConflictException);
+      expect(error.message).not.toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(updates).toHaveLength(0);
+      expect(calendar.signInRefusedAt).toBeNull();
+    });
+
+    it('the Test button still signs in while refused: success leaves clearing to the caller, a refusal marks again and answers 409', async () => {
+      const row = imapRow();
+      row.signInRefusedAt = new Date('2026-11-18T01:00:00.000Z');
+      rows.push(row);
+      const session = mailSession({ content: [{ type: 'text', text: JSON.stringify({ messages: [{ id: '1' }] }) }] });
+      await expect(call('mail_list_unread_metadata', { limit: 1 }, 'connector_verify')).resolves.toEqual({
+        result: { messages: [{ id: '1' }] },
+      });
+      expect(session.calls).toHaveLength(1);
+      expect(updates).toHaveLength(0);
+
+      session.result = REFUSED_RESULT;
+      const error = await caught(call('mail_list_unread_metadata', { limit: 1 }, 'connector_verify'));
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(session.calls).toHaveLength(2);
+      expectGuardedUpdate(row, row.updatedAt);
+      const verifyAudits = audits.filter((entry) => entry.eventType === 'connector.verify');
+      expect(verifyAudits.map((entry) => (entry.payload as { outcome: string }).outcome)).toEqual(['ok', 'error']);
+    });
+
+    it('a refusal for a password saved while the read was in flight marks nothing (the updated_at guard)', async () => {
+      const loaded = imapRow();
+      rows.push(loaded);
+      const session = mailSession();
+      const realCall = session.callTool.bind(session);
+      session.callTool = (name: string, args: Record<string, unknown>) => {
+        // The owner saves a new password: a new row value with a later updated_at.
+        rows[0] = { ...loaded, updatedAt: new Date(loaded.updatedAt.getTime() + 1500), signInRefusedAt: null };
+        return realCall(name, args);
+      };
+      const error = await caught(call('mail_list_unread_metadata', {}));
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(updates).toHaveLength(1);
+      expect(updates[0].where[1][1]).toEqual({ updatedAt: loaded.updatedAt });
+      expect(rows[0].signInRefusedAt).toBeNull();
+    });
+
+    it('a failed update is logged without secrets and does not change the answer', async () => {
+      rows.push(imapRow());
+      mailSession();
+      updateControl.failUpdate = new Error(`db down ${PASSWORD} ${EMAIL}`);
+      const error = await caught(call('mail_list_unread_metadata', {}));
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(updates).toHaveLength(1);
+      expect(logs.some((line) => line.includes('connector sign-in refusal could not be recorded'))).toBe(true);
+      expectNoSecrets(logs.join('\n'));
+      expect(logs.join('\n')).not.toContain('db down');
+    });
+
+    it.each([
+      ['a longer text', { isError: true, content: [{ type: 'text', text: `${MAIL_CHILD_SIGN_IN_REFUSED_TEXT} extra` }] }],
+      ['two blocks', { isError: true, content: [{ type: 'text', text: MAIL_CHILD_SIGN_IN_REFUSED_TEXT }, { type: 'text', text: '' }] }],
+      ['not an error', { content: [{ type: 'text', text: MAIL_CHILD_SIGN_IN_REFUSED_TEXT }] }],
+      ['another error', { isError: true, content: [{ type: 'text', text: 'Command failed' }] }],
+    ])('any other child result (%s) marks nothing and keeps its old answer', async (_label, result) => {
+      rows.push(imapRow());
+      mailSession(result);
+      const error = await caught(call('mail_list_unread_metadata', {}));
+      expect(error).not.toBeInstanceOf(ConflictException);
+      expect(error.message).not.toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(updates).toHaveLength(0);
+      expect(rows[0].signInRefusedAt).toBeNull();
+    });
+
+    it('readRecentMail: a refused sign-in marks the connection and answers the 409; while marked it never reaches the child', async () => {
+      const row = imapRow();
+      rows.push(row);
+      const session = mailSession();
+      const since = new Date(Date.now() - 30 * 60_000);
+      const first = await caught(broker.readRecentMail(OWNER, since));
+      expect(first).toBeInstanceOf(ConflictException);
+      expect(first.getStatus()).toBe(409);
+      expect(first.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(session.calls.map((entry) => entry.name)).toEqual(['mail_list_recent']);
+      expectGuardedUpdate(row, row.updatedAt);
+      expect(rows[0].signInRefusedAt).toBeInstanceOf(Date);
+
+      session.result = { content: [{ type: 'text', text: JSON.stringify({ uidValidity: 1, messages: [] }) }] };
+      const second = await caught(broker.readRecentMail(OWNER, since));
+      expect(second).toBeInstanceOf(ConflictException);
+      expect(second.message).toBe(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      expect(session.calls).toHaveLength(1);
+      expect(updates).toHaveLength(1);
+      const triggerAudits = audits.filter((entry) => entry.eventType === 'connector.trigger_read');
+      expect(triggerAudits.map((entry) => (entry.payload as { outcome: string; toolId: string }).outcome)).toEqual([
+        'error',
+        'error',
+      ]);
+      expectNoSecrets(logs.join('\n'));
+    });
+  });
 });
+
+function expectNoSecrets(text: string): void {
+  for (const secret of [PASSWORD, EMAIL, ICAL]) {
+    expect(text.includes(secret)).toBe(false);
+  }
+}
 
 function imapRow(): ConnectorConnection {
   return row('imap', 'gmail', EMAIL, PASSWORD);
@@ -1248,16 +1467,74 @@ function row(
     createdAt: now,
     updatedAt: now,
     lastVerifiedAt: null,
+    signInRefusedAt: null,
   } as ConnectorConnection;
 }
 
-function connections(rows: ConnectorConnection[]) {
+/** CONN-MAIL-AUTH-STATE-01: one query-builder update the broker sent. */
+interface RecordedUpdate {
+  entity: unknown;
+  set: Record<string, unknown>;
+  where: Array<[string, Record<string, unknown> | undefined]>;
+}
+
+function connections(
+  rows: ConnectorConnection[],
+  updates: RecordedUpdate[] = [],
+  control: { failUpdate: Error | null } = { failUpdate: null },
+) {
   return {
     async findOne(options?: { where?: { userId?: string; kind?: string } }) {
       const where = options?.where;
       return (
         rows.find((entry) => entry.userId === where?.userId && entry.kind === where?.kind) ?? null
       );
+    },
+    /**
+     * CONN-MAIL-AUTH-STATE-01 D2: the guarded update. It marks the row whose id and
+     * updated_at (to the millisecond) match the parameters, as PostgreSQL would.
+     */
+    createQueryBuilder() {
+      const recorded: RecordedUpdate = { entity: undefined, set: {}, where: [] };
+      const builder = {
+        update(entity: unknown) {
+          recorded.entity = entity;
+          return builder;
+        },
+        set(values: Record<string, unknown>) {
+          recorded.set = values;
+          return builder;
+        },
+        where(sql: string, params?: Record<string, unknown>) {
+          recorded.where.push([sql, params]);
+          return builder;
+        },
+        andWhere(sql: string, params?: Record<string, unknown>) {
+          recorded.where.push([sql, params]);
+          return builder;
+        },
+        async execute() {
+          updates.push(recorded);
+          if (control.failUpdate) throw control.failUpdate;
+          const params = Object.assign({}, ...recorded.where.map(([, value]) => value ?? {})) as {
+            id?: string;
+            updatedAt?: Date;
+          };
+          let affected = 0;
+          for (const entry of rows) {
+            if (
+              entry.id === params.id &&
+              params.updatedAt instanceof Date &&
+              entry.updatedAt.getTime() === params.updatedAt.getTime()
+            ) {
+              entry.signInRefusedAt = new Date();
+              affected += 1;
+            }
+          }
+          return { affected };
+        },
+      };
+      return builder;
     },
   };
 }

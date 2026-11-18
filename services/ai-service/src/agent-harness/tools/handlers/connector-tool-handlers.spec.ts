@@ -2,6 +2,7 @@ import {
   CONNECTOR_CALL_FAILED_MESSAGE,
   CONNECTOR_CALL_NOT_GRANTED_MESSAGE,
   CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+  CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE,
   createConnectorToolHandler,
   wrapConnectorResult,
 } from './connector-tool-handlers';
@@ -195,6 +196,80 @@ describe('CONN-GRANT-01 connector tool handler', () => {
         grantToken: TOKEN,
       });
       await expect(unread({})).rejects.toThrow(new Error(CONNECTOR_CALL_FAILED_MESSAGE));
+    });
+  });
+
+  describe('CONN-MAIL-AUTH-STATE-01 D6 refused mail sign-in', () => {
+    function gatewayError(status: number, message: unknown) {
+      return Object.assign(new Error(`${status}`), { response: { status, data: { statusCode: status, message } } });
+    }
+
+    function handlerFor(toolId: 'mail_list_unread_metadata' | 'mail_read_message' | 'calendar_list_today', error: unknown) {
+      return createConnectorToolHandler({
+        client: { callConnectorTool: jest.fn().mockRejectedValue(error) },
+        toolId,
+        userId: 'user-owner',
+        executionId: 'exec-1',
+        grantToken: TOKEN,
+      });
+    }
+
+    const argsFor = {
+      mail_list_unread_metadata: {},
+      mail_read_message: { messageId: '9' },
+      calendar_list_today: { timeZone: 'UTC' },
+    } as const;
+
+    it('is the gateway fixed 409 text', () => {
+      expect(CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE).toBe(
+        'The mail server refused the saved password. The owner needs to reconnect the mailbox on the Connections page.',
+      );
+    });
+
+    it.each(['mail_list_unread_metadata', 'mail_read_message'] as const)(
+      'passes on the exact 409 text for %s',
+      async (toolId) => {
+        const error = await handlerFor(toolId, gatewayError(409, CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE))(argsFor[toolId]).catch(
+          (caught: Error) => caught,
+        );
+        expect(error).toEqual(new Error(CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE));
+      },
+    );
+
+    it.each(['mail_list_unread_metadata', 'mail_read_message'] as const)(
+      'keeps the fixed messages for every other failure of %s',
+      async (toolId) => {
+        for (const [status, message, expected] of [
+          [409, 'Conflict', CONNECTOR_CALL_FAILED_MESSAGE],
+          [409, `${CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE} ${TOKEN}`, CONNECTOR_CALL_FAILED_MESSAGE],
+          [409, [CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE], CONNECTOR_CALL_FAILED_MESSAGE],
+          [409, undefined, CONNECTOR_CALL_FAILED_MESSAGE],
+          [503, CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE, CONNECTOR_CALL_FAILED_MESSAGE],
+          [502, CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE, CONNECTOR_CALL_FAILED_MESSAGE],
+          [403, CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE, CONNECTOR_CALL_NOT_GRANTED_MESSAGE],
+        ] as const) {
+          const error = await handlerFor(toolId, gatewayError(status, message))(argsFor[toolId]).catch((caught: Error) => caught);
+          expect({ status, message, got: (error as Error).message }).toEqual({ status, message, got: expected });
+        }
+        const plain = await handlerFor(toolId, new Error(CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE))(argsFor[toolId]).catch(
+          (caught: Error) => caught,
+        );
+        expect((plain as Error).message).toBe(CONNECTOR_CALL_FAILED_MESSAGE);
+      },
+    );
+
+    it('keeps the not-found rule for mail_read_message unchanged', async () => {
+      const error = await handlerFor('mail_read_message', gatewayError(404, CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE))({
+        messageId: '9',
+      }).catch((caught: Error) => caught);
+      expect((error as Error).message).toBe(CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+    });
+
+    it('does not pass the text on for the calendar tool', async () => {
+      const error = await handlerFor('calendar_list_today', gatewayError(409, CONNECTOR_MAIL_SIGN_IN_REFUSED_MESSAGE))(
+        argsFor.calendar_list_today,
+      ).catch((caught: Error) => caught);
+      expect((error as Error).message).toBe(CONNECTOR_CALL_FAILED_MESSAGE);
     });
   });
 });

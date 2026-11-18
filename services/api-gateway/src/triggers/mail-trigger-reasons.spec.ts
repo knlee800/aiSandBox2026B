@@ -1,12 +1,14 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ConflictException,
   GatewayTimeoutException,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { MAIL_SIGN_IN_REFUSED_MESSAGE } from '../connectors/connector-servers';
 import { SCHEDULE_SKIP_REASONS } from './schedule-refusal';
 import {
   MAIL_TRIGGER_DAY_LIMIT,
@@ -86,6 +88,20 @@ describe('mail trigger reasons (TRIGGER-MAIL-01 S3)', () => {
     ]) {
       expect(mailReadFailureOf(error)).toBe('read_failed');
     }
+  });
+
+  it('CONN-MAIL-AUTH-STATE-01 D4: only a 409 with the broker fixed refused-password text is sign_in_refused', () => {
+    expect(mailReadFailureOf(new ConflictException(MAIL_SIGN_IN_REFUSED_MESSAGE))).toBe('sign_in_refused');
+    for (const error of [
+      new ConflictException('Conflict'),
+      new ConflictException(`${MAIL_SIGN_IN_REFUSED_MESSAGE} `),
+      new ServiceUnavailableException(MAIL_SIGN_IN_REFUSED_MESSAGE),
+      new BadGatewayException(MAIL_SIGN_IN_REFUSED_MESSAGE),
+      new Error(MAIL_SIGN_IN_REFUSED_MESSAGE),
+    ]) {
+      expect(mailReadFailureOf(error)).toBe('read_failed');
+    }
+    expect(mailReadFailureOf(new NotFoundException(MAIL_SIGN_IN_REFUSED_MESSAGE))).toBe('connector_missing');
   });
 
   it('the file reads no table, broker, clock or message text', () => {

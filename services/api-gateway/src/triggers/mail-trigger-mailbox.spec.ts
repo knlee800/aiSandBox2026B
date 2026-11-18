@@ -1,7 +1,14 @@
-import { GatewayTimeoutException, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import {
+  ConflictException,
+  GatewayTimeoutException,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { RecentMailRead } from '../connectors/connector-broker';
+import { MAIL_SIGN_IN_REFUSED_MESSAGE } from '../connectors/connector-servers';
 import type { AgentMailTrigger } from '../entities/agent-mail-trigger.entity';
 import {
   MAIL_TRIGGER_MAILBOX_LIMITS,
@@ -75,7 +82,9 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
   let auditRows: Record<string, unknown>[];
   let updates: Array<{ where: Record<string, unknown>; patch: Record<string, unknown> }>;
   let broker: { readRecentMail: jest.Mock };
-  let counts: jest.Mock;
+  /** CONN-MAIL-AUTH-STATE-01 D4: owners whose mail connection is marked refused, and when. */
+  let refused: Map<string, Date>;
+  let lookups: jest.Mock;
   let mailbox: MailTriggerMailbox;
   let handled: MailTriggerOwnerRead[];
   let handle: jest.Mock;
@@ -101,12 +110,14 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
         return { affected };
       }),
     };
-    counts = jest.fn(async ({ where }: { where: { userId: string; kind: string } }) =>
-      where.kind === 'imap' && connected.has(where.userId) ? 1 : 0,
+    lookups = jest.fn(async ({ where }: { where: { userId: string; kind: string }; select?: string[] }) =>
+      where.kind === 'imap' && connected.has(where.userId)
+        ? { id: `conn-${where.userId}`, signInRefusedAt: refused.get(where.userId) ?? null }
+        : null,
     );
     return new MailTriggerMailbox(
       triggerRepo as never,
-      { count: counts } as never,
+      { findOne: lookups } as never,
       {
         findOne: jest.fn(async ({ where }: { where: { id: string } }) =>
           active.has(where.id) ? { id: where.id, isActive: active.get(where.id) } : null,
@@ -123,6 +134,7 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
     process.env.MAIL_TRIGGERS_ENABLED = 'true';
     triggers = [];
     connected = new Set([OWNER_A, OWNER_B, OWNER_C, OWNER_D, OWNER_E]);
+    refused = new Map();
     active = new Map([OWNER_A, OWNER_B, OWNER_C, OWNER_D, OWNER_E].map((id) => [id, true]));
     entitled = new Set([OWNER_A, OWNER_B, OWNER_C, OWNER_D, OWNER_E]);
     auditRows = [];
@@ -161,8 +173,8 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
       restoreEnv(name, value);
       triggers.push(triggerRow());
       const summary = await mailbox.refresh(triggers, NOW, handle);
-      expect(summary).toEqual({ read: 0, failed: 0, connectorMissing: 0, skippedOwners: 0 });
-      expect(counts).not.toHaveBeenCalled();
+      expect(summary).toEqual({ read: 0, failed: 0, connectorMissing: 0, skippedOwners: 0, signInRefused: 0 });
+      expect(lookups).not.toHaveBeenCalled();
       expect(broker.readRecentMail).not.toHaveBeenCalled();
       expect(handle).not.toHaveBeenCalled();
       expect(updates).toEqual([]);
@@ -180,7 +192,7 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
       triggers.push(triggerRow());
       const summary = await mailbox.refresh(triggers, NOW, handle);
       expect(summary.skippedOwners).toBe(1);
-      expect(counts).not.toHaveBeenCalled();
+      expect(lookups).not.toHaveBeenCalled();
       expect(broker.readRecentMail).not.toHaveBeenCalled();
       expect(handle).not.toHaveBeenCalled();
     });
@@ -194,7 +206,7 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
       triggers.push(first, second);
       const summary = await mailbox.refresh(triggers, NOW, handle);
       expect(summary.connectorMissing).toBe(1);
-      expect(counts).toHaveBeenCalledWith({ where: { userId: OWNER_A, kind: 'imap' } });
+      expect(lookups).toHaveBeenCalledWith({ where: { userId: OWNER_A, kind: 'imap' }, select: ['id', 'signInRefusedAt'] });
       expect(broker.readRecentMail).not.toHaveBeenCalled();
       expect(handle).not.toHaveBeenCalled();
       expect(triggers.map((row) => [row.mailState, row.mailStateAt])).toEqual([
@@ -443,6 +455,85 @@ describe('MailTriggerMailbox (TRIGGER-MAIL-01 S3)', () => {
       });
       await mailbox.refresh(triggers, later(1), handle);
       expect(broker.readRecentMail).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('CONN-MAIL-AUTH-STATE-01 D4: a refused password stops the sign-ins', () => {
+    const REFUSED_AT = new Date('2026-11-16T00:30:00Z');
+
+    function paceOf(userId: string) {
+      return (mailbox as unknown as { pace: Map<string, { attemptAt: number; failures: number }> }).pace.get(userId);
+    }
+
+    it('a refused owner is skipped with no broker call, counted as signInRefused and not as a failure, every tick', async () => {
+      refused.set(OWNER_A, REFUSED_AT);
+      triggers.push(triggerRow(), triggerRow({ userId: OWNER_B }));
+      const summary = await mailbox.refresh(triggers, NOW, handle);
+      expect(summary).toEqual({ read: 1, failed: 0, connectorMissing: 0, skippedOwners: 0, signInRefused: 1 });
+      expect(lookups).toHaveBeenCalledWith({ where: { userId: OWNER_A, kind: 'imap' }, select: ['id', 'signInRefusedAt'] });
+      expect(broker.readRecentMail.mock.calls.map(([userId]) => userId)).toEqual([OWNER_B]);
+      expect(paceOf(OWNER_A)).toEqual({ attemptAt: NOW.getTime(), failures: 0 });
+      // No state write and no audit row for the refused owner (the list shows the connection's mark).
+      expect(updates.filter((update) => update.where.userId === OWNER_A)).toEqual([]);
+      expect(auditRows.filter((row) => row.userId === OWNER_A)).toEqual([]);
+
+      for (const minutes of [10, 20, 30, 40]) {
+        const next = await mailbox.refresh(triggers, later(minutes), handle);
+        expect(next.signInRefused).toBe(1);
+        expect(next.failed).toBe(0);
+      }
+      expect(broker.readRecentMail.mock.calls.filter(([userId]) => userId === OWNER_A)).toHaveLength(0);
+      expect(triggers.filter((row) => row.userId === OWNER_A).map((row) => row.mailState)).toEqual(['ok']);
+    });
+
+    it('after the owner reconnects, the next read comes at the normal 10-minute pace from the last attempt', async () => {
+      triggers.push(triggerRow({ mailState: 'read_failed', mailStateAt: later(-120) }));
+      refused.set(OWNER_A, REFUSED_AT);
+      await mailbox.refresh(triggers, NOW, handle);
+      expect(broker.readRecentMail).not.toHaveBeenCalled();
+      refused.delete(OWNER_A);
+      await mailbox.refresh(triggers, later(9), handle);
+      expect(broker.readRecentMail).not.toHaveBeenCalled();
+      await mailbox.refresh(triggers, later(10), handle);
+      expect(broker.readRecentMail).toHaveBeenCalledTimes(1);
+      expect(triggers[0].mailState).toBe('ok');
+      expect(handle).toHaveBeenCalledTimes(1);
+    });
+
+    it("the broker's 409 with the fixed text counts as signInRefused, not a failure; the next ticks sign in nowhere", async () => {
+      triggers.push(triggerRow());
+      broker.readRecentMail.mockImplementationOnce(async (userId: string) => {
+        // The broker marks the connection, then answers the fixed 409.
+        refused.set(userId, NOW);
+        throw new ConflictException(MAIL_SIGN_IN_REFUSED_MESSAGE);
+      });
+      const first = await mailbox.refresh(triggers, NOW, handle);
+      expect(first).toMatchObject({ signInRefused: 1, failed: 0, read: 0 });
+      expect(paceOf(OWNER_A)?.failures).toBe(0);
+      expect(logs).toEqual([]);
+      for (const minutes of [10, 20, 30]) {
+        await mailbox.refresh(triggers, later(minutes), handle);
+      }
+      expect(broker.readRecentMail).toHaveBeenCalledTimes(1);
+      expect(triggers[0].mailState).toBe('ok');
+      expect(auditRows).toEqual([]);
+    });
+
+    it('a 409 with any other text is still a failed read', async () => {
+      triggers.push(triggerRow());
+      broker.readRecentMail.mockRejectedValue(new ConflictException('Conflict'));
+      for (const minutes of [0, 10, 20]) {
+        await mailbox.refresh(triggers, later(minutes), handle);
+      }
+      expect(broker.readRecentMail).toHaveBeenCalledTimes(3);
+      expect(triggers[0].mailState).toBe('read_failed');
+    });
+
+    it('the source reads only id and signInRefusedAt of the connection, never the secret', () => {
+      const source = readFileSync(join(__dirname, 'mail-trigger-mailbox.ts'), 'utf8');
+      expect(source).toContain("select: ['id', 'signInRefusedAt']");
+      expect(source).not.toMatch(/secretCiphertext|secret_ciphertext|decrypt/);
+      expect(source).not.toMatch(/connections\.count\(/);
     });
   });
 

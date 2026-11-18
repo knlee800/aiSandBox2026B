@@ -24,6 +24,12 @@ export const MESSAGE_ID_MESSAGE = 'messageId must be a message id from 1 to 4294
  * the Inbox. It carries no mail content. The gateway matches this exact text.
  */
 export const MAIL_MESSAGE_NOT_FOUND_MESSAGE = 'No Inbox message has that id.';
+/**
+ * CONN-MAIL-AUTH-STATE-01 D1: the fixed error of the three IMAP reads when the mail
+ * server refuses the sign-in (imapflow sets `authenticationFailed` on that error).
+ * It holds no address, password or server text. The gateway matches this exact text.
+ */
+export const MAIL_SIGN_IN_REFUSED_MESSAGE = 'The mail server refused the sign-in.';
 
 /** CONN-03: each mail body excerpt is at most this many characters (code points). */
 export const MAX_BODY_CHARS = 800;

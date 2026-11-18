@@ -1,4 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { MAIL_SIGN_IN_REFUSED_MESSAGE } from '../connectors/connector-servers';
 import { SCHEDULE_SKIP_REASONS, type ScheduleSkipReason } from './schedule-refusal';
 
 /**
@@ -51,11 +52,15 @@ export function mailTriggerCancelReason(reason: MailTriggerSkipReason): string {
 
 /**
  * The mailbox state after a failed read: the broker answers 404 when the
- * owner's mail connection row is gone (connector_missing); anything else
- * (a refused sign-in, the host, a timeout, busy, an old child without the
- * tool, a bad result, a missing key) is a failed read. Reads the error's
- * class only, never its message.
+ * owner's mail connection row is gone (connector_missing); CONN-MAIL-AUTH-STATE-01
+ * D4: a 409 with the broker's fixed refused-password text is sign_in_refused
+ * (the connection is marked; no further sign-in until the owner reconnects),
+ * not a failure; anything else (the host, a timeout, busy, an old child
+ * without the tool, a bad result, a missing key) is a failed read. Reads the
+ * error's class, and for a 409 only the broker's fixed text.
  */
-export function mailReadFailureOf(error: unknown): 'connector_missing' | 'read_failed' {
-  return error instanceof NotFoundException ? 'connector_missing' : 'read_failed';
+export function mailReadFailureOf(error: unknown): 'connector_missing' | 'sign_in_refused' | 'read_failed' {
+  if (error instanceof NotFoundException) return 'connector_missing';
+  if (error instanceof ConflictException && error.message === MAIL_SIGN_IN_REFUSED_MESSAGE) return 'sign_in_refused';
+  return 'read_failed';
 }

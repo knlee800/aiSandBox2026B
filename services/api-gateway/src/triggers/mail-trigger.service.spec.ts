@@ -518,15 +518,19 @@ describe('MailTriggerService (TRIGGER-MAIL-01 S2)', () => {
       }
     });
 
-    it("mail.connected is true only for the owner's own imap connection, by a count (no secret read)", async () => {
+    it("mail.connected is true only for the owner's own imap connection, reading only id and signInRefusedAt (no secret read)", async () => {
       expect(MAIL_TRIGGER_MAIL_CONNECTOR_KIND).toBe('imap');
       expect(CONNECTOR_KINDS).toContain(MAIL_TRIGGER_MAIL_CONNECTOR_KIND);
+      const lookup = jest.spyOn(store.connections, 'findOne');
       store.connections.rows.push(connectionRow(OWNER, 'ical'), connectionRow(OTHER, 'imap'));
       expect((await service.list(OWNER)).mail.connected).toBe(false);
       store.connections.rows.push(connectionRow(OWNER, 'imap'));
       expect((await service.list(OWNER)).mail.connected).toBe(true);
       const connectionCalls = store.calls.filter((call) => call.startsWith('connections.'));
-      expect(new Set(connectionCalls)).toEqual(new Set(['connections.count']));
+      expect(new Set(connectionCalls)).toEqual(new Set(['connections.findOne']));
+      for (const [options] of lookup.mock.calls) {
+        expect(options).toEqual({ where: { userId: OWNER, kind: 'imap' }, select: ['id', 'signInRefusedAt'] });
+      }
       const source = readFileSync(join(__dirname, 'mail-trigger.service.ts'), 'utf8');
       expect(source).not.toMatch(
         /secretCiphertext|secret_ciphertext|decrypt|ConnectorBroker|callConnectorTool|readRecentMail|readCalendarWindow/,
@@ -559,6 +563,34 @@ describe('MailTriggerService (TRIGGER-MAIL-01 S2)', () => {
         state: 'ok',
         stateAt: '2026-11-15T03:00:00.000Z',
       });
+    });
+
+    it("CONN-MAIL-AUTH-STATE-01 D4: mail.state is sign_in_refused, at the connection's mark, while the owner's connection is marked refused", async () => {
+      const first = await service.create(OWNER, body({ task: 'first' }));
+      const rowOf = (id: string) => store.triggers.rows.find((row) => row.id === id)!;
+      rowOf(first.id).mailState = 'read_failed';
+      rowOf(first.id).mailStateAt = new Date('2026-11-15T05:00:00Z');
+      const mailConnection = { ...connectionRow(OWNER, 'imap'), signInRefusedAt: new Date('2026-11-15T04:00:00Z') };
+      const otherConnection = { ...connectionRow(OTHER, 'imap'), signInRefusedAt: new Date('2026-11-15T06:00:00Z') };
+      store.connections.rows.push(mailConnection, otherConnection);
+
+      const refusedView = await service.list(OWNER);
+      expect(refusedView.mail).toEqual({ connected: true, state: 'sign_in_refused', stateAt: '2026-11-15T04:00:00.000Z' });
+      expect(JSON.stringify(refusedView)).not.toContain('never-read');
+      // The trigger rows keep their own state; the CHECK'd column is never written with sign_in_refused.
+      expect(rowOf(first.id).mailState).toBe('read_failed');
+      expect(store.triggers.rows.some((row) => (row.mailState as string) === 'sign_in_refused')).toBe(false);
+
+      mailConnection.signInRefusedAt = null as unknown as Date;
+      expect((await service.list(OWNER)).mail).toEqual({
+        connected: true,
+        state: 'read_failed',
+        stateAt: '2026-11-15T05:00:00.000Z',
+      });
+      // Each owner sees only its own connection's mark.
+      expect((await service.list(OTHER)).mail).toEqual({ connected: true, state: 'sign_in_refused', stateAt: '2026-11-15T06:00:00.000Z' });
+      store.connections.rows.splice(0);
+      expect((await service.list(OTHER)).mail).toEqual({ connected: false, state: 'ok', stateAt: null });
     });
 
     it("lists only the owner's triggers, oldest first, with the newest history row as lastRun", async () => {

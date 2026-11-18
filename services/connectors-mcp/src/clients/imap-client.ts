@@ -13,6 +13,7 @@ import {
   MAX_BODY_CHARS,
   MAX_BODY_FETCH_BYTES,
   MAX_MESSAGE_UID,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
   MAX_RECENT_MESSAGES,
   MESSAGE_ID_MESSAGE,
   REPLACEMENT_CHARACTER,
@@ -287,6 +288,27 @@ async function fillBodies(
   }
 }
 
+/**
+ * CONN-MAIL-AUTH-STATE-01 D1: true when imapflow marked the error as the server
+ * refusing the sign-in (`authenticationFailed === true`; a tagged NO or BAD to
+ * LOGIN or AUTHENTICATE). A lost connection or a timeout is not a refusal.
+ */
+export function isSignInRefused(error: unknown): boolean {
+  return !!error && typeof error === 'object' && (error as { authenticationFailed?: unknown }).authenticationFailed === true;
+}
+
+/**
+ * CONN-MAIL-AUTH-STATE-01 D1: the error a read throws. A refused sign-in is the
+ * fixed MAIL_SIGN_IN_REFUSED_MESSAGE; anything else is the error's text with the
+ * password and the username redacted, as before.
+ */
+export function mailReadError(error: unknown, secrets: Array<string | undefined>): Error {
+  if (isSignInRefused(error)) {
+    return new Error(MAIL_SIGN_IN_REFUSED_MESSAGE);
+  }
+  return new Error(redact(errorText(error), secrets));
+}
+
 async function closeQuietly(client: ImapFlow): Promise<void> {
   try {
     if (!client.isClosed) {
@@ -355,7 +377,7 @@ export async function fetchUnreadHeaders(
     });
     return await Promise.race([work, timeout]);
   } catch (error) {
-    throw new Error(redact(errorText(error), secrets));
+    throw mailReadError(error, secrets);
   } finally {
     if (timer) {
       clearTimeout(timer);
@@ -449,7 +471,7 @@ export async function fetchOneMessage(
     });
     return await Promise.race([work, timeout]);
   } catch (error) {
-    throw new Error(redact(errorText(error), secrets));
+    throw mailReadError(error, secrets);
   } finally {
     if (timer) {
       clearTimeout(timer);
@@ -625,7 +647,7 @@ export async function fetchRecentHeaders(
     });
     return await Promise.race([work, timeout]);
   } catch (error) {
-    throw new Error(redact(errorText(error), secrets));
+    throw mailReadError(error, secrets);
   } finally {
     if (timer) {
       clearTimeout(timer);

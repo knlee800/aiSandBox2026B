@@ -11,7 +11,10 @@ import { ConnectorMcpSession } from './connector-child';
 import { ConnectorDecryptError, decryptConnectorSecret } from './connector-crypto';
 import {
   CALENDAR_VERIFY_FAILED_MESSAGE,
+  MAIL_CHILD_SIGN_IN_REFUSED_TEXT,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
   MAIL_VERIFY_FAILED_MESSAGE,
+  MAIL_VERIFY_REFUSED_MESSAGE,
 } from './connector-servers';
 import { ConnectorsController } from './connectors.controller';
 import { ConnectorsService } from './connectors.service';
@@ -203,6 +206,7 @@ describe('ConnectorsController', () => {
       'kind',
       'lastVerifiedAt',
       'preset',
+      'signInRefusedAt',
       'updatedAt',
       'username',
     ]);
@@ -211,6 +215,7 @@ describe('ConnectorsController', () => {
       preset: 'gmail',
       username: EMAIL,
       lastVerifiedAt: null,
+      signInRefusedAt: null,
     });
     expect(repo.rows).toHaveLength(1);
     expect(repo.rows[0].userId).toBe(OWNER);
@@ -530,6 +535,68 @@ describe('ConnectorsController', () => {
     expect(missing.body.message).toBe('Connection not found.');
   });
 
+  it('CONN-MAIL-AUTH-STATE-01: a refused Test answers 502 with its own text and marks the mailbox; a good Test or a save clears it; the list shows it for mail only', async () => {
+    await authed()
+      .post('/api/connectors/imap')
+      .send({ preset: 'gmail', username: EMAIL, appPassword: PASSWORD })
+      .expect(200);
+    await authed().post('/api/connectors/ical').send({ url: ICAL }).expect(200);
+    const mailRow = () => repo.rows.find((row) => row.kind === 'imap') as ConnectorConnection;
+    const refusedResult = { isError: true, content: [{ type: 'text', text: MAIL_CHILD_SIGN_IN_REFUSED_TEXT }] };
+    const verifyOutcomes = () =>
+      repo.audit.rows
+        .filter((row) => (row.payload as { action?: string }).action === 'connector_verify')
+        .map((row) => (row.payload as { outcome: string }).outcome);
+
+    const refused = scriptedSession(refusedResult);
+    opener.mockImplementationOnce(async () => refused);
+    const denied = await authed().post('/api/connectors/imap/verify').expect(502);
+    expect(denied.body.message).toBe(MAIL_VERIFY_REFUSED_MESSAGE);
+    expect(denied.body.message).not.toBe(MAIL_VERIFY_FAILED_MESSAGE);
+    expectAbsent([PASSWORD, EMAIL, MAIL_CHILD_SIGN_IN_REFUSED_TEXT, MAIL_SIGN_IN_REFUSED_MESSAGE], denied.text);
+    refused.emitExit();
+    expect(refused.calls).toHaveLength(1);
+    expect(mailRow().signInRefusedAt).toBeInstanceOf(Date);
+    expect(mailRow().lastVerifiedAt).toBeNull();
+    expect(repo.updates).toHaveLength(1);
+    expect(Object.keys(repo.updates[0].set).sort()).toEqual(['signInRefusedAt', 'updatedAt']);
+    expect(repo.updates[0].params).toEqual({ id: mailRow().id, updatedAt: mailRow().updatedAt });
+
+    const listed = await authed().get('/api/connectors').expect(200);
+    const listedMail = listed.body.connections.find((row: { kind: string }) => row.kind === 'imap');
+    const listedCalendar = listed.body.connections.find((row: { kind: string }) => row.kind === 'ical');
+    expect(listedMail.signInRefusedAt).toBe(mailRow().signInRefusedAt?.toISOString());
+    expect(Object.keys(listedCalendar).sort()).toEqual(['createdAt', 'kind', 'lastVerifiedAt', 'updatedAt']);
+    expectAbsent([PASSWORD, ICAL, ICAL_TOKEN], listed.text);
+
+    // The Test still signs in while refused, and a success clears the mark.
+    const good = scriptedSession({ content: [{ type: 'text', text: JSON.stringify({ messages: [] }) }] });
+    opener.mockImplementationOnce(async () => good);
+    const verified = await authed().post('/api/connectors/imap/verify').expect(200);
+    good.emitExit();
+    expect(good.calls).toHaveLength(1);
+    expect(verified.body.ok).toBe(true);
+    expect(mailRow().signInRefusedAt).toBeNull();
+    const cleared = await authed().get('/api/connectors').expect(200);
+    expect(cleared.body.connections.find((row: { kind: string }) => row.kind === 'imap').signInRefusedAt).toBeNull();
+
+    // Refused again, then a saved password clears the mark.
+    const again = scriptedSession(refusedResult);
+    opener.mockImplementationOnce(async () => again);
+    await authed().post('/api/connectors/imap/verify').expect(502);
+    again.emitExit();
+    expect(mailRow().signInRefusedAt).toBeInstanceOf(Date);
+    const saved = await authed()
+      .post('/api/connectors/imap')
+      .send({ preset: 'gmail', username: EMAIL, appPassword: NEXT_PASSWORD })
+      .expect(200);
+    expect(saved.body.signInRefusedAt).toBeNull();
+    expect(mailRow().signInRefusedAt).toBeNull();
+    expect(verifyOutcomes()).toEqual(['error', 'ok', 'error']);
+    expectAbsent([PASSWORD, NEXT_PASSWORD, ICAL, ICAL_TOKEN], logs.join('\n'));
+    expectAbsent([PASSWORD, NEXT_PASSWORD, EMAIL], JSON.stringify(repo.audit.rows));
+  });
+
   it('returns 503 when the credentials key is missing on verify', async () => {
     delete process.env.CONNECTOR_CREDENTIALS_KEY;
     const response = await authed().post('/api/connectors/imap/verify').expect(503);
@@ -734,6 +801,41 @@ class MemoryConnectionRepository {
     this.rows = this.rows.filter((row) => !matches(row, criteria));
     return { affected: before - this.rows.length };
   }
+
+  /** CONN-MAIL-AUTH-STATE-01 D2: the broker's guarded update (id and updated_at to the millisecond). */
+  updates: Array<{ set: Record<string, unknown>; params: Record<string, unknown> }> = [];
+
+  createQueryBuilder() {
+    const recorded = { set: {} as Record<string, unknown>, params: {} as Record<string, unknown> };
+    const builder = {
+      update: () => builder,
+      set: (values: Record<string, unknown>) => {
+        recorded.set = values;
+        return builder;
+      },
+      where: (_sql: string, params?: Record<string, unknown>) => {
+        Object.assign(recorded.params, params);
+        return builder;
+      },
+      andWhere: (_sql: string, params?: Record<string, unknown>) => {
+        Object.assign(recorded.params, params);
+        return builder;
+      },
+      execute: async () => {
+        this.updates.push(recorded);
+        const updatedAt = recorded.params.updatedAt;
+        let affected = 0;
+        for (const row of this.rows) {
+          if (row.id === recorded.params.id && updatedAt instanceof Date && row.updatedAt.getTime() === updatedAt.getTime()) {
+            row.signInRefusedAt = new Date();
+            affected += 1;
+          }
+        }
+        return { affected };
+      },
+    };
+    return builder;
+  }
 }
 
 function cloneConnection(row: ConnectorConnection): ConnectorConnection {
@@ -742,6 +844,7 @@ function cloneConnection(row: ConnectorConnection): ConnectorConnection {
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
     lastVerifiedAt: row.lastVerifiedAt ? new Date(row.lastVerifiedAt) : null,
+    signInRefusedAt: row.signInRefusedAt ? new Date(row.signInRefusedAt) : null,
   };
 }
 

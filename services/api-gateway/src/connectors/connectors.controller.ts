@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
@@ -28,7 +29,9 @@ import {
 import { assertConnectorBodyLimit, parseConnectorKind } from './connector-input';
 import {
   CALENDAR_VERIFY_FAILED_MESSAGE,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
   MAIL_VERIFY_FAILED_MESSAGE,
+  MAIL_VERIFY_REFUSED_MESSAGE,
   toolForKind,
   verifyArguments,
 } from './connector-servers';
@@ -103,6 +106,15 @@ export class ConnectorsController {
       }
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
+      }
+      // CONN-MAIL-AUTH-STATE-01 D3: the server refused the app password (the broker
+      // has marked the connection); the Test says so instead of "could not reach".
+      if (
+        parsedKind === 'imap' &&
+        error instanceof ConflictException &&
+        error.message === MAIL_SIGN_IN_REFUSED_MESSAGE
+      ) {
+        throw new BadGatewayException(MAIL_VERIFY_REFUSED_MESSAGE);
       }
       throw new BadGatewayException(
         parsedKind === 'imap' ? MAIL_VERIFY_FAILED_MESSAGE : CALENDAR_VERIFY_FAILED_MESSAGE,

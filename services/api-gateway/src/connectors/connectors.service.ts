@@ -37,6 +37,11 @@ export interface ImapConnectionPublic {
   createdAt: string;
   updatedAt: string;
   lastVerifiedAt: string | null;
+  /**
+   * CONN-MAIL-AUTH-STATE-01 D5: when the mail server refused the saved password (ISO);
+   * null when it has not since the last save or successful Test. Mail only.
+   */
+  signInRefusedAt: string | null;
 }
 
 export interface IcalConnectionPublic {
@@ -140,6 +145,10 @@ export class ConnectorsService {
       }
       const lastVerifiedAt = new Date();
       existing.lastVerifiedAt = lastVerifiedAt;
+      // CONN-MAIL-AUTH-STATE-01 D2: a successful Test clears the server's refusal.
+      if (kind === 'imap') {
+        existing.signInRefusedAt = null;
+      }
       const saved = await this.connections.save(existing);
       const verified = saved.lastVerifiedAt instanceof Date ? saved.lastVerifiedAt : lastVerifiedAt;
       return verified.toISOString();
@@ -178,6 +187,8 @@ export class ConnectorsService {
               createdAt: existing.createdAt,
               updatedAt,
               lastVerifiedAt: null,
+              // CONN-MAIL-AUTH-STATE-01 D2: a saved password clears the server's refusal.
+              signInRefusedAt: null,
             }),
           );
           await saveAudit(manager, input.userId, saved.id, 'replace', input.kind, input.preset);
@@ -195,6 +206,7 @@ export class ConnectorsService {
             createdAt: now,
             updatedAt: now,
             lastVerifiedAt: null,
+            signInRefusedAt: null,
           }),
         );
         await saveAudit(manager, input.userId, saved.id, 'connect', input.kind, input.preset);
@@ -283,6 +295,7 @@ function toImapPublic(row: ConnectorConnection): ImapConnectionPublic {
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     lastVerifiedAt: isoOrNull(row.lastVerifiedAt),
+    signInRefusedAt: isoOrNull(row.signInRefusedAt ?? null),
   };
 }
 

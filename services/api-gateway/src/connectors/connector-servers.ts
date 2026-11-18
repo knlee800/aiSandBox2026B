@@ -18,6 +18,24 @@ export const CONNECTOR_UNAVAILABLE_MESSAGE = 'The connector service is unavailab
 export const CONNECTOR_TIMEOUT_MESSAGE = 'The connector service timed out.';
 export const CONNECTOR_RESULT_MESSAGE = 'The connector result could not be read.';
 export const MAIL_VERIFY_FAILED_MESSAGE = 'could not reach the mail server';
+/**
+ * CONN-MAIL-AUTH-STATE-01 D3: the Test button's answer (502) when the mail server
+ * refuses the saved app password, in place of MAIL_VERIFY_FAILED_MESSAGE.
+ */
+export const MAIL_VERIFY_REFUSED_MESSAGE = 'the mail server refused the app password';
+/**
+ * CONN-MAIL-AUTH-STATE-01 D1: the child's exact error text for a refused mail
+ * sign-in (services/connectors-mcp/src/limits.ts MAIL_SIGN_IN_REFUSED_MESSAGE). It
+ * never leaves the broker: the broker marks the connection and answers
+ * MAIL_SIGN_IN_REFUSED_MESSAGE instead.
+ */
+export const MAIL_CHILD_SIGN_IN_REFUSED_TEXT = 'The mail server refused the sign-in.';
+/**
+ * CONN-MAIL-AUTH-STATE-01 D3: the broker's fixed 409 for a mail call while the
+ * connection is marked refused, and for a call whose sign-in the server refused.
+ */
+export const MAIL_SIGN_IN_REFUSED_MESSAGE =
+  'The mail server refused the saved password. The owner needs to reconnect the mailbox on the Connections page.';
 export const CALENDAR_VERIFY_FAILED_MESSAGE = 'the calendar link could not be read';
 
 export const MAIL_TOOL_ID = 'mail_list_unread_metadata';
@@ -241,6 +259,7 @@ const FIXED_MESSAGES = new Set<string>([
   CONNECTOR_TIMEOUT_MESSAGE,
   CONNECTOR_RESULT_MESSAGE,
   MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+  MAIL_SIGN_IN_REFUSED_MESSAGE,
 ]);
 
 export function connectorToolCatalog(): ConnectorToolDefinition[] {

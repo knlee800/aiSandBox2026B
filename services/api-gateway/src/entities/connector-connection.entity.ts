@@ -50,4 +50,13 @@ export class ConnectorConnection {
 
   @Column({ type: 'timestamptz', name: 'last_verified_at', nullable: true })
   lastVerifiedAt: Date | null;
+
+  /**
+   * CONN-MAIL-AUTH-STATE-01 D2 (migration 1815000000000-AddConnectorSignInRefusedAt):
+   * when the mail server last refused this saved password; null when it has not since
+   * the last save or successful Test. Set only by the broker's guarded update; cleared
+   * by a save (writeConnection) and a successful Test (markVerified).
+   */
+  @Column({ type: 'timestamptz', name: 'sign_in_refused_at', nullable: true })
+  signInRefusedAt: Date | null;
 }

@@ -77,12 +77,22 @@ export interface MailTriggerView {
   lastRun: MailTriggerLastRunView | null;
 }
 
+/**
+ * CONN-MAIL-AUTH-STATE-01 D4: the mail block's public state. sign_in_refused comes
+ * from the connection (sign_in_refused_at), never from a trigger row, so the
+ * mail_state CHECK and AGENT_MAIL_TRIGGER_MAIL_STATES are unchanged.
+ */
+export type MailTriggerPublicMailState = AgentMailTriggerMailState | 'sign_in_refused';
+
 export interface MailTriggerMailView {
-  /** The owner has an imap connector_connections row (a count only: no broker call, the secret is never read). */
+  /** The owner has an imap connector_connections row (id and sign_in_refused_at only: no broker call, the secret is never read). */
   connected: boolean;
-  /** The newest mail_state among the owner's triggers; 'ok' when none was recorded. */
-  state: AgentMailTriggerMailState;
-  /** When that state was recorded; null when none was. */
+  /**
+   * sign_in_refused while the owner's mail connection is marked refused; otherwise
+   * the newest mail_state among the owner's triggers, 'ok' when none was recorded.
+   */
+  state: MailTriggerPublicMailState;
+  /** When that state was recorded (for sign_in_refused, the connection's mark); null when none was. */
   stateAt: string | null;
 }
 
@@ -145,14 +155,22 @@ export class MailTriggerService {
     for (const row of rows) {
       triggers.push(this.view(row, workflows, await this.lastRun(row.id, userId)));
     }
-    // Whether a row exists only: the secret column is never read here.
-    const connected =
-      (await this.connections.count({ where: { userId, kind: MAIL_TRIGGER_MAIL_CONNECTOR_KIND } })) > 0;
+    // Whether a row exists and its refusal mark (CONN-MAIL-AUTH-STATE-01 D4): only
+    // id and sign_in_refused_at are read; the secret column is never read here.
+    const connection = await this.connections.findOne({
+      where: { userId, kind: MAIL_TRIGGER_MAIL_CONNECTOR_KIND },
+      select: ['id', 'signInRefusedAt'],
+    });
+    const connected = !!connection;
+    const refusedAt = connection ? connection.signInRefusedAt ?? null : null;
     return {
       enabled: isMailTriggersEnabled(),
       runsEnabled: KillSwitchConfig.GLOBAL_EXECUTION_ENABLED,
       limit: MAIL_TRIGGERS_PER_OWNER_LIMIT,
-      mail: { connected, ...mailStateOf(rows) },
+      mail: {
+        connected,
+        ...(refusedAt !== null ? { state: 'sign_in_refused' as const, stateAt: isoOf(refusedAt) } : mailStateOf(rows)),
+      },
       triggers,
     };
   }
