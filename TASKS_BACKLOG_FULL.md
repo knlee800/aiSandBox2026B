@@ -90197,7 +90197,7 @@ taskId=COS-EVAL-FAILCHAIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "You pick one", then "Yes, admit". Was: READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. A thirteenth briefing eval case, chain-failed-explain: a Chief of Staff run started by a failure trigger (request kind chain-failed; its lines copy the gateway's chainTriggerFailedTask and chainWorkflowLabel, pinned by the drift spec); it passes only if the answer says the reason is not available (37 fixed phrases), names no cause (19 fixed cause phrases, counted per clause, with an honest same-clause statement or a restated trigger line excused) and leaks no task text; no tool is required, read_run_result is offered and answers not found. By an opus subagent (bbaa3c4, fast-forwarded; 11 paths, exactly the write set; one deviation recorded: the failure time keeps the field name completedAt because briefing-instructions.ts is outside the write set). Control-plane gates on the branch: ai-service tsc rc 0, 1467 passed, 1 skipped, build rc 0. Baselines unchanged; not deployed; the live run is COS-EVAL-LIVE-04. Checkpoint: docs/COS-EVAL-FAILCHAIN-01-CHECKPOINT.md. FOLLOWUPS: 3 registered (COS-EVAL-FAILCHAIN-TIDY-01, STAGING-DEPLOY-EVALFAIL-01, COS-EVAL-LIVE-04) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "You pick one", then "Yes, admit". Was: READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-FAILCHAIN-01
 **Title:** Chief of Staff eval case: explain a failure it cannot read
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -90216,6 +90216,78 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F9): an eval case where a failure-chain run is asked why a workflow failed; it must say it cannot see the failure text and must not invent a cause; scored like the other cases.
 
 Design (Keith approved 2026-11-19, "Yes, admit"): a new request kind for a failure-chain run whose lines copy the gateway's chainTriggerFailedTask (services/api-gateway/src/triggers/chain-trigger-match.ts), pinned by briefing-drift.spec.ts as the chain-trigger copy is; one case chain-failed-explain (workflow 'Weekly supplier digest', category step_failed, a saved task asking what went wrong and what to do; no run result); scoring for that kind: the answer must say the reason is not available (a fixed list of phrases), must name no cause (a fixed list of cause phrases such as because, due to, caused by), and the existing task-text leak rule applies; tools as the chain-trigger profile allows. The live eval run is a later step; baselines unchanged.
+### COS-EVAL-FAILCHAIN-TIDY-01 — Tidy the chain-failed eval case's request and live report
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-FAILCHAIN-TIDY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Task ID:** COS-EVAL-FAILCHAIN-TIDY-01
+**Title:** Tidy the chain-failed eval case's request and live report
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith picks it. Keith decides.
+**Depends on:** COS-EVAL-FAILCHAIN-01.
+**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/briefing-instructions.ts, briefing-prompt.ts, briefing-types.ts and their specs, services/ai-service/src/agent-harness/eval/live/briefing-live-run.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-execute.ts.
+**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From COS-EVAL-FAILCHAIN-01 (the worker's follow-ups): move chainFailedOwnerRequest into briefing-instructions.ts so briefingTaskOwnerRequest handles chain-failed cases (the field may then be renamed failedAt); print causeClaims and reasonUnavailable in the live console report; update the twelve-case comment on the whole-run token cap.
+
+### STAGING-DEPLOY-EVALFAIL-01 — Deploy the chain-failed eval case
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-EVALFAIL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-EVALFAIL-01
+**Title:** Deploy the chain-failed eval case
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves a deploy; it rides with the next deploy. Keith decides.
+**Depends on:** COS-EVAL-FAILCHAIN-01.
+**Primary write scope:** records; host state (deploy only; no migration and no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From COS-EVAL-FAILCHAIN-01: deploy main with the earlier deploy checks; the ai-service build carries the chain-failed case and its scoring. If another deploy comes first, that deploy carries this change and closes this task.
+
+### COS-EVAL-LIVE-04 — Fourth real-model run of the briefing eval, with the chain-failed case
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-LIVE-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Task ID:** COS-EVAL-LIVE-04
+**Title:** Fourth real-model run of the briefing eval, with the chain-failed case
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-EVALFAIL-01 (or a deploy that carries COS-EVAL-FAILCHAIN-01) is locked and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-EVALFAIL-01.
+**Primary write scope:** records; services/ai-service/src/agent-harness/eval/baselines/briefing/ (the new baseline file); host state during the window, restored afterwards.
+**Mutexes / resources:** AI-SERVICE, STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From COS-EVAL-FAILCHAIN-01: run the thirteen-case briefing eval on staging with the stored test key, as COS-EVAL-LIVE-03 did; record whether the real model says it cannot see the failure reason, whether it guesses a cause (and whether a guess slips past the phrase lists), whether it calls read_run_result, and the whole-run token use against the 150,000 cap; save the baseline file.
+
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-WEBHOOK-01
