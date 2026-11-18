@@ -2,7 +2,7 @@
 
 Task: TRIGGER-CHAIN-FAILED-01, start the Chief of Staff or another of the owner's workflows when one of the owner's workflows fails. Lane 1, 4-step, Step 2.
 Drafted 2026-11-18 by a fable subagent (Model Routing gives stage-start drafts to fable; the brief names Fable 5.1, the session reports itself as Fable 5.2) on `lane/TRIGGER-CHAIN-FAILED-01` (from main 0f3d1f16). This document is the only write.
-Nothing here is approved. Step 3 starts only after Keith approves; mutexes and write sets below are proposals.
+APPROVED by Keith on 2026-11-18 ("Yes, approve all"): Q1 to Q13 and the section 4.3 copy. Mutexes and write sets below are the admitted ones.
 
 Path short forms: GW = `services/api-gateway/src`, FE = `frontend`.
 Every code fact was read in this worktree on 2026-11-18. No test, build or runtime was started. "Not verified" and "inferred" mark anything I could not prove from the code.

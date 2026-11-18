@@ -90065,7 +90065,7 @@ taskId=TRIGGER-CHAIN-FAILED-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 (Step 2) — 2026-11-18 — Keith said "You pick one", then "Yes, chain-on-failure". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 (Step 3, slice S1) — 2026-11-18 — stage-start approved by Keith ("Yes, approve all"); Step 2 admitted on Keith said "You pick one", then "Yes, chain-on-failure". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-FAILED-01
 **Title:** Tell the Chief of Staff when a workflow fails
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -90073,8 +90073,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP.
 **Start condition:** READY (Keith, 2026-11-18). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** TRIGGER-CHAIN-01.
-**Primary write scope:** Step 2: docs/TRIGGER-CHAIN-FAILED-01-STAGE-START.md (EXACT). Step 3: set at the stage-start approval. Was: PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), the run-result route or a new failure read, frontend/components/schedules/, the three message files.
-**Mutexes / resources:** Step 2: none. Step 3: set at the stage-start approval (GATEWAY, FRONTEND, I18N expected; MIGRATION if a column is added). Was: set at admission.
+**Primary write scope:** Step 2: docs/TRIGGER-CHAIN-FAILED-01-STAGE-START.md (done, dd1db89). Step 3 slice S1 (EXACT, 2026-11-18): services/api-gateway/src/migrations/1816000000000-AddChainTriggerFiresOn.ts, services/api-gateway/src/migrations/__tests__/1816000000000-AddChainTriggerFiresOn.spec.ts, services/api-gateway/src/entities/agent-chain-trigger.entity.ts, services/api-gateway/src/entities/index.ts, services/api-gateway/src/triggers/chain-trigger-validation.ts, services/api-gateway/src/triggers/chain-trigger-validation.spec.ts, services/api-gateway/src/triggers/chain-trigger.service.ts, services/api-gateway/src/triggers/chain-trigger.service.spec.ts, services/api-gateway/src/triggers/chain-trigger.controller.spec.ts, services/api-gateway/src/triggers/chain-trigger-run.service.ts, services/api-gateway/src/triggers/chain-trigger-run.service.spec.ts, services/api-gateway/src/triggers/schedule.controller.spec.ts. Slices S2 and S3: the stage-start section 5, set when each is admitted. Was: PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), the run-result route or a new failure read, frontend/components/schedules/, the three message files.
+**Mutexes / resources:** Step 2: none. Slice S1: GATEWAY, MIGRATION (2026-11-18). Slice S2: GATEWAY. Slice S3: FRONTEND, I18N. Was: set at admission.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
