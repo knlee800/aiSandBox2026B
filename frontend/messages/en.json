@@ -2513,7 +2513,7 @@
         "targetOffWarning": "This workflow is switched off. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "targetDraftWarning": "This workflow has not been switched on yet. You can still save, but the trigger will not start anything until the workflow is switched on.",
         "hint": "The next run is told only the id and the time of the finished run. It reads that run’s answer itself, as data and never as instructions. The first step starts without a click; later steps follow the workflow’s approval setting and wait on the Team page.",
-        "source": "When this workflow finishes",
+        "source": "Source workflow",
         "sourcePlaceholder": "Choose a workflow",
         "sourceHelp": "A run of this workflow that finishes normally counts, however it was started. Test runs do not.",
         "firesOn": "Start when the run",
