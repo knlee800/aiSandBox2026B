@@ -1646,7 +1646,7 @@
       "disconnectTitle": "Disconnect mail?",
       "disconnectBody": "The saved app password is deleted from this platform. Your mailbox is not changed. You can connect again at any time.",
       "disconnected": "Mail disconnected. The saved app password was deleted.",
-      "signInRefused": "The mail server refused your app password on {date}. Save a new app password, or press Test once it is fixed."
+      "signInRefused": "The mail server refused your app password on {date}. Save a new app password, or press Verify once it is fixed."
     },
     "calendar": {
       "title": "Calendar",
