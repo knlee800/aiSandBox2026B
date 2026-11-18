@@ -89343,7 +89343,7 @@ taskId=MAIL-READ-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith opened the run window ("Yes, run it"). Was: READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT released; the three authorizations false. One run window on staging (355e6db) from 03:17:50Z to 05:08:24Z with the stored Anthropic test key (never shown), write tools off; Chief of Staff runs started with temporary API keys on Keith's account (all revoked), first step approved as the owner. A find run listed the unread mail and gave the id of Keith's PINEAPPLE61 test mail (733); after Keith opened it, mail_read_message read 733 (ok, 1 item) and answered not found for a made-up id; with mail triggers on, Keith's PINEAPPLE31 mail started a run of trigger 1deb884c, which called mail_read_message with the trigger's id (ok, 1 item) and completed; the next read saw the mail again and started no second run. The model sent ids as text; no fix needed for either watch item. No marker or address in app logs, audit rows or mail history; env files restored byte for byte to 616841ca and 721f4772; nothing read or ran after the close; 46 credits over 4 runs (one a diagnostic run while the PINEAPPLE31 mail first seemed missing; it showed in the 04:53:59 read). Checkpoint: docs/MAIL-READ-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (GOV-ARCH-MAIL-READ-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-18 — Keith opened the run window ("Yes, run it"). Was: READY — registered 2026-11-18 by the CONN-MAIL-READ-01 LOCK — not admitted.
 **Task ID:** MAIL-READ-LIVE-01
 **Title:** Live check of the one-message mail tool
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89360,6 +89360,24 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the mail trigger it uses is GATED per PRD.md).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CONN-MAIL-READ-01 (live-only flows and two worker follow-ups): in a run window with the stored Anthropic test key and write tools off, a Chief of Staff or workflow run with the mail grant reads one already-read message by its id from Keith's real mailbox and the message stays read and unchanged; a mail-triggered run reads the message that started it; an unknown id gives the fixed not-found text; record which tool the triggered run uses and whether the model sends messageId as text (a refusal of a number, or a run that fails to read its message, is a finding and gets a registered fix: the trigger text or the argument rule); no mail text in gateway logs or audit rows; env files restored byte for byte.
+
+### GOV-ARCH-MAIL-READ-01 — Name the one-message mail tool in ARCHITECTURE.md (and PRD.md if Keith wants)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ARCH-MAIL-READ-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the MAIL-READ-LIVE-01 LOCK — not admitted.
+**Task ID:** GOV-ARCH-MAIL-READ-01
+**Title:** Name the one-message mail tool in ARCHITECTURE.md (and PRD.md if Keith wants)
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the wording. Keith decides.
+**Depends on:** MAIL-READ-LIVE-01.
+**Primary write scope:** ARCHITECTURE.md (the connectors-mcp line near the top and the connector broker row of the status table); PRD.md only if Keith wants the product row to say it.
+**Mutexes / resources:** GOVERNANCE.
+**Scope:** From MAIL-READ-LIVE-01: ARCHITECTURE.md describes the connector server and broker without mail_read_message. Add, in the control plane's draft and Keith's approved words: the server's fifth tool reads one Inbox message by its id, read or unread (EXAMINE, BODY.PEEK, the unread tool's fields and excerpt); it is a companion tool that the per-job grant adds beside mail_list_unread_metadata and is never in the catalogue, a saved workflow or a system agent; proven live in MAIL-READ-LIVE-01.
 
 ### COS-MAIL-BODY-RULE-01 — Mail bodies in the Chief of Staff's data rule, with an eval case
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
