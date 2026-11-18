@@ -89543,24 +89543,25 @@ taskId=CONN-MAIL-AUTH-STATE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 (Step 2) — 2026-11-18 — Keith said "You pick one", then "Stop signing in", "Yes, refuse and say so" and "Yes, admit". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** CONN-MAIL-AUTH-STATE-01
 **Title:** A distinct sign-in-refused state for the mailbox
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Lifecycle:** 4-STEP (2026-11-18: the design adds a column to connector_connections, so a migration). Was: 3-STEP.
+**Start condition:** READY (Keith, 2026-11-18). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** TRIGGER-MAIL-01.
-**Primary write scope:** PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/api-gateway/src/triggers/, frontend/components/schedules/, frontend/components/connections/, the three message files.
-**Mutexes / resources:** set at admission (GATEWAY, FRONTEND, I18N expected).
+**Primary write scope:** Step 2: docs/CONN-MAIL-AUTH-STATE-01-STAGE-START.md (EXACT). Step 3: set at the stage-start approval. Was: PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/api-gateway/src/triggers/, frontend/components/schedules/, frontend/components/connections/, the three message files.
+**Mutexes / resources:** Step 2: none. Step 3: set at the stage-start approval (GATEWAY, AI-SERVICE, FRONTEND, I18N, MIGRATION and connectors-mcp HOTFILE leases expected). Was: set at admission (GATEWAY, FRONTEND, I18N expected).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT (Step 2). **admissionUncertain:** false.
 **Scope:** From TRIGGER-MAIL-01 (stage-start P6, F4): the broker maps every child failure to one fixed message, so a revoked app password looks like any read failure; the mail triggers only slow to hourly. A fixed message for an authentication failure, so the page can say reconnect your mailbox and the timer can stop signing in until the owner reconnects.
 
+Keith's choices (2026-11-18): Q1 when the server refuses the saved password, the mail-trigger timer stops signing in until the owner saves a new password or a Test succeeds ("Stop signing in"); Q2 agent mail tools are refused before signing in while the mailbox is marked refused, with a fixed text telling the owner to reconnect ("Yes, refuse and say so"); Q3 4-step with a stage-start, implemented by an opus subagent ("Yes, admit").
 ### TRIGGER-MORE-01 — Later triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-MORE-01
