@@ -89293,23 +89293,25 @@ taskId=CONN-MAIL-READ-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith said "With the mail grant". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** CONN-MAIL-READ-01
 **Title:** An agent mail tool that reads one message by its number
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-18, "With the mail grant"). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** TRIGGER-MAIL-01.
-**Primary write scope:** PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/ai-service/src/agent-harness/tools/.
-**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected; connectors-mcp HOTFILE leases).
-**Hot-file leases:** none.
+**Primary write scope:** EXACT (set 2026-11-18 at admission): services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/__tests__/server.spec.ts, services/connectors-mcp/src/__tests__/imap-verbs.spec.ts, services/connectors-mcp/src/tools/mail-read.ts, services/connectors-mcp/src/__tests__/mail-read.spec.ts, services/connectors-mcp/src/__tests__/mail-body.spec.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts, services/api-gateway/src/connectors/connector-broker.ts, services/api-gateway/src/connectors/connector-broker.spec.ts, services/api-gateway/src/connectors/connector-grant-token.ts, services/api-gateway/src/connectors/connector-grant-token.spec.ts, services/api-gateway/src/connectors/internal-connectors.controller.ts, services/api-gateway/src/connectors/internal-connectors.controller.spec.ts, services/api-gateway/src/orchestration/collaboration-connector-grants.ts, services/api-gateway/src/orchestration/collaboration-connector-grants.spec.ts, services/ai-service/src/agent-harness/tools/connector-tool-definitions.ts, services/ai-service/src/agent-harness/tools/connector-tool-definitions.spec.ts, services/ai-service/src/agent-harness/tools/tool-registry.contracts.ts, services/ai-service/src/agent-harness/tools/handlers/connector-tool-handlers.ts, services/ai-service/src/agent-harness/tools/handlers/connector-tool-handlers.spec.ts, services/ai-service/src/worker/connector-grants.ts, services/ai-service/src/worker/connector-grants.spec.ts, services/ai-service/src/agent-harness/eval/briefing-runner.ts, services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts, services/ai-service/src/agent-harness/eval/briefing-prompt.ts, services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts, services/ai-service/src/agent-harness/eval/briefing-score.ts, services/ai-service/src/agent-harness/eval/briefing-score.spec.ts. Was: PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/ai-service/src/agent-harness/tools/.
+**Mutexes / resources:** GATEWAY, AI-SERVICE (2026-11-18). Was: set at admission (GATEWAY, AI-SERVICE expected; connectors-mcp HOTFILE leases).
+**Hot-file leases:** services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/__tests__/server.spec.ts, services/connectors-mcp/src/__tests__/imap-verbs.spec.ts (2026-11-18). Was: none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From TRIGGER-MAIL-01 (stage-start D7, F2): a mail-triggered run is told the message number, but the agent's mail tool lists only the 25 newest unread; if the owner opens the message or 25 newer unread arrive first, the agent cannot find it. A read-only agent tool that reads one message by its number, read or not.
+
+Design (admission, 2026-11-18; Keith chose the grant model, "With the mail grant"): D1 a new tool mail_read_message in connectors-mcp with input messageId (the decimal UID string the unread-mail tool returns as id) plus the gateway-added mailbox fields; EXAMINE INBOX read-only, UID FETCH with BODY.PEEK, the same fields, 800-character body excerpt, JSON cap and redaction as mail_list_unread_metadata; an unknown id answers a fixed not-found message with no mail content. D2 the tool is readOnly and kind imap in the gateway allowlist, but it is a companion: it is never in the connector tool catalogue, never accepted in a saved workflow or system-agent list, and is added only when the per-job grant is minted for a job that holds mail_list_unread_metadata (resolveConnectorGrantJobFields); the grant token, the broker and the internal call route accept it only from such a grant. D3 the AI service registers it like the other connector tools when the job's signed grant lists it; the briefing eval answers it from the case's mail fixture. D4 unchanged: the mail trigger's task text, the Chief of Staff's instructions and version hash, the eval baselines, the frontend, the frozen contract HARNESS_ENTITLEMENT_PROOF_V1 and its files, and every migration. 3-STEP: the design follows CONN-03's read path and Keith made the one product choice.
 
 ### COS-MAIL-BODY-RULE-01 — Mail bodies in the Chief of Staff's data rule, with an eval case
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
