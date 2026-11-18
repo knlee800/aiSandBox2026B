@@ -90125,13 +90125,13 @@ taskId=TRIGGER-CHAIN-FAILED-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith opened the window ("Yes, run it"). Was: READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-FAILED-LIVE-01
 **Title:** Live check of failed-run chain triggers
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHAINFAIL-01 is locked and Keith opens a run window. Keith decides.
+**Start condition:** READY (Keith, 2026-11-18, "Yes, run it"). Was: NOT_READY. Ready when: STAGING-DEPLOY-CHAINFAIL-01 is locked and Keith opens a run window. Keith decides.
 **Depends on:** STAGING-DEPLOY-CHAINFAIL-01.
 **Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md wording in the LOCK record with GOVERNANCE held.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
