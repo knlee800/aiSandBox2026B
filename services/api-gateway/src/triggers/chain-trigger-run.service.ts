@@ -22,9 +22,13 @@ import { KillSwitchConfig } from '../safety/kill-switch.config';
 import {
   CHAIN_TRIGGER_LOOKBACK_MS,
   chainDepthOf,
+  chainFailedRunMatch,
+  chainFailureKind,
   chainRunMatch,
   chainTriggerTask,
   isPastChainDepth,
+  type ChainFailureKind,
+  type ChainTriggerFailedRun,
   type ChainTriggerFinishedRun,
   type ChainTriggerFirstStep,
 } from './chain-trigger-match';
@@ -70,11 +74,27 @@ export const CHAIN_TRIGGER_RUN_SELECT = [
 ] as const;
 
 /**
- * The only read of collaboration_referrals (stage-start section 2, The read):
- * for the runs' first hand-offs, the hand-off id, its run id, its target id
- * and the two JSON paths workflow.id and workflow.testRun of its pending_job.
- * The pending_job column itself (it holds the task) and the answer column
- * are never selected.
+ * TRIGGER-CHAIN-FAILED-01 S2 (stage-start section 2.4): the only
+ * collaboration_runs columns the failed-run read loads, for failure
+ * triggers: the run id, the owner, the status, the creation and failure
+ * times and the hand-off ids. Never the task, an answer, a cancel reason or
+ * any other text.
+ */
+export const CHAIN_TRIGGER_FAILED_RUN_SELECT = [
+  'collaborationRunId',
+  'userId',
+  'status',
+  'createdAt',
+  'failedAt',
+  'referralIds',
+] as const;
+
+/**
+ * The read of collaboration_referrals for the runs' first hand-offs (stage-start
+ * section 2, The read; the same for completed and failed runs): the hand-off
+ * id, its run id, its target id and the two JSON paths workflow.id and
+ * workflow.testRun of its pending_job. The pending_job column itself (it
+ * holds the task) and the answer column are never selected.
  */
 export const CHAIN_TRIGGER_FIRST_STEP_SQL = [
   'SELECT f.referral_id AS "referralId",',
@@ -84,6 +104,21 @@ export const CHAIN_TRIGGER_FIRST_STEP_SQL = [
   `f.pending_job #>> '{workflow,testRun}' AS "testRun"`,
   'FROM "public"."collaboration_referrals" f',
   'WHERE f.referral_id = ANY($1::text[])',
+].join(' ');
+
+/**
+ * TRIGGER-CHAIN-FAILED-01 S2 (stage-start sections 2.2 rule 6 and 2.4): the
+ * second read of collaboration_referrals, only for failed runs that passed
+ * rules 1 to 5 for a failure trigger: each hand-off's run id and its status
+ * (a fixed code, CHECK-listed). Two columns; never the answer, the
+ * pending_job column, the result status or any time. The table is indexed
+ * on the run id.
+ */
+export const CHAIN_TRIGGER_STEP_STATUS_SQL = [
+  'SELECT s.collaboration_run_id AS "collaborationRunId",',
+  's.status AS "status"',
+  'FROM "public"."collaboration_referrals" s',
+  'WHERE s.collaboration_run_id = ANY($1::text[])',
 ].join(' ');
 
 /** What one tick did (counts only; for tests and the log line). */
@@ -100,18 +135,23 @@ export interface ChainTriggerTickSummary {
 interface PlannedStart {
   trigger: AgentChainTrigger;
   sourceRunId: string;
+  /** The completion time, or for a failure trigger the failure (settle) time. */
   completedAt: Date;
   localDate: string;
+  /** TRIGGER-CHAIN-FAILED-01 S2: the failed run's category; null for a completed trigger. */
+  failureKind: ChainFailureKind | null;
 }
 
 interface ClaimedStart {
   rowId: string;
   trigger: AgentChainTrigger;
   sourceRunId: string;
-  /** The finished run's completion (settle) time: the time printed in the task. */
+  /** The finished run's completion (settle) time, or its failure (settle) time: the time printed in the task. */
   completedAt: Date;
   localDate: string;
   depth: number;
+  /** The failed run's category; null for a completed trigger and for a claim closed as interrupted. */
+  failureKind: ChainFailureKind | null;
 }
 
 interface FirstStepRow {
@@ -120,6 +160,22 @@ interface FirstStepRow {
   targetId: string | null;
   workflowId: string | null;
   testRun: string | boolean | null;
+}
+
+interface StepStatusRow {
+  collaborationRunId: string;
+  status: string;
+}
+
+/** The runs the tick read, by the outcome their triggers fire on. */
+interface SourceRuns {
+  finished: ChainTriggerFinishedRun[];
+  failed: ChainTriggerFailedRun[];
+}
+
+/** The stored outcome of a trigger (NOT NULL, default completed; a row without it reads as completed). */
+function firesOnOf(trigger: Pick<AgentChainTrigger, 'firesOn'>): string {
+  return trigger.firesOn ?? 'completed';
 }
 
 function errorName(error: unknown): string {
@@ -155,21 +211,34 @@ function textOrNull(value: unknown): string | null {
  * on; tick() reads it again itself, so a direct call while it is off reads
  * nothing either.
  *
- * Unless CHAIN_TRIGGERS_ENABLED, runs (GLOBAL_EXECUTION_ENABLED) and the run
- * result tool's switch (read through isRunResultToolEnabled, imported) are
- * all on, the tick returns at once: no run read and nothing recorded (Keith's
- * Q1; without the tool a started run could not read the finished run).
+ * Unless CHAIN_TRIGGERS_ENABLED and runs (GLOBAL_EXECUTION_ENABLED) are both
+ * on, the tick returns at once: no read and nothing recorded.
+ * TRIGGER-CHAIN-FAILED-01 S2 (stage-start sections 2.4 and 2.5): triggers
+ * that fire on a completed run also need the run result tool's switch (read
+ * through isRunResultToolEnabled, imported; Keith's Q1: without the tool a
+ * started run could not read the finished run); while it is off they are
+ * dropped after the trigger read and read no run. Triggers that fire on a
+ * failed run do not need it (their runs cannot use the tool).
  *
- * Each tick otherwise, in the order of stage-start section 2: close claims
+ * Each tick otherwise, in the order of stage-start section 2.4: close claims
  * older than 10 minutes as interrupted; prune history older than 90 days (at
- * most hourly); read the enabled triggers; read collaboration_runs once for
- * their owners (completed, completed in the last 60 minutes; the columns of
- * CHAIN_TRIGGER_RUN_SELECT only) and the runs' first hand-offs once
+ * most hourly); read the enabled triggers and drop the completed ones while
+ * the tool is off; no trigger left: return, no run read. Then, only for the
+ * outcomes that have a trigger: read collaboration_runs for the completed
+ * triggers' owners (completed in the last 60 minutes; the columns of
+ * CHAIN_TRIGGER_RUN_SELECT only) and for the failure triggers' owners
+ * (failed, failed_at in the last 60 minutes; CHAIN_TRIGGER_FAILED_RUN_SELECT
+ * only); then all those runs' first hand-offs once
  * (CHAIN_TRIGGER_FIRST_STEP_SQL: a target id and two JSON paths; never the
  * pending_job column or the answer). Then per matching (trigger, run),
- * oldest completion first, at most 5 claims a tick:
- *  1. the match (chain-trigger-match.ts), and the pairs that already have a
- *     row are dropped;
+ * oldest completion or failure first, at most 5 claims a tick across both
+ * outcomes:
+ *  1. the match (chain-trigger-match.ts: chainRunMatch for a completed
+ *     trigger, chainFailedRunMatch for a failure trigger), and the pairs that
+ *     already have a row are dropped; for the failed runs left, one read of
+ *     their hand-offs' statuses (CHAIN_TRIGGER_STEP_STATUS_SQL: the run id
+ *     and the status code only) and chainFailureKind: a run without a failed
+ *     or timed-out step is dropped with no record;
  *  2. the row cap: 20 history rows for the trigger on the run's local day;
  *     past it nothing is written (one count-only log line);
  *  3. the depth (stage-start section 3): 1 plus the depth of the owner's
@@ -185,7 +254,10 @@ function textOrNull(value: unknown): string | null {
  *  8. the Team page's body, { team: 'chief-of-staff', task } or
  *     { workflowId, task }, read by the page's own parser; never a sessionId,
  *     never testRun. The task is the saved task plus the completion time and
- *     the finished run's id (Keith's Q2);
+ *     the finished run's id (Keith's Q2); for a failure trigger the saved
+ *     task plus the source workflow's label (read here, for the owner's own
+ *     source not deleted), the failure time, the failed run's id and the
+ *     category (stage-start section 2.3);
  *  9. CollaborationStartService.start with the identity the session guard
  *     builds for the owner;
  * 10. approveStep for the first hand-off with the owner as decidedBy (Q7).
@@ -195,7 +267,10 @@ function textOrNull(value: unknown): string | null {
  * A start writes one chain_run_started audit row, a skip one
  * chain_run_skipped row. Audit payloads and log lines hold ids, the local
  * date, the target kind, the depth and a reason code only: never the task, a
- * workflow name or any answer text.
+ * workflow name or any answer text. For a failure trigger the audit rows and
+ * log lines also carry firesOn=failed and, on a start or skip of a matched
+ * run, the category code failureKind (stage-start section 4.1); a completed
+ * trigger's are unchanged.
  */
 @Injectable()
 export class ChainTriggerRunService {
@@ -234,27 +309,29 @@ export class ChainTriggerRunService {
       interrupted: 0,
       pruned: 0,
     };
-    if (!KillSwitchConfig.GLOBAL_EXECUTION_ENABLED || !isChainTriggersEnabled() || !isRunResultToolEnabled()) {
+    if (!KillSwitchConfig.GLOBAL_EXECUTION_ENABLED || !isChainTriggersEnabled()) {
       return summary;
     }
     summary.interrupted = await this.closeStaleClaims(now);
     summary.pruned = await this.pruneHistory(now);
 
-    // TRIGGER-CHAIN-FAILED-01 S1: only triggers that fire on a completed run,
-    // until S2 builds the failed-run read; a row without the value (none in
-    // the table: NOT NULL, default completed) reads as completed.
+    // TRIGGER-CHAIN-FAILED-01 S2 (stage-start sections 2.4 and 2.5): completed
+    // triggers only while the run result tool is on; failure triggers always.
+    const resultToolOn = isRunResultToolEnabled();
     const triggers = (await this.readEnabled()).filter(
-      (row) => row.enabled === true && (row.firesOn ?? 'completed') === 'completed',
+      (row) =>
+        row.enabled === true &&
+        (firesOnOf(row) === 'failed' || (firesOnOf(row) === 'completed' && resultToolOn)),
     );
     summary.evaluated = triggers.length;
     if (triggers.length === 0) {
       return summary;
     }
-    const finished = await this.readFinishedRuns(triggers, now);
-    if (finished.length === 0) {
+    const sources = await this.readSourceRuns(triggers, now);
+    if (sources.finished.length === 0 && sources.failed.length === 0) {
       return summary;
     }
-    const plans = await this.planStarts(triggers, finished, now);
+    const plans = await this.planStarts(triggers, sources, now);
 
     const capped = new Map<string, { trigger: AgentChainTrigger; localDate: string; runs: number }>();
     let attempts = 0;
@@ -274,7 +351,7 @@ export class ChainTriggerRunService {
     for (const entry of capped.values()) {
       // Counts only: no finished run past the cap is recorded.
       this.logger.log(
-        `chain trigger row cap reached triggerId=${entry.trigger.id} userId=${entry.trigger.userId} localDate=${entry.localDate} runs=${entry.runs}`,
+        `chain trigger row cap reached triggerId=${entry.trigger.id} userId=${entry.trigger.userId} localDate=${entry.localDate} runs=${entry.runs}${outcomeParts(entry.trigger, null)}`,
       );
     }
     return summary;
@@ -303,25 +380,43 @@ export class ChainTriggerRunService {
   }
 
   /**
-   * Stage-start section 2 (The read): one read of collaboration_runs a tick
-   * for the owners with a switched-on trigger, completed in the last 60
-   * minutes, selecting CHAIN_TRIGGER_RUN_SELECT only; then one read of those
-   * runs' first hand-offs (referral_ids[0]) by CHAIN_TRIGGER_FIRST_STEP_SQL.
-   * A first hand-off counts only when it belongs to the same run. Nothing
-   * under orchestration/ is called: these are this service's own
-   * repositories.
+   * Stage-start section 2 (The read) and TRIGGER-CHAIN-FAILED-01 S2 section
+   * 2.4: for the completed triggers' owners, one read of collaboration_runs
+   * completed in the last 60 minutes, selecting CHAIN_TRIGGER_RUN_SELECT only;
+   * for the failure triggers' owners, one read of the runs failed in the last
+   * 60 minutes, selecting CHAIN_TRIGGER_FAILED_RUN_SELECT only. Each read is
+   * made only when that outcome has a trigger. Then one read of all those
+   * runs' first hand-offs (referral_ids[0]) by CHAIN_TRIGGER_FIRST_STEP_SQL. A
+   * first hand-off counts only when it belongs to the same run. Nothing under
+   * orchestration/ is called: these are this service's own repositories.
    */
-  private async readFinishedRuns(triggers: AgentChainTrigger[], now: Date): Promise<ChainTriggerFinishedRun[]> {
-    const owners = [...new Set(triggers.map((trigger) => trigger.userId))];
+  private async readSourceRuns(triggers: AgentChainTrigger[], now: Date): Promise<SourceRuns> {
     const since = new Date(now.getTime() - CHAIN_TRIGGER_LOOKBACK_MS);
-    const rows = await this.collaborationRuns.find({
-      where: { userId: In(owners), status: 'completed', completedAt: MoreThanOrEqual(since) },
-      select: [...CHAIN_TRIGGER_RUN_SELECT],
-      order: { completedAt: 'ASC' },
-      take: CHAIN_TRIGGER_RUN_LIMITS.runsPerRead,
-    });
+    const ownersOf = (firesOn: string) => [
+      ...new Set(triggers.filter((trigger) => firesOnOf(trigger) === firesOn).map((trigger) => trigger.userId)),
+    ];
+    const completedOwners = ownersOf('completed');
+    const failedOwners = ownersOf('failed');
+    const rows =
+      completedOwners.length > 0
+        ? await this.collaborationRuns.find({
+            where: { userId: In(completedOwners), status: 'completed', completedAt: MoreThanOrEqual(since) },
+            select: [...CHAIN_TRIGGER_RUN_SELECT],
+            order: { completedAt: 'ASC' },
+            take: CHAIN_TRIGGER_RUN_LIMITS.runsPerRead,
+          })
+        : [];
+    const failedRows =
+      failedOwners.length > 0
+        ? await this.collaborationRuns.find({
+            where: { userId: In(failedOwners), status: 'failed', failedAt: MoreThanOrEqual(since) },
+            select: [...CHAIN_TRIGGER_FAILED_RUN_SELECT],
+            order: { failedAt: 'ASC' },
+            take: CHAIN_TRIGGER_RUN_LIMITS.runsPerRead,
+          })
+        : [];
     const firstIds = new Map<string, string>();
-    for (const row of rows) {
+    for (const row of [...rows, ...failedRows]) {
       const first = Array.isArray(row.referralIds) ? row.referralIds[0] : undefined;
       if (typeof first === 'string' && first.length > 0) {
         firstIds.set(row.collaborationRunId, first);
@@ -338,37 +433,61 @@ export class ChainTriggerRunService {
         }
       }
     }
-    return rows.map((row) => {
-      const referralId = firstIds.get(row.collaborationRunId);
+    const firstStepOf = (runId: string): ChainTriggerFirstStep | null => {
+      const referralId = firstIds.get(runId);
       const step = referralId ? steps.get(referralId) : undefined;
-      const firstStep: ChainTriggerFirstStep | null =
-        step && step.collaborationRunId === row.collaborationRunId
-          ? {
-              targetId: textOrNull(step.targetId),
-              workflowId: textOrNull(step.workflowId),
-              testRun: step.testRun ?? null,
-            }
-          : null;
-      return {
+      return step && step.collaborationRunId === runId
+        ? {
+            targetId: textOrNull(step.targetId),
+            workflowId: textOrNull(step.workflowId),
+            testRun: step.testRun ?? null,
+          }
+        : null;
+    };
+    return {
+      finished: rows.map((row) => ({
         runId: row.collaborationRunId,
         userId: row.userId,
         status: row.status,
         createdAt: row.createdAt,
         completedAt: row.completedAt,
-        firstStep,
-      };
-    });
+        firstStep: firstStepOf(row.collaborationRunId),
+      })),
+      failed: failedRows.map((row) => ({
+        runId: row.collaborationRunId,
+        userId: row.userId,
+        status: row.status,
+        createdAt: row.createdAt,
+        failedAt: row.failedAt,
+        firstStep: firstStepOf(row.collaborationRunId),
+      })),
+    };
   }
 
-  /** Every (trigger, finished run) pair that matches and has no row yet, the oldest completion first. */
-  private async planStarts(
-    triggers: AgentChainTrigger[],
-    finished: ChainTriggerFinishedRun[],
-    now: Date,
-  ): Promise<PlannedStart[]> {
+  /**
+   * Every (trigger, run) pair that matches and has no row yet, the oldest
+   * completion or failure first. A completed trigger is matched against the
+   * completed runs only, a failure trigger against the failed runs only.
+   * A failed run's pair is kept only when its steps give a category.
+   */
+  private async planStarts(triggers: AgentChainTrigger[], sources: SourceRuns, now: Date): Promise<PlannedStart[]> {
     const matched: PlannedStart[] = [];
     for (const trigger of triggers) {
-      for (const run of finished) {
+      if (firesOnOf(trigger) === 'failed') {
+        for (const run of sources.failed) {
+          const result = chainFailedRunMatch(trigger, run, now);
+          if (!result.match) continue;
+          matched.push({
+            trigger,
+            sourceRunId: result.runId,
+            completedAt: result.failedAt,
+            localDate: result.localDate,
+            failureKind: null,
+          });
+        }
+        continue;
+      }
+      for (const run of sources.finished) {
         const result = chainRunMatch(trigger, run, now);
         if (!result.match) continue;
         matched.push({
@@ -376,6 +495,7 @@ export class ChainTriggerRunService {
           sourceRunId: result.runId,
           completedAt: result.completedAt,
           localDate: result.localDate,
+          failureKind: null,
         });
       }
     }
@@ -387,14 +507,46 @@ export class ChainTriggerRunService {
       select: ['triggerId', 'sourceRunId'],
     });
     const taken = new Set(recorded.map((row) => `${row.triggerId}|${row.sourceRunId}`));
-    return matched
-      .filter((plan) => !taken.has(`${plan.trigger.id}|${plan.sourceRunId}`))
+    const open = matched.filter((plan) => !taken.has(`${plan.trigger.id}|${plan.sourceRunId}`));
+    const failedRunIds = [
+      ...new Set(open.filter((plan) => firesOnOf(plan.trigger) === 'failed').map((plan) => plan.sourceRunId)),
+    ];
+    const kinds = failedRunIds.length > 0 ? await this.readFailureKinds(failedRunIds) : new Map();
+    return open
+      .filter((plan) => {
+        if (firesOnOf(plan.trigger) !== 'failed') return true;
+        plan.failureKind = kinds.get(plan.sourceRunId) ?? null;
+        return plan.failureKind !== null;
+      })
       .sort((a, b) => {
         const diff = a.completedAt.getTime() - b.completedAt.getTime();
         if (diff !== 0) return diff;
         if (a.sourceRunId !== b.sourceRunId) return a.sourceRunId < b.sourceRunId ? -1 : 1;
         return a.trigger.id < b.trigger.id ? -1 : a.trigger.id > b.trigger.id ? 1 : 0;
       });
+  }
+
+  /**
+   * Stage-start section 2.2 rule 6: one read of the hand-off statuses of the
+   * failed runs left to plan (CHAIN_TRIGGER_STEP_STATUS_SQL: run ids and
+   * status codes only), then each run's category. A run with none is absent.
+   */
+  private async readFailureKinds(runIds: string[]): Promise<Map<string, ChainFailureKind>> {
+    const found = (await this.referrals.query(CHAIN_TRIGGER_STEP_STATUS_SQL, [runIds])) as StepStatusRow[];
+    const statuses = new Map<string, string[]>();
+    for (const row of found ?? []) {
+      if (row && typeof row.collaborationRunId === 'string' && runIds.includes(row.collaborationRunId)) {
+        const list = statuses.get(row.collaborationRunId) ?? [];
+        list.push(row.status);
+        statuses.set(row.collaborationRunId, list);
+      }
+    }
+    const kinds = new Map<string, ChainFailureKind>();
+    for (const [runId, list] of statuses) {
+      const kind = chainFailureKind(list);
+      if (kind) kinds.set(runId, kind);
+    }
+    return kinds;
   }
 
   /** The row cap, the depth, then the one claim insert. null when nothing was claimed. */
@@ -446,6 +598,7 @@ export class ChainTriggerRunService {
       completedAt: plan.completedAt,
       localDate,
       depth,
+      failureKind: plan.failureKind,
     };
   }
 
@@ -484,12 +637,18 @@ export class ChainTriggerRunService {
         return 'skipped';
       }
 
+      // TRIGGER-CHAIN-FAILED-01 S2 (Keith's Q5): a failure trigger's lines carry the source
+      // workflow's label, read here and used only in the task.
+      const failure = claimed.failureKind
+        ? { kind: claimed.failureKind, workflowLabel: await this.sourceLabel(claimed.trigger) }
+        : undefined;
       let input: CollaborationStartInput;
       try {
         const task = chainTriggerTask(claimed.trigger.task, {
           sourceRunId: claimed.sourceRunId,
           timeZone: claimed.trigger.timeZone,
           completedAt: claimed.completedAt,
+          ...(failure ? { failure } : {}),
         });
         input = this.starts.readStartBody(this.startBody(claimed.trigger, task));
       } catch (error) {
@@ -604,6 +763,20 @@ export class ChainTriggerRunService {
     return Boolean(workflow);
   }
 
+  /**
+   * TRIGGER-CHAIN-FAILED-01 S2 (stage-start section 2.3): the label of the
+   * owner's own, not deleted source workflow, for a failure trigger's task
+   * lines only (chainTriggerFailedTask cleans it). Never written to a row, an
+   * audit row or a log. null when it is gone.
+   */
+  private async sourceLabel(trigger: AgentChainTrigger): Promise<string | null> {
+    const workflow = await this.workflows.findOne({
+      where: { id: trigger.sourceWorkflowId, userId: trigger.userId, deletedAt: IsNull() },
+      select: ['id', 'name'],
+    });
+    return typeof workflow?.name === 'string' ? workflow.name : null;
+  }
+
   /** The Team page's body (no sessionId, no testRun). */
   private startBody(trigger: AgentChainTrigger, task: string): Record<string, string> {
     return trigger.targetKind === 'workflow' && trigger.workflowId
@@ -685,7 +858,7 @@ export class ChainTriggerRunService {
     if ((result.affected ?? 0) > 0) {
       await this.writeAudit(CHAIN_TRIGGER_RUN_AUDIT_EVENTS.triggerDisabled, claimed, reason, null);
       this.logger.log(
-        `chain trigger disabled triggerId=${claimed.trigger.id} userId=${claimed.trigger.userId} reason=${reason}`,
+        `chain trigger disabled triggerId=${claimed.trigger.id} userId=${claimed.trigger.userId} reason=${reason}${outcomeParts(claimed.trigger, null)}`,
       );
     }
   }
@@ -718,6 +891,8 @@ export class ChainTriggerRunService {
         completedAt: dateOf(row.sourceCompletedAt),
         localDate: localDateText(row.localDate),
         depth: Number(row.depth),
+        // The category is not stored on the row (stage-start Q11).
+        failureKind: null,
         trigger:
           trigger ??
           ({
@@ -760,7 +935,9 @@ export class ChainTriggerRunService {
    * Stage-start section 4 (Audit): the trigger id, the local date, the target
    * kind, the source and target workflow ids, the finished and the started
    * run ids, the depth and a reason code only. Never the task, a workflow
-   * name or any answer text.
+   * name or any answer text. TRIGGER-CHAIN-FAILED-01 S2 (section 4.1): a
+   * failure trigger's rows also carry firesOn and, on chain_run_started and
+   * chain_run_skipped of a matched run, the category code failureKind.
    */
   private async writeAudit(
     eventType: string,
@@ -779,6 +956,12 @@ export class ChainTriggerRunService {
     };
     if (collaborationRunId) payload.collaborationRunId = collaborationRunId;
     if (reason) payload.reason = reason;
+    if (firesOnOf(claimed.trigger) === 'failed') {
+      payload.firesOn = 'failed';
+      const runEvent =
+        eventType === CHAIN_TRIGGER_RUN_AUDIT_EVENTS.runStarted || eventType === CHAIN_TRIGGER_RUN_AUDIT_EVENTS.runSkipped;
+      if (runEvent && claimed.failureKind) payload.failureKind = claimed.failureKind;
+    }
     try {
       await this.audit.insert({
         category: CHAIN_TRIGGER_AUDIT_CATEGORY,
@@ -799,5 +982,17 @@ export class ChainTriggerRunService {
 function logParts(claimed: ClaimedStart): string {
   const trigger = claimed.trigger;
   const workflow = trigger.workflowId ? ` workflowId=${trigger.workflowId}` : '';
-  return `triggerId=${trigger.id} userId=${trigger.userId} localDate=${claimed.localDate} targetKind=${trigger.targetKind}${workflow} sourceWorkflowId=${trigger.sourceWorkflowId} sourceRunId=${claimed.sourceRunId} depth=${claimed.depth}`;
+  return `triggerId=${trigger.id} userId=${trigger.userId} localDate=${claimed.localDate} targetKind=${trigger.targetKind}${workflow} sourceWorkflowId=${trigger.sourceWorkflowId} sourceRunId=${claimed.sourceRunId} depth=${claimed.depth}${outcomeParts(trigger, claimed.failureKind)}`;
+}
+
+/**
+ * TRIGGER-CHAIN-FAILED-01 S2 (section 4.1): a failure trigger's lines gain
+ * its firesOn code and, when known, the category code; a completed
+ * trigger's lines are unchanged. Codes only.
+ */
+function outcomeParts(trigger: Pick<AgentChainTrigger, 'firesOn'>, failureKind: ChainFailureKind | null): string {
+  if (firesOnOf(trigger) !== 'failed') {
+    return '';
+  }
+  return ` firesOn=failed${failureKind ? ` failureKind=${failureKind}` : ''}`;
 }

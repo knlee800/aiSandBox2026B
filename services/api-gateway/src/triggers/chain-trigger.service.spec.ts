@@ -869,10 +869,10 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
     }
     expect(logs.length).toBeGreaterThanOrEqual(5);
     expect(logs).toContain(
-      `chain trigger created userId=${OWNER} triggerId=${created.id} targetKind=workflow sourceWorkflowId=${WF_A} workflowId=${WF_B}`,
+      `chain trigger created userId=${OWNER} triggerId=${created.id} targetKind=workflow sourceWorkflowId=${WF_A} workflowId=${WF_B} firesOn=completed`,
     );
     expect(logs).toContain(
-      `chain trigger deleted userId=${OWNER} triggerId=${created.id} targetKind=chief-of-staff sourceWorkflowId=${WF_C}`,
+      `chain trigger deleted userId=${OWNER} triggerId=${created.id} targetKind=chief-of-staff sourceWorkflowId=${WF_C} firesOn=completed`,
     );
   });
 

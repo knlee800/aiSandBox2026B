@@ -701,8 +701,9 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       }
       // TRIGGER-CHAIN-01 S2: the pure chain helpers have no timer, no run start and no table read;
       // the chain interval and boot hook only in the chain timer; start and approve only in the chain
-      // run service, which alone reads collaboration_runs and the first hand-offs, once each a tick,
-      // never the pending_job column or result_summary; the chain flag read once in the timer and once
+      // run service, which alone reads collaboration_runs and the first hand-offs (TRIGGER-CHAIN-FAILED-01
+      // S2: two run reads, completed and failed, and two hand-off reads, the first hand-offs and the step
+      // statuses), never the pending_job column or result_summary; the chain flag read once in the timer and once
       // in the run service, the result tool's switch once in the run service through its imported
       // reader; the chain parts never reach the schedule, event, mail or knowledge run parts.
       for (const name of ['chain-trigger-match.ts', 'chain-trigger-reasons.ts']) {
@@ -714,8 +715,8 @@ describe('ScheduleController (TRIGGER-01 S1)', () => {
       expect(source('chain-trigger-run.service.ts')).toMatch(/this\.starts\.start\(/);
       expect(source('chain-trigger-run.service.ts')).toMatch(/this\.starts\.approveStep\(/);
       expect(source('chain-trigger-run.service.ts')).not.toMatch(/setInterval|setTimeout|OnModuleInit|OnApplicationBootstrap|ConnectorBroker|result_summary|resultSummary|pendingJob/);
-      expect(source('chain-trigger-run.service.ts').match(/this\.collaborationRuns\.find\(/g)).toHaveLength(1);
-      expect(source('chain-trigger-run.service.ts').match(/this\.referrals\.query\(/g)).toHaveLength(1);
+      expect(source('chain-trigger-run.service.ts').match(/this\.collaborationRuns\.find\(/g)).toHaveLength(2);
+      expect(source('chain-trigger-run.service.ts').match(/this\.referrals\.query\(/g)).toHaveLength(2);
       expect(source('chain-trigger-run.service.ts')).not.toMatch(/this\.(collaborationRuns|referrals)\.(findOne|findBy|createQueryBuilder|update|insert|save|delete)\(/);
       expect(source('chain-trigger-timer.ts').match(/isChainTriggersEnabled\(\)/g)).toHaveLength(1);
       expect(source('chain-trigger-run.service.ts').match(/isChainTriggersEnabled\(\)/g)).toHaveLength(1);

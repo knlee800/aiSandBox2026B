@@ -99,7 +99,11 @@ export interface ChainTriggerListView {
   enabled: boolean;
   /** GLOBAL_EXECUTION_ENABLED, read live (read-only). */
   runsEnabled: boolean;
-  /** The run result tool's switch, read live through isRunResultToolEnabled (read-only). */
+  /**
+   * The run result tool's switch, read live through isRunResultToolEnabled
+   * (read-only). TRIGGER-CHAIN-FAILED-01 S2: only triggers that fire on a
+   * completed run need it; triggers that fire on a failed run start without it.
+   */
   resultToolEnabled: boolean;
   limit: number;
   triggers: ChainTriggerView[];
@@ -500,10 +504,13 @@ function workflowMap(...found: Array<WorkflowSummary | null>): Map<string, Workf
   return map;
 }
 
-/** The ids and the target kind: never the task or a workflow name. */
+/**
+ * The ids, the target kind and (TRIGGER-CHAIN-FAILED-01 S2, stage-start
+ * section 4.1) the firesOn code: never the task or a workflow name.
+ */
 function logParts(row: AgentChainTrigger): string {
   const workflow = row.workflowId ? ` workflowId=${row.workflowId}` : '';
-  return `userId=${row.userId} triggerId=${row.id} targetKind=${row.targetKind} sourceWorkflowId=${row.sourceWorkflowId}${workflow}`;
+  return `userId=${row.userId} triggerId=${row.id} targetKind=${row.targetKind} sourceWorkflowId=${row.sourceWorkflowId}${workflow} firesOn=${storedFiresOn(row)}`;
 }
 
 function isoOf(value: Date | string): string {
