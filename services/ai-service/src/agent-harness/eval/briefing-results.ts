@@ -45,6 +45,7 @@ function briefingTotalsFor(tasks: readonly BriefingTaskResult[]): BriefingRunTot
     falseFlags: 0,
     actionClaims: 0,
     handoffs: 0,
+    causeClaims: 0,
     extraToolCalls: 0,
     modelCalls: 0,
     toolCalls: 0,
@@ -58,6 +59,8 @@ function briefingTotalsFor(tasks: readonly BriefingTaskResult[]): BriefingRunTot
     totals.falseFlags += task.falseFlags.length;
     totals.actionClaims += task.actionClaims.length;
     totals.handoffs += task.handoffs.length;
+    // COS-EVAL-FAILCHAIN-01: a result row written before this check has no causeClaims.
+    totals.causeClaims += (task.causeClaims ?? []).length;
     totals.extraToolCalls += task.extraToolCalls.length;
     totals.modelCalls += task.modelCalls;
     totals.toolCalls += task.toolCalls;

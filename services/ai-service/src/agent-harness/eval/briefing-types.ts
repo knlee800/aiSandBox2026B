@@ -79,8 +79,38 @@ export interface BriefingChainTriggerRequest {
   readonly sourceRunId: string;
 }
 
+/** COS-EVAL-FAILCHAIN-01: the gateway's two failure categories (chain-trigger-match.ts CHAIN_FAILURE_KINDS). */
+export type BriefingChainFailureCategory = 'step_failed' | 'approval_timed_out';
+
+/**
+ * COS-EVAL-FAILCHAIN-01: the owner request a failure trigger sends
+ * (services/api-gateway/src/triggers/chain-trigger-match.ts
+ * chainTriggerFailedTask): the saved task, then fixed lines with the
+ * workflow's label, the failure time, the failed run's id and one category
+ * sentence. Never an answer or error text: the case has no runResult.
+ */
+export interface BriefingChainFailedRequest {
+  readonly kind: 'chain-failed';
+  readonly savedTask: string;
+  /**
+   * The failure (settle) time in the case's time zone as the gateway prints
+   * it: YYYY-MM-DD HH:MM. Named completedAt as the gateway's chainTriggerTask
+   * input names it for a failure trigger ("completedAt is then the failure
+   * time"), so the field lines up with the chain-trigger request.
+   */
+  readonly completedAt: string;
+  /** The failed run's id. */
+  readonly sourceRunId: string;
+  /** The source workflow's label as the gateway prints it (chainWorkflowLabel), or null for none. */
+  readonly workflowName: string | null;
+  readonly category: BriefingChainFailureCategory;
+}
+
 /** A case without request sends the Team page Morning briefing preset. */
-export type BriefingOwnerRequest = BriefingMailTriggerRequest | BriefingChainTriggerRequest;
+export type BriefingOwnerRequest =
+  | BriefingMailTriggerRequest
+  | BriefingChainTriggerRequest
+  | BriefingChainFailedRequest;
 
 /**
  * COS-MAIL-BODY-RULE-01: what the gateway's run-result route returns for
@@ -126,7 +156,10 @@ export interface BriefingTask {
   readonly maxToolIterations?: number;
   /** COS-MAIL-BODY-RULE-01: a trigger's request instead of the Morning briefing preset. */
   readonly request?: BriefingOwnerRequest;
-  /** COS-MAIL-BODY-RULE-01: the finished run read_run_result returns. Chain-trigger cases only. */
+  /**
+   * COS-MAIL-BODY-RULE-01: the finished run read_run_result returns. Chain-trigger
+   * cases only (a chain-failed case has none: a failed run has no readable answer).
+   */
   readonly runResult?: BriefingRunResultFixture;
 }
 
@@ -154,6 +187,18 @@ export interface BriefingTaskResult {
    * empty on Morning briefing cases.
    */
   readonly taskTextLeaks: readonly string[];
+  /**
+   * COS-EVAL-FAILCHAIN-01: the phrases (FAILURE_REASON_UNAVAILABLE_PHRASES)
+   * with which the answer says the failure's reason is not available to it.
+   * Checked on chain-failed cases only; always empty on other cases.
+   */
+  readonly reasonUnavailable: readonly string[];
+  /**
+   * COS-EVAL-FAILCHAIN-01: cause phrases (FAILURE_CAUSE_PHRASES) the answer
+   * uses to name a cause, after the tolerance rules in briefing-score.ts.
+   * Checked on chain-failed cases only; always empty on other cases.
+   */
+  readonly causeClaims: readonly string[];
   /** Every tool name the model asked for, in order. */
   readonly toolCallNames: readonly string[];
   /** Tool names the case does not allow (the two connector tools, plus read_run_result on a chain-trigger case). */
@@ -179,6 +224,8 @@ export interface BriefingRunTotals {
   readonly falseFlags: number;
   readonly actionClaims: number;
   readonly handoffs: number;
+  /** COS-EVAL-FAILCHAIN-01: cause phrases counted across chain-failed cases. */
+  readonly causeClaims: number;
   readonly extraToolCalls: number;
   readonly modelCalls: number;
   readonly toolCalls: number;

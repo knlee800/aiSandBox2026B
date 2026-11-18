@@ -121,6 +121,9 @@ export interface BriefingRunResultCall {
  * the worker (<connector_result tool="..."> with <, > and & escaped). On a
  * chain-trigger case read_run_result uses the real createReadRunResultHandler
  * with a fake client that returns the case's runResult (<run_result> tags).
+ * COS-EVAL-FAILCHAIN-01: on a chain-failed case read_run_result is registered
+ * the same way with no runResult, so every read answers the handler's not-found
+ * text, as the gateway's result route answers 404 for a failed run.
  * The worker's other read-profile tools are registered to refuse. Every tool
  * name the model asks for is recorded and scored.
  */
@@ -316,7 +319,9 @@ export function createBriefingGatewayClient(
 /**
  * COS-MAIL-BODY-RULE-01: the gateway's run-result route for a chain-trigger
  * case. It returns a copy of the case's runResult for that run id and throws
- * for any other id (as the route's 404 does).
+ * for any other id (as the route's 404 does). COS-EVAL-FAILCHAIN-01: a
+ * chain-failed case has no runResult, so it throws for every id, the failed
+ * run's included (the route answers 404 for any run that is not completed).
  */
 export function createBriefingRunResultClient(
   task: BriefingTask,

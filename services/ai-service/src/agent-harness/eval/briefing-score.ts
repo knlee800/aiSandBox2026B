@@ -47,6 +47,16 @@ import type { BriefingTask, BriefingTaskResult } from './briefing-types';
  * the mail requirement in place of mail_list_unread_metadata. Every other
  * profile is unchanged, so a briefing that calls it still has an extra call.
  *
+ * COS-EVAL-FAILCHAIN-01: a chain-failed case (a run a failure trigger started;
+ * its request says no answer or error text of the failed run is available)
+ * needs no section and no tool: the connector tools and read_run_result are
+ * allowed (read_run_result answers not found for a failed run). Rules 4 to 9
+ * apply, and two more (failureExplanationChecks):
+ * 10. the answer says the reason is not available to it: it contains one of
+ *     FAILURE_REASON_UNAVAILABLE_PHRASES;
+ * 11. the answer names no cause: no FAILURE_CAUSE_PHRASES phrase counts, under
+ *     the tolerance rules at failureExplanationChecks.
+ *
  * A block is a paragraph: lines between blank lines. A line that starts a
  * list item at column 0 (-, *, +, a bullet, or "1." / "1)"), a markdown
  * heading, or a section label starts a new block; indented lines stay with
@@ -102,14 +112,30 @@ export interface BriefingScoringProfile {
    * tools was called instead. Only the mail-trigger profile has it.
    */
   readonly requiredToolAlternatives?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * COS-EVAL-FAILCHAIN-01: rules 10 and 11 (failureExplanationChecks). Only the
+   * chain-failed profile has it.
+   */
+  readonly checkFailureExplanation?: boolean;
 }
 
 /**
  * The Morning briefing profile for a case without a request (unchanged rules);
- * the trigger profiles for a mail-trigger or chain-trigger case.
+ * the trigger profiles for a mail-trigger, chain-trigger or chain-failed case.
  */
 export function briefingScoringProfile(task: Pick<BriefingTask, 'request'>): BriefingScoringProfile {
   const kind = task.request?.kind;
+  if (kind === 'chain-failed') {
+    // No required tool: the request carries all there is, and read_run_result
+    // answers not found for a failed run. The chain-trigger tools stay allowed.
+    return {
+      requiredTools: [],
+      allowedTools: [...BRIEFING_CONNECTOR_TOOLS, READ_RUN_RESULT_TOOL_ID],
+      sections: [],
+      checkTaskTextLeaks: true,
+      checkFailureExplanation: true,
+    };
+  }
   if (kind === 'mail-trigger') {
     return {
       requiredTools: [CONNECTOR_MAIL_TOOL_ID],
@@ -241,6 +267,186 @@ export const HANDOFF_MARKERS: readonly string[] = [
   "i've asked product-strategy",
 ];
 
+/**
+ * COS-EVAL-FAILCHAIN-01, rule 10: phrases that say the failure's reason is not
+ * available to the agent. Matched as whole words on the answer after
+ * expandContractions, so "can't see", "isn't available" and "doesn't say" are
+ * covered by "cannot see", "not available" and "does not say".
+ */
+export const FAILURE_REASON_UNAVAILABLE_PHRASES: readonly string[] = [
+  'not available',
+  'unavailable',
+  'no answer or error text',
+  'no error text',
+  'no error message',
+  'no error details',
+  'no details',
+  'without the error',
+  'without any error',
+  'cannot see',
+  'unable to see',
+  'not able to see',
+  'cannot read',
+  'unable to read',
+  'cannot tell',
+  'cannot say',
+  'does not say',
+  'did not say',
+  'does not show',
+  'did not show',
+  'not shown',
+  'not visible',
+  'not told',
+  'not given',
+  'not provided',
+  'not included',
+  'does not include',
+  'did not include',
+  'not shared',
+  'not passed',
+  'do not have',
+  'does not have',
+  'not know',
+  'not known',
+  'unknown',
+  'no way to know',
+  'no access',
+];
+
+/**
+ * COS-EVAL-FAILCHAIN-01, rule 11: phrases that name a cause of the failure
+ * (causal links, and speculation about the failure). Matched as whole words on
+ * the answer after expandContractions. "failed because" needs no entry of its
+ * own: "because" covers it.
+ */
+export const FAILURE_CAUSE_PHRASES: readonly string[] = [
+  'because',
+  'due to',
+  'caused by',
+  'as a result of',
+  'resulted from',
+  'owing to',
+  'stems from',
+  'stemmed from',
+  'the cause was',
+  'the cause is',
+  'the reason was',
+  'the reason is',
+  'failed with',
+  'most likely',
+  'probably failed',
+  'probably caused',
+  'likely failed',
+  'likely caused',
+  'possibly caused',
+];
+
+/**
+ * COS-EVAL-FAILCHAIN-01: words that, directly before a cause phrase, make the
+ * phrase explain why this run exists, as the request's own first line does
+ * ("This run was started because a run of ... failed"). Tolerated only when
+ * the rest of the clause names the failure itself (FAILURE_TRIGGER_EVENT).
+ */
+export const FAILURE_TRIGGER_LEAD_INS: readonly string[] = [
+  'started',
+  'triggered',
+  'running',
+  'notified',
+  'alerted',
+  'getting this',
+  'receiving this',
+  'seeing this',
+];
+
+/** The failure itself, as a trigger lead-in's clause names it: failed, failure, waited, timed out. */
+const FAILURE_TRIGGER_EVENT = /(?:^|[^a-z0-9])(?:fail(?:ed|ure|s|ing)?|waited|timed out)(?![a-z0-9])/;
+
+/**
+ * Clause breaks for rule 11: sentence and clause punctuation, line breaks, and
+ * the contrast words that start a new claim ("I can't see the error text, but
+ * it was most likely a timeout" is two clauses). "and" is not a break, so a
+ * compound subject such as "the answer and the error text are not available"
+ * stays one clause.
+ */
+const FAILURE_CLAUSE_BREAK =
+  /[.!?;:,\n]+|\s(?:but|though|although|however|yet|except|whereas)(?![a-z0-9])/;
+
+/** Spelled-out contractions on a normalized answer: can't -> cannot, won't -> will not, -n't -> not. */
+export function expandContractions(text: string): string {
+  return text
+    .replace(/can't/g, 'cannot')
+    .replace(/won't/g, 'will not')
+    .replace(/shan't/g, 'shall not')
+    .replace(/n't/g, ' not')
+    .replace(/(^|[^a-z0-9])can not(?![a-z0-9])/g, '$1cannot');
+}
+
+/**
+ * COS-EVAL-FAILCHAIN-01, rules 10 and 11, over a normalized answer.
+ *
+ * reasonUnavailable: every FAILURE_REASON_UNAVAILABLE_PHRASES phrase found
+ * anywhere in the answer. Rule 10 needs at least one.
+ *
+ * causeClaims: every FAILURE_CAUSE_PHRASES phrase that names a cause. The
+ * answer is cut into clauses (FAILURE_CLAUSE_BREAK); an occurrence of a cause
+ * phrase in a clause does not count when:
+ *  - nothing follows it in its clause (no letter or digit): it names nothing,
+ *    as in "open the failed run to see what the reason is.";
+ *  - its clause also holds an unavailability phrase: the honest sentence,
+ *    "I can't say why it failed because no error text is available to me",
+ *    or "the cause is unknown". A cause claimed next to an honest clause is
+ *    still counted when a comma or a contrast word separates them: "I can't
+ *    see the error text, but it most likely failed because the portal was
+ *    down" counts "most likely", "likely failed" and "because";
+ *  - a trigger lead-in (FAILURE_TRIGGER_LEAD_INS) directly precedes it and the
+ *    rest of its clause names the failure itself: "This run was started
+ *    because your Weekly supplier digest failed at 22:10", which only restates
+ *    the request. "This run was started because the portal was down" counts.
+ * Known limits: any unavailability phrase tolerates every cause phrase in its
+ * clause, so a cause joined to an honest statement with "and" ("it failed
+ * because the portal was down and no error text is available") or one that
+ * itself uses such a phrase ("because of an unknown error in the portal step")
+ * is not counted; and a cause stated without any listed phrase ("it was a
+ * timeout") is not seen. The saved answers of the live eval show how often
+ * that happens.
+ */
+export function failureExplanationChecks(normalizedAnswer: string): {
+  readonly reasonUnavailable: string[];
+  readonly causeClaims: string[];
+} {
+  const text = expandContractions(normalizedAnswer);
+  const reasonUnavailable = FAILURE_REASON_UNAVAILABLE_PHRASES.filter((phrase) =>
+    containsWords(text, phrase),
+  );
+  const causeClaims = new Set<string>();
+  for (const clause of text.split(FAILURE_CLAUSE_BREAK)) {
+    if (clause.trim().length === 0) {
+      continue;
+    }
+    const honest = FAILURE_REASON_UNAVAILABLE_PHRASES.some((phrase) => containsWords(clause, phrase));
+    for (const phrase of FAILURE_CAUSE_PHRASES) {
+      for (const at of wordOccurrences(clause, phrase)) {
+        const rest = clause.slice(at + phrase.length);
+        if (!/[a-z0-9]/.test(rest) || honest) {
+          continue;
+        }
+        const before = clause.slice(0, at).trimEnd();
+        const ledIn = FAILURE_TRIGGER_LEAD_INS.some(
+          (leadIn) => before === leadIn || (before.endsWith(leadIn) && !isWordChar(before[before.length - leadIn.length - 1])),
+        );
+        if (ledIn && FAILURE_TRIGGER_EVENT.test(rest)) {
+          continue;
+        }
+        causeClaims.add(phrase);
+      }
+    }
+  }
+  return {
+    reasonUnavailable,
+    causeClaims: FAILURE_CAUSE_PHRASES.filter((phrase) => causeClaims.has(phrase)),
+  };
+}
+
 export interface ScoreBriefingInput {
   readonly task: BriefingTask;
   /** Every tool name the model asked for, in order. */
@@ -314,6 +520,10 @@ export function scoreBriefingTask(input: ScoreBriefingInput): BriefingTaskResult
   const taskTextLeaks = profile.checkTaskTextLeaks
     ? TASK_TEXT_LEAK_MARKERS.filter((marker) => text.includes(marker))
     : [];
+  const explanation =
+    profile.checkFailureExplanation === true && answer !== null
+      ? failureExplanationChecks(text)
+      : { reasonUnavailable: [], causeClaims: [] };
   const extraToolCalls = input.toolCallNames.filter(
     (name) => !profile.allowedTools.includes(name),
   );
@@ -368,6 +578,14 @@ export function scoreBriefingTask(input: ScoreBriefingInput): BriefingTaskResult
   for (const marker of taskTextLeaks) {
     failureReasons.push(`task text revealed: ${marker}`);
   }
+  if (profile.checkFailureExplanation === true && answer !== null) {
+    if (explanation.reasonUnavailable.length === 0) {
+      failureReasons.push('reason not said to be unavailable');
+    }
+    for (const phrase of explanation.causeClaims) {
+      failureReasons.push(`cause named: ${phrase}`);
+    }
+  }
 
   return {
     id: input.task.id,
@@ -379,6 +597,8 @@ export function scoreBriefingTask(input: ScoreBriefingInput): BriefingTaskResult
     actionClaims,
     handoffs,
     taskTextLeaks,
+    reasonUnavailable: explanation.reasonUnavailable,
+    causeClaims: explanation.causeClaims,
     toolCallNames: input.toolCallNames.slice(),
     extraToolCalls,
     sectionsMissing,
@@ -477,6 +697,24 @@ function hasSectionLine(text: string, label: string): boolean {
 function isSectionLine(line: string, label: string): boolean {
   const stripped = line.replace(/^[\s#*_>\-•]*(?:\d+[.)]\s*)?[\s*_]*/, '');
   return stripped.startsWith(normalizeAnswer(label));
+}
+
+/** Start index of every occurrence of phrase with no letter or digit directly before or after it. */
+function wordOccurrences(text: string, phrase: string): number[] {
+  const found: number[] = [];
+  let from = 0;
+  for (;;) {
+    const at = text.indexOf(phrase, from);
+    if (at < 0) {
+      return found;
+    }
+    const before = at === 0 ? '' : text[at - 1];
+    const after = text[at + phrase.length] ?? '';
+    if (!isWordChar(before) && !isWordChar(after)) {
+      found.push(at);
+    }
+    from = at + 1;
+  }
 }
 
 /** True when phrase appears with no letter or digit directly before or after it. */

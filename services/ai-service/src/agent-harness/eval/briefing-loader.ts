@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { CHAIN_FAILED_CATEGORIES, chainFailedWorkflowLabel } from './briefing-prompt';
 import type {
   BriefingCalendarEvent,
+  BriefingChainFailureCategory,
   BriefingCalendarResult,
   BriefingInjectedField,
   BriefingInjectedItem,
@@ -36,6 +38,15 @@ const RUN_RESULT_INJECTED_FIELDS: readonly BriefingInjectedField[] = ['answer'];
 /** COS-MAIL-BODY-RULE-01: request fields by kind. */
 const MAIL_TRIGGER_REQUEST_FIELDS = ['kind', 'savedTask', 'arrivedAt', 'messageUid'];
 const CHAIN_TRIGGER_REQUEST_FIELDS = ['kind', 'savedTask', 'completedAt', 'sourceRunId'];
+/** COS-EVAL-FAILCHAIN-01: every field is required; workflowName is null for none. */
+const CHAIN_FAILED_REQUEST_FIELDS = [
+  'kind',
+  'savedTask',
+  'completedAt',
+  'sourceRunId',
+  'workflowName',
+  'category',
+];
 /** The gateway's run-result response fields (createReadRunResultHandler keeps these). */
 const RUN_RESULT_FIELDS = ['runId', 'status', 'finishedAt', 'workflow', 'answer', 'truncated'];
 const RUN_RESULT_WORKFLOW_FIELDS = ['name', 'testRun'];
@@ -104,6 +115,7 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
       fail('runResult.runId must equal request.sourceRunId');
     }
   } else if (runResult !== undefined) {
+    // A chain-failed request has none either: a failed run has no readable answer.
     fail('runResult is only allowed with a chain-trigger request');
   }
   const injected = readInjected(record.injected, mail, calendar, runResult, fail);
@@ -128,7 +140,7 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
   };
 }
 
-/** COS-MAIL-BODY-RULE-01: a mail-trigger or chain-trigger request. */
+/** COS-MAIL-BODY-RULE-01: a mail-trigger or chain-trigger request; COS-EVAL-FAILCHAIN-01: or a chain-failed one. */
 function readRequest(
   value: unknown,
   mail: BriefingMailResult,
@@ -165,7 +177,48 @@ function readRequest(
     }
     return { kind, savedTask, completedAt, sourceRunId };
   }
-  return fail('request.kind must be "mail-trigger" or "chain-trigger"');
+  if (kind === 'chain-failed') {
+    // COS-EVAL-FAILCHAIN-01: the failure trigger's request; no runResult (checked by the caller).
+    assertOnlyKeys(record, CHAIN_FAILED_REQUEST_FIELDS, 'request', fail);
+    for (const key of CHAIN_FAILED_REQUEST_FIELDS) {
+      if (!(key in record)) {
+        fail(`request.${key} is required for a chain-failed request`);
+      }
+    }
+    const savedTask = readString(record.savedTask, 'request.savedTask', fail);
+    const completedAt = readString(record.completedAt, 'request.completedAt', fail);
+    if (!LOCAL_TIME_TEXT.test(completedAt)) {
+      fail('request.completedAt must be YYYY-MM-DD HH:MM');
+    }
+    const sourceRunId = readString(record.sourceRunId, 'request.sourceRunId', fail);
+    if (!RUN_ID_PATTERN.test(sourceRunId)) {
+      fail('request.sourceRunId must be 1 to 128 letters, digits, _ or -');
+    }
+    const workflowName = record.workflowName;
+    if (workflowName !== null) {
+      if (typeof workflowName !== 'string') {
+        fail('request.workflowName must be a string or null');
+      }
+      if (chainFailedWorkflowLabel(workflowName) !== workflowName) {
+        fail(
+          'request.workflowName must be printed as the gateway prints a label: one line, no double quotes, no extra spaces, at most 100 characters',
+        );
+      }
+    }
+    const category = record.category;
+    if (!CHAIN_FAILED_CATEGORIES.includes(category as BriefingChainFailureCategory)) {
+      fail(`request.category must be one of ${CHAIN_FAILED_CATEGORIES.join(', ')}`);
+    }
+    return {
+      kind,
+      savedTask,
+      completedAt,
+      sourceRunId,
+      workflowName: workflowName as string | null,
+      category: category as BriefingChainFailureCategory,
+    };
+  }
+  return fail('request.kind must be "mail-trigger", "chain-trigger" or "chain-failed"');
 }
 
 /** COS-MAIL-BODY-RULE-01: the finished run read_run_result returns. */
