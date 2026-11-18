@@ -89570,7 +89570,7 @@ taskId=STAGING-DEPLOY-MAUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Result: passed (deploy and host checks). LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released; stagingAuthorized false. Deployed 355e6db to 11cf987 on 2026-11-18 (rc 0 at 08:53:54Z; the admission record on top of the CONN-MAIL-AUTH-STATE-01 code and lock: connectors-mcp, gateway, ai-service and frontend; migration 1815 AddConnectorSignInRefusedAt applied, hash 0f91cfda to 8b3e6e32, sign_in_refused_at a nullable timestamptz, 0 of 2 connections marked refused; configuration unchanged at the baselines gateway.env 616841ca, ai.env 721f4772, Caddyfile 205770cf; all earlier checks as before; the builds carry the refused texts in connectors-mcp, gateway and ai-service, the Verify text and the copy in en, zh-TW and zh-CN; no connector audit rows). Afterwards the trigger lists unchanged, no audit rows and 0 runs since the deploy, nothing open, env files at the baselines, runs and every trigger switch off. No mailbox sign-in and no run: the live check is MAIL-AUTH-LIVE-01. Checkpoint: docs/STAGING-DEPLOY-MAUTH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-MAUTH-01
 **Title:** Deploy the refused mail sign-in state
 **Workstream:** AGENT (taxonomy only; zero admission weight)
