@@ -7,6 +7,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   CONNECTION_SERVER_MESSAGE_KEYS,
+  applyVerified,
   CONNECTIONS_NOT_CONFIGURED_MESSAGE,
   connectCalendar,
   connectMail,
@@ -79,6 +80,10 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#x27;');
 }
 
+function html_count(html: string, id: string): number {
+  return html.split(`data-testid="${id}"`).length - 1;
+}
+
 function has(html: string, text: string): boolean {
   return html.includes(escapeHtml(text));
 }
@@ -92,6 +97,7 @@ const CONNECTED: ConnectionsState = {
     createdAt: '2026-11-09T08:00:00.000Z',
     updatedAt: '2026-11-09T08:00:00.000Z',
     lastVerifiedAt: null,
+    signInRefusedAt: null,
   },
   ical: {
     kind: 'ical',
@@ -159,7 +165,49 @@ function nestError(status: number, message: string) {
   return { statusCode: status, message, error: 'Error' };
 }
 
+const REFUSED_AT = '2026-11-10T07:30:00.000Z';
+const REFUSED: ConnectionsState = {
+  ...CONNECTED,
+  imap: { ...(CONNECTED.imap as NonNullable<ConnectionsState['imap']>), signInRefusedAt: REFUSED_AT },
+};
+
 describe('connections screen states', () => {
+  test('a refused mail sign-in shows one warning line with the date', () => {
+    for (const { code, messages } of LOCALES) {
+      const html = render({ connections: REFUSED, locale: code }, messages);
+      assert.equal(html.includes('data-testid="connections-mail-refused"'), true, code);
+      const text = readMessage(messages, 'connections.mail.signInRefused') ?? '';
+      const expected = text.replace('{date}', new Date(REFUSED_AT).toLocaleString(code));
+      assert.equal(has(html, expected), true, `${code} refused line`);
+    }
+    assert.equal(html_count(render({ connections: REFUSED }), 'connections-mail-refused'), 1);
+  });
+
+  test('no refused line when signInRefusedAt is null or absent', () => {
+    assert.equal(render({ connections: CONNECTED }).includes('connections-mail-refused'), false);
+    const absent = { ...CONNECTED, imap: { ...CONNECTED.imap!, signInRefusedAt: undefined } };
+    assert.equal(render({ connections: absent as ConnectionsState }).includes('connections-mail-refused'), false);
+    assert.equal(render({ connections: NO_CONNECTIONS }).includes('connections-mail-refused'), false);
+  });
+
+  test('a good Test clears the refused mark and keeps the calendar card as it was', () => {
+    const next = applyVerified(REFUSED, 'imap', '2026-11-10T08:00:00.000Z');
+    assert.equal(next.imap?.signInRefusedAt, null);
+    assert.equal(next.imap?.lastVerifiedAt, '2026-11-10T08:00:00.000Z');
+    assert.equal(render({ connections: next }).includes('connections-mail-refused'), false);
+    const cal = applyVerified(REFUSED, 'ical', '2026-11-10T08:00:00.000Z');
+    assert.equal(cal.imap?.signInRefusedAt, REFUSED_AT);
+    assert.equal(applyVerified(NO_CONNECTIONS, 'imap', 'x'), NO_CONNECTIONS);
+  });
+
+  test('a refused Test shows the refused error text', () => {
+    const html = render({
+      connections: REFUSED,
+      mail: { ...IDLE_CARD_STATUS, errorKey: 'errors.mailRefused' },
+    });
+    assert.equal(has(html, en('errors.mailRefused')), true);
+  });
+
   test('loading the list shows only the loading copy', () => {
     const html = render({ phase: 'loading' });
     assert.equal(html.includes('data-testid="connections-loading"'), true);
@@ -337,6 +385,31 @@ describe('connections screen states', () => {
 });
 
 describe('connections api', () => {
+  test('signInRefusedAt is parsed; null and absent mean no warning', () => {
+    const base = { kind: 'imap', preset: 'gmail', username: 'a@b.co', createdAt: 'c', updatedAt: 'u', lastVerifiedAt: null };
+    const parse = (extra: Record<string, unknown>) =>
+      parseConnections({ connections: [{ ...base, ...extra }] })?.imap?.signInRefusedAt;
+    assert.equal(parse({ signInRefusedAt: REFUSED_AT }), REFUSED_AT);
+    assert.equal(parse({ signInRefusedAt: null }), null);
+    assert.equal(parse({}), null);
+    assert.equal(parse({ signInRefusedAt: 5 }), null);
+    const ical = parseConnections({
+      connections: [{ kind: 'ical', createdAt: 'c', updatedAt: 'u', lastVerifiedAt: null, signInRefusedAt: REFUSED_AT }],
+    });
+    assert.equal('signInRefusedAt' in (ical?.ical ?? {}), false);
+  });
+
+  test('the refused app password message maps to its own key', () => {
+    assert.equal(
+      CONNECTION_SERVER_MESSAGE_KEYS['the mail server refused the app password'],
+      'errors.mailRefused',
+    );
+    assert.equal(
+      CONNECTION_SERVER_MESSAGE_KEYS['could not reach the mail server'],
+      'errors.mailVerifyFailed',
+    );
+  });
+
   test('loads the list and keeps only public fields', async () => {
     const { fetcher, calls } = stubFetcher(200, {
       connections: [

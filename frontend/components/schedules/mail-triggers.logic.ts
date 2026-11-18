@@ -43,7 +43,12 @@ export const MAIL_TRIGGER_SKIP_REASONS = [
 export const MAIL_TRIGGER_OUTCOMES = SCHEDULE_OUTCOMES;
 
 /** AGENT_MAIL_TRIGGER_MAIL_STATES. */
-export const MAIL_TRIGGER_MAIL_STATES = ['ok', 'connector_missing', 'read_failed'] as const;
+export const MAIL_TRIGGER_MAIL_STATES = [
+  'ok',
+  'connector_missing',
+  'read_failed',
+  'sign_in_refused',
+] as const;
 export type MailTriggerMailState = (typeof MAIL_TRIGGER_MAIL_STATES)[number];
 
 export const MAIL_TRIGGER_TASK_MAX_CHARS = 7500;

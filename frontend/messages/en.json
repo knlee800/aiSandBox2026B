@@ -1645,7 +1645,8 @@
       "connecting": "Connecting…",
       "disconnectTitle": "Disconnect mail?",
       "disconnectBody": "The saved app password is deleted from this platform. Your mailbox is not changed. You can connect again at any time.",
-      "disconnected": "Mail disconnected. The saved app password was deleted."
+      "disconnected": "Mail disconnected. The saved app password was deleted.",
+      "signInRefused": "The mail server refused your app password on {date}. Save a new app password, or press Test once it is fixed."
     },
     "calendar": {
       "title": "Calendar",
@@ -1688,6 +1689,7 @@
       "saveFailed": "Could not save the connection. Try again.",
       "deleteFailed": "Could not delete the connection. Try again.",
       "mailVerifyFailed": "Check failed: could not reach the mail server. Check the address and app password.",
+      "mailRefused": "The mail server refused the app password.",
       "calendarVerifyFailed": "Check failed: the calendar link could not be read. Check that the link is still valid.",
       "connectFailed": "Could not connect. Try again.",
       "disconnectFailed": "Could not disconnect. Try again.",
@@ -2216,6 +2218,7 @@
         "ok": "Connected and readable.",
         "connector_missing": "Not connected.",
         "read_failed": "Connected, but it could not be read.",
+        "sign_in_refused": "Your mail server refused the saved password. Mail triggers are paused until you reconnect the mailbox on the Connections page.",
         "openConnections": "Open Connections"
       },
       "readNotice": "While a trigger is on, the platform signs in to your mailbox about every 10 minutes (about once an hour after repeated failures) to look for new mail.",

@@ -1645,7 +1645,8 @@
       "connecting": "连接中…",
       "disconnectTitle": "要断开邮件连接吗？",
       "disconnectBody": "已保存的应用专用密码会从本平台删除，你的邮箱不会有任何更改。你随时可以重新连接。",
-      "disconnected": "邮件已断开连接，已保存的应用专用密码已删除。"
+      "disconnected": "邮件已断开连接，已保存的应用专用密码已删除。",
+      "signInRefused": "邮件服务器已于 {date} 拒绝你的应用专用密码。请保存新的应用专用密码，或在问题解决后点击“验证”。"
     },
     "calendar": {
       "title": "日历",
@@ -1688,6 +1689,7 @@
       "saveFailed": "无法保存连接，请重试。",
       "deleteFailed": "无法删除连接，请重试。",
       "mailVerifyFailed": "检查失败：无法连接邮件服务器。请确认地址和应用专用密码。",
+      "mailRefused": "邮件服务器拒绝了这个应用专用密码。",
       "calendarVerifyFailed": "检查失败：无法读取日历链接。请确认链接仍然有效。",
       "connectFailed": "无法连接，请重试。",
       "disconnectFailed": "无法断开连接，请重试。",
@@ -2216,6 +2218,7 @@
         "ok": "已连接，可以读取。",
         "connector_missing": "尚未连接。",
         "read_failed": "已连接，但无法读取。",
+        "sign_in_refused": "你的邮件服务器拒绝了已保存的密码。在你到“连接”页面重新连接邮箱之前，邮件触发器会暂停。",
         "openConnections": "前往连接页面"
       },
       "readNotice": "触发器开启期间，平台约每 10 分钟登录一次您的邮箱来查看新邮件（连续失败后约每小时一次）。",

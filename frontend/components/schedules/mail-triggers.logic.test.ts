@@ -16,6 +16,7 @@ import {
   mailTriggerErrorKey,
   mailboxDisplayState,
   mailboxNeedsAttention,
+  mailboxStateKey,
   parseMailTrigger,
   parseMailTriggerList,
   parseMailTriggerRuns,
@@ -92,7 +93,10 @@ describe('mail trigger code lists are pinned to the backend source', () => {
       '[',
       ']',
     );
-    assert.deepEqual([...MAIL_TRIGGER_MAIL_STATES], states);
+    // The entity holds the states a trigger row stores; the list route also answers sign_in_refused,
+    // derived from the refused connection (CONN-MAIL-AUTH-STATE-01 D4).
+    assert.deepEqual([...MAIL_TRIGGER_MAIL_STATES], [...states, 'sign_in_refused']);
+    assert.match(backend('triggers/mail-trigger-mailbox.ts'), /'sign_in_refused'/);
   });
 
   test('the limits match the backend constants', () => {
@@ -171,6 +175,16 @@ describe('mail trigger keys and helpers', () => {
     assert.equal(mailReasonKey('other'), 'reasons.unknown');
     assert.equal(mailOutcomeKey('started'), 'outcomes.started');
     assert.equal(mailOutcomeKey('other'), 'outcomes.unknown');
+  });
+
+  test('sign_in_refused parses, gets its key and needs attention', () => {
+    const refused = { connected: true, state: 'sign_in_refused', stateAt: '2026-11-15T10:00:00.000Z' };
+    const list = parseMailTriggerList({ triggers: [], mail: refused });
+    assert.deepEqual(list?.mail, refused);
+    assert.equal(mailboxDisplayState(list!.mail), 'sign_in_refused');
+    assert.equal(mailboxStateKey('sign_in_refused'), 'mailbox.sign_in_refused');
+    assert.equal(mailboxNeedsAttention(list!.mail), true);
+    assert.equal(parseMailTriggerList({ triggers: [], mail: { connected: true, state: 'sign_in_refusedX' } })?.mail.state, 'ok');
   });
 
   test('the mailbox shows not connected when no link is on file, whatever state was recorded', () => {

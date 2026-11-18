@@ -22,6 +22,7 @@ import {
   connectCalendar,
   connectMail,
   disconnectConnection,
+  applyVerified,
   formatConnectionDate,
   loadConnections,
   verifyConnection,
@@ -447,6 +448,20 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
                           testId="connections-mail-last-checked"
                         />
                       </dl>
+                      {mailConnection.signInRefusedAt ? (
+                        <div
+                          className="mt-4 flex items-start gap-2 rounded-lg border border-amber-900/80 bg-amber-950/40 px-3 py-2"
+                          role="status"
+                          data-testid="connections-mail-refused"
+                        >
+                          <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                          <p className="break-words text-sm text-amber-200">
+                            {fillKnowledgeTemplate(t('mail.signInRefused'), {
+                              date: formatConnectionDate(mailConnection.signInRefusedAt, locale),
+                            })}
+                          </p>
+                        </div>
+                      ) : null}
                       <ConnectedActions
                         t={t}
                         locale={locale}
@@ -809,10 +824,7 @@ export default function ConnectionsScreen({ locale }: ConnectionsScreenProps): R
     }
     if (result.type === 'ok') {
       const lastVerifiedAt = result.value.lastVerifiedAt;
-      setConnections((current) => {
-        const existing = current[kind];
-        return existing ? ({ ...current, [kind]: { ...existing, lastVerifiedAt } } as ConnectionsState) : current;
-      });
+      setConnections((current) => applyVerified(current, kind, lastVerifiedAt));
       setCard(kind, (current) => ({ ...current, busy: 'idle', verifiedAt: lastVerifiedAt }));
       return;
     }

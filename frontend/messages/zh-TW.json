@@ -1645,7 +1645,8 @@
       "connecting": "連線中…",
       "disconnectTitle": "要中斷郵件連線嗎？",
       "disconnectBody": "已儲存的應用程式密碼會從本平台刪除，你的信箱不會有任何變更。你隨時可以重新連線。",
-      "disconnected": "郵件已中斷連線，已儲存的應用程式密碼已刪除。"
+      "disconnected": "郵件已中斷連線，已儲存的應用程式密碼已刪除。",
+      "signInRefused": "郵件伺服器已於 {date} 拒絕你的應用程式密碼。請儲存新的應用程式密碼，或在問題解決後按「驗證」。"
     },
     "calendar": {
       "title": "行事曆",
@@ -1688,6 +1689,7 @@
       "saveFailed": "無法儲存連線，請再試一次。",
       "deleteFailed": "無法刪除連線，請再試一次。",
       "mailVerifyFailed": "檢查失敗：無法連上郵件伺服器。請確認地址與應用程式密碼。",
+      "mailRefused": "郵件伺服器拒絕了這組應用程式密碼。",
       "calendarVerifyFailed": "檢查失敗：無法讀取行事曆連結。請確認連結仍然有效。",
       "connectFailed": "無法連線，請再試一次。",
       "disconnectFailed": "無法中斷連線，請再試一次。",
@@ -2216,6 +2218,7 @@
         "ok": "已連線，可以讀取。",
         "connector_missing": "尚未連線。",
         "read_failed": "已連線，但無法讀取。",
+        "sign_in_refused": "你的郵件伺服器拒絕了已儲存的密碼。在你到「連線」頁面重新連接信箱之前，郵件觸發器會暫停。",
         "openConnections": "前往連線頁面"
       },
       "readNotice": "觸發器開啟期間，平台約每 10 分鐘登入一次您的信箱來查看新郵件（連續失敗後約每小時一次）。",

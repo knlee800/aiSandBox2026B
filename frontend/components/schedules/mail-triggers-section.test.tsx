@@ -207,6 +207,7 @@ describe('mail triggers messages', () => {
       'banner.runsOff',
       'mailbox.connector_missing',
       'mailbox.read_failed',
+      'mailbox.sign_in_refused',
       'form.workflowWarning',
       'reasons.day_limit',
       'reasons.workflow_not_tested',
@@ -287,6 +288,13 @@ describe('mail triggers section states', () => {
     assert.match(unreadable, /data-mailbox-state="read_failed"/);
     assert.ok(has(unreadable, en('mailbox.read_failed')));
     assert.match(unreadable, /href="\/en\/connections"/);
+    const refused = render({
+      data: list([], { mail: { connected: true, state: 'sign_in_refused', stateAt: '2026-11-15T10:00:00.000Z' } }),
+    });
+    assert.match(refused, /data-mailbox-state="sign_in_refused"/);
+    assert.ok(has(refused, en('mailbox.sign_in_refused')));
+    assert.match(refused, /data-testid="mail-triggers-mailbox-link"/);
+    assert.match(refused, /href="\/en\/connections"/);
     const recorded = render({
       data: list([], { mail: { connected: true, state: 'connector_missing', stateAt: 'x' } }),
     });

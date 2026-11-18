@@ -11,6 +11,8 @@ export interface MailConnection {
   createdAt: string;
   updatedAt: string;
   lastVerifiedAt: string | null;
+  /** ISO time the mail server refused the saved app password; null when not refused. */
+  signInRefusedAt?: string | null;
 }
 
 export interface CalendarConnection {
@@ -46,6 +48,7 @@ export const CONNECTION_SERVER_MESSAGE_KEYS: Record<string, string> = {
   'Could not save the connection.': 'errors.saveFailed',
   'Could not delete the connection.': 'errors.deleteFailed',
   'could not reach the mail server': 'errors.mailVerifyFailed',
+  'the mail server refused the app password': 'errors.mailRefused',
   'the calendar link could not be read': 'errors.calendarVerifyFailed',
 };
 
@@ -131,6 +134,7 @@ export function parseConnection(entry: unknown): MailConnection | CalendarConnec
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       lastVerifiedAt,
+      signInRefusedAt: typeof row.signInRefusedAt === 'string' ? row.signInRefusedAt : null,
     };
   }
   if (row.kind === 'ical') {
@@ -275,4 +279,21 @@ export function formatConnectionDate(value: string, locale: string): string {
     return value;
   }
   return new Date(parsed).toLocaleString(locale);
+}
+
+/** A good Test clears the refused-sign-in mark on the mail card, as the server does. */
+export function applyVerified(
+  current: ConnectionsState,
+  kind: ConnectionKind,
+  lastVerifiedAt: string | null,
+): ConnectionsState {
+  const existing = current[kind];
+  if (!existing) {
+    return current;
+  }
+  const next =
+    existing.kind === 'imap'
+      ? { ...existing, lastVerifiedAt, signInRefusedAt: null }
+      : { ...existing, lastVerifiedAt };
+  return { ...current, [kind]: next } as ConnectionsState;
 }
