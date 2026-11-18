@@ -89543,7 +89543,7 @@ taskId=CONN-MAIL-AUTH-STATE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 (Step 3, slice S2) — 2026-11-18 — slice S1 landed (dd65e81, opus, fast-forwarded; 22 paths, exactly the write set; control-plane gates on the branch: connectors-mcp 165 of 165, build rc 0; gateway tsc rc 0, 6634 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0; ai-service 1448 passed, 1 skipped, build rc 0): migration 1815 sign_in_refused_at; the child's fixed refused text; the broker marks the connection with an update guarded by id and updated_at (millisecond compare) and answers a fixed 409; no sign-in while marked except the Test button, whose refusal answers 502 'the mail server refused the app password'; a save or a good Test clears it; the timer skips a refused owner; GET /api/mail-triggers mail state sign_in_refused and GET /api/connections signInRefusedAt on imap; the AI worker passes the exact 409 text on for both mail tools; slice S2 admitted with FRONTEND and I18N — stage-start approved by Keith ("Yes, approve all"); Step 2 admitted on Keith said "You pick one", then "Stop signing in", "Yes, refuse and say so" and "Yes, admit". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. A refused mail sign-in is now its own state. connectors-mcp answers a server refusal of the saved app password with one fixed text; the gateway records it on the mail connection (migration 1815, sign_in_refused_at, set by an update guarded by id and updated_at), and while it is set nothing signs in to the mailbox except the Verify button: agent mail tools get a fixed 409 reconnect text that the AI worker passes to the model, and the mail-trigger timer skips the owner without counting a failure; saving a new password or a good Verify clears it. Verify on a refused password says 'the mail server refused the app password'. The Connections page shows a warning line with the date, and the Schedules mail-trigger section says triggers are paused until the owner reconnects, in en, zh-TW and zh-CN. Slice S1 dd65e81 (opus, 22 paths) and slice S2 13bad2b (sonnet, 9 of 10 paths) plus 15b390c (the control plane: 'press Verify', the real button label, Keith's "Yes, say Verify"), all fast-forwarded. Control-plane gates on the branches: connectors-mcp 165 of 165; gateway tsc rc 0, 6634 passed, 7 skipped, the 14 known smoke.integration failures; ai-service 1448 passed, 1 skipped; frontend tsc rc 0, 2241 of 2241 (baseline 2234); all builds rc 0. Not deployed; migration 1815 not yet run anywhere. Checkpoint: docs/CONN-MAIL-AUTH-STATE-01-CHECKPOINT.md. FOLLOWUPS: 3 registered (STAGING-DEPLOY-MAUTH-01, MAIL-AUTH-LIVE-01, GOV-ARCH-MAIL-AUTH-01) / 0 superseded / 1 dropped (the stale test title in mail-trigger-run.service.spec.ts; Keith 2026-11-18, "Drop it": cosmetic, the test passes) / 0 undisposed. Was: ADMITTED — Lane 1 (Step 3, slice S2) — 2026-11-18 — slice S1 landed (dd65e81, opus, fast-forwarded; 22 paths, exactly the write set; control-plane gates on the branch: connectors-mcp 165 of 165, build rc 0; gateway tsc rc 0, 6634 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0; ai-service 1448 passed, 1 skipped, build rc 0): migration 1815 sign_in_refused_at; the child's fixed refused text; the broker marks the connection with an update guarded by id and updated_at (millisecond compare) and answers a fixed 409; no sign-in while marked except the Test button, whose refusal answers 502 'the mail server refused the app password'; a save or a good Test clears it; the timer skips a refused owner; GET /api/mail-triggers mail state sign_in_refused and GET /api/connections signInRefusedAt on imap; the AI worker passes the exact 409 text on for both mail tools; slice S2 admitted with FRONTEND and I18N — stage-start approved by Keith ("Yes, approve all"); Step 2 admitted on Keith said "You pick one", then "Stop signing in", "Yes, refuse and say so" and "Yes, admit". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** CONN-MAIL-AUTH-STATE-01
 **Title:** A distinct sign-in-refused state for the mailbox
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89562,6 +89562,74 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-MAIL-01 (stage-start P6, F4): the broker maps every child failure to one fixed message, so a revoked app password looks like any read failure; the mail triggers only slow to hourly. A fixed message for an authentication failure, so the page can say reconnect your mailbox and the timer can stop signing in until the owner reconnects.
 
 Keith's choices (2026-11-18): Q1 when the server refuses the saved password, the mail-trigger timer stops signing in until the owner saves a new password or a Test succeeds ("Stop signing in"); Q2 agent mail tools are refused before signing in while the mailbox is marked refused, with a fixed text telling the owner to reconnect ("Yes, refuse and say so"); Q3 4-step with a stage-start, implemented by an opus subagent ("Yes, admit").
+**Dropped follow-up (Keith, 2026-11-18, "Drop it"):** the test title "no connection count…" in services/api-gateway/src/triggers/mail-trigger-run.service.spec.ts is slightly stale after D4 (the code now reads the connection row); cosmetic, the test passes.
+
+### STAGING-DEPLOY-MAUTH-01 — Deploy the refused mail sign-in state
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-MAUTH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-MAUTH-01
+**Title:** Deploy the refused mail sign-in state
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** CONN-MAIL-AUTH-STATE-01.
+**Primary write scope:** records; host state (deploy with migration 1815; no env change expected).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From CONN-MAIL-AUTH-STATE-01: deploy main to staging with the earlier deploy checks; migration 1815 AddConnectorSignInRefusedAt runs (one nullable column on connector_connections; record the migration hash); env files unchanged at the baselines; runs and every trigger switch stay off; the builds carry the fixed texts; GET /api/connections shows signInRefusedAt null for Keith's mail connection; no mailbox sign-in is caused by the check.
+
+### MAIL-AUTH-LIVE-01 — Live check of the refused mail sign-in state
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=MAIL-AUTH-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
+**Task ID:** MAIL-AUTH-LIVE-01
+**Title:** Live check of the refused mail sign-in state
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-MAUTH-01 is locked and Keith opens a window. Keith decides.
+**Depends on:** STAGING-DEPLOY-MAUTH-01.
+**Primary write scope:** records; host state during the window, restored afterwards.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the mail trigger it uses is GATED per PRD.md).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From CONN-MAIL-AUTH-STATE-01 (live-only flows): with Keith, the mailbox is made to refuse (for example Keith saves a wrong app password on the Connections page), then Verify shows the refused text and marks the connection; the warning line shows on the Connections page and the paused text in the Schedules mail-trigger section (en and one Chinese locale); with mail triggers on, the timer skips the mailbox with no sign-in (audit rows); in a run window with the stored Anthropic test key and write tools off, an agent run with the mail grant gets the reconnect text without a sign-in; saving the right password clears it and the next timer read works; a phone-width look at the warning line; env files restored byte for byte. Whether Gmail's real refusal carries imapflow's authenticationFailed flag is the first thing to confirm.
+
+### GOV-ARCH-MAIL-AUTH-01 — Name the refused mail sign-in state in ARCHITECTURE.md
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ARCH-MAIL-AUTH-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
+**Task ID:** GOV-ARCH-MAIL-AUTH-01
+**Title:** Name the refused mail sign-in state in ARCHITECTURE.md
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the wording. Keith decides.
+**Depends on:** CONN-MAIL-AUTH-STATE-01.
+**Primary write scope:** ARCHITECTURE.md (the connector broker and mail-trigger lines and the status table); PRD.md only if Keith wants.
+**Mutexes / resources:** GOVERNANCE.
+**Scope:** From CONN-MAIL-AUTH-STATE-01: describe sign_in_refused_at on connector_connections, the fixed refused text from connectors-mcp, no sign-in while refused except Verify, the 409 reconnect text for agent mail tools, the timer skip and the mail-trigger list state, in the control plane's draft and Keith's approved words.
+
 ### TRIGGER-MORE-01 — Later triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-MORE-01
