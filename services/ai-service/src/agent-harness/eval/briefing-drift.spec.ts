@@ -248,6 +248,12 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
     const connectors = readRepoFile('services', 'api-gateway', 'src', 'connectors', 'connector-servers.ts');
     expect(connectors).toContain("export const MAIL_TOOL_ID = 'mail_list_unread_metadata';");
     expect(connectors).toContain("export const CALENDAR_TOOL_ID = 'calendar_list_today';");
+    // CONN-MAIL-READ-01: the eval advertises mail_read_message because the gateway's
+    // grant brings it with the unread tool; the system agent's own list (and hash) stays as is.
+    expect(connectors).toContain("export const MAIL_READ_TOOL_ID = 'mail_read_message';");
+    expect(connectors).toContain('  [MAIL_TOOL_ID, Object.freeze([MAIL_READ_TOOL])],');
+    const grants = readRepoFile('services', 'api-gateway', 'src', 'orchestration', 'collaboration-connector-grants.ts');
+    expect(grants).toContain('const granted = withCompanionToolIds(');
     // Only one role is on the chief-of-staff team, so the brief lists no other agents.
     expect(registry.split("teamId: 'chief-of-staff'").length - 1).toBe(1);
   });

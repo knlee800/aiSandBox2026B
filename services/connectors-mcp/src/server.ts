@@ -3,11 +3,12 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import type { CalendarFeed, CalendarWindowFeed } from './clients/ical-feed';
-import type { MailboxClient, RecentMailClient } from './clients/imap-client';
+import type { MailboxClient, MessageReadClient, RecentMailClient } from './clients/imap-client';
 import { errorText, redact } from './limits';
 import { calendarListToday, defaultCalendarFeed } from './tools/calendar-today';
 import { calendarListWindow, defaultCalendarWindowFeed } from './tools/calendar-window';
 import { defaultMailboxClient, mailListUnread } from './tools/mail-list-unread';
+import { defaultMessageReadClient, mailReadMessage } from './tools/mail-read';
 import { defaultRecentMailClient, mailListRecent } from './tools/mail-recent';
 
 export const SERVER_INSTRUCTIONS =
@@ -19,6 +20,11 @@ export const CALENDAR_TOOL_NAME = 'calendar_list_today';
 export const CALENDAR_WINDOW_TOOL_NAME = 'calendar_list_window';
 /** TRIGGER-MAIL-01 S1: called only by the gateway for mail triggers; never offered to a model. */
 export const MAIL_RECENT_TOOL_NAME = 'mail_list_recent';
+/**
+ * CONN-MAIL-READ-01: one Inbox message by its id. The gateway offers it only to a
+ * job granted mail_list_unread_metadata, never on its own.
+ */
+export const MAIL_READ_TOOL_NAME = 'mail_read_message';
 
 export const MAIL_TOOL_DESCRIPTION =
   'List unread Inbox messages for the connected mailbox: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). At most 25 messages. Does not mark messages read and does not change the mailbox.';
@@ -31,6 +37,9 @@ export const CALENDAR_WINDOW_TOOL_DESCRIPTION =
 
 export const MAIL_RECENT_TOOL_DESCRIPTION =
   "List unread Inbox messages that arrived at or after a time at most 2 hours ago: the Inbox's UIDVALIDITY and, per message, the UID, the sender's address, the subject and the arrival time only. At most 25 messages, newest first. No bodies. Does not mark messages read and does not change the mailbox.";
+
+export const MAIL_READ_TOOL_DESCRIPTION =
+  'Read one Inbox message of the connected mailbox by its message id, the id mail_list_unread_metadata returns or a mail trigger gives, whether the message is read or unread: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). Does not mark the message read and does not change the mailbox.';
 
 export const MAIL_INPUT_SCHEMA = {
   type: 'object',
@@ -96,12 +105,35 @@ export const MAIL_RECENT_INPUT_SCHEMA = {
   required: ['preset', 'username', 'appPassword', 'since'],
 } as const;
 
+export const MAIL_READ_INPUT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    preset: {
+      type: 'string',
+      enum: ['gmail', 'yahoo', 'icloud'],
+      description: 'Mailbox provider preset. The server chooses the host and port.',
+    },
+    username: { type: 'string', minLength: 1 },
+    appPassword: { type: 'string', minLength: 1 },
+    messageId: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 10,
+      description: 'The id of the message, as mail_list_unread_metadata returns it or the mail trigger gives it, for example 4601.',
+    },
+  },
+  required: ['preset', 'username', 'appPassword', 'messageId'],
+} as const;
+
 export interface ConnectorDeps {
   mail: MailboxClient;
   calendar: CalendarFeed;
   calendarWindow: CalendarWindowFeed;
   /** TRIGGER-MAIL-01 S1: the gateway-only recent-mail read. */
   mailRecent: RecentMailClient;
+  /** CONN-MAIL-READ-01: one Inbox message by its id. */
+  mailRead: MessageReadClient;
 }
 
 function secretsIn(args: unknown): string[] {
@@ -150,6 +182,11 @@ export function createConnectorServer(deps: ConnectorDeps): Server {
         description: MAIL_RECENT_TOOL_DESCRIPTION,
         inputSchema: MAIL_RECENT_INPUT_SCHEMA,
       },
+      {
+        name: MAIL_READ_TOOL_NAME,
+        description: MAIL_READ_TOOL_DESCRIPTION,
+        inputSchema: MAIL_READ_INPUT_SCHEMA,
+      },
     ],
   }));
 
@@ -173,6 +210,10 @@ export function createConnectorServer(deps: ConnectorDeps): Server {
         const result = await mailListRecent(deps.mailRecent, args);
         return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
       }
+      if (name === MAIL_READ_TOOL_NAME) {
+        const result = await mailReadMessage(deps.mailRead, args);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+      }
       return toolError(new Error('unknown tool'), args);
     } catch (error) {
       return toolError(error, args);
@@ -188,6 +229,7 @@ export function defaultConnectorDeps(): ConnectorDeps {
     calendar: defaultCalendarFeed(),
     calendarWindow: defaultCalendarWindowFeed(),
     mailRecent: defaultRecentMailClient(),
+    mailRead: defaultMessageReadClient(),
   };
 }
 

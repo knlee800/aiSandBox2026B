@@ -886,7 +886,7 @@ describe('BIZ-USER-01C workflow jobs (frozen HARNESS_ENTITLEMENT_PROOF_V1)', () 
     expect(workflowJob.knowledgeScopes).toEqual(
       knowledgeScopesJobFields('chief-of-staff').knowledgeScopes,
     );
-    expect(workflowJob.connectorGrants).toEqual([CALENDAR_TOOL_ID, MAIL_TOOL_ID]);
+    expect(workflowJob.connectorGrants).toEqual([CALENDAR_TOOL_ID, MAIL_TOOL_ID, 'mail_read_message']);
 
     // The proof covers every key, as for a system role.
     const { harnessEntitlementProof, ...signed } = workflowJob;
@@ -913,9 +913,10 @@ describe('BIZ-USER-01C workflow jobs (frozen HARNESS_ENTITLEMENT_PROOF_V1)', () 
       }),
     });
     expect(job.knowledgeScopes).toEqual(['policies', 'contract-templates']);
-    expect(job.connectorGrants).toEqual([MAIL_TOOL_ID]);
+    expect(job.connectorGrants).toEqual([MAIL_TOOL_ID, 'mail_read_message']);
     for (const [toolId, granted] of [
       [MAIL_TOOL_ID, true],
+      ['mail_read_message', true],
       [CALENDAR_TOOL_ID, false],
       ['not_a_tool', false],
     ] as const) {

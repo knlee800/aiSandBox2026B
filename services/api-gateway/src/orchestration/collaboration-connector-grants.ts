@@ -3,7 +3,7 @@ import {
   mintConnectorGrantToken,
   normalizeConnectorToolIds,
 } from '../connectors/connector-grant-token';
-import { findAllowlistedTool } from '../connectors/connector-servers';
+import { findAllowlistedTool, withCompanionToolIds } from '../connectors/connector-servers';
 
 /**
  * CONN-GRANT-01: owner connection rows, read by owner id only.
@@ -36,6 +36,11 @@ export type ConnectorGrantOutcome =
  * connection of each granted tool's kind. Otherwise { connectorGrants (sorted),
  * connectorGrantToken }. Both fields are then covered by the entitlement proof.
  * Never throws: any failure means no grant.
+ *
+ * CONN-MAIL-READ-01: the role's own list counts allowlisted tools only (a companion
+ * in it is ignored); a granted tool then brings its companions
+ * (withCompanionToolIds), so a job granted mail_list_unread_metadata also gets
+ * mail_read_message, in connectorGrants and in the token.
  */
 export async function resolveConnectorGrantJobFields(input: {
   readonly executionId: string;
@@ -73,10 +78,12 @@ export async function resolveConnectorGrantJobFields(input: {
   } catch {
     return { fields: {}, outcome: 'lookup_failed' };
   }
-  const granted = roleTools.filter((id) => {
-    const tool = findAllowlistedTool(id);
-    return tool !== null && kinds.has(tool.kind);
-  });
+  const granted = withCompanionToolIds(
+    roleTools.filter((id) => {
+      const tool = findAllowlistedTool(id);
+      return tool !== null && kinds.has(tool.kind);
+    }),
+  );
   if (granted.length === 0) {
     return { fields: {}, outcome: 'no_connection' };
   }

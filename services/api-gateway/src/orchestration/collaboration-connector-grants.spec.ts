@@ -87,7 +87,8 @@ describe('CONN-GRANT-01 resolveConnectorGrantJobFields', () => {
       connections,
     });
     expect(both.outcome).toBe('granted');
-    expect(both.fields.connectorGrants).toEqual(['mail_list_unread_metadata']);
+    // CONN-MAIL-READ-01: the unread-mail tool brings mail_read_message.
+    expect(both.fields.connectorGrants).toEqual(['mail_list_unread_metadata', 'mail_read_message']);
     expect(
       isConnectorCallGranted({
         grantToken: both.fields.connectorGrantToken,
@@ -110,6 +111,59 @@ describe('CONN-GRANT-01 resolveConnectorGrantJobFields', () => {
       where: { userId: OWNER },
       select: ['userId', 'kind'],
     });
+  });
+
+  it('CONN-MAIL-READ-01: mail_read_message comes only with the unread-mail grant, in connectorGrants and in the token', async () => {
+    const both = connectionRows([
+      { userId: OWNER, kind: 'imap', secretCiphertext: 'c', preset: 'gmail' },
+      { userId: OWNER, kind: 'ical', secretCiphertext: 'c', preset: null },
+    ]);
+    const granted = (fields: { connectorGrantToken?: string }, toolId: string, executionId = 'exec-unit') =>
+      isConnectorCallGranted({
+        grantToken: fields.connectorGrantToken,
+        executionId,
+        userId: OWNER,
+        toolId,
+        nowMs: Date.now(),
+      });
+
+    const mail = await resolveConnectorGrantJobFields({ ...base, roleToolIds: ['mail_list_unread_metadata'], connections: both });
+    expect(mail.fields.connectorGrants).toEqual(['mail_list_unread_metadata', 'mail_read_message']);
+    expect(granted(mail.fields, 'mail_read_message')).toBe(true);
+    expect(granted(mail.fields, 'mail_list_unread_metadata')).toBe(true);
+    expect(granted(mail.fields, 'mail_read_message', 'exec-other')).toBe(false);
+
+    // A calendar-only job gets neither mail tool.
+    const calendar = await resolveConnectorGrantJobFields({ ...base, roleToolIds: ['calendar_list_today'], connections: both });
+    expect(calendar.fields.connectorGrants).toEqual(['calendar_list_today']);
+    expect(granted(calendar.fields, 'mail_read_message')).toBe(false);
+    expect(granted(calendar.fields, 'mail_list_unread_metadata')).toBe(false);
+
+    // A role list naming the companion is ignored: it is never granted on its own.
+    const alone = await resolveConnectorGrantJobFields({ ...base, roleToolIds: ['mail_read_message'], connections: both });
+    expect(alone).toEqual({ fields: {}, outcome: 'no_role_tools' });
+    const withCalendar = await resolveConnectorGrantJobFields({
+      ...base,
+      roleToolIds: ['mail_read_message', 'calendar_list_today'],
+      connections: both,
+    });
+    expect(withCalendar.fields.connectorGrants).toEqual(['calendar_list_today']);
+    expect(granted(withCalendar.fields, 'mail_read_message')).toBe(false);
+
+    // No mailbox connected: the unread-mail tool is not granted, so neither is its companion.
+    const noMailbox = await resolveConnectorGrantJobFields({
+      ...base,
+      roleToolIds: ['mail_list_unread_metadata', 'calendar_list_today'],
+      connections: connectionRows([{ userId: OWNER, kind: 'ical', secretCiphertext: 'c', preset: null }]),
+    });
+    expect(noMailbox.fields.connectorGrants).toEqual(['calendar_list_today']);
+  });
+
+  it('CONN-MAIL-READ-01: no system agent lists mail_read_message, and it is not an allowlisted tool', () => {
+    for (const definition of SYSTEM_AGENT_DEFINITIONS) {
+      expect((definition as { connectorToolIds?: readonly string[] }).connectorToolIds ?? []).not.toContain('mail_read_message');
+    }
+    expect(findAllowlistedTool('mail_read_message')).toBeNull();
   });
 
   it('returns {} when the role lists nothing, the connection is missing, the key is missing, the lookup fails, or the profile is not read', async () => {
@@ -332,9 +386,9 @@ describe('CONN-GRANT-01 connector grants on collaboration jobs', () => {
 
     expect(payload.harnessVersion).toBe('v1');
     expect(payload.harnessToolProfile).toBe('read');
-    expect(payload.connectorGrants).toEqual(['calendar_list_today', 'mail_list_unread_metadata']);
+    expect(payload.connectorGrants).toEqual(['calendar_list_today', 'mail_list_unread_metadata', 'mail_read_message']);
     expect(typeof payload.connectorGrantToken).toBe('string');
-    for (const toolId of ['calendar_list_today', 'mail_list_unread_metadata']) {
+    for (const toolId of ['calendar_list_today', 'mail_list_unread_metadata', 'mail_read_message']) {
       expect(
         isConnectorCallGranted({
           grantToken: payload.connectorGrantToken,
@@ -387,7 +441,7 @@ describe('CONN-GRANT-01 connector grants on collaboration jobs', () => {
     rows.splice(1, 1);
     listRoleTools({ 'chief-of-staff': ['mail_list_unread_metadata', 'calendar_list_today'] });
     const payload = await startJob({ id: 'mail-only', target: 'chief-of-staff', fileAccess: true });
-    expect(payload.connectorGrants).toEqual(['mail_list_unread_metadata']);
+    expect(payload.connectorGrants).toEqual(['mail_list_unread_metadata', 'mail_read_message']);
     expect(
       isConnectorCallGranted({
         grantToken: payload.connectorGrantToken,
@@ -403,9 +457,9 @@ describe('CONN-GRANT-01 connector grants on collaboration jobs', () => {
     const payload = await startJob({ id: 'briefing', target: 'chief-of-staff', fileAccess: true });
     expect(payload.harnessVersion).toBe('v1');
     expect(payload.harnessToolProfile).toBe('read');
-    expect(payload.connectorGrants).toEqual(['calendar_list_today', 'mail_list_unread_metadata']);
+    expect(payload.connectorGrants).toEqual(['calendar_list_today', 'mail_list_unread_metadata', 'mail_read_message']);
     expect(typeof payload.connectorGrantToken).toBe('string');
-    for (const toolId of ['calendar_list_today', 'mail_list_unread_metadata']) {
+    for (const toolId of ['calendar_list_today', 'mail_list_unread_metadata', 'mail_read_message']) {
       expect(
         isConnectorCallGranted({
           grantToken: payload.connectorGrantToken,

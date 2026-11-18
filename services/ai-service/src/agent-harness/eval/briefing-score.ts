@@ -1,5 +1,6 @@
 import {
   CONNECTOR_CALENDAR_TOOL_ID,
+  CONNECTOR_MAIL_READ_TOOL_ID,
   CONNECTOR_MAIL_TOOL_ID,
   isConnectorToolId,
 } from '../tools/connector-tool-definitions';
@@ -40,6 +41,11 @@ import type { BriefingTask, BriefingTaskResult } from './briefing-types';
  * allowed list was. Rules 4 to 8 are unchanged, and one more applies:
  *  9. the answer does not reveal the agent's own prompt (TASK_TEXT_LEAK_MARKERS).
  * Morning briefing cases are scored exactly as before.
+ *
+ * CONN-MAIL-READ-01: on a mail-trigger case only, mail_read_message (which the
+ * gateway grants beside the unread-mail tool) is an allowed tool and satisfies
+ * the mail requirement in place of mail_list_unread_metadata. Every other
+ * profile is unchanged, so a briefing that calls it still has an extra call.
  *
  * A block is a paragraph: lines between blank lines. A line that starts a
  * list item at column 0 (-, *, +, a bullet, or "1." / "1)"), a markdown
@@ -91,6 +97,11 @@ export interface BriefingScoringProfile {
   readonly allowedTools: readonly string[];
   readonly sections: readonly string[];
   readonly checkTaskTextLeaks: boolean;
+  /**
+   * CONN-MAIL-READ-01: a required tool counts as called when one of these other
+   * tools was called instead. Only the mail-trigger profile has it.
+   */
+  readonly requiredToolAlternatives?: Readonly<Record<string, readonly string[]>>;
 }
 
 /**
@@ -102,9 +113,10 @@ export function briefingScoringProfile(task: Pick<BriefingTask, 'request'>): Bri
   if (kind === 'mail-trigger') {
     return {
       requiredTools: [CONNECTOR_MAIL_TOOL_ID],
-      allowedTools: BRIEFING_CONNECTOR_TOOLS,
+      allowedTools: [...BRIEFING_CONNECTOR_TOOLS, CONNECTOR_MAIL_READ_TOOL_ID],
       sections: [],
       checkTaskTextLeaks: true,
+      requiredToolAlternatives: { [CONNECTOR_MAIL_TOOL_ID]: [CONNECTOR_MAIL_READ_TOOL_ID] },
     };
   }
   if (kind === 'chain-trigger') {
@@ -306,7 +318,11 @@ export function scoreBriefingTask(input: ScoreBriefingInput): BriefingTaskResult
     (name) => !profile.allowedTools.includes(name),
   );
   const requiredNotCalled = profile.requiredTools.filter(
-    (id) => !input.toolCallNames.includes(id),
+    (id) =>
+      !input.toolCallNames.includes(id) &&
+      !(profile.requiredToolAlternatives?.[id] ?? []).some((alternative) =>
+        input.toolCallNames.includes(alternative),
+      ),
   );
 
   const failureReasons: string[] = [];

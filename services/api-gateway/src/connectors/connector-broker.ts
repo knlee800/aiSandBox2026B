@@ -54,11 +54,14 @@ import {
   CONNECTOR_TOOL_MISSING_MESSAGE,
   CONNECTOR_UNAVAILABLE_MESSAGE,
   ConnectorToolDefinition,
+  MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+  MAIL_READ_TOOL_ID,
   MAIL_RECENT_MAX_LOOKBACK_MS,
   MAIL_RECENT_MAX_MESSAGES,
   MAIL_RECENT_TOOL,
   MAIL_TOOL,
-  findAllowlistedTool,
+  findCompanionTool,
+  findGrantableTool,
   isFixedConnectorFailure,
   isInternalConnectorTool,
   scrubSecrets,
@@ -185,7 +188,9 @@ export class ConnectorBroker implements OnModuleDestroy {
         audited = true;
         throw new BadRequestException(CONNECTOR_SERVER_MESSAGE);
       }
-      const tool = findAllowlistedTool(input.toolId);
+      // CONN-MAIL-READ-01: a companion tool too; the internal route has already
+      // checked that the job's grant token lists it.
+      const tool = findGrantableTool(input.toolId);
       if (!tool) {
         await this.writeAudit(input.action, userId, toolId, connectionId, started, 'error', 0, 0);
         audited = true;
@@ -210,7 +215,15 @@ export class ConnectorBroker implements OnModuleDestroy {
       slot = true;
       this.clearIdle();
       const session = await this.ensureSession();
+      // CONN-MAIL-READ-01: a companion tool is not required at start-up, so a child
+      // without it keeps the mail and calendar tools; the call itself is refused.
+      if (findCompanionTool(tool.id) && !this.sessionTools.get(session)?.has(tool.id)) {
+        throw new ServiceUnavailableException(CONNECTOR_TOOL_MISSING_MESSAGE);
+      }
       const raw = await this.invoke(session, tool.id, childArguments(tool, row, secret, modelArgs));
+      if (tool.id === MAIL_READ_TOOL_ID && isMailMessageNotFound(raw)) {
+        throw new NotFoundException(MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+      }
       const read = this.readResult(raw, [secret]);
       await this.writeAudit(
         input.action,
@@ -445,7 +458,7 @@ export class ConnectorBroker implements OnModuleDestroy {
     for (const tool of listed.tools || []) {
       if (!tool || typeof tool.name !== 'string' || tool.name.length === 0) continue;
       names.add(tool.name);
-      if (findAllowlistedTool(tool.name) || isInternalConnectorTool(tool.name)) continue;
+      if (findGrantableTool(tool.name) || isInternalConnectorTool(tool.name)) continue;
       if (this.ignored.has(tool.name)) continue;
       this.ignored.add(tool.name);
       if (SAFE_TOOL_NAME.test(tool.name)) {
@@ -648,6 +661,14 @@ function readModelArguments(
     throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
   }
   const fields = record as Record<string, unknown>;
+  if (tool.id === MAIL_READ_TOOL_ID) {
+    // CONN-MAIL-READ-01: exactly one valid messageId; the model never adds a field.
+    const keys = Object.keys(fields);
+    if (keys.length !== 1 || keys[0] !== 'messageId' || !isMailMessageId(fields.messageId)) {
+      throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+    }
+    return { messageId: fields.messageId };
+  }
   if (tool.kind === 'imap') {
     if (fields.limit === undefined) return {};
     if (!isMailLimit(fields.limit)) {
@@ -663,6 +684,30 @@ function readModelArguments(
 
 function isMailLimit(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 25;
+}
+
+const MAIL_MESSAGE_ID_TEXT = /^[1-9][0-9]{0,9}$/;
+const MAX_MAIL_MESSAGE_UID = 0xffffffff;
+
+/**
+ * CONN-MAIL-READ-01: the id text the unread-mail tool returns: an IMAP UID from 1
+ * to 4294967295 in decimal, without a leading zero.
+ */
+function isMailMessageId(value: unknown): value is string {
+  return typeof value === 'string' && MAIL_MESSAGE_ID_TEXT.test(value) && Number(value) <= MAX_MAIL_MESSAGE_UID;
+}
+
+/**
+ * CONN-MAIL-READ-01: true only for the child's fixed answer for an id that is not
+ * in the Inbox (an error result whose whole text is MAIL_MESSAGE_NOT_FOUND_MESSAGE).
+ * Any other result goes through readResult as before.
+ */
+function isMailMessageNotFound(raw: unknown): boolean {
+  if (!raw || typeof raw !== 'object') return false;
+  const record = raw as { content?: unknown; isError?: unknown };
+  if (record.isError !== true || !Array.isArray(record.content) || record.content.length !== 1) return false;
+  const block = record.content[0] as { type?: unknown; text?: unknown } | null;
+  return !!block && block.type === 'text' && block.text === MAIL_MESSAGE_NOT_FOUND_MESSAGE;
 }
 
 function isTimeZone(value: unknown): value is string {
@@ -691,6 +736,13 @@ function childArguments(
       username: row.username,
       appPassword: secret,
     };
+    if (tool.id === MAIL_READ_TOOL_ID) {
+      if (typeof modelArgs.messageId !== 'string') {
+        throw new BadRequestException(CONNECTOR_ARGUMENTS_MESSAGE);
+      }
+      args.messageId = modelArgs.messageId;
+      return args;
+    }
     if (typeof modelArgs.limit === 'number') args.limit = modelArgs.limit;
     return args;
   }
@@ -832,9 +884,11 @@ function toolText(raw: unknown): { text: string; isError: boolean } {
 
 function countItems(value: unknown): number {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
-  const record = value as { messages?: unknown; events?: unknown };
+  const record = value as { messages?: unknown; events?: unknown; message?: unknown };
   if (Array.isArray(record.messages)) return record.messages.length;
   if (Array.isArray(record.events)) return record.events.length;
+  // CONN-MAIL-READ-01: mail_read_message answers { message }.
+  if (record.message && typeof record.message === 'object' && !Array.isArray(record.message)) return 1;
   return 0;
 }
 

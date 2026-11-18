@@ -49,6 +49,9 @@ export const BRIEFING_EXECUTION_INTENT = resolveWorkerExecutionIntent('conversat
  * read_file, list_files, search_workspace, then search_knowledge and
  * read_knowledge (read profile with scopes), then each granted connector
  * tool. Read-only jobs get no write, delete, validation or browser tools.
+ * CONN-MAIL-READ-01: the gateway's grant for mail_list_unread_metadata also
+ * carries mail_read_message, so the granted connector tools are all three of
+ * CONNECTOR_TOOL_IDS, in that order.
  */
 export const BRIEFING_WORKER_REGISTERED_TOOL_IDS: readonly string[] = [
   'read_file',

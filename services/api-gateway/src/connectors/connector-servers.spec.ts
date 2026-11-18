@@ -9,14 +9,25 @@ import {
   MAIL_RECENT_MAX_MESSAGES,
   MAIL_RECENT_TOOL,
   MAIL_RECENT_TOOL_ID,
+  MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+  MAIL_READ_TOOL,
+  MAIL_READ_TOOL_ID,
   MAIL_TOOL,
   MAIL_TOOL_ID,
+  companionParentToolId,
   connectorToolCatalog,
   findAllowlistedTool,
+  findCompanionTool,
+  findGrantableTool,
+  isFixedConnectorFailure,
   isInternalConnectorTool,
   toolForKind,
   verifyArguments,
+  withCompanionToolIds,
 } from './connector-servers';
+import { connectorToolIdsAreReadOnly } from '../orchestration/collaboration-workflow';
+import { allowlistedConnectorToolIds, userWorkflowGrants } from '../user-agent/user-workflow-grants';
+import { SYSTEM_AGENT_DEFINITIONS } from '../system-agents/system-agent-registry';
 
 /**
  * APPROVAL-SET-01 D6: every connector tool declares whether it is read-only.
@@ -123,5 +134,86 @@ describe('the gateway-only recent-mail tool (TRIGGER-MAIL-01 S1)', () => {
     );
     expect(findAllowlistedTool(MAIL_TOOL_ID)).toBe(MAIL_TOOL);
     expect(verifyArguments('imap')).toEqual({ limit: 1 });
+  });
+});
+
+describe('the companion one-message mail tool (CONN-MAIL-READ-01)', () => {
+  it('is a read-only imap tool with a messageId-only schema', () => {
+    expect(MAIL_READ_TOOL_ID).toBe('mail_read_message');
+    expect(MAIL_READ_TOOL.id).toBe(MAIL_READ_TOOL_ID);
+    expect(MAIL_READ_TOOL.kind).toBe('imap');
+    expect(MAIL_READ_TOOL.readOnly).toBe(true);
+    expect(MAIL_READ_TOOL.inputSchema).toEqual({
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        messageId: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 10,
+          description: 'The id of the message, as mail_list_unread_metadata returns it or the mail trigger gives it, for example 4601.',
+        },
+      },
+      required: ['messageId'],
+    });
+    const text = JSON.stringify(MAIL_READ_TOOL).toLowerCase();
+    for (const secret of ['"password"', '"apppassword"', '"username"', '"preset"']) {
+      expect(text.includes(secret)).toBe(false);
+    }
+    expect(MAIL_MESSAGE_NOT_FOUND_MESSAGE).toBe('No Inbox message has that id.');
+    expect(isFixedConnectorFailure(MAIL_MESSAGE_NOT_FOUND_MESSAGE)).toBe(true);
+  });
+
+  it('is absent from the catalogue, the allowlist lookup, every connector server and the internal tools', () => {
+    expect(connectorToolCatalog().map((tool) => tool.id)).toEqual([MAIL_TOOL_ID, CALENDAR_TOOL_ID]);
+    expect(JSON.stringify(connectorToolCatalog()).includes(MAIL_READ_TOOL_ID)).toBe(false);
+    expect(findAllowlistedTool(MAIL_READ_TOOL_ID)).toBeNull();
+    const served = CONNECTOR_SERVERS.flatMap((server) => [...server.tools]);
+    expect(served.some((tool) => (tool.id as string) === MAIL_READ_TOOL_ID)).toBe(false);
+    expect(isInternalConnectorTool(MAIL_READ_TOOL_ID)).toBe(false);
+    expect(toolForKind('imap')).toBe(MAIL_TOOL);
+  });
+
+  it('cannot be saved in a user workflow, is in no system agent list, and does not count as a read-only saved tool', () => {
+    expect(allowlistedConnectorToolIds([MAIL_READ_TOOL_ID])).toEqual([]);
+    expect(allowlistedConnectorToolIds([MAIL_TOOL_ID, MAIL_READ_TOOL_ID])).toEqual([MAIL_TOOL_ID]);
+    const grants = userWorkflowGrants(
+      { toolProfile: 'read', knowledgeScopeIds: [], connectorToolIds: [MAIL_TOOL_ID, MAIL_READ_TOOL_ID] },
+      ['imap'],
+    );
+    expect(grants.connectorToolIds).toEqual([MAIL_TOOL_ID]);
+    expect(grants.dropped.connectorToolIds).toEqual([MAIL_READ_TOOL_ID]);
+    for (const agent of SYSTEM_AGENT_DEFINITIONS) {
+      expect(agent.connectorToolIds).not.toContain(MAIL_READ_TOOL_ID);
+    }
+    expect(connectorToolIdsAreReadOnly([MAIL_READ_TOOL_ID])).toBe(false);
+    expect(connectorToolIdsAreReadOnly([MAIL_TOOL_ID, CALENDAR_TOOL_ID])).toBe(true);
+  });
+
+  it('is found only as a grantable companion of the unread-mail tool', () => {
+    expect(findCompanionTool(MAIL_READ_TOOL_ID)).toBe(MAIL_READ_TOOL);
+    expect(findGrantableTool(MAIL_READ_TOOL_ID)).toBe(MAIL_READ_TOOL);
+    expect(findGrantableTool(MAIL_TOOL_ID)).toBe(MAIL_TOOL);
+    expect(findGrantableTool(CALENDAR_TOOL_ID)).toBe(CALENDAR_TOOL);
+    expect(companionParentToolId(MAIL_READ_TOOL_ID)).toBe(MAIL_TOOL_ID);
+    expect(companionParentToolId(MAIL_TOOL_ID)).toBeNull();
+    for (const other of [MAIL_RECENT_TOOL_ID, CALENDAR_WINDOW_TOOL_ID, 'mail_read_message ', 'MAIL_READ_MESSAGE', '', null, undefined, 7, '__proto__', 'constructor']) {
+      expect(findCompanionTool(other)).toBeNull();
+      expect(findGrantableTool(other)).toBeNull();
+      expect(companionParentToolId(other)).toBeNull();
+    }
+  });
+
+  it('withCompanionToolIds adds it exactly when the unread-mail tool is listed, sorted and de-duplicated', () => {
+    expect(withCompanionToolIds([MAIL_TOOL_ID])).toEqual([MAIL_TOOL_ID, MAIL_READ_TOOL_ID]);
+    expect(withCompanionToolIds([CALENDAR_TOOL_ID, MAIL_TOOL_ID, MAIL_TOOL_ID])).toEqual([
+      CALENDAR_TOOL_ID,
+      MAIL_TOOL_ID,
+      MAIL_READ_TOOL_ID,
+    ]);
+    expect(withCompanionToolIds([CALENDAR_TOOL_ID])).toEqual([CALENDAR_TOOL_ID]);
+    expect(withCompanionToolIds([MAIL_READ_TOOL_ID])).toEqual([]);
+    expect(withCompanionToolIds([MAIL_READ_TOOL_ID, CALENDAR_TOOL_ID, 'not_a_tool'])).toEqual([CALENDAR_TOOL_ID]);
+    expect(withCompanionToolIds([])).toEqual([]);
   });
 });

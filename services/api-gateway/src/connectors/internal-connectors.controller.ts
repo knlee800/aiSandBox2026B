@@ -16,6 +16,8 @@ import {
  * the job must be valid for this execution, user and tool, or the call is
  * refused with 403 and a fixed message before the broker runs. The token is
  * never logged or audited.
+ * CONN-MAIL-READ-01: mail_read_message passes only with a token that lists it,
+ * which the gateway mints only beside mail_list_unread_metadata.
  */
 @Controller('internal/connectors')
 export class InternalConnectorsController {

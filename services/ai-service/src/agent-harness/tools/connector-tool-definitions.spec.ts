@@ -47,6 +47,8 @@ describe('CONN-GRANT-01 connector tool definitions', () => {
   it('match the CONN-02B allowlist ids, descriptions and input schemas', () => {
     const pairs: Array<[string, string]> = [
       ['MAIL_TOOL', 'mail_list_unread_metadata'],
+      // CONN-MAIL-READ-01: the gateway's companion tool, after the unread tool.
+      ['MAIL_READ_TOOL', 'mail_read_message'],
       ['CALENDAR_TOOL', 'calendar_list_today'],
     ];
     expect([...CONNECTOR_TOOL_IDS]).toEqual(pairs.map(([, id]) => id));
@@ -106,5 +108,34 @@ describe('CONN-GRANT-01 connector tool definitions', () => {
     expect(
       pickConnectorToolArguments('calendar_list_today', { timeZone: 'Asia/Taipei', url: 'https://evil' }),
     ).toEqual({ timeZone: 'Asia/Taipei' });
+    expect(
+      pickConnectorToolArguments('mail_read_message', {
+        messageId: '4601',
+        limit: 3,
+        username: 'evil@example.com',
+        appPassword: 'x',
+        preset: 'yahoo',
+      }),
+    ).toEqual({ messageId: '4601' });
+  });
+
+  it('CONN-MAIL-READ-01: mail_read_message is a read-only connector definition with the same limits as the others', () => {
+    expect(isConnectorToolId('mail_read_message')).toBe(true);
+    expect([...CONNECTOR_TOOL_IDS]).toEqual(['mail_list_unread_metadata', 'mail_read_message', 'calendar_list_today']);
+    const read = getConnectorToolDefinition('mail_read_message');
+    const unread = getConnectorToolDefinition('mail_list_unread_metadata');
+    expect(read.displayName).toBe('Read one mail message');
+    expect(read.category).toBe('connector');
+    expect(read.tags).toEqual(['connector', 'read-only']);
+    expect(read.riskLevel).toBe('low');
+    expect(read.requiresApproval).toBe(false);
+    for (const key of ['timeoutMs', 'maxInputBytes', 'maxOutputBytes', 'allowedModes', 'allowedScopes', 'auditEventTypes', 'enabled', 'implementationStatus'] as const) {
+      expect(read[key]).toEqual(unread[key]);
+    }
+    const schema = read.inputSchema.schema as { properties: Record<string, unknown>; required: string[] };
+    expect(Object.keys(schema.properties)).toEqual(['messageId']);
+    expect(schema.required).toEqual(['messageId']);
+    expect(read.description).toContain('whether the message is read or unread');
+    expect(read.description).toContain('Does not mark the message read');
   });
 });

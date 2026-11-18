@@ -101,6 +101,60 @@ describe('CONN-GRANT-01 connector grant token', () => {
     ).toThrow();
   });
 
+  it('CONN-MAIL-READ-01: lists mail_read_message only beside mail_list_unread_metadata, and grants a call to it only then', () => {
+    expect(normalizeConnectorToolIds(['mail_read_message', 'mail_list_unread_metadata'])).toEqual([
+      'mail_list_unread_metadata',
+      'mail_read_message',
+    ]);
+    expect(normalizeConnectorToolIds(['mail_read_message'])).toEqual([]);
+    expect(normalizeConnectorToolIds(['calendar_list_today', 'mail_read_message'])).toEqual(['calendar_list_today']);
+    expect(() =>
+      mintConnectorGrantToken({ executionId: 'e', userId: OWNER, tools: ['mail_read_message'], nowMs: NOW }),
+    ).toThrow();
+
+    const call = (grantToken: string, toolId: string) =>
+      isConnectorCallGranted({ grantToken, executionId: 'exec-1', userId: OWNER, toolId, nowMs: NOW + 1000 });
+    const withRead = mintConnectorGrantToken({
+      executionId: 'exec-1',
+      userId: OWNER,
+      tools: ['mail_list_unread_metadata', 'mail_read_message'],
+      nowMs: NOW,
+    });
+    expect(call(withRead, 'mail_read_message')).toBe(true);
+    expect(call(withRead, 'mail_list_unread_metadata')).toBe(true);
+    expect(call(withRead, 'calendar_list_today')).toBe(false);
+    // A token minted before this task, or for the unread tool alone, does not grant it.
+    const unreadOnly = mintConnectorGrantToken({
+      executionId: 'exec-1',
+      userId: OWNER,
+      tools: ['mail_list_unread_metadata'],
+      nowMs: NOW,
+    });
+    expect(call(unreadOnly, 'mail_read_message')).toBe(false);
+    const calendarOnly = mintConnectorGrantToken({
+      executionId: 'exec-1',
+      userId: OWNER,
+      tools: ['calendar_list_today', 'mail_read_message'],
+      nowMs: NOW,
+    });
+    expect(call(calendarOnly, 'mail_read_message')).toBe(false);
+
+    // A correctly signed token that lists the companion without its parent is not valid at all.
+    const derived = createHmac('sha256', Buffer.from(KEY, 'base64'))
+      .update('connector-grant-token:v1', 'utf8')
+      .digest();
+    const signed = (tools: string[]) => {
+      const body = Buffer.from(
+        JSON.stringify({ v: 1, executionId: 'exec-1', userId: OWNER, tools, exp: Math.floor(NOW / 1000) + 3600 }),
+        'utf8',
+      ).toString('base64url');
+      return `${body}.${createHmac('sha256', derived).update(body, 'utf8').digest('base64url')}`;
+    };
+    expect(call(signed(['mail_list_unread_metadata', 'mail_read_message']), 'mail_read_message')).toBe(true);
+    expect(call(signed(['mail_read_message']), 'mail_read_message')).toBe(false);
+    expect(call(signed(['calendar_list_today', 'mail_read_message']), 'calendar_list_today')).toBe(false);
+  });
+
   it('is never written to a logger or an audit row by the gateway sources', () => {
     for (const file of [
       'connector-grant-token.ts',

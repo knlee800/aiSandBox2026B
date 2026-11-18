@@ -7,11 +7,15 @@ import {
   type AgentHarnessExecuteWithToolsFn,
 } from '../orchestrator/agent-harness-loop';
 import {
+  CONNECTOR_MAIL_READ_TOOL_ID,
   CONNECTOR_MAIL_TOOL_ID,
   CONNECTOR_TOOL_IDS,
   isConnectorToolId,
 } from '../tools/connector-tool-definitions';
-import { createConnectorToolHandler } from '../tools/handlers/connector-tool-handlers';
+import {
+  CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+  createConnectorToolHandler,
+} from '../tools/handlers/connector-tool-handlers';
 import {
   createReadRunResultHandler,
   READ_RUN_RESULT_TOOL_ID,
@@ -110,7 +114,8 @@ export interface BriefingRunResultCall {
  *
  * The request is the worker's (briefing-prompt.ts). Every model call gets
  * the worker's advertised tool list merged into its options, as the worker's
- * executeFn does. mail_list_unread_metadata and calendar_list_today use the
+ * executeFn does. mail_list_unread_metadata, mail_read_message (CONN-MAIL-READ-01,
+ * one message of the case's mail fixture by id) and calendar_list_today use the
  * real createConnectorToolHandler with a fake gateway client that returns
  * the case's fixture, so the model receives results wrapped exactly as in
  * the worker (<connector_result tool="..."> with <, > and & escaped). On a
@@ -231,10 +236,60 @@ export async function runBriefingSuite(
   });
 }
 
+/** CONN-MAIL-READ-01: the gateway's messageId rule (an IMAP UID, 1 to 4294967295, no leading zero). */
+const BRIEFING_MESSAGE_ID = /^[1-9][0-9]{0,9}$/;
+
+/**
+ * CONN-MAIL-READ-01: an error shaped as the internal route's HTTP error, so the
+ * real handler maps it as in the worker: the fixed 404 not-found text is passed
+ * on, anything else becomes the fixed failure message.
+ */
+export function briefingGatewayError(status: number, message: string): Error {
+  return Object.assign(new Error(`eval gateway ${status}`), {
+    response: { status, data: { statusCode: status, message } },
+  });
+}
+
+/**
+ * CONN-MAIL-READ-01: what the gateway answers for mail_read_message on this
+ * case: { message } for an id in the case's mail fixture (the unread tool's
+ * fields), the fixed 404 for an id that is not there, the fixed 400 for an id
+ * that is not a UID.
+ */
+function briefingMailRead(task: BriefingTask, args: Readonly<Record<string, unknown>>): unknown {
+  const messageId = args.messageId;
+  const keys = Object.keys(args);
+  if (
+    keys.length !== 1 ||
+    typeof messageId !== 'string' ||
+    !BRIEFING_MESSAGE_ID.test(messageId) ||
+    Number(messageId) > 0xffffffff
+  ) {
+    throw briefingGatewayError(400, 'Connector arguments are invalid.');
+  }
+  const found = task.mail.messages.find((message) => message.id === messageId);
+  if (!found) {
+    throw briefingGatewayError(404, CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+  }
+  return JSON.parse(
+    JSON.stringify({
+      message: {
+        id: found.id,
+        from: found.from,
+        toCount: found.toCount,
+        subject: found.subject,
+        date: found.date,
+        bodyText: found.bodyText,
+        bodyTruncated: found.bodyTruncated,
+      },
+    }),
+  ) as unknown;
+}
+
 /**
  * The gateway's internal connector route returns the tool's JSON
- * ({ messages } or { events }). The fake client returns a copy of the case's
- * fixture for that tool.
+ * ({ messages }, { events } or, for mail_read_message, { message }). The fake
+ * client returns a copy of the case's fixture for that tool.
  */
 export function createBriefingGatewayClient(
   task: BriefingTask,
@@ -249,6 +304,9 @@ export function createBriefingGatewayClient(
         executionId: input.executionId,
         grantToken: input.grantToken,
       });
+      if (input.toolId === CONNECTOR_MAIL_READ_TOOL_ID) {
+        return briefingMailRead(task, input.arguments);
+      }
       const fixture = input.toolId === CONNECTOR_MAIL_TOOL_ID ? task.mail : task.calendar;
       return JSON.parse(JSON.stringify(fixture)) as unknown;
     },

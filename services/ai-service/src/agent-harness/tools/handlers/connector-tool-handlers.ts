@@ -1,12 +1,18 @@
 import type { ApiGatewayHttpClient } from '../../../clients/api-gateway-http.client';
 import type { ToolHandler } from '../tool-dispatcher';
 import {
+  CONNECTOR_MAIL_READ_TOOL_ID,
   type ConnectorToolId,
   pickConnectorToolArguments,
 } from '../connector-tool-definitions';
 
 export const CONNECTOR_CALL_FAILED_MESSAGE = 'The connector call failed.';
 export const CONNECTOR_CALL_NOT_GRANTED_MESSAGE = 'The connector call is not granted.';
+/**
+ * CONN-MAIL-READ-01: the gateway's fixed 404 text for a mail_read_message id
+ * that is not in the Inbox. It carries no mail content; the model sees it as is.
+ */
+export const CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE = 'No Inbox message has that id.';
 
 export interface ConnectorToolHandlerDeps {
   readonly client: Pick<ApiGatewayHttpClient, 'callConnectorTool'>;
@@ -55,11 +61,19 @@ export function createConnectorToolHandler(deps: ConnectorToolHandlerDeps): Tool
         signal,
       );
     } catch (error) {
-      throw new Error(
-        responseStatus(error) === 403
-          ? CONNECTOR_CALL_NOT_GRANTED_MESSAGE
-          : CONNECTOR_CALL_FAILED_MESSAGE,
-      );
+      const status = responseStatus(error);
+      if (status === 403) {
+        throw new Error(CONNECTOR_CALL_NOT_GRANTED_MESSAGE);
+      }
+      // CONN-MAIL-READ-01: only the gateway's exact not-found text is passed on.
+      if (
+        deps.toolId === CONNECTOR_MAIL_READ_TOOL_ID &&
+        status === 404 &&
+        responseMessage(error) === CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE
+      ) {
+        throw new Error(CONNECTOR_MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+      }
+      throw new Error(CONNECTOR_CALL_FAILED_MESSAGE);
     }
     return {
       tool: deps.toolId,
@@ -74,4 +88,15 @@ function responseStatus(error: unknown): number | undefined {
   if (!response || typeof response !== 'object') return undefined;
   const status = (response as { status?: unknown }).status;
   return typeof status === 'number' ? status : undefined;
+}
+
+/** The `message` of the gateway's JSON error body, when it is a string. */
+function responseMessage(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') return undefined;
+  const response = (error as { response?: unknown }).response;
+  if (!response || typeof response !== 'object') return undefined;
+  const data = (response as { data?: unknown }).data;
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return undefined;
+  const message = (data as { message?: unknown }).message;
+  return typeof message === 'string' ? message : undefined;
 }

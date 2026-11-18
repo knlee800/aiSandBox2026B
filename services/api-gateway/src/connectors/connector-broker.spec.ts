@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { createHmac, randomBytes, randomUUID } from 'crypto';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { ConnectorBroker } from './connector-broker';
@@ -26,6 +26,8 @@ import {
   CONNECTOR_TOOL_MESSAGE,
   CONNECTOR_TOOL_MISSING_MESSAGE,
   CONNECTOR_UNAVAILABLE_MESSAGE,
+  MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+  MAIL_READ_TOOL_ID,
   MAIL_RECENT_MAX_LOOKBACK_MS,
   MAIL_RECENT_MAX_MESSAGES,
   MAIL_RECENT_TOOL_ID,
@@ -1083,6 +1085,139 @@ describe('connector broker', () => {
       expect(opener).not.toHaveBeenCalled();
       expect(session.calls).toHaveLength(0);
       expect(triggerAudits()).toHaveLength(0);
+    });
+  });
+
+  describe('mail_read_message (CONN-MAIL-READ-01)', () => {
+    const MESSAGE = {
+      id: '4601',
+      from: { name: 'Lakeside Print Orders', address: 'orders@lakeside-print.example.com' },
+      toCount: 1,
+      subject: 'Proof ready SUBJECT_MUST_NOT_BE_AUDITED',
+      date: '2026-11-10T00:12:00.000Z',
+      bodyText: 'BODY_MUST_NOT_BE_AUDITED',
+      bodyTruncated: false,
+    };
+
+    function readSession(result?: unknown): FakeSession {
+      const session = new FakeSession();
+      session.tools.push({ name: MAIL_READ_TOOL_ID, description: 'SERVER_READ_DESCRIPTION_DO_NOT_PASS' });
+      session.result = result ?? { content: [{ type: 'text', text: JSON.stringify({ message: MESSAGE }) }] };
+      opener.mockImplementation(async () => session);
+      return session;
+    }
+
+    function read(args: unknown) {
+      return broker.callConnectorTool({ userId: OWNER, toolId: MAIL_READ_TOOL_ID, args, action: 'connector_call' });
+    }
+
+    it('passes only the messageId and the stored mailbox fields, returns { message } and audits the tool by name only', async () => {
+      rows.push(imapRow());
+      const session = readSession();
+      const called = await read({ messageId: '4601' });
+      expect(called.result).toEqual({ message: MESSAGE });
+      expect(session.calls).toEqual([
+        { name: MAIL_READ_TOOL_ID, args: { preset: 'gmail', username: EMAIL, appPassword: PASSWORD, messageId: '4601' } },
+      ]);
+      expect(audits).toHaveLength(1);
+      const row = audits[0];
+      expect(row.eventType).toBe('connector.call');
+      expect(row.payload).toMatchObject({
+        action: 'connector_call',
+        toolId: MAIL_READ_TOOL_ID,
+        userId: OWNER,
+        itemCount: 1,
+        outcome: 'ok',
+      });
+      const rendered = JSON.stringify(row);
+      for (const content of ['SUBJECT_MUST_NOT_BE_AUDITED', 'BODY_MUST_NOT_BE_AUDITED', '4601', 'lakeside', PASSWORD, EMAIL]) {
+        expect(rendered.includes(content)).toBe(false);
+      }
+      expect(logs.filter((line) => line.includes(`ignored connector tool ${MAIL_READ_TOOL_ID}`))).toHaveLength(0);
+    });
+
+    it.each([
+      [{}],
+      [undefined],
+      [{ messageId: 4601 }],
+      [{ messageId: '0' }],
+      [{ messageId: '04601' }],
+      [{ messageId: '4294967296' }],
+      [{ messageId: '12345678901' }],
+      [{ messageId: '46 01' }],
+      [{ messageId: '' }],
+      [{ messageId: '4601', limit: 1 }],
+      [{ messageId: '4601', appPassword: 'attacker-password' }],
+      [{ messageId: '4601', username: 'evil@example.com', preset: 'yahoo' }],
+      [['4601']],
+      ['4601'],
+    ])('refuses arguments %p before calling the child', async (args) => {
+      rows.push(imapRow());
+      const session = readSession();
+      await expect(read(args)).rejects.toThrow(CONNECTOR_ARGUMENTS_MESSAGE);
+      expect(session.calls).toHaveLength(0);
+      expect((audits[audits.length - 1].payload as { toolId: string }).toolId).toBe(MAIL_READ_TOOL_ID);
+    });
+
+    it('accepts the largest UID', async () => {
+      rows.push(imapRow());
+      const session = readSession();
+      await read({ messageId: '4294967295' });
+      expect(session.calls[0].args.messageId).toBe('4294967295');
+    });
+
+    it("turns only the child's exact not-found answer into a 404 with the fixed text, quietly, audited as an error", async () => {
+      rows.push(imapRow());
+      const session = readSession({ isError: true, content: [{ type: 'text', text: MAIL_MESSAGE_NOT_FOUND_MESSAGE }] });
+      const error = await read({ messageId: '4602' }).then(() => null, (caught: unknown) => caught);
+      expect(error).toBeInstanceOf(NotFoundException);
+      expect((error as NotFoundException).message).toBe(MAIL_MESSAGE_NOT_FOUND_MESSAGE);
+      expect((error as NotFoundException).getResponse()).toEqual({
+        statusCode: 404,
+        message: MAIL_MESSAGE_NOT_FOUND_MESSAGE,
+        error: 'Not Found',
+      });
+      expect(logs.join('\n')).not.toContain('connector call failed');
+      expect(audits[audits.length - 1].payload).toMatchObject({ toolId: MAIL_READ_TOOL_ID, outcome: 'error', itemCount: 0 });
+
+      // Any other child error keeps the existing fixed message.
+      for (const text of [`${MAIL_MESSAGE_NOT_FOUND_MESSAGE} ${PASSWORD}`, 'mail request timed out', 'messageId must be a message id from 1 to 4294967295']) {
+        session.result = { isError: true, content: [{ type: 'text', text }] };
+        const other = await read({ messageId: '4602' }).then(() => null, (caught: unknown) => caught);
+        expect(other).not.toBeInstanceOf(NotFoundException);
+        expect((other as Error).message).toBe(CONNECTOR_RESULT_MESSAGE);
+      }
+      // The not-found text is not a not-found answer for any other tool.
+      session.result = { isError: true, content: [{ type: 'text', text: MAIL_MESSAGE_NOT_FOUND_MESSAGE }] };
+      await expect(
+        broker.callConnectorTool({ userId: OWNER, toolId: 'mail_list_unread_metadata', args: {}, action: 'connector_call' }),
+      ).rejects.toThrow(CONNECTOR_RESULT_MESSAGE);
+      expect(logs.join('\n').includes(PASSWORD)).toBe(false);
+    });
+
+    it('is not required from the child: a child without it keeps the other tools, and a call to it gets the fixed 503', async () => {
+      rows.push(imapRow());
+      const session = new FakeSession();
+      opener.mockImplementation(async () => session);
+      const error = await read({ messageId: '4601' }).then(() => null, (caught: unknown) => caught);
+      expect((error as Error).message).toBe(CONNECTOR_TOOL_MISSING_MESSAGE);
+      expect((error as { getStatus(): number }).getStatus()).toBe(503);
+      expect(session.calls).toHaveLength(0);
+      const unread = await broker.callConnectorTool({
+        userId: OWNER,
+        toolId: 'mail_list_unread_metadata',
+        args: {},
+        action: 'connector_call',
+      });
+      expect(unread.result).toEqual({ messages: [] });
+      expect(session.closed).toBe(false);
+    });
+
+    it('needs the mailbox connection like the unread-mail tool', async () => {
+      rows.push(icalRow());
+      const session = readSession();
+      await expect(read({ messageId: '4601' })).rejects.toThrow(CONNECTION_NOT_FOUND_MESSAGE);
+      expect(session.calls).toHaveLength(0);
     });
   });
 });

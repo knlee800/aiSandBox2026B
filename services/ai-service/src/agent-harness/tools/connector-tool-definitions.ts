@@ -13,10 +13,17 @@ import type { AgentHarnessToolRegistryDefinitionV1 } from './tool-registry.contr
  * worker advertises one only after registering its handler for a granted job.
  */
 export const CONNECTOR_MAIL_TOOL_ID = 'mail_list_unread_metadata' as const;
+/**
+ * CONN-MAIL-READ-01: one Inbox message by its id. The gateway grants it only
+ * beside CONNECTOR_MAIL_TOOL_ID; the worker registers it when the signed grant
+ * lists it, like the other connector tools.
+ */
+export const CONNECTOR_MAIL_READ_TOOL_ID = 'mail_read_message' as const;
 export const CONNECTOR_CALENDAR_TOOL_ID = 'calendar_list_today' as const;
 
 export type ConnectorToolId =
   | typeof CONNECTOR_MAIL_TOOL_ID
+  | typeof CONNECTOR_MAIL_READ_TOOL_ID
   | typeof CONNECTOR_CALENDAR_TOOL_ID;
 
 const CONNECTOR_TOOL_TIMEOUT_MS = 25_000;
@@ -46,6 +53,42 @@ export const CONNECTOR_TOOL_DEFINITIONS_V1: readonly AgentHarnessToolRegistryDef
               description: 'Maximum unread messages to return. Defaults to 25.',
             },
           },
+        },
+      },
+      riskLevel: 'low',
+      requiresApproval: false,
+      enabled: true,
+      timeoutMs: CONNECTOR_TOOL_TIMEOUT_MS,
+      maxInputBytes: CONNECTOR_TOOL_MAX_INPUT_BYTES,
+      maxOutputBytes: CONNECTOR_TOOL_MAX_OUTPUT_BYTES,
+      allowedModes: ['execute', 'review'],
+      allowedScopes: ['session'],
+      auditEventTypes: ['tool-called', 'tool-completed'],
+      tags: ['connector', 'read-only'],
+      implementationStatus: 'implemented',
+    },
+    {
+      contractVersion: AGENT_HARNESS_CONTRACT_VERSION_V1,
+      id: CONNECTOR_MAIL_READ_TOOL_ID,
+      name: CONNECTOR_MAIL_READ_TOOL_ID,
+      displayName: 'Read one mail message',
+      description:
+        'Read one Inbox message of the connected mailbox by its message id, the id mail_list_unread_metadata returns or a mail trigger gives, whether the message is read or unread: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). Does not mark the message read and does not change the mailbox.',
+      category: 'connector',
+      inputSchema: {
+        schemaType: 'json-schema',
+        schema: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            messageId: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 10,
+              description: 'The id of the message, as mail_list_unread_metadata returns it or the mail trigger gives it, for example 4601.',
+            },
+          },
+          required: ['messageId'],
         },
       },
       riskLevel: 'low',
@@ -99,6 +142,7 @@ export const CONNECTOR_TOOL_DEFINITIONS_V1: readonly AgentHarnessToolRegistryDef
 
 export const CONNECTOR_TOOL_IDS: readonly ConnectorToolId[] = Object.freeze([
   CONNECTOR_MAIL_TOOL_ID,
+  CONNECTOR_MAIL_READ_TOOL_ID,
   CONNECTOR_CALENDAR_TOOL_ID,
 ]);
 

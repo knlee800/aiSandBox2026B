@@ -292,6 +292,66 @@ describe('InternalConnectorsController', () => {
       expect(audits).toHaveLength(0);
     });
   });
+
+  describe('CONN-MAIL-READ-01 mail_read_message', () => {
+    const NOT_FOUND = 'No Inbox message has that id.';
+
+    function readBody(extra: Record<string, unknown>, args: unknown = { messageId: '4601' }): Record<string, unknown> {
+      return { userId: OWNER, toolId: 'mail_read_message', arguments: args, ...extra };
+    }
+
+    beforeEach(() => {
+      session.extraTools = [{ name: 'mail_read_message', description: 'SERVER_READ_DESCRIPTION_DO_NOT_PASS' }];
+    });
+
+    it('calls it with a token that lists it beside the unread-mail tool and returns { message }', async () => {
+      const message = { id: '4601', from: { name: 'Ada', address: 'ada@example.com' }, toCount: 1, subject: 'Proof', date: '', bodyText: 'Hi', bodyTruncated: false };
+      session.result = { content: [{ type: 'text', text: JSON.stringify({ message }) }] };
+      const grant = grantFor({ tools: ['mail_list_unread_metadata', 'mail_read_message'] });
+      const response = await authed().send(readBody(grant)).expect(200);
+      expect(response.body).toEqual({ message });
+      expect(session.calls).toEqual([
+        { name: 'mail_read_message', args: { preset: 'gmail', username: EMAIL, appPassword: PASSWORD, messageId: '4601' } },
+      ]);
+      expect(audits[0].payload).toMatchObject({ toolId: 'mail_read_message', itemCount: 1, outcome: 'ok' });
+      expect(JSON.stringify(audits).includes('Proof')).toBe(false);
+      expect(response.text.includes('SERVER_READ_DESCRIPTION_DO_NOT_PASS')).toBe(false);
+    });
+
+    it('refuses it with 403 when the token lacks it: the unread tool alone, the calendar alone, or a token naming it alone', async () => {
+      for (const tools of [['mail_list_unread_metadata'], ['calendar_list_today']]) {
+        const response = await authed().send(readBody(grantFor({ tools }))).expect(403);
+        expect(response.body.message).toBe(CONNECTOR_GRANT_REFUSED_MESSAGE);
+      }
+      expect(() => grantFor({ tools: ['mail_read_message'] })).toThrow();
+      expect(opener).not.toHaveBeenCalled();
+      expect(session.calls).toHaveLength(0);
+      expect(audits).toHaveLength(0);
+    });
+
+    it('refuses a bad messageId with the fixed 400 before the child is called', async () => {
+      const grant = grantFor({ tools: ['mail_list_unread_metadata', 'mail_read_message'] });
+      for (const args of [{}, { messageId: 4601 }, { messageId: '0' }, { messageId: '4294967296' }, { messageId: '4601', limit: 5 }]) {
+        const response = await authed().send(readBody(grant, args));
+        expect({ args, status: response.status }).toEqual({ args, status: 400 });
+        expect(response.body.message).toBe('Connector arguments are invalid.');
+      }
+      expect(session.calls).toHaveLength(0);
+    });
+
+    it("answers 404 with only the fixed text for the child's not-found answer; other child errors keep the fixed 502", async () => {
+      const grant = grantFor({ tools: ['mail_list_unread_metadata', 'mail_read_message'] });
+      session.result = { isError: true, content: [{ type: 'text', text: NOT_FOUND }] };
+      const missing = await authed().send(readBody(grant)).expect(404);
+      expect(missing.body).toEqual({ statusCode: 404, message: NOT_FOUND, error: 'Not Found' });
+
+      session.result = { isError: true, content: [{ type: 'text', text: `login failed for ${EMAIL} with ${PASSWORD}` }] };
+      const failed = await authed().send(readBody(grant)).expect(502);
+      expect(failed.body.message).toBe('The connector result could not be read.');
+      expect(failed.text.includes(PASSWORD)).toBe(false);
+      expect(failed.text.includes(EMAIL)).toBe(false);
+    });
+  });
 });
 
 function imapRow(): ConnectorConnection {
@@ -333,6 +393,8 @@ class FakeSession implements ConnectorMcpSession {
   calls: Array<{ name: string; args: Record<string, unknown> }> = [];
   result: unknown = { content: [{ type: 'text', text: '{"messages":[]}' }] };
   error: Error | null = null;
+  /** CONN-MAIL-READ-01: tools the child lists besides the two required ones. */
+  extraTools: Array<{ name: string; description?: string }> = [];
   private listeners: Array<() => void> = [];
 
   async listTools() {
@@ -340,6 +402,7 @@ class FakeSession implements ConnectorMcpSession {
       tools: [
         { name: 'mail_list_unread_metadata', description: 'SERVER_MAIL_DESCRIPTION_DO_NOT_PASS' },
         { name: 'calendar_list_today', description: 'SERVER_CAL_DESCRIPTION_DO_NOT_PASS' },
+        ...this.extraTools,
       ],
     };
   }

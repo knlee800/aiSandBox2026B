@@ -13,6 +13,18 @@ export const MAX_RECENT_MESSAGES = 25;
 export const RECENT_MAIL_MAX_LOOKBACK_MS = 2 * 60 * 60 * 1000;
 export const IMAP_PORT = 993;
 
+/** CONN-MAIL-READ-01: an IMAP UID is a non-zero 32-bit number (RFC 3501). */
+export const MAX_MESSAGE_UID = 0xffffffff;
+/** CONN-MAIL-READ-01: a message id is the UID as decimal text, without a leading zero. */
+const MESSAGE_ID_TEXT = /^[1-9][0-9]{0,9}$/;
+/** CONN-MAIL-READ-01: the fixed refusal for a messageId that is not a UID. */
+export const MESSAGE_ID_MESSAGE = 'messageId must be a message id from 1 to 4294967295';
+/**
+ * CONN-MAIL-READ-01: the fixed answer of mail_read_message for an id that is not in
+ * the Inbox. It carries no mail content. The gateway matches this exact text.
+ */
+export const MAIL_MESSAGE_NOT_FOUND_MESSAGE = 'No Inbox message has that id.';
+
 /** CONN-03: each mail body excerpt is at most this many characters (code points). */
 export const MAX_BODY_CHARS = 800;
 /** CONN-03: at most this many bytes of the chosen body part are fetched (BODY.PEEK partial). */
@@ -71,6 +83,21 @@ export function mailLimit(value: unknown): number {
     throw new Error('limit must be an integer from 1 to 25');
   }
   return value;
+}
+
+/**
+ * CONN-MAIL-READ-01: the UID of a messageId, the id text mail_list_unread_metadata
+ * returns: 1 to 10 decimal digits, no leading zero, from 1 to 4294967295.
+ */
+export function mailMessageId(value: unknown): number {
+  if (typeof value !== 'string' || !MESSAGE_ID_TEXT.test(value)) {
+    throw new Error(MESSAGE_ID_MESSAGE);
+  }
+  const uid = Number(value);
+  if (!Number.isSafeInteger(uid) || uid < 1 || uid > MAX_MESSAGE_UID) {
+    throw new Error(MESSAGE_ID_MESSAGE);
+  }
+  return uid;
 }
 
 export function requiredString(value: unknown, label: string): string {

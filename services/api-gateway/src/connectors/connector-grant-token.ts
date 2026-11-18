@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { connectorGrantTokenKey } from './connector-crypto';
-import { findAllowlistedTool } from './connector-servers';
+import { companionParentToolId, findAllowlistedTool, findGrantableTool } from './connector-servers';
 
 /**
  * CONN-GRANT-01: per-job connector grant token.
@@ -27,12 +27,23 @@ export interface ConnectorGrantTokenClaims {
   readonly exp: number;
 }
 
-/** Allowlisted, de-duplicated, sorted connector tool ids. Unknown ids are dropped. */
+/**
+ * Allowlisted, de-duplicated, sorted connector tool ids. Unknown ids are dropped.
+ * CONN-MAIL-READ-01: a companion tool (mail_read_message) is kept only when the
+ * tool that brings it is in the list too; on its own it is dropped.
+ */
 export function normalizeConnectorToolIds(toolIds: readonly unknown[]): string[] {
   const out = new Set<string>();
   for (const id of toolIds) {
     const tool = findAllowlistedTool(id);
     if (tool) out.add(tool.id);
+  }
+  for (const id of toolIds) {
+    const parent = companionParentToolId(id);
+    if (parent !== null && out.has(parent)) {
+      const companion = findGrantableTool(id);
+      if (companion) out.add(companion.id);
+    }
   }
   return [...out].sort();
 }
@@ -117,8 +128,13 @@ function readClaims(value: unknown): ConnectorGrantTokenClaims | null {
   if (!Array.isArray(record.tools) || record.tools.length === 0) return null;
   const tools: string[] = [];
   for (const id of record.tools) {
-    if (typeof id !== 'string' || !findAllowlistedTool(id)) return null;
+    if (typeof id !== 'string' || !findGrantableTool(id)) return null;
     tools.push(id);
+  }
+  // CONN-MAIL-READ-01: a companion tool is valid only beside the tool that brings it.
+  for (const id of tools) {
+    const parent = companionParentToolId(id);
+    if (parent !== null && !tools.includes(parent)) return null;
   }
   return {
     v: 1,

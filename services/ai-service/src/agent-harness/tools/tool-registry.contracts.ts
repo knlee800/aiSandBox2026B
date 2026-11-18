@@ -17,6 +17,7 @@ export type AgentHarnessToolIdV1 =
   | 'read_knowledge'
   | 'read_run_result'
   | 'mail_list_unread_metadata'
+  | 'mail_read_message'
   | 'calendar_list_today';
 
 export type AgentHarnessToolCategoryV1 =

@@ -28,6 +28,28 @@ describe('CONN-GRANT-01 resolveConnectorGrants', () => {
     ).toEqual({ tools: ['calendar_list_today'], grantToken: TOKEN });
   });
 
+  it('CONN-MAIL-READ-01: keeps mail_read_message when the signed grant lists it, after the unread tool', () => {
+    expect(
+      resolveConnectorGrants(
+        {
+          ...signedRead,
+          connectorGrants: ['calendar_list_today', 'mail_list_unread_metadata', 'mail_read_message'],
+        },
+        'read',
+      ),
+    ).toEqual({
+      tools: ['mail_list_unread_metadata', 'mail_read_message', 'calendar_list_today'],
+      grantToken: TOKEN,
+    });
+    // Not listed, not registered: a grant from before this task is unchanged.
+    expect(resolveConnectorGrants(signedRead, 'read').tools).not.toContain('mail_read_message');
+    for (const profile of ['review', 'write', 'agent-write', null]) {
+      expect(
+        resolveConnectorGrants({ ...signedRead, connectorGrants: ['mail_list_unread_metadata', 'mail_read_message'] }, profile),
+      ).toEqual({ tools: [], grantToken: null });
+    }
+  });
+
   it('returns nothing for other profiles, plain jobs, and missing or malformed grants or tokens', () => {
     const none = { tools: [], grantToken: null };
     for (const profile of ['review', 'write', 'agent-write', null]) {

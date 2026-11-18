@@ -12,7 +12,9 @@ import {
   MAIL_TIMEOUT_MS,
   MAX_BODY_CHARS,
   MAX_BODY_FETCH_BYTES,
+  MAX_MESSAGE_UID,
   MAX_RECENT_MESSAGES,
+  MESSAGE_ID_MESSAGE,
   REPLACEMENT_CHARACTER,
   cleanBodyText,
   cutCodePoints,
@@ -370,6 +372,99 @@ export class ImapMailboxClient implements MailboxClient {
       presetTarget(preset),
       { username: input.username, appPassword: input.appPassword },
       limit,
+      MAIL_TIMEOUT_MS,
+    );
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* CONN-MAIL-READ-01: one Inbox message by its UID, read or unread.    */
+/* ------------------------------------------------------------------ */
+
+export interface MailReadInput {
+  preset: MailPreset | string;
+  username: string;
+  appPassword: string;
+  /** The Inbox UID, from 1 to 4294967295. */
+  messageId: number;
+}
+
+export interface MessageReadClient {
+  /** The message with this UID in the Inbox, read or unread, or null when there is none. */
+  readMessage(input: MailReadInput): Promise<UnreadMessage | null>;
+}
+
+/**
+ * CONN-MAIL-READ-01: EXAMINE INBOX (read-only), one UID FETCH of UID, ENVELOPE and
+ * BODYSTRUCTURE for this UID, then the same partial BODY.PEEK of the same chosen
+ * text part as the unread-mail tool. The answer has the unread-mail tool's fields
+ * and excerpt. Nothing is marked read and no command changes flags or the mailbox.
+ * Null when the Inbox has no message with this UID; no search is sent, so a read
+ * message is found too.
+ */
+export async function fetchOneMessage(
+  target: ImapSessionTarget,
+  auth: MailAuth,
+  uid: number,
+  timeoutMs: number,
+): Promise<UnreadMessage | null> {
+  if (!Number.isSafeInteger(uid) || uid < 1 || uid > MAX_MESSAGE_UID) {
+    throw new Error(MESSAGE_ID_MESSAGE);
+  }
+  const client = new ImapFlow(buildImapOptions(target, auth, timeoutMs));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const secrets = [auth.appPassword, auth.username];
+  try {
+    const work = (async (): Promise<UnreadMessage | null> => {
+      await client.connect();
+      const lock = await client.getMailboxLock('INBOX', { readOnly: true });
+      try {
+        const fetched = await client.fetchAll([uid], {
+          uid: true,
+          envelope: true,
+          bodyStructure: true,
+        }, { uid: true });
+        // A server may answer with other messages; only this UID counts.
+        const found = fetched.find((message) => message.uid === uid);
+        if (!found) {
+          return null;
+        }
+        const byUid = new Map<number, UnreadMessage>([[uid, messageFromEnvelope(uid, found.envelope)]]);
+        const choices = new Map<number, BodyPartChoice>();
+        const choice = chooseBodyPart(found.bodyStructure);
+        if (choice) {
+          choices.set(uid, choice);
+        }
+        await fillBodies(client, byUid, choices);
+        return byUid.get(uid) || null;
+      } finally {
+        lock.release();
+      }
+    })();
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        client.close();
+        reject(new Error('mail request timed out'));
+      }, timeoutMs);
+    });
+    return await Promise.race([work, timeout]);
+  } catch (error) {
+    throw new Error(redact(errorText(error), secrets));
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    await closeQuietly(client);
+  }
+}
+
+export class ImapMessageReadClient implements MessageReadClient {
+  async readMessage(input: MailReadInput): Promise<UnreadMessage | null> {
+    const preset = mailPreset(input.preset);
+    return fetchOneMessage(
+      presetTarget(preset),
+      { username: input.username, appPassword: input.appPassword },
+      input.messageId,
       MAIL_TIMEOUT_MS,
     );
   }

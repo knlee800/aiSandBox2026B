@@ -3,8 +3,10 @@ import tls from 'node:tls';
 
 import {
   ImapMailboxClient,
+  ImapMessageReadClient,
   ImapRecentMailClient,
   buildImapOptions,
+  fetchOneMessage,
   fetchRecentHeaders,
   fetchUnreadHeaders,
   messageFromEnvelope,
@@ -18,6 +20,7 @@ import {
   MAX_BODY_CHARS,
   MAX_BODY_FETCH_BYTES,
   MAX_RECENT_MESSAGES,
+  MESSAGE_ID_MESSAGE,
 } from '../limits';
 
 const PASSWORD = 's3cret-app-password';
@@ -851,6 +854,190 @@ describe('TRIGGER-MAIL-01 S1 mail_list_recent over IMAP', () => {
       username: USERNAME,
       appPassword: PASSWORD,
       since: SINCE,
+    })).rejects.toThrow(/preset/);
+    expect(tlsConnect).not.toHaveBeenCalled();
+    expect(netConnect).not.toHaveBeenCalled();
+    tlsConnect.mockRestore();
+    netConnect.mockRestore();
+  });
+});
+
+describe('CONN-MAIL-READ-01 mail_read_message over IMAP', () => {
+  const logs: string[] = [];
+  let spies: Array<jest.SpyInstance> = [];
+
+  beforeEach(() => {
+    logs.length = 0;
+    spies = (['log', 'info', 'warn', 'error'] as const).map((method) => jest.spyOn(console, method).mockImplementation((...args: unknown[]) => {
+      logs.push(args.map((arg) => String(arg)).join(' '));
+    }));
+  });
+
+  afterEach(() => {
+    for (const spy of spies) {
+      spy.mockRestore();
+    }
+  });
+
+  const ADA: ScriptedAddress = { name: 'Ada Lovelace', mailbox: 'ada', host: 'example.com' };
+  const BO: ScriptedAddress = { name: 'Bo', mailbox: 'bo', host: 'example.com' };
+  const CY: ScriptedAddress = { name: 'Cy', mailbox: 'cy', host: 'example.com' };
+
+  function scripted(uid: number, extra: Partial<ScriptedMessage>): ScriptedMessage {
+    return {
+      uid,
+      date: 'Mon, 09 Nov 2026 01:00:00 +0000',
+      subject: `Message ${uid}`,
+      from: ADA,
+      to: [BO, CY],
+      ...extra,
+    };
+  }
+
+  function localTarget(port: number) {
+    return { host: '127.0.0.1', port, secure: false, rejectUnauthorized: true, doSTARTTLS: false as const };
+  }
+
+  async function readWith(messages: ScriptedMessage[], uid: number, options?: ScriptedOptions) {
+    const imap = await startScriptedImap(messages, options);
+    try {
+      const message = await fetchOneMessage(localTarget(imap.port), { username: USERNAME, appPassword: PASSWORD }, uid, 5_000);
+      return { message, commands: imap.commands, bodyLiteralBytes: imap.bodyLiteralBytes };
+    } finally {
+      await imap.close();
+    }
+  }
+
+  /** EXAMINE, no search, only partial BODY.PEEK sections, nothing that sets Seen, no forbidden verb. */
+  function expectReadOnlyOneMessageCommands(commands: string[]) {
+    const verbs = commands.flatMap(commandVerbs);
+    expect(verbs).toContain('EXAMINE');
+    expect(verbs).not.toContain('SEARCH');
+    for (const verb of verbs) {
+      // LIST and LSUB are the read-only folder lookup imapflow runs before EXAMINE.
+      expect(['CAPABILITY', 'LOGIN', 'LIST', 'LSUB', 'EXAMINE', 'UID', 'FETCH', 'NOOP', 'LOGOUT']).toContain(verb);
+    }
+    for (const forbidden of FORBIDDEN_IMAP_VERBS) {
+      expect(verbs).not.toContain(forbidden);
+    }
+    expect(commands.filter(fetchSetsSeen)).toEqual([]);
+    for (const command of commands) {
+      const sections = command.match(/BODY(\.PEEK)?\[[^\]]*\](<\d+\.\d+>)?/g) || [];
+      for (const section of sections) {
+        const match = section.match(/^BODY\.PEEK\[[0-9.]+\]<0\.(\d+)>$/);
+        expect(match).not.toBeNull();
+        expect(Number(match?.[1])).toBeLessThanOrEqual(MAX_BODY_FETCH_BYTES);
+      }
+      expect(command).not.toMatch(/RFC822(?!\.SIZE)|BINARY/);
+    }
+  }
+
+  it('reads a message the owner has already opened, with the unread tool fields, by one UID FETCH and a BODY.PEEK', async () => {
+    const html = '<p>Proof&nbsp;ready for <b>PR-7731</b> &amp; due Friday.</p><div>Thanks</div>';
+    const messages: ScriptedMessage[] = [
+      scripted(3, { parts: { '1': 'other message, never read' } }),
+      scripted(4601, {
+        seen: true,
+        subject: '=?UTF-8?B?5pyD6K2w?= proof',
+        from: { name: 'Lakeside Print Orders', mailbox: 'orders', host: 'lakeside-print.example.com' },
+        structure: multipart('MIXED', [TEXT_ATTACHMENT, textPart('HTML', 'UTF-8', '7BIT', html.length), PDF_ATTACHMENT]),
+        parts: { '1': 'attachment text must not be read', '2': html },
+      }),
+      scripted(4700, { parts: { '1': 'a newer unread message' } }),
+    ];
+    const { message, commands } = await readWith(messages, 4601);
+    expect(message).toEqual({
+      id: '4601',
+      from: { name: 'Lakeside Print Orders', address: 'orders@lakeside-print.example.com' },
+      toCount: 2,
+      subject: '會議 proof',
+      date: '2026-11-09T01:00:00.000Z',
+      bodyText: 'Proof ready for PR-7731 & due Friday.\nThanks',
+      bodyTruncated: false,
+    });
+    expect(JSON.stringify(message)).not.toMatch(/must not be read|never read|newer unread/);
+    expect(commands.filter((command) => command.startsWith('UID FETCH'))).toEqual([
+      'UID FETCH 4601 (UID BODYSTRUCTURE ENVELOPE)',
+      'UID FETCH 4601 (UID BODY.PEEK[2]<0.16384>)',
+    ]);
+    expectReadOnlyOneMessageCommands(commands);
+    // printed for the CONN-MAIL-READ-01 checkpoint
+    process.stdout.write(`CONN-MAIL-READ-01 scripted IMAP commands:\n${commands.join('\n')}\n`);
+    expect(logs.join('\n')).not.toContain(PASSWORD);
+    expect(logs.join('\n')).not.toContain(USERNAME);
+  });
+
+  it('reads an unread message the same way, and the excerpt is the 800-character cut of at most 16 KB fetched', async () => {
+    const big = `${'word '.repeat(19_999)}end-marker`;
+    const { message, commands, bodyLiteralBytes } = await readWith([
+      scripted(8, { structure: textPart('PLAIN', 'UTF-8', '7BIT', big.length), parts: { '1': big } }),
+    ], 8);
+    expect(message?.id).toBe('8');
+    expect(Array.from(message?.bodyText || '').length).toBeLessThanOrEqual(MAX_BODY_CHARS);
+    expect(Array.from(message?.bodyText || '').length).toBeGreaterThan(MAX_BODY_CHARS - 5);
+    expect(message?.bodyText).not.toContain('end-marker');
+    expect(message?.bodyTruncated).toBe(true);
+    expect(bodyLiteralBytes).toEqual([MAX_BODY_FETCH_BYTES]);
+    expectReadOnlyOneMessageCommands(commands);
+  });
+
+  it('answers null for a UID that is not in the Inbox and fetches no body', async () => {
+    const { message, commands } = await readWith([
+      scripted(4, { parts: { '1': 'hello' } }),
+      scripted(9, { parts: { '1': 'there' } }),
+    ], 5);
+    expect(message).toBeNull();
+    expect(commands.filter((command) => command.startsWith('UID FETCH'))).toEqual(['UID FETCH 5 (UID BODYSTRUCTURE ENVELOPE)']);
+    expect(commands.some((command) => command.includes('BODY.PEEK'))).toBe(false);
+    expectReadOnlyOneMessageCommands(commands);
+  });
+
+  it('keeps the headers with an empty body when the body fetch fails', async () => {
+    const { message, commands } = await readWith([
+      scripted(2, { structure: textPart('PLAIN', 'UTF-8', '7BIT', 5), parts: { '1': 'hello' } }),
+    ], 2, { failBodyFetch: true });
+    expect(message).toMatchObject({ id: '2', subject: 'Message 2', bodyText: '', bodyTruncated: false });
+    expectReadOnlyOneMessageCommands(commands);
+  });
+
+  it('refuses a UID outside 1 to 4294967295 before opening a socket', async () => {
+    const tlsConnect = jest.spyOn(tls, 'connect');
+    const netConnect = jest.spyOn(net, 'connect');
+    for (const uid of [0, -1, 1.5, 4294967296, Number.NaN]) {
+      await expect(fetchOneMessage(localTarget(1), { username: USERNAME, appPassword: PASSWORD }, uid, 5_000))
+        .rejects.toThrow(MESSAGE_ID_MESSAGE);
+    }
+    expect(tlsConnect).not.toHaveBeenCalled();
+    expect(netConnect).not.toHaveBeenCalled();
+    tlsConnect.mockRestore();
+    netConnect.mockRestore();
+  });
+
+  it('keeps the app password and the username out of a sign-in error and the logs', async () => {
+    const imap = await startScriptedImap([], (user, pass) => `NO failed for ${user} with ${pass}`);
+    try {
+      const error = await fetchOneMessage(localTarget(imap.port), { username: USERNAME, appPassword: PASSWORD }, 7, 5_000)
+        .then(() => null, (caught) => caught);
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).not.toContain(PASSWORD);
+      expect(error.message).not.toContain(USERNAME);
+      expect(logs.join('\n')).not.toContain(PASSWORD);
+      expect(logs.join('\n')).not.toContain(USERNAME);
+      expect(imap.commands.some((command) => command.startsWith('EXAMINE'))).toBe(false);
+    } finally {
+      await imap.close();
+    }
+  });
+
+  it('rejects an unknown preset before opening a socket', async () => {
+    const tlsConnect = jest.spyOn(tls, 'connect');
+    const netConnect = jest.spyOn(net, 'connect');
+    const client = new ImapMessageReadClient();
+    await expect(client.readMessage({
+      preset: 'other',
+      username: USERNAME,
+      appPassword: PASSWORD,
+      messageId: 7,
     })).rejects.toThrow(/preset/);
     expect(tlsConnect).not.toHaveBeenCalled();
     expect(netConnect).not.toHaveBeenCalled();

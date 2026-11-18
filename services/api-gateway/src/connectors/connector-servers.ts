@@ -22,9 +22,17 @@ export const CALENDAR_VERIFY_FAILED_MESSAGE = 'the calendar link could not be re
 
 export const MAIL_TOOL_ID = 'mail_list_unread_metadata';
 export const CALENDAR_TOOL_ID = 'calendar_list_today';
+/** CONN-MAIL-READ-01: a companion of MAIL_TOOL_ID (see CONNECTOR_COMPANION_TOOLS). */
+export const MAIL_READ_TOOL_ID = 'mail_read_message';
+/**
+ * CONN-MAIL-READ-01: the child's exact answer for a message id that is not in the
+ * Inbox (services/connectors-mcp/src/limits.ts). It carries no mail content; the
+ * broker turns that one answer into a 404 with this same fixed text.
+ */
+export const MAIL_MESSAGE_NOT_FOUND_MESSAGE = 'No Inbox message has that id.';
 
 export interface ConnectorToolDefinition {
-  id: typeof MAIL_TOOL_ID | typeof CALENDAR_TOOL_ID;
+  id: typeof MAIL_TOOL_ID | typeof CALENDAR_TOOL_ID | typeof MAIL_READ_TOOL_ID;
   kind: ConnectorKind;
   /**
    * APPROVAL-SET-01 D6: true only for a tool that cannot send, write or
@@ -82,6 +90,88 @@ export const CALENDAR_TOOL: ConnectorToolDefinition = {
     required: ['timeZone'],
   },
 };
+
+/**
+ * CONN-MAIL-READ-01: one Inbox message by its id, read or unread. A companion tool:
+ * it is not in connectorToolCatalog(), not found by findAllowlistedTool() and not on
+ * CONNECTOR_SERVERS, so no workflow or system agent can hold it and the picker never
+ * shows it. The per-job grant adds it to a job granted MAIL_TOOL_ID
+ * (withCompanionToolIds), and only a grant token that lists it lets a call through.
+ */
+export const MAIL_READ_TOOL: ConnectorToolDefinition = {
+  id: MAIL_READ_TOOL_ID,
+  kind: 'imap',
+  readOnly: true,
+  description:
+    'Read one Inbox message of the connected mailbox by its message id, the id mail_list_unread_metadata returns or a mail trigger gives, whether the message is read or unread: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). Does not mark the message read and does not change the mailbox.',
+  inputSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      messageId: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 10,
+        description: 'The id of the message, as mail_list_unread_metadata returns it or the mail trigger gives it, for example 4601.',
+      },
+    },
+    required: ['messageId'],
+  },
+};
+
+/**
+ * CONN-MAIL-READ-01: the tools a granted tool brings with it. A companion is never
+ * granted, saved or offered on its own: it reaches a job only through
+ * withCompanionToolIds, when the job's grant holds the tool that brings it.
+ */
+const CONNECTOR_COMPANION_TOOLS: ReadonlyMap<string, readonly ConnectorToolDefinition[]> = new Map([
+  [MAIL_TOOL_ID, Object.freeze([MAIL_READ_TOOL])],
+]);
+
+/** CONN-MAIL-READ-01: the companion tool with this id, or null. */
+export function findCompanionTool(toolId: unknown): ConnectorToolDefinition | null {
+  if (typeof toolId !== 'string') return null;
+  for (const companions of CONNECTOR_COMPANION_TOOLS.values()) {
+    const found = companions.find((tool) => tool.id === toolId);
+    if (found) return found;
+  }
+  return null;
+}
+
+/** CONN-MAIL-READ-01: the allowlisted tool that brings this companion, or null. */
+export function companionParentToolId(toolId: unknown): string | null {
+  if (typeof toolId !== 'string') return null;
+  for (const [parent, companions] of CONNECTOR_COMPANION_TOOLS) {
+    if (companions.some((tool) => tool.id === toolId)) return parent;
+  }
+  return null;
+}
+
+/**
+ * CONN-MAIL-READ-01: a tool a per-job grant may list: an allowlisted tool or a
+ * companion. Only the grant token, the broker and the grant resolver use it; saved
+ * workflows, system agents and the catalogue use findAllowlistedTool.
+ */
+export function findGrantableTool(toolId: unknown): ConnectorToolDefinition | null {
+  return findAllowlistedTool(toolId) ?? findCompanionTool(toolId);
+}
+
+/**
+ * CONN-MAIL-READ-01: the allowlisted ids in `toolIds` plus the companions they
+ * bring, de-duplicated and sorted. Any other id, a companion included, is dropped.
+ */
+export function withCompanionToolIds(toolIds: readonly unknown[]): string[] {
+  const out = new Set<string>();
+  for (const id of toolIds) {
+    const tool = findAllowlistedTool(id);
+    if (!tool) continue;
+    out.add(tool.id);
+    for (const companion of CONNECTOR_COMPANION_TOOLS.get(tool.id) ?? []) {
+      out.add(companion.id);
+    }
+  }
+  return [...out].sort();
+}
 
 /**
  * TRIGGER-EVENT-01 S1: the gateway-only calendar window read. Only the gateway's
@@ -150,6 +240,7 @@ const FIXED_MESSAGES = new Set<string>([
   CONNECTOR_UNAVAILABLE_MESSAGE,
   CONNECTOR_TIMEOUT_MESSAGE,
   CONNECTOR_RESULT_MESSAGE,
+  MAIL_MESSAGE_NOT_FOUND_MESSAGE,
 ]);
 
 export function connectorToolCatalog(): ConnectorToolDefinition[] {
