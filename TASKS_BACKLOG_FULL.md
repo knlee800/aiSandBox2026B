@@ -90065,22 +90065,22 @@ taskId=TRIGGER-CHAIN-FAILED-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 (Step 2) — 2026-11-18 — Keith said "You pick one", then "Yes, chain-on-failure". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-FAILED-01
 **Title:** Tell the Chief of Staff when a workflow fails
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-18). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** TRIGGER-CHAIN-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), the run-result route or a new failure read, frontend/components/schedules/, the three message files.
-**Mutexes / resources:** set at admission.
+**Primary write scope:** Step 2: docs/TRIGGER-CHAIN-FAILED-01-STAGE-START.md (EXACT). Step 3: set at the stage-start approval. Was: PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files), the run-result route or a new failure read, frontend/components/schedules/, the three message files.
+**Mutexes / resources:** Step 2: none. Step 3: set at the stage-start approval (GATEWAY, FRONTEND, I18N expected; MIGRATION if a column is added). Was: set at admission.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT (Step 2). **admissionUncertain:** false.
 **Scope:** From TRIGGER-CHAIN-01 (stage-start F11; Keith's Q4 chose completed runs only): a trigger for a failed workflow run ("when a workflow fails, tell the Chief of Staff"). A failed run has no final answer for read_run_result, so it needs its own design for what the next run is told.
 
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
