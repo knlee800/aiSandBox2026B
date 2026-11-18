@@ -90016,7 +90016,7 @@ taskId=RUN-FINISH-EVENT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith said "You pick one", then "Sweep every minute". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. The gateway's collaboration sweep (CollaborationSweepWorker) runs every minute instead of every 5 minutes: COLLABORATION_SWEEP_INTERVAL_MS 60 * 1000 and its test (9e2a1c9, sonnet subagent, fast-forwarded; 2 paths, exactly the write set). Finished steps, finished runs, the Results badge and chain triggers now follow within about 1 to 2 minutes instead of up to about 6. orchestration.service.ts and the frozen HARNESS_ENTITLEMENT_PROOF_V1 files are untouched. Control-plane gates on the branch: gateway tsc rc 0, 6634 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0. ARCHITECTURE.md's five sweep lines now say every minute, in the wording Keith approved ("Yes, land it"; GOVERNANCE held for the record and released). Not deployed: STAGING-DEPLOY-SWEEP-01 is registered and rides with the next deploy (Keith: "Register for later"). Checkpoint: docs/RUN-FINISH-EVENT-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-SWEEP-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-18 — Keith said "You pick one", then "Sweep every minute". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
 **Task ID:** RUN-FINISH-EVENT-01
 **Title:** Settle a run at its last step or emit a run-finished event
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -90035,6 +90035,30 @@ nature=IMPLEMENTATION
 **Scope:** From TRIGGER-CHAIN-01 (stage-start F8): a run is settled only when someone reads it or the 5-minute sweep runs, so a chain trigger and the Results badge see a finished run up to about 6 minutes late. Settle the run when its last step completes, or emit a run-finished event, so they react at once.
 
 Keith's choice (2026-11-18, "Sweep every minute"): instead of settling at the last step inside orchestration.service.ts (a HARNESS_ENTITLEMENT_PROOF_V1 file), COLLABORATION_SWEEP_INTERVAL_MS goes from 5 minutes to 1 minute. The sweep already syncs in-progress steps from their executions, recovers hand-offs and settles finished runs; it now does so every minute. Unchanged: orchestration.service.ts, the frozen contract, the 24-hour hand-off timeout, the chain-trigger timer.
+### STAGING-DEPLOY-SWEEP-01 — Deploy the one-minute collaboration sweep
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SWEEP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the RUN-FINISH-EVENT-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SWEEP-01
+**Title:** Deploy the one-minute collaboration sweep
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves a deploy; it rides with the next deploy (Keith 2026-11-18, "Register for later"). Keith decides.
+**Depends on:** RUN-FINISH-EVENT-01.
+**Primary write scope:** records; host state (deploy only; no migration and no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From RUN-FINISH-EVENT-01: deploy main to staging with the earlier deploy checks (no migration; env files unchanged; runs and every trigger switch off); the gateway build carries COLLABORATION_SWEEP_INTERVAL_MS 60000. If another deploy comes first, that deploy carries this change and supersedes this task.
+
 ### TRIGGER-CHAIN-FAILED-01 — Tell the Chief of Staff when a workflow fails
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-CHAIN-FAILED-01
