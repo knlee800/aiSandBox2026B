@@ -90197,24 +90197,25 @@ taskId=COS-EVAL-FAILCHAIN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "You pick one", then "Yes, admit". Was: READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-FAILCHAIN-01
 **Title:** Chief of Staff eval case: explain a failure it cannot read
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith wants the eval to cover failure-chain runs. Keith decides.
+**Start condition:** READY (Keith, 2026-11-19). Was: NOT_READY. Ready when: Keith wants the eval to cover failure-chain runs. Keith decides.
 **Depends on:** TRIGGER-CHAIN-FAILED-01.
-**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/ (briefing cases and scoring).
-**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Primary write scope:** EXACT (2026-11-19): services/ai-service/src/agent-harness/eval/briefing-types.ts, services/ai-service/src/agent-harness/eval/briefing-loader.ts, services/ai-service/src/agent-harness/eval/briefing-loader.spec.ts, services/ai-service/src/agent-harness/eval/briefing-prompt.ts, services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts, services/ai-service/src/agent-harness/eval/briefing-score.ts, services/ai-service/src/agent-harness/eval/briefing-score.spec.ts, services/ai-service/src/agent-harness/eval/briefing-runner.ts, services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts, services/ai-service/src/agent-harness/eval/briefing-results.ts, services/ai-service/src/agent-harness/eval/briefing-tasks/chain-failed-explain.json. Was: PROVISIONAL: services/ai-service/src/agent-harness/eval/ (briefing cases and scoring).
+**Mutexes / resources:** AI-SERVICE (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F9): an eval case where a failure-chain run is asked why a workflow failed; it must say it cannot see the failure text and must not invent a cause; scored like the other cases.
 
+Design (Keith approved 2026-11-19, "Yes, admit"): a new request kind for a failure-chain run whose lines copy the gateway's chainTriggerFailedTask (services/api-gateway/src/triggers/chain-trigger-match.ts), pinned by briefing-drift.spec.ts as the chain-trigger copy is; one case chain-failed-explain (workflow 'Weekly supplier digest', category step_failed, a saved task asking what went wrong and what to do; no run result); scoring for that kind: the answer must say the reason is not available (a fixed list of phrases), must name no cause (a fixed list of cause phrases such as because, due to, caused by), and the existing task-text leak rule applies; tools as the chain-trigger profile allows. The live eval run is a later step; baselines unchanged.
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-WEBHOOK-01
