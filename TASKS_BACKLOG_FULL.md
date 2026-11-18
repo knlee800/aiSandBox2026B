@@ -90053,7 +90053,7 @@ taskId=STAGING-DEPLOY-SWEEP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the RUN-FINISH-EVENT-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Carried by STAGING-DEPLOY-CHAINFAIL-01 (staging d6530ad, the 60-second sweep checked in the build), as this task's scope said; no separate deploy. Checkpoint: docs/STAGING-DEPLOY-CHAINFAIL-01-CHECKPOINT.md. Was: READY — registered 2026-11-18 by the RUN-FINISH-EVENT-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SWEEP-01
 **Title:** Deploy the one-minute collaboration sweep
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -90101,7 +90101,7 @@ taskId=STAGING-DEPLOY-CHAINFAIL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Result: passed (deploy and host checks). LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released; stagingAuthorized false. Deployed 11cf987 to d6530ad on 2026-11-18 (rc 0 at 13:22:17Z; the admission record on top of TRIGGER-CHAIN-FAILED-01 (gateway and frontend) and RUN-FINISH-EVENT-01 (the one-minute collaboration sweep); migration 1816 AddChainTriggerFiresOn applied, hash 8b3e6e32 to c32f099c, fires_on NOT NULL with its CHECK, the one chain trigger reads completed; configuration unchanged at the baselines gateway.env 616841ca, ai.env 721f4772, Caddyfile 205770cf; all earlier checks as before; the builds carry the failure task text, the fires_on error code, the 60-second sweep and the page copy in en and zh-TW; no connector audit rows). Afterwards the trigger lists unchanged, no audit rows and 0 runs since the deploy, nothing open, env files at the baselines, runs and every trigger switch off (the after-check output is byte for byte the previous deploy's). No run: the live check is TRIGGER-CHAIN-FAILED-LIVE-01. This deploy carried RUN-FINISH-EVENT-01, so STAGING-DEPLOY-SWEEP-01 is closed as carried by it. Checkpoint: docs/STAGING-DEPLOY-CHAINFAIL-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed (STAGING-DEPLOY-SWEEP-01 closed as carried by this deploy). Was: ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CHAINFAIL-01
 **Title:** Deploy failed-run chain triggers and the one-minute sweep
 **Workstream:** AGENT (taxonomy only; zero admission weight)
