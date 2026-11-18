@@ -89367,7 +89367,7 @@ taskId=GOV-ARCH-MAIL-READ-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the MAIL-READ-LIVE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Keith approved the exact text (2026-11-18, "Yes, land it"): ARCHITECTURE.md names mail_read_message in the connectors-mcp line, describes it as a companion of mail_list_unread_metadata on the internal connector call route (not in the catalog, a saved workflow or a system agent; granted only beside the unread tool; a fixed 404 for an id not in the Inbox), and adds it to the connector broker status row (deployed 355e6db, proven by MAIL-READ-LIVE-01). No PRD.md change: its mail-trigger row already says the run reads the message with its own mail tool. GOVERNANCE held for the record and released. Checkpoint: docs/GOV-ARCH-MAIL-READ-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: READY — registered 2026-11-18 by the MAIL-READ-LIVE-01 LOCK — not admitted.
 **Task ID:** GOV-ARCH-MAIL-READ-01
 **Title:** Name the one-message mail tool in ARCHITECTURE.md (and PRD.md if Keith wants)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
