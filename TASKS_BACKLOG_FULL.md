@@ -84352,6 +84352,8 @@ Note (RESULT-TOOL-01 LOCK, 2026-11-16, F7): the inventory gains one internal rou
 
 Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F4): the inventory gains agent_chain_triggers.task and agent_chain_trigger_runs (run ids, depth, times); the daily-cap arithmetic now covers five trigger types; one outside event (a mail) can cause up to four runs through a chain.
 
+**Added 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK (superseded follow-up):** the inventory note: the owner's workflow name now reaches the model in failure-chain runs (stage-start 4.1).
+
 ### ACCESS-01J — Stateless OpenAI and xAI tool continuation (store: false)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACCESS-01J
@@ -88738,6 +88740,8 @@ Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs.
 
 Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F3): include chain-started runs.
 
+**Added 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK (superseded follow-up):** include failure-chain runs in the waiting notice.
+
 ### TRIGGER-ORIGIN-01 — Show "started by a schedule" on Results and the Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-ORIGIN-01
@@ -88771,6 +88775,8 @@ Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F6): include knowledge-trigger runs ("st
 Note (RESULT-TOOL-01 LOCK, 2026-11-16, F8): if the owner should see that a run read another run's result, show it with the run's origin.
 
 Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F3): include chain-started runs ("started after a workflow finished", with a link to the finished run).
+
+**Added 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK (superseded follow-up):** include failure-chain runs ("started after a workflow failed", with a link to the failed run).
 
 ### TRIGGER-SESSION-01 — Schedules for the coding and advisors teams
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88862,6 +88868,8 @@ Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F11): the knowledge timer also reads all
 
 Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F7): the chain timer reads all enabled triggers and their owners' completed runs of the last hour each tick, at most 500 runs ordered by completion; an owner with more than 500 completions an hour would delay the newest.
 
+**Added 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK (superseded follow-up):** the chain tick now makes a second run read for failure triggers, and a failed run with no category (all steps rejected or cancelled) is re-read with its step statuses every tick for up to 60 minutes.
+
 ### GOV-CHECKLIST-01 — Two checklist lines: the schedules switch and the model for subagent migrations
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-CHECKLIST-01
@@ -88948,6 +88956,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16): a native-speaker review of the zh-TW an
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16): the knowledge section's history could show the document count per batch if Keith wants it; gate hover effects behind (hover: hover) across the four Schedules sections; and a native-speaker review of the knowledge section's zh-TW and zh-CN wording (written by the S3 worker).
 
 Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F10): a native-speaker review of the After a workflow finishes section's zh-TW and zh-CN wording; and align all five Schedules sections with DESIGN.md where they differ today (text links text-indigo-300 instead of text-brand-text, which follows the OS theme and would lose contrast on the dark slate sections; warning notes border-amber-500/40 bg-amber-950/30 instead of border-amber-900/80 bg-amber-950/40; danger buttons on the dark surface border-red-700/60 text-red-200 instead of the light-surface red), or record in DESIGN.md that the dark Schedules sections use these.
+
+**Added 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK (superseded follow-up):** a native-speaker review of the TRIGGER-CHAIN-FAILED-01 zh-TW and zh-CN strings (schedules.chain).
 
 ### STAGING-DEPLOY-TRIG-01 — Deploy triggers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89184,6 +89194,8 @@ Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F9): mail triggers add further copies of
 Note (TRIGGER-MORE-01 LOCK, 2026-11-16, F10): knowledge triggers copy the private helpers and the in-memory test store a fourth time, add a fourth near-identical Schedules page section, and the pinning spec now names four trigger types.
 
 Note (TRIGGER-CHAIN-01 LOCK, 2026-11-16, F6): a fifth copy of the private helpers and the in-memory test store, a fifth near-identical Schedules page section, the pinning spec names five trigger types, and the chain task builder copies the result route's run-id pattern (pinned equal by a test; a shared export would need an orchestration edit).
+
+**Added 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK (superseded follow-up):** agent_chain_trigger_runs.source_completed_at now also holds a failure time (a rename belongs here); the 1810 to 1814 migration specs pin each trigger entity's full column list, so a later column needs the 1814-style exclusion (TRIGGER-CHAIN-FAILED-01 S1 needed a write-set widening for it); the chain-trigger-match spec's guard comment says the builder takes the run id, a zone and a time only, now true for completed runs only.
 
 ### COS-EVAL-DRIFT-01 — Fix the ai-service briefing drift test after the start code moved
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -90059,15 +90071,15 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From RUN-FINISH-EVENT-01: deploy main to staging with the earlier deploy checks (no migration; env files unchanged; runs and every trigger switch off); the gateway build carries COLLABORATION_SWEEP_INTERVAL_MS 60000. If another deploy comes first, that deploy carries this change and supersedes this task.
 
-### TRIGGER-CHAIN-FAILED-01 — Tell the Chief of Staff when a workflow fails
+### TRIGGER-CHAIN-FAILED-01 — Start a run when one of the owner's workflows fails
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-CHAIN-FAILED-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 (Step 3, slice S4) — 2026-11-18 — slice S3 landed (32922d6, sonnet, fast-forwarded; 8 of 9 paths; control-plane gates on the branch: frontend tsc rc 0, 2252 of 2252, build rc 0; it also repaired the frontend test that pins the chain error codes to the backend list, which had failed on main since S1 landed, 2240 of 2241, because the control plane did not rerun the frontend after S1): the Finishes normally / Fails choice, each row's outcome, the changed banner and notices, in en, zh-TW and zh-CN; slice S4 admitted (the form's source label 'When this workflow finishes' becomes 'Source workflow' (zh-TW 來源工作流程, zh-CN 来源工作流), Keith's "Fix now") — slice S2 landed (1749f5d, opus, fast-forwarded; 7 of 9 paths; control-plane gates on the branch: gateway tsc rc 0, 6808 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0): the failed-run read and step-status SQL with no text column, the failure match and its two categories, the cleaned workflow name and the fixed failure task lines, the tick working for failure triggers with the run-result tool off, firesOn on the CRUD log lines; two worker deviations accepted by the control plane as following from the approved Q8 and stop conditions: four TRIGGER-CHAIN-01 S2 assertions changed (the tick now reads the trigger list with the tool off), and completed triggers' run audit rows and logs left unchanged; slice S3 admitted with FRONTEND and I18N — slice S1 landed (5007ccb by opus, cherry-picked as 1e6305c; 12 of 13 paths, one write-set widening for the 1814 spec pin; control-plane gates on the branch: gateway tsc rc 0, 6699 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0): migration 1816 fires_on with its CHECK, firesOn in validation, routes, view and audit, re-arm on change, chain_trigger_invalid_fires_on, the timer skipping failure triggers; slice S2 admitted with GATEWAY — stage-start approved by Keith ("Yes, approve all"); Step 2 admitted on Keith said "You pick one", then "Yes, chain-on-failure". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. Chain triggers can fire when a source workflow's run fails, not only when it completes, built and not deployed. S1 1e6305c (opus; migration 1816 fires_on, firesOn in validation, routes, view and audit, re-arm on change; one write-set widening for the 1814 spec pin). S2 1749f5d (opus; the failed-run read and step-status SQL with no text column, the failure match with two fixed categories, step_failed and approval_timed_out, the cleaned workflow name and fixed failure task lines, never failure text; the tick works for failure triggers with the run-result tool off; firesOn on the CRUD log lines; two deviations accepted by the control plane: four TRIGGER-CHAIN-01 assertions follow the approved Q8, completed triggers' run audit unchanged). S3 32922d6 (sonnet; the Schedules form's Finishes normally / Fails choice, row outcomes, banner and notices in en, zh-TW and zh-CN; it also repaired the frontend error-code pin test that failed on main from S1 until S3, 2240 of 2241, a control-plane miss). S4 4b77ec4 (sonnet; the source label reads Source workflow, Keith's "Fix now"). Control-plane gates on each branch: gateway tsc rc 0, 6808 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0; frontend tsc rc 0, 2252 of 2252, build rc 0. Workers' skipped boot reads (S4) recorded in the checkpoint. Checkpoint: docs/TRIGGER-CHAIN-FAILED-01-CHECKPOINT.md. FOLLOWUPS: 5 registered (STAGING-DEPLOY-CHAINFAIL-01, TRIGGER-CHAIN-FAILED-LIVE-01, RESULT-TOOL-FAILED-01, TRIGGER-CHAIN-FAILED-REASON-01, COS-EVAL-FAILCHAIN-01) / 8 superseded (F5 by TRIGGER-ORIGIN-01 and TRIGGER-WAIT-NOTICE-01; F6 by ACCESS-READY-01; F7 source_completed_at naming, the S1 worker's 1810 to 1813 spec pins and the S2 worker's guard comment by TRIGGER-TIDY-01; F7 second run read and the S2 worker's re-read of uncategorised failed runs by TRIGGER-SCALE-01; F8 by TRIGGER-UI-POLISH-01) / 0 dropped / 0 undisposed; F10, the backlog title, updated in this record. Was: ADMITTED — Lane 1 (Step 3, slice S4) — 2026-11-18 — slice S3 landed (32922d6, sonnet, fast-forwarded; 8 of 9 paths; control-plane gates on the branch: frontend tsc rc 0, 2252 of 2252, build rc 0; it also repaired the frontend test that pins the chain error codes to the backend list, which had failed on main since S1 landed, 2240 of 2241, because the control plane did not rerun the frontend after S1): the Finishes normally / Fails choice, each row's outcome, the changed banner and notices, in en, zh-TW and zh-CN; slice S4 admitted (the form's source label 'When this workflow finishes' becomes 'Source workflow' (zh-TW 來源工作流程, zh-CN 来源工作流), Keith's "Fix now") — slice S2 landed (1749f5d, opus, fast-forwarded; 7 of 9 paths; control-plane gates on the branch: gateway tsc rc 0, 6808 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0): the failed-run read and step-status SQL with no text column, the failure match and its two categories, the cleaned workflow name and the fixed failure task lines, the tick working for failure triggers with the run-result tool off, firesOn on the CRUD log lines; two worker deviations accepted by the control plane as following from the approved Q8 and stop conditions: four TRIGGER-CHAIN-01 S2 assertions changed (the tick now reads the trigger list with the tool off), and completed triggers' run audit rows and logs left unchanged; slice S3 admitted with FRONTEND and I18N — slice S1 landed (5007ccb by opus, cherry-picked as 1e6305c; 12 of 13 paths, one write-set widening for the 1814 spec pin; control-plane gates on the branch: gateway tsc rc 0, 6699 passed, 7 skipped, the 14 known smoke.integration failures, build rc 0): migration 1816 fires_on with its CHECK, firesOn in validation, routes, view and audit, re-arm on change, chain_trigger_invalid_fires_on, the timer skipping failure triggers; slice S2 admitted with GATEWAY — stage-start approved by Keith ("Yes, approve all"); Step 2 admitted on Keith said "You pick one", then "Yes, chain-on-failure". Was: READY — registered 2026-11-16 by the TRIGGER-CHAIN-01 LOCK — not admitted.
 **Task ID:** TRIGGER-CHAIN-FAILED-01
-**Title:** Tell the Chief of Staff when a workflow fails
+**Title:** Start a run when one of the owner's workflows fails (was: Tell the Chief of Staff when a workflow fails; renamed at LOCK 2026-11-18, stage-start P8 and F10)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
@@ -90082,6 +90094,126 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
 **writeSetPrecision:** EXACT (Step 2). **admissionUncertain:** false.
 **Scope:** From TRIGGER-CHAIN-01 (stage-start F11; Keith's Q4 chose completed runs only): a trigger for a failed workflow run ("when a workflow fails, tell the Chief of Staff"). A failed run has no final answer for read_run_result, so it needs its own design for what the next run is told.
+
+### STAGING-DEPLOY-CHAINFAIL-01 — Deploy failed-run chain triggers and the one-minute sweep
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CHAINFAIL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CHAINFAIL-01
+**Title:** Deploy failed-run chain triggers and the one-minute sweep
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Depends on:** TRIGGER-CHAIN-FAILED-01.
+**Primary write scope:** records; host state (deploy with migration 1816; no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F1 and section 6): deploy main with the earlier deploy checks; migration 1816 AddChainTriggerFiresOn after the backup (every existing chain trigger reads fires_on completed); env files unchanged; runs and every trigger switch off; builds carry the failure task lines, the 60-second sweep and the page copy. It also carries RUN-FINISH-EVENT-01 and supersedes STAGING-DEPLOY-SWEEP-01 when it locks. Keith opens the Schedules section, sets one trigger to Fails (two languages, phone width).
+
+### TRIGGER-CHAIN-FAILED-LIVE-01 — Live check of failed-run chain triggers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-CHAIN-FAILED-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Task ID:** TRIGGER-CHAIN-FAILED-LIVE-01
+**Title:** Live check of failed-run chain triggers
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHAINFAIL-01 is locked and Keith opens a run window. Keith decides.
+**Depends on:** STAGING-DEPLOY-CHAINFAIL-01.
+**Primary write scope:** records; host state during the window, restored afterwards; PRD.md and ARCHITECTURE.md wording in the LOCK record with GOVERNANCE held.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F2, sections 6 and 7): a run window with the stored Anthropic test key and write tools off; a source run made to fail starts the failure trigger's run within about two minutes of the settle, told the name, run id, time and category; no second run after a restart; completed, cancelled and test runs start nothing; a completed trigger stays off while the result tool is off; no name or failure text in journal, audit or run rows; credits recorded (about 30 to 70); env restored byte for byte. How to make a run fail is for its own plan. The section 7 wording lands in its LOCK record.
+
+### RESULT-TOOL-FAILED-01 — Let read_run_result read a failed run's completed steps
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULT-TOOL-FAILED-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Task ID:** RESULT-TOOL-FAILED-01
+**Title:** Let read_run_result read a failed run's completed steps
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith wants a failure-chain run to read what the failed run did get done. Keith decides.
+**Depends on:** TRIGGER-CHAIN-FAILED-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ (the result read), services/ai-service/src/agent-harness/tools/ (the tool's description).
+**Mutexes / resources:** set at admission (GATEWAY, AI-SERVICE expected; HARNESS_ENTITLEMENT_PROOF_V1 may be touched).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F3, Q6): read_run_result answers not found for a failed run, so a failure-chain run cannot see what the failed run did. A design that returns a failed run's completed steps' answers as data, with the tool's rule and description changed; its own stage-start.
+
+### TRIGGER-CHAIN-FAILED-REASON-01 — A third failure category from the allow-listed run error
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-CHAIN-FAILED-REASON-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Task ID:** TRIGGER-CHAIN-FAILED-REASON-01
+**Title:** A third failure category from the allow-listed run error
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: the two categories prove too thin in use. Keith decides.
+**Depends on:** TRIGGER-CHAIN-FAILED-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/triggers/ (chain-trigger files).
+**Mutexes / resources:** set at admission (GATEWAY expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (the later triggers are not current until each is proven live).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F4): a third fixed failure category (for example provider not configured, usage limit reached) from the execution's allow-listed error field, read from usage_records by code only, never text; its own design.
+
+### COS-EVAL-FAILCHAIN-01 — Chief of Staff eval case: explain a failure it cannot read
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-FAILCHAIN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-18 by the TRIGGER-CHAIN-FAILED-01 LOCK — not admitted.
+**Task ID:** COS-EVAL-FAILCHAIN-01
+**Title:** Chief of Staff eval case: explain a failure it cannot read
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith wants the eval to cover failure-chain runs. Keith decides.
+**Depends on:** TRIGGER-CHAIN-FAILED-01.
+**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/ (briefing cases and scoring).
+**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TRIGGER-CHAIN-FAILED-01 (stage-start F9): an eval case where a failure-chain run is asked why a workflow failed; it must say it cannot see the failure text and must not invent a cause; scored like the other cases.
 
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
