@@ -89570,16 +89570,16 @@ taskId=STAGING-DEPLOY-MAUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-18 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-MAUTH-01
 **Title:** Deploy the refused mail sign-in state
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves the deploy. Keith decides.
+**Start condition:** READY (Keith, 2026-11-18, "Yes, deploy"). Was: NOT_READY. Ready when: Keith approves the deploy. Keith decides.
 **Depends on:** CONN-MAIL-AUTH-STATE-01.
 **Primary write scope:** records; host state (deploy with migration 1815; no env change expected).
-**Mutexes / resources:** STAGING, ENV.
+**Mutexes / resources:** STAGING (2026-11-18 at admission: no env change, so ENV is not held). Was: STAGING, ENV.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** STAGING-RUNTIME.
