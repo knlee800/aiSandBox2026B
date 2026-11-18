@@ -1,7 +1,9 @@
 import { HttpException } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { AGENT_CHAIN_TRIGGER_FIRES_ON } from '../entities/agent-chain-trigger.entity';
 import {
+  CHAIN_TRIGGER_DEFAULT_FIRES_ON,
   CHAIN_TRIGGER_ERROR_CODES,
   CHAIN_TRIGGER_TASK_MAX_CHARS,
   CHAIN_TRIGGERS_PER_OWNER_LIMIT,
@@ -63,6 +65,8 @@ describe('chain trigger validation (TRIGGER-CHAIN-01 S1)', () => {
       chain_trigger_invalid_task: 400,
       chain_trigger_invalid_time_zone: 400,
       chain_trigger_invalid_enabled: 400,
+      // TRIGGER-CHAIN-FAILED-01 S1.
+      chain_trigger_invalid_fires_on: 400,
       chain_trigger_not_found: 404,
       chain_trigger_workflow_not_found: 404,
       chain_trigger_limit_reached: 409,
@@ -299,6 +303,67 @@ describe('chain trigger validation (TRIGGER-CHAIN-01 S1)', () => {
 
     it('terminates on a stored graph that already loops elsewhere', () => {
       expect(closesChainCycle([edge('t1', B, C), edge('t2', C, B)], edge('new', A, B))).toBe(false);
+    });
+  });
+
+  describe('firesOn (TRIGGER-CHAIN-FAILED-01 S1, stage-start 2.1 and 4.1)', () => {
+    it('POST without firesOn leaves it unset (the service stores the default completed)', () => {
+      expect(readChainTriggerCreate(body())).not.toHaveProperty('firesOn');
+      expect(CHAIN_TRIGGER_DEFAULT_FIRES_ON).toBe('completed');
+    });
+
+    it.each([['completed'], ['failed']])('POST and PATCH accept firesOn %s', (firesOn) => {
+      expect(readChainTriggerCreate(body({ firesOn })).firesOn).toBe(firesOn);
+      expect(readChainTriggerPatch({ firesOn })).toEqual({ firesOn });
+    });
+
+    it.each([
+      ['an unknown outcome', 'cancelled'],
+      ['timed_out', 'timed_out'],
+      ['another case', 'Failed'],
+      ['padded', ' failed'],
+      ['empty', ''],
+      ['null', null],
+      ['a boolean', true],
+      ['a number', 1],
+      ['an array', ['failed']],
+      ['an object', { value: 'failed' }],
+    ])('firesOn that is %s is 400 chain_trigger_invalid_fires_on, on POST and PATCH, never echoed', (_label, firesOn) => {
+      for (const work of [() => readChainTriggerCreate(body({ firesOn })), () => readChainTriggerPatch({ firesOn })]) {
+        const { status, body: response } = refusal(work);
+        expect(status).toBe(400);
+        expect(response).toEqual({
+          statusCode: 400,
+          message: "firesOn must be 'completed' or 'failed'",
+          error: 'Bad Request',
+          code: CHAIN_TRIGGER_ERROR_CODES.invalidFiresOn,
+        });
+      }
+      expect(CHAIN_TRIGGER_ERROR_CODES.invalidFiresOn).toBe('chain_trigger_invalid_fires_on');
+    });
+
+    it('the accepted values are the entity list', () => {
+      expect([...AGENT_CHAIN_TRIGGER_FIRES_ON]).toEqual(['completed', 'failed']);
+    });
+
+    it('unknown fields are still refused beside firesOn', () => {
+      for (const field of ['outcome', 'status', 'fires_on', 'failureKind']) {
+        expect(refusal(() => readChainTriggerCreate(body({ firesOn: 'failed', [field]: 'x' }))).body).toMatchObject({
+          code: CHAIN_TRIGGER_ERROR_CODES.unknownField,
+          field,
+        });
+        expect(refusal(() => readChainTriggerPatch({ firesOn: 'failed', [field]: 'x' })).body.code).toBe(
+          CHAIN_TRIGGER_ERROR_CODES.unknownField,
+        );
+      }
+    });
+
+    it('the cycle rule takes no firesOn: an edge is the same edge whatever outcome it fires on', () => {
+      const source = readFileSync(join(__dirname, 'chain-trigger-validation.ts'), 'utf8');
+      const rule = source.slice(source.indexOf('export function closesChainCycle'));
+      expect(rule.slice(0, rule.indexOf('\n}\n'))).not.toMatch(/firesOn|fires_on|completed|failed/);
+      const edgeType = source.slice(source.indexOf('export interface ChainTriggerEdge'));
+      expect(edgeType.slice(0, edgeType.indexOf('\n}\n'))).not.toMatch(/firesOn/);
     });
   });
 });

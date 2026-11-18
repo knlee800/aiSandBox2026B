@@ -1,4 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { AGENT_CHAIN_TRIGGER_FIRES_ON, AgentChainTriggerFiresOn } from '../entities/agent-chain-trigger.entity';
 import { isAcceptedTimeZone, isUuid } from './schedule-validation';
 
 /**
@@ -21,6 +22,10 @@ import { isAcceptedTimeZone, isUuid } from './schedule-validation';
  * - timeZone: a string of at most 64 characters that Intl.DateTimeFormat
  *   accepts (the schedule rule).
  * - enabled: a boolean.
+ * - firesOn (TRIGGER-CHAIN-FAILED-01 S1): 'completed' or 'failed', the source
+ *   run outcome the trigger starts on; anything else is
+ *   chain_trigger_invalid_fires_on. Optional on POST (the service stores
+ *   'completed' when it is not sent) and allowed on PATCH.
  * Any other field (provider, model, approval, budget, profile, sessionId,
  * armedAt, depth, sourceRunId ...) is refused. Nothing in the body sets them.
  */
@@ -40,6 +45,7 @@ export const CHAIN_TRIGGER_ERROR_CODES = {
   invalidTask: 'chain_trigger_invalid_task',
   invalidTimeZone: 'chain_trigger_invalid_time_zone',
   invalidEnabled: 'chain_trigger_invalid_enabled',
+  invalidFiresOn: 'chain_trigger_invalid_fires_on',
   notFound: 'chain_trigger_not_found',
   workflowNotFound: 'chain_trigger_workflow_not_found',
   limitReached: 'chain_trigger_limit_reached',
@@ -59,6 +65,7 @@ const CHAIN_TRIGGER_ERROR_MESSAGES: Readonly<Record<ChainTriggerErrorCode, strin
   chain_trigger_invalid_task: `task must be 1 to ${CHAIN_TRIGGER_TASK_MAX_CHARS} characters`,
   chain_trigger_invalid_time_zone: 'timeZone must be a known time zone',
   chain_trigger_invalid_enabled: 'enabled must be true or false',
+  chain_trigger_invalid_fires_on: "firesOn must be 'completed' or 'failed'",
   chain_trigger_not_found: 'Chain trigger not found',
   chain_trigger_workflow_not_found: 'Workflow not found',
   chain_trigger_limit_reached: `At most ${CHAIN_TRIGGERS_PER_OWNER_LIMIT} chain triggers per account`,
@@ -76,6 +83,7 @@ const CHAIN_TRIGGER_ERROR_STATUS: Readonly<Record<ChainTriggerErrorCode, HttpSta
   chain_trigger_invalid_task: HttpStatus.BAD_REQUEST,
   chain_trigger_invalid_time_zone: HttpStatus.BAD_REQUEST,
   chain_trigger_invalid_enabled: HttpStatus.BAD_REQUEST,
+  chain_trigger_invalid_fires_on: HttpStatus.BAD_REQUEST,
   chain_trigger_not_found: HttpStatus.NOT_FOUND,
   chain_trigger_workflow_not_found: HttpStatus.NOT_FOUND,
   chain_trigger_limit_reached: HttpStatus.CONFLICT,
@@ -115,13 +123,18 @@ export interface ChainTriggerCreateInput {
   task: string;
   timeZone: string;
   enabled: boolean;
+  /** Present only when sent; the service stores 'completed' when it is absent. */
+  firesOn?: AgentChainTriggerFiresOn;
 }
 
 /** A parsed PATCH body: only the fields that were sent. */
 export type ChainTriggerPatchInput = Partial<ChainTriggerCreateInput>;
 
+/** TRIGGER-CHAIN-FAILED-01 S1: what a trigger without a sent or stored firesOn fires on. */
+export const CHAIN_TRIGGER_DEFAULT_FIRES_ON: AgentChainTriggerFiresOn = 'completed';
+
 const REQUIRED_FIELDS = ['sourceWorkflowId', 'target', 'task', 'timeZone'] as const;
-const ALLOWED_FIELDS: ReadonlySet<string> = new Set([...REQUIRED_FIELDS, 'enabled']);
+const ALLOWED_FIELDS: ReadonlySet<string> = new Set([...REQUIRED_FIELDS, 'enabled', 'firesOn']);
 
 /** Refuses a workflow target equal to the source. The refusal names no value. */
 export function assertNotSameWorkflow(sourceWorkflowId: string, target: ChainTriggerTargetInput): void {
@@ -145,6 +158,9 @@ export function readChainTriggerCreate(body: unknown): ChainTriggerCreateInput {
     timeZone: parsed.timeZone!,
     enabled: parsed.enabled ?? true,
   };
+  if (parsed.firesOn !== undefined) {
+    input.firesOn = parsed.firesOn;
+  }
   assertNotSameWorkflow(input.sourceWorkflowId, input.target);
   return input;
 }
@@ -238,6 +254,7 @@ function readFields(record: Record<string, unknown>): ChainTriggerPatchInput {
   if (record.task !== undefined) parsed.task = readTask(record.task);
   if (record.timeZone !== undefined) parsed.timeZone = readTimeZone(record.timeZone);
   if (record.enabled !== undefined) parsed.enabled = readEnabled(record.enabled);
+  if (record.firesOn !== undefined) parsed.firesOn = readFiresOn(record.firesOn);
   return parsed;
 }
 
@@ -298,4 +315,12 @@ function readEnabled(value: unknown): boolean {
     throw chainTriggerError(CHAIN_TRIGGER_ERROR_CODES.invalidEnabled);
   }
   return value;
+}
+
+/** Exactly 'completed' or 'failed' (case-sensitive). The refusal never echoes the value. */
+function readFiresOn(value: unknown): AgentChainTriggerFiresOn {
+  if (typeof value !== 'string' || !(AGENT_CHAIN_TRIGGER_FIRES_ON as readonly string[]).includes(value)) {
+    throw chainTriggerError(CHAIN_TRIGGER_ERROR_CODES.invalidFiresOn);
+  }
+  return value as AgentChainTriggerFiresOn;
 }

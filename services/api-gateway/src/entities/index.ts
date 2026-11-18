@@ -86,8 +86,12 @@ export {
   AGENT_KNOWLEDGE_TRIGGER_RUN_OUTCOMES,
 } from './agent-knowledge-trigger-run.entity';
 export type { AgentKnowledgeTriggerRunOutcome } from './agent-knowledge-trigger-run.entity';
-export { AgentChainTrigger, AGENT_CHAIN_TRIGGER_TARGET_KINDS } from './agent-chain-trigger.entity';
-export type { AgentChainTriggerTargetKind } from './agent-chain-trigger.entity';
+export {
+  AgentChainTrigger,
+  AGENT_CHAIN_TRIGGER_FIRES_ON,
+  AGENT_CHAIN_TRIGGER_TARGET_KINDS,
+} from './agent-chain-trigger.entity';
+export type { AgentChainTriggerFiresOn, AgentChainTriggerTargetKind } from './agent-chain-trigger.entity';
 export { AgentChainTriggerRun, AGENT_CHAIN_TRIGGER_RUN_OUTCOMES } from './agent-chain-trigger-run.entity';
 export type { AgentChainTriggerRunOutcome } from './agent-chain-trigger-run.entity';
 export { UserRole } from './user-role.enum';

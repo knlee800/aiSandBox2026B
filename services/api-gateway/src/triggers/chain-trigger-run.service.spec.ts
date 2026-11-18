@@ -120,6 +120,7 @@ function triggerRow(overrides: Partial<AgentChainTrigger> = {}): AgentChainTrigg
     task: TASK,
     timeZone: ZONE,
     enabled: true,
+    firesOn: 'completed',
     armedAt: new Date('2026-11-01T00:00:00Z'),
     createdAt: new Date('2026-11-01T00:00:00Z'),
     updatedAt: new Date('2026-11-01T00:00:00Z'),
@@ -1177,6 +1178,48 @@ describe('ChainTriggerRunService (TRIGGER-CHAIN-01 S2)', () => {
     expect(source.match(/isChainTriggersEnabled\(\)/g)).toHaveLength(1);
     expect(source.match(/isRunResultToolEnabled\(\)/g)).toHaveLength(1);
     expect(source).toContain("import { isRunResultToolEnabled } from '../orchestration/collaboration-result-grant';");
+  });
+
+  describe('TRIGGER-CHAIN-FAILED-01 S1 criterion 8: until S2 the tick skips failure triggers', () => {
+    it('a switched-on failure trigger, every switch on: nothing read, started or written, for a completed and a failed run', async () => {
+      addSourceRun(srcRun(2), { status: 'failed', completedAt: null, createdAt: at(-30) });
+      store.triggers.rows.push(triggerRow({ firesOn: 'failed' }), workflowTrigger({ firesOn: 'failed' }));
+      const summary = await service.tick(NOW);
+      expect(summary).toEqual({ evaluated: 0, started: 0, skipped: 0, capped: 0, interrupted: 0, pruned: 0 });
+      expect(store.collabRuns.finds).toHaveLength(0);
+      expect(store.referrals.queries).toHaveLength(0);
+      expect(runRows()).toEqual([]);
+      expect(auditOf()).toEqual([]);
+      expect(starts.readStartBody).not.toHaveBeenCalled();
+      expect(starts.start).not.toHaveBeenCalled();
+      expect(starts.approveStep).not.toHaveBeenCalled();
+      // Nothing is waiting for later either.
+      await service.tick(at(1));
+      expect(runRows()).toEqual([]);
+      expect(starts.start).not.toHaveBeenCalled();
+    });
+
+    it('beside a completed trigger on the same source, only the completed trigger starts, once, for the completed run', async () => {
+      addSourceRun(srcRun(2), { status: 'failed', completedAt: null, createdAt: at(-30) });
+      const failure = triggerRow({ firesOn: 'failed' });
+      const completed = triggerRow();
+      store.triggers.rows.push(failure, completed);
+      const summary = await service.tick(NOW);
+      expect(summary).toMatchObject({ evaluated: 1, started: 1, skipped: 0 });
+      expect(runRows().map((row) => [row.triggerId, row.sourceRunId, row.outcome])).toEqual([
+        [completed.id, srcRun(1), 'started'],
+      ]);
+      expect(auditOf().map((row) => row.subjectId)).toEqual([completed.id]);
+      expect(taskOf()).toBe(expectedTask(srcRun(1)));
+    });
+
+    it('the skip is the one change to the tick: the enabled filter keeps completed triggers only', () => {
+      const source = readFileSync(join(__dirname, 'chain-trigger-run.service.ts'), 'utf8');
+      expect(source.match(/firesOn/g)).toHaveLength(1);
+      expect(source).toContain(
+        "(row) => row.enabled === true && (row.firesOn ?? 'completed') === 'completed',",
+      );
+    });
   });
 
   it('acceptance 12: the three pinned run result texts appear in none of the chain S2 files or the module', () => {

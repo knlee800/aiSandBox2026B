@@ -252,7 +252,7 @@ describe('ChainTriggerController (TRIGGER-CHAIN-01 S1)', () => {
         .send(triggerBody({ target: { kind: 'workflow', workflowId: WF_B } }))
         .expect(201);
       expect(Object.keys(created.body).sort()).toEqual(
-        ['createdAt', 'enabled', 'id', 'lastRun', 'source', 'sourceWorkflowId', 'target', 'task', 'timeZone', 'updatedAt'].sort(),
+        ['createdAt', 'enabled', 'firesOn', 'id', 'lastRun', 'source', 'sourceWorkflowId', 'target', 'task', 'timeZone', 'updatedAt'].sort(),
       );
       expect(created.body).toMatchObject({
         sourceWorkflowId: WF_A,
@@ -493,6 +493,92 @@ describe('ChainTriggerController (TRIGGER-CHAIN-01 S1)', () => {
       expect(JSON.stringify(store.audit.rows)).not.toContain(secret);
       expect(logs.join('\n')).not.toContain(secret);
     }
+  });
+
+  describe('firesOn (TRIGGER-CHAIN-FAILED-01 S1)', () => {
+    it('POST without firesOn answers completed, with failed answers failed; list, PATCH and every answer carry it', async () => {
+      const owner = as('owner-token');
+      const plain = await owner.post('/api/chain-triggers').send(triggerBody()).expect(201);
+      expect(plain.body.firesOn).toBe('completed');
+      const failed = await owner
+        .post('/api/chain-triggers')
+        .send(triggerBody({ sourceWorkflowId: WF_B, firesOn: 'failed' }))
+        .expect(201);
+      expect(failed.body.firesOn).toBe('failed');
+      expect(store.triggers.rows.map((row) => row.firesOn)).toEqual(['completed', 'failed']);
+
+      const listed = await owner.get('/api/chain-triggers').expect(200);
+      expect(Object.keys(listed.body).sort()).toEqual(['enabled', 'limit', 'resultToolEnabled', 'runsEnabled', 'triggers']);
+      expect(listed.body.triggers.map((trigger: { firesOn: string }) => trigger.firesOn)).toEqual(['completed', 'failed']);
+
+      const changed = await owner.patch(`/api/chain-triggers/${plain.body.id}`).send({ firesOn: 'failed' }).expect(200);
+      expect(changed.body).toMatchObject({ id: plain.body.id, firesOn: 'failed', enabled: true });
+      const untouched = await owner.patch(`/api/chain-triggers/${failed.body.id}`).send({ task: 'other' }).expect(200);
+      expect(untouched.body.firesOn).toBe('failed');
+      expect(store.audit.rows.map((row) => (row.payload as Record<string, unknown>).firesOn)).toEqual([
+        'completed',
+        'failed',
+        'failed',
+        'failed',
+      ]);
+    });
+
+    it.each([['cancelled'], ['FAILED'], [''], [null], [true], [['failed']]])(
+      'firesOn %j is 400 chain_trigger_invalid_fires_on on POST and PATCH and writes nothing',
+      async (firesOn) => {
+        const owner = as('owner-token');
+        const refused = await owner.post('/api/chain-triggers').send(triggerBody({ firesOn })).expect(400);
+        expect(refused.body).toEqual({
+          statusCode: 400,
+          message: "firesOn must be 'completed' or 'failed'",
+          error: 'Bad Request',
+          code: 'chain_trigger_invalid_fires_on',
+        });
+        expect(store.triggers.rows).toHaveLength(0);
+        const own = await owner.post('/api/chain-triggers').send(triggerBody()).expect(201);
+        const before = snapshot();
+        const patched = await owner.patch(`/api/chain-triggers/${own.body.id}`).send({ firesOn }).expect(400);
+        expect(patched.body.code).toBe('chain_trigger_invalid_fires_on');
+        expect(snapshot()).toBe(before);
+      },
+    );
+
+    it("a firesOn change on another owner's trigger, an unknown id or a malformed id is 404 and changes nothing", async () => {
+      const theirs = await as('other-token')
+        .post('/api/chain-triggers')
+        .send(triggerBody({ sourceWorkflowId: OTHER_WORKFLOW }))
+        .expect(201);
+      const before = snapshot();
+      for (const id of [theirs.body.id, UNKNOWN_ID, 'not-a-uuid']) {
+        const response = await as('owner-token').patch(`/api/chain-triggers/${id}`).send({ firesOn: 'failed' }).expect(404);
+        expect(response.body.code).toBe('chain_trigger_not_found');
+      }
+      expect(snapshot()).toBe(before);
+      expect(store.triggers.rows[0].firesOn).toBe('completed');
+    });
+
+    it('a failure trigger and a completed trigger cannot close a loop between them (409 chain_trigger_cycle)', async () => {
+      const owner = as('owner-token');
+      await owner
+        .post('/api/chain-triggers')
+        .send(triggerBody({ target: { kind: 'workflow', workflowId: WF_B }, firesOn: 'failed' }))
+        .expect(201);
+      const refused = await owner
+        .post('/api/chain-triggers')
+        .send(triggerBody({ sourceWorkflowId: WF_B, target: { kind: 'workflow', workflowId: WF_A } }))
+        .expect(409);
+      expect(refused.body.code).toBe('chain_trigger_cycle');
+    });
+
+    it('the limit of 3 counts failure and completed triggers together', async () => {
+      const owner = as('owner-token');
+      for (const firesOn of ['failed', 'completed', 'failed']) {
+        await owner.post('/api/chain-triggers').send(triggerBody({ firesOn })).expect(201);
+      }
+      const refused = await owner.post('/api/chain-triggers').send(triggerBody({ firesOn: 'failed' })).expect(409);
+      expect(refused.body.code).toBe('chain_trigger_limit_reached');
+      expect(store.triggers.rows).toHaveLength(3);
+    });
   });
 
   it('a save that closes a cycle is 409 chain_trigger_cycle, on create and on change', async () => {

@@ -128,12 +128,24 @@ describe('CreateAgentChainTriggerTables1814000000000 (TRIGGER-CHAIN-01 S1, mocke
     createTable: string,
     columnNames: Record<string, string>,
     indexes: Array<[string, string[], boolean]>,
+    laterColumns: Record<string, string> = {},
   ): void {
     const storage = getMetadataArgsStorage();
     const table = storage.tables.find((entry) => entry.target === target);
     expect(table?.name).toBe(tableName);
     expect(table?.schema).toBe('public');
-    const columns = storage.columns.filter((entry) => entry.target === target);
+    // Columns a later migration adds (pinned against that migration's own
+    // SQL by its spec) are left out of the comparison with this CREATE TABLE.
+    const added = storage.columns.filter(
+      (entry) => entry.target === target && entry.propertyName in laterColumns,
+    );
+    expect(Object.fromEntries(added.map((column) => [column.propertyName, column.options.name]))).toEqual(laterColumns);
+    for (const name of Object.values(laterColumns)) {
+      expect(createTable).not.toContain(`"${name}"`);
+    }
+    const columns = storage.columns.filter(
+      (entry) => entry.target === target && !(entry.propertyName in laterColumns),
+    );
     const names = Object.fromEntries(
       columns.map((column) => [column.propertyName, column.options.name ?? column.propertyName]),
     );
@@ -186,6 +198,8 @@ describe('CreateAgentChainTriggerTables1814000000000 (TRIGGER-CHAIN-01 S1, mocke
         ['idx_agent_chain_triggers_user_id', ['userId'], false],
         ['idx_agent_chain_triggers_enabled', ['enabled'], false],
       ],
+      // TRIGGER-CHAIN-FAILED-01: added by 1816000000000-AddChainTriggerFiresOn.
+      { firesOn: 'fires_on' },
     );
     expect(checkValues(createTriggers, 'target_kind')).toEqual([...AGENT_CHAIN_TRIGGER_TARGET_KINDS]);
     expect([...AGENT_CHAIN_TRIGGER_TARGET_KINDS]).toEqual([...AGENT_SCHEDULE_TARGET_KINDS]);

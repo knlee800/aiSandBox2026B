@@ -133,6 +133,7 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
         task: `${MARKER} summarise the finished run`,
         timeZone: 'Asia/Taipei',
         enabled: true,
+        firesOn: 'completed',
         createdAt: row.createdAt.toISOString(),
         updatedAt: row.updatedAt.toISOString(),
         lastRun: null,
@@ -149,9 +150,10 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
         subjectType: CHAIN_TRIGGER_AUDIT_SUBJECT_TYPE,
         subjectId: view.id,
         userId: OWNER,
-        payload: { triggerId: view.id, targetKind: 'workflow', sourceWorkflowId: WF_A, workflowId: WF_B },
+        payload: { triggerId: view.id, targetKind: 'workflow', sourceWorkflowId: WF_A, workflowId: WF_B, firesOn: 'completed' },
       });
       expect(Object.keys(store.audit.rows[0].payload).sort()).toEqual([
+        'firesOn',
         'sourceWorkflowId',
         'targetKind',
         'triggerId',
@@ -625,6 +627,7 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
         targetKind: 'chief-of-staff',
         sourceWorkflowId: WF_B,
         workflowId: null,
+        firesOn: 'completed',
       });
     });
   });
@@ -821,7 +824,7 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
       await service.update(OWNER, created.id, { sourceWorkflowId: WF_C });
       await service.list(OWNER);
       for (const row of store.audit.rows) {
-        expect(Object.keys(row.payload).sort()).toEqual(['sourceWorkflowId', 'targetKind', 'triggerId', 'workflowId']);
+        expect(Object.keys(row.payload).sort()).toEqual(['firesOn', 'sourceWorkflowId', 'targetKind', 'triggerId', 'workflowId']);
       }
       const audit = JSON.stringify(store.audit.rows);
       const logText = logs.join('\n');
@@ -854,7 +857,7 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
       'chain_trigger_created',
     ]);
     for (const row of store.audit.rows) {
-      expect(Object.keys(row.payload).sort()).toEqual(['sourceWorkflowId', 'targetKind', 'triggerId', 'workflowId']);
+      expect(Object.keys(row.payload).sort()).toEqual(['firesOn', 'sourceWorkflowId', 'targetKind', 'triggerId', 'workflowId']);
       expect(row.category).toBe('trigger');
       expect(row.subjectType).toBe('agent_chain_trigger');
     }
@@ -871,6 +874,173 @@ describe('ChainTriggerService (TRIGGER-CHAIN-01 S1)', () => {
     expect(logs).toContain(
       `chain trigger deleted userId=${OWNER} triggerId=${created.id} targetKind=chief-of-staff sourceWorkflowId=${WF_C}`,
     );
+  });
+
+  describe('firesOn (TRIGGER-CHAIN-FAILED-01 S1)', () => {
+    it('criterion 2: a create without firesOn stores completed; with failed stores failed; the answers carry it', async () => {
+      const plain = await service.create(OWNER, body());
+      const failed = await service.create(OWNER, body({ sourceWorkflowId: WF_B, firesOn: 'failed' }));
+      const explicit = await service.create(OWNER, body({ sourceWorkflowId: WF_C, firesOn: 'completed' }));
+      expect(store.triggers.rows.map((row) => row.firesOn)).toEqual(['completed', 'failed', 'completed']);
+      expect([plain.firesOn, failed.firesOn, explicit.firesOn]).toEqual(['completed', 'failed', 'completed']);
+      expect(failed).toMatchObject({ sourceWorkflowId: WF_B, enabled: true, lastRun: null });
+      const listed = await service.list(OWNER);
+      expect(listed.triggers.map((trigger) => trigger.firesOn)).toEqual(['completed', 'failed', 'completed']);
+    });
+
+    it('criterion 2: any other firesOn is 400 chain_trigger_invalid_fires_on; nothing read or written', async () => {
+      for (const firesOn of ['cancelled', 'FAILED', '', null, 0, ['failed']]) {
+        const { status, body: response } = await refusal(() => service.create(OWNER, body({ firesOn })));
+        expect(status).toBe(400);
+        expect(response.code).toBe('chain_trigger_invalid_fires_on');
+      }
+      expect(store.calls).toEqual([]);
+    });
+
+    it('criterion 3: a PATCH of firesOn alone works, re-arms, takes no lock and runs no cycle check', async () => {
+      at('2026-11-16T00:00:00Z');
+      const own = await service.create(OWNER, body({ target: toWorkflow(WF_B) }));
+      const created = store.triggers.rows[0].armedAt.getTime();
+      at('2026-11-16T04:00:00Z');
+      store.calls.length = 0;
+      store.queries.length = 0;
+      const view = await service.update(OWNER, own.id, { firesOn: 'failed' });
+      expect(view).toMatchObject({ id: own.id, firesOn: 'failed', sourceWorkflowId: WF_A, enabled: true });
+      expect(store.queries).toEqual([]);
+      expect(store.calls).not.toContain('triggers.find');
+      expect(store.calls).not.toContain('manager.query');
+      const row = store.triggers.rows[0];
+      expect(row.firesOn).toBe('failed');
+      expect(row.armedAt.getTime()).toBe(new Date('2026-11-16T04:00:00Z').getTime());
+      expect(row.armedAt.getTime()).not.toBe(created);
+      expect(row.updatedAt.getTime()).toBe(row.armedAt.getTime());
+      // And back to completed: a change again, so it re-arms again.
+      at('2026-11-16T05:00:00Z');
+      await service.update(OWNER, own.id, { firesOn: 'completed' });
+      expect(store.triggers.rows[0]).toMatchObject({ firesOn: 'completed' });
+      expect(store.triggers.rows[0].armedAt.getTime()).toBe(new Date('2026-11-16T05:00:00Z').getTime());
+    });
+
+    it('criterion 3: a PATCH that sends the stored firesOn, or none, does not re-arm', async () => {
+      at('2026-11-16T00:00:00Z');
+      const own = await service.create(OWNER, body({ firesOn: 'failed' }));
+      const armedAt = store.triggers.rows[0].armedAt.getTime();
+      for (const patch of [{ firesOn: 'failed' }, { task: 'other' }, { timeZone: 'UTC' }, { firesOn: 'failed', task: 'again' }]) {
+        at('2026-11-16T06:00:00Z');
+        const view = await service.update(OWNER, own.id, patch);
+        expect(view.firesOn).toBe('failed');
+        expect(store.triggers.rows[0].armedAt.getTime()).toBe(armedAt);
+        expect(store.triggers.rows[0].firesOn).toBe('failed');
+      }
+    });
+
+    it('criterion 3: a PATCH of firesOn on a switched-off trigger re-arms and leaves it off', async () => {
+      at('2026-11-16T00:00:00Z');
+      const own = await service.create(OWNER, body({ enabled: false }));
+      at('2026-11-16T02:00:00Z');
+      const view = await service.update(OWNER, own.id, { firesOn: 'failed' });
+      expect(view).toMatchObject({ enabled: false, firesOn: 'failed' });
+      expect(store.triggers.rows[0].armedAt.getTime()).toBe(new Date('2026-11-16T02:00:00Z').getTime());
+    });
+
+    it("criterion 4: another owner's trigger answers 404 to a firesOn change and nothing changes", async () => {
+      const theirs = await service.create(OTHER, body({ sourceWorkflowId: OTHER_WORKFLOW }));
+      const before = snapshot();
+      const { status, body: response } = await refusal(() => service.update(OWNER, theirs.id, { firesOn: 'failed' }));
+      expect(status).toBe(404);
+      expect(response.code).toBe(CHAIN_TRIGGER_ERROR_CODES.notFound);
+      expect(snapshot()).toBe(before);
+      expect(store.triggers.rows[0].firesOn).toBe('completed');
+    });
+
+    it('criterion 5: A fails to B, then B completes to A is refused as a cycle; so is the reverse and two failure edges', async () => {
+      await service.create(OWNER, body({ target: toWorkflow(WF_B), firesOn: 'failed' }));
+      for (const firesOn of [undefined, 'completed', 'failed']) {
+        const { status, body: response } = await refusal(() =>
+          service.create(OWNER, body({ sourceWorkflowId: WF_B, target: toWorkflow(WF_A), ...(firesOn ? { firesOn } : {}) })),
+        );
+        expect(status).toBe(409);
+        expect(response.code).toBe(CHAIN_TRIGGER_ERROR_CODES.cycle);
+      }
+      expect(store.triggers.rows).toHaveLength(1);
+      // A completes to B stored, B fails to A refused.
+      store.triggers.rows.length = 0;
+      await service.create(OWNER, body({ target: toWorkflow(WF_B) }));
+      const { body: reverse } = await refusal(() =>
+        service.create(OWNER, body({ sourceWorkflowId: WF_B, target: toWorkflow(WF_A), firesOn: 'failed' })),
+      );
+      expect(reverse.code).toBe(CHAIN_TRIGGER_ERROR_CODES.cycle);
+    });
+
+    it('criterion 5: a change that closes a cycle is refused whatever the outcomes; a firesOn change alone never does', async () => {
+      await service.create(OWNER, body({ target: toWorkflow(WF_B), firesOn: 'failed' }));
+      const second = await service.create(OWNER, body({ sourceWorkflowId: WF_B }));
+      const before = snapshot();
+      const { status, body: response } = await refusal(() =>
+        service.update(OWNER, second.id, { target: toWorkflow(WF_A), firesOn: 'failed' }),
+      );
+      expect(status).toBe(409);
+      expect(response.code).toBe(CHAIN_TRIGGER_ERROR_CODES.cycle);
+      expect(snapshot()).toBe(before);
+      const flipped = await service.update(OWNER, second.id, { firesOn: 'failed' });
+      expect(flipped.firesOn).toBe('failed');
+    });
+
+    it('criterion 5: the cycle check reads every trigger with the same select, which holds no firesOn', async () => {
+      await service.create(OWNER, body({ target: toWorkflow(WF_B), firesOn: 'failed' }));
+      const source = readFileSync(join(__dirname, 'chain-trigger.service.ts'), 'utf8');
+      const check = source.slice(source.indexOf('private async assertNoCycle'));
+      expect(check.slice(0, check.indexOf('\n  }\n'))).toContain("select: ['id', 'sourceWorkflowId', 'targetKind', 'workflowId'],");
+      expect(check.slice(0, check.indexOf('\n  }\n'))).not.toMatch(/firesOn/);
+    });
+
+    it('criterion 6: the limit of 3 counts both outcomes together', async () => {
+      await service.create(OWNER, body({ firesOn: 'failed' }));
+      await service.create(OWNER, body({ sourceWorkflowId: WF_B, firesOn: 'failed' }));
+      await service.create(OWNER, body({ sourceWorkflowId: WF_C }));
+      for (const firesOn of ['failed', 'completed']) {
+        const { status, body: response } = await refusal(() => service.create(OWNER, body({ firesOn })));
+        expect(status).toBe(409);
+        expect(response.code).toBe(CHAIN_TRIGGER_ERROR_CODES.limitReached);
+      }
+      expect(store.triggers.rows).toHaveLength(3);
+    });
+
+    it('criterion 7: audit rows carry firesOn and no task text or workflow name; log lines carry no name either', async () => {
+      const created = await service.create(OWNER, body({ target: toWorkflow(WF_B), firesOn: 'failed' }));
+      await service.update(OWNER, created.id, { firesOn: 'completed', task: `${MARKER} changed` });
+      await service.update(OWNER, created.id, { firesOn: 'failed' });
+      await service.remove(OWNER, created.id);
+      const firesOnOf = (row: AuditEventEntity) => (row.payload as Record<string, unknown>).firesOn;
+      expect(store.audit.rows.map((row) => [row.eventType, firesOnOf(row)])).toEqual([
+        ['chain_trigger_created', 'failed'],
+        ['chain_trigger_updated', 'completed'],
+        ['chain_trigger_updated', 'failed'],
+        ['chain_trigger_deleted', 'failed'],
+      ]);
+      for (const row of store.audit.rows) {
+        expect(row.payload).toEqual({
+          triggerId: created.id,
+          targetKind: 'workflow',
+          sourceWorkflowId: WF_A,
+          workflowId: WF_B,
+          firesOn: firesOnOf(row),
+        });
+      }
+      const audit = JSON.stringify(store.audit.rows);
+      const logText = logs.join('\n');
+      for (const secret of [MARKER, 'summarise', 'changed', ...NAMES]) {
+        expect(audit).not.toContain(secret);
+        expect(logText).not.toContain(secret);
+      }
+    });
+
+    it('a stored row without firesOn (none in the table: NOT NULL, default completed) reads as completed', async () => {
+      const row = triggerRow('t-old', OWNER, WF_A, null) as Partial<AgentChainTrigger>;
+      delete row.firesOn;
+      store.triggers.rows.push(row as AgentChainTrigger);
+      expect((await service.list(OWNER)).triggers[0].firesOn).toBe('completed');
+    });
   });
 
   it('the service reads no run, starts nothing and imports the result tool switch reader instead of reading it itself', () => {
@@ -900,6 +1070,7 @@ function triggerRow(id: string, userId: string, source: string, target: string |
     task: 'their task',
     timeZone: 'UTC',
     enabled: true,
+    firesOn: 'completed',
     armedAt: now,
     createdAt: now,
     updatedAt: now,

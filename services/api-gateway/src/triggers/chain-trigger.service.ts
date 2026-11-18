@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { EntityManager, In, IsNull, Repository } from 'typeorm';
-import { AgentChainTrigger, AgentChainTriggerTargetKind } from '../entities/agent-chain-trigger.entity';
+import {
+  AgentChainTrigger,
+  AgentChainTriggerFiresOn,
+  AgentChainTriggerTargetKind,
+} from '../entities/agent-chain-trigger.entity';
 import { AgentChainTriggerRun, AgentChainTriggerRunOutcome } from '../entities/agent-chain-trigger-run.entity';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { UserAgent } from '../entities/user-agent.entity';
@@ -11,6 +15,7 @@ import { WorkflowStatus, workflowStatus } from '../orchestration/collaboration-w
 import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { isChainTriggersEnabled } from './chain-trigger-switch';
 import {
+  CHAIN_TRIGGER_DEFAULT_FIRES_ON,
   CHAIN_TRIGGER_ERROR_CODES,
   CHAIN_TRIGGERS_PER_OWNER_LIMIT,
   ChainTriggerTargetInput,
@@ -82,6 +87,8 @@ export interface ChainTriggerView {
   task: string;
   timeZone: string;
   enabled: boolean;
+  /** TRIGGER-CHAIN-FAILED-01 S1: the source run outcome the trigger starts on. */
+  firesOn: AgentChainTriggerFiresOn;
   createdAt: string;
   updatedAt: string;
   lastRun: ChainTriggerLastRunView | null;
@@ -124,6 +131,11 @@ type WorkflowSummary = Pick<UserAgent, 'id' | 'name' | 'status'>;
  * only: it is never written to an audit row or a log line, and no workflow
  * name is either. Each write and its audit row share one transaction. No
  * timer, no run read and no run start here (slice S2).
+ *
+ * TRIGGER-CHAIN-FAILED-01 S1: each trigger fires on a completed or a failed
+ * source run (firesOn, default completed). The limit of three and the cycle
+ * check count every chain trigger whatever its firesOn. A change of firesOn
+ * re-arms the trigger and takes no lock (it moves no edge).
  */
 @Injectable()
 export class ChainTriggerService {
@@ -175,6 +187,7 @@ export class ChainTriggerService {
       task: input.task,
       timeZone: input.timeZone,
       enabled: input.enabled,
+      firesOn: input.firesOn ?? CHAIN_TRIGGER_DEFAULT_FIRES_ON,
       armedAt: now,
       createdAt: now,
       updatedAt: now,
@@ -238,14 +251,19 @@ export class ChainTriggerService {
         task: patch.task ?? current.task,
         timeZone: patch.timeZone ?? current.timeZone,
         enabled: patch.enabled ?? current.enabled,
+        firesOn: patch.firesOn ?? storedFiresOn(current),
         updatedAt: now,
       };
       if (edgeChange) {
         await this.assertNoCycle(manager, userId, next);
       }
       // Stage-start section 2: armed at switch-on and when the source
-      // actually changes. A task, target or zone change does not re-arm.
-      const rearm = next.sourceWorkflowId !== current.sourceWorkflowId || (next.enabled && !current.enabled);
+      // actually changes; TRIGGER-CHAIN-FAILED-01 section 2.4: and when
+      // firesOn actually changes. A task, target or zone change does not re-arm.
+      const rearm =
+        next.sourceWorkflowId !== current.sourceWorkflowId ||
+        (next.enabled && !current.enabled) ||
+        next.firesOn !== storedFiresOn(current);
       if (rearm) {
         next.armedAt = now;
       }
@@ -258,6 +276,7 @@ export class ChainTriggerService {
           task: next.task,
           timeZone: next.timeZone,
           enabled: next.enabled,
+          firesOn: next.firesOn,
           armedAt: next.armedAt,
           updatedAt: next.updatedAt,
         },
@@ -396,13 +415,14 @@ export class ChainTriggerService {
       task: row.task,
       timeZone: row.timeZone,
       enabled: row.enabled,
+      firesOn: storedFiresOn(row),
       createdAt: isoOf(row.createdAt),
       updatedAt: isoOf(row.updatedAt),
       lastRun,
     };
   }
 
-  /** Ids and the target kind only: never the task or a workflow name. */
+  /** Ids, the target kind and the firesOn code only: never the task or a workflow name. */
   private async audit(manager: EntityManager, eventType: string, row: AgentChainTrigger): Promise<void> {
     await manager.getRepository(AuditEventEntity).insert({
       category: CHAIN_TRIGGER_AUDIT_CATEGORY,
@@ -415,10 +435,20 @@ export class ChainTriggerService {
         targetKind: row.targetKind,
         sourceWorkflowId: row.sourceWorkflowId,
         workflowId: row.workflowId,
+        firesOn: storedFiresOn(row),
       },
       occurredAt: new Date(),
     });
   }
+}
+
+/**
+ * The stored firesOn. The column is NOT NULL with default completed
+ * (migration 1816), so a row read from the table always has one; a row
+ * without it (none in the table) reads as completed, as the page does.
+ */
+function storedFiresOn(row: Pick<AgentChainTrigger, 'firesOn'>): AgentChainTriggerFiresOn {
+  return row.firesOn ?? CHAIN_TRIGGER_DEFAULT_FIRES_ON;
 }
 
 /** The source workflow's id, name and status; name null and status 'missing' when it is gone. */

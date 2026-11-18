@@ -5,6 +5,13 @@ export const AGENT_CHAIN_TRIGGER_TARGET_KINDS = ['chief-of-staff', 'workflow'] a
 export type AgentChainTriggerTargetKind = (typeof AGENT_CHAIN_TRIGGER_TARGET_KINDS)[number];
 
 /**
+ * TRIGGER-CHAIN-FAILED-01 S1: the source run outcome a chain trigger fires on
+ * (migration 1816000000000-AddChainTriggerFiresOn; CHECK, default completed).
+ */
+export const AGENT_CHAIN_TRIGGER_FIRES_ON = ['completed', 'failed'] as const;
+export type AgentChainTriggerFiresOn = (typeof AGENT_CHAIN_TRIGGER_FIRES_ON)[number];
+
+/**
  * TRIGGER-CHAIN-01 S1: one owner's chain trigger
  * (migration 1814000000000-CreateAgentChainTriggerTables).
  * - source_workflow_id: one of the owner's own workflows; a completed run of
@@ -15,8 +22,10 @@ export type AgentChainTriggerTargetKind = (typeof AGENT_CHAIN_TRIGGER_TARGET_KIN
  *   to be skipped in slice S2).
  * - task: the owner's task text, 1..7000 (owner data; never audited or logged).
  * - time_zone: an IANA name accepted by Intl.DateTimeFormat.
- * - armed_at: set at create, at switch-on and when the source changes; runs
- *   created earlier never fire.
+ * - armed_at: set at create, at switch-on and when the source or fires_on
+ *   changes; runs created earlier never fire.
+ * - fires_on: completed or failed (migration 1816, TRIGGER-CHAIN-FAILED-01);
+ *   existing rows read completed.
  * No relation decorators: the user foreign key and its cascade live in the
  * migration. The id is made by the service (randomUUID).
  */
@@ -47,6 +56,9 @@ export class AgentChainTrigger {
 
   @Column({ type: 'boolean', default: () => 'true' })
   enabled: boolean;
+
+  @Column({ type: 'varchar', length: 16, name: 'fires_on', default: 'completed' })
+  firesOn: AgentChainTriggerFiresOn;
 
   @Column({ type: 'timestamptz', name: 'armed_at', default: () => 'CURRENT_TIMESTAMP' })
   armedAt: Date;

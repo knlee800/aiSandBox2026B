@@ -240,7 +240,12 @@ export class ChainTriggerRunService {
     summary.interrupted = await this.closeStaleClaims(now);
     summary.pruned = await this.pruneHistory(now);
 
-    const triggers = (await this.readEnabled()).filter((row) => row.enabled === true);
+    // TRIGGER-CHAIN-FAILED-01 S1: only triggers that fire on a completed run,
+    // until S2 builds the failed-run read; a row without the value (none in
+    // the table: NOT NULL, default completed) reads as completed.
+    const triggers = (await this.readEnabled()).filter(
+      (row) => row.enabled === true && (row.firesOn ?? 'completed') === 'completed',
+    );
     summary.evaluated = triggers.length;
     if (triggers.length === 0) {
       return summary;
