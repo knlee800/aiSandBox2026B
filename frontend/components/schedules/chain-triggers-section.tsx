@@ -22,9 +22,11 @@ import {
   type ChainTriggersFetcher,
 } from './chain-triggers-api';
 import {
+  CHAIN_FIRES_ON,
   CHAIN_TRIGGER_TASK_MAX_CHARS,
   CHAIN_WARNING_NOTICE_KEYS,
   chainDraftSourceStatus,
+  chainFiresOnRowKey,
   chainLimitReached,
   chainOutcomeKey,
   chainReasonKey,
@@ -290,6 +292,7 @@ export function ChainTriggerForm(props: {
   const targetWarning = targetNotOn(targetStatus)
     ? t(targetStatus === 'disabled' ? 'form.targetOffWarning' : 'form.targetDraftWarning')
     : null;
+  const failsOnFailed = draft.firesOn === 'failed';
   return (
     <form
       className="flex min-w-0 flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5"
@@ -304,7 +307,7 @@ export function ChainTriggerForm(props: {
         {editingId ? t('form.editTitle') : t('form.createTitle')}
       </h3>
       <p className="text-sm text-slate-300" data-testid="chain-trigger-hint">
-        {t('form.hint')}
+        {t(failsOnFailed ? 'form.hintFailed' : 'form.hint')}
       </p>
 
       <div>
@@ -330,8 +333,28 @@ export function ChainTriggerForm(props: {
             <option value={draft.sourceId}>{t('source.workflowGone')}</option>
           ) : null}
         </select>
-        <p id="chain-trigger-source-help" className="mt-1 text-xs text-slate-400">
-          {t('form.sourceHelp')}
+        <fieldset className="mt-3" disabled={saving} data-testid="chain-trigger-fires-on">
+          <legend className="text-xs font-medium text-slate-300">{t('form.firesOn')}</legend>
+          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+            {CHAIN_FIRES_ON.map((value) => (
+              <label key={value} className="inline-flex items-center gap-2 text-sm text-slate-200">
+                <input
+                  type="radio"
+                  name="chain-trigger-fires-on"
+                  className="h-4 w-4 border-slate-600 bg-slate-950 text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  value={value}
+                  checked={draft.firesOn === value}
+                  onChange={() => set({ firesOn: value })}
+                  aria-describedby="chain-trigger-source-help"
+                  data-testid={`chain-trigger-fires-on-${value}`}
+                />
+                {t(value === 'failed' ? 'form.firesOnFailed' : 'form.firesOnCompleted')}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <p id="chain-trigger-source-help" className="mt-2 text-xs text-slate-400" data-testid="chain-trigger-source-help">
+          {t(failsOnFailed ? 'form.firesOnFailedHelp' : 'form.sourceHelp')}
         </p>
         {sourceWarning ? (
           <Refusal id="chain-trigger-source-warning" testId="chain-trigger-source-warning" text={sourceWarning} />
@@ -526,6 +549,13 @@ function TriggerRow(props: ChainTriggersSectionViewProps & { trigger: ChainTrigg
           {trigger.enabled ? t('row.switchOff') : t('row.switchOn')}
         </button>
       </div>
+      <p
+        className="mt-1 text-xs text-slate-400"
+        data-testid={`chain-trigger-fires-on-${trigger.id}`}
+        data-fires-on={trigger.firesOn}
+      >
+        {t(chainFiresOnRowKey(trigger.firesOn))}
+      </p>
       <SourceStatusLine t={t} trigger={trigger} workflows={workflows} />
       <p className="mt-2 break-words text-sm text-slate-200" data-testid={`chain-trigger-task-${trigger.id}`}>
         {taskPreview(trigger.task)}

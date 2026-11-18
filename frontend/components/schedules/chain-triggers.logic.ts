@@ -28,6 +28,7 @@ export const CHAIN_TRIGGER_ERROR_CODES = [
   'chain_trigger_invalid_task',
   'chain_trigger_invalid_time_zone',
   'chain_trigger_invalid_enabled',
+  'chain_trigger_invalid_fires_on',
   'chain_trigger_not_found',
   'chain_trigger_workflow_not_found',
   'chain_trigger_limit_reached',
@@ -46,6 +47,15 @@ export const CHAIN_TRIGGER_SKIP_REASONS = [
 
 /** AGENT_CHAIN_TRIGGER_RUN_OUTCOMES (the same three as the schedule outcomes). */
 export const CHAIN_TRIGGER_OUTCOMES = SCHEDULE_OUTCOMES;
+
+/**
+ * TRIGGER-CHAIN-FAILED-01 S3: when a trigger fires. `completed` is the
+ * original behaviour and the default; a view without `firesOn` (an older
+ * gateway) reads as `completed`.
+ */
+export const CHAIN_FIRES_ON = ['completed', 'failed'] as const;
+export type ChainFiresOn = (typeof CHAIN_FIRES_ON)[number];
+export const CHAIN_FIRES_ON_DEFAULT: ChainFiresOn = 'completed';
 
 export const CHAIN_TRIGGER_TASK_MAX_CHARS = 7000;
 export const CHAIN_TRIGGER_TIME_ZONE_MAX_CHARS = 64;
@@ -85,6 +95,7 @@ export interface ChainTriggerItem {
   task: string;
   timeZone: string;
   enabled: boolean;
+  firesOn: ChainFiresOn;
   lastRun: ChainTriggerLastRun | null;
 }
 
@@ -103,6 +114,7 @@ export interface ChainTriggerDraft {
   task: string;
   timeZone: string;
   enabled: boolean;
+  firesOn: ChainFiresOn;
 }
 
 export type ChainTriggerRequestBody = {
@@ -111,6 +123,7 @@ export type ChainTriggerRequestBody = {
   task: string;
   timeZone: string;
   enabled: boolean;
+  firesOn: ChainFiresOn;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -153,6 +166,11 @@ function readSource(value: unknown, sourceWorkflowId: string): ChainTriggerSourc
   return { workflowId: sourceWorkflowId, name: missing ? null : readText(value.name), status };
 }
 
+/** Only the exact string 'failed' reads as failed; anything else, or nothing, is completed. */
+function readFiresOn(value: unknown): ChainFiresOn {
+  return value === 'failed' ? 'failed' : CHAIN_FIRES_ON_DEFAULT;
+}
+
 function readLastRun(value: unknown): ChainTriggerLastRun | null {
   if (!isRecord(value) || typeof value.localDate !== 'string' || typeof value.outcome !== 'string') {
     return null;
@@ -191,6 +209,7 @@ export function parseChainTrigger(value: unknown): ChainTriggerItem | null {
     task: value.task,
     timeZone: value.timeZone,
     enabled: value.enabled,
+    firesOn: readFiresOn(value.firesOn),
     lastRun: readLastRun(value.lastRun),
   };
 }
@@ -242,8 +261,13 @@ export function chainOutcomeKey(outcome: string): string {
     : 'outcomes.unknown';
 }
 
+/** The message key (inside schedules.chain) for a row's outcome label. */
+export function chainFiresOnRowKey(firesOn: ChainFiresOn): string {
+  return firesOn === 'failed' ? 'row.whenFailed' : 'row.whenCompleted';
+}
+
 export function emptyChainDraft(timeZone: string = browserTimeZone()): ChainTriggerDraft {
-  return { sourceId: '', targetId: '', task: '', timeZone, enabled: true };
+  return { sourceId: '', targetId: '', task: '', timeZone, enabled: true, firesOn: CHAIN_FIRES_ON_DEFAULT };
 }
 
 export function draftFromChainTrigger(trigger: ChainTriggerItem): ChainTriggerDraft {
@@ -253,6 +277,7 @@ export function draftFromChainTrigger(trigger: ChainTriggerItem): ChainTriggerDr
     task: trigger.task,
     timeZone: trigger.timeZone,
     enabled: trigger.enabled,
+    firesOn: trigger.firesOn,
   };
 }
 
@@ -330,6 +355,7 @@ export function draftToBody(
       task,
       timeZone: zone,
       enabled: draft.enabled,
+      firesOn: draft.firesOn,
     },
   };
 }

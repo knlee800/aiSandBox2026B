@@ -96,6 +96,36 @@ describe('chain triggers api', () => {
     assert.deepEqual(await createChainTrigger(draft.body, failing), { type: 'failed', errorKey: 'errors.network' });
   });
 
+  test('TRIGGER-CHAIN-FAILED-01 S3: a save sends firesOn, a reply without it reads completed, and the new code maps', async () => {
+    const failedDraft = draftToBody({ ...emptyChainDraft('UTC'), sourceId: 'wA', task: 'Tell me', firesOn: 'failed' });
+    assert.ok(failedDraft.ok);
+    const created = stub(201, { ...TRIGGER, firesOn: 'failed' });
+    const result = await createChainTrigger(failedDraft.body, created.fetcher);
+    assert.equal(result.type === 'ok' && result.value.firesOn, 'failed');
+    assert.equal((created.calls[0].body as { firesOn: string }).firesOn, 'failed');
+    const older = await createChainTrigger(failedDraft.body, stub(201, TRIGGER).fetcher);
+    assert.equal(older.type === 'ok' && older.value.firesOn, 'completed');
+    const patch = stub(200, { ...TRIGGER, firesOn: 'failed' });
+    const changed = await updateChainTrigger('c1', { firesOn: 'failed' }, patch.fetcher);
+    assert.equal(changed.type === 'ok' && changed.value.firesOn, 'failed');
+    assert.deepEqual(patch.calls, [{ path: '/api/chain-triggers/c1', method: 'PATCH', body: { firesOn: 'failed' } }]);
+    const listed = await loadChainTriggers(
+      stub(200, {
+        enabled: true,
+        runsEnabled: true,
+        resultToolEnabled: true,
+        limit: 3,
+        triggers: [TRIGGER, { ...TRIGGER, id: 'c2', firesOn: 'failed' }],
+      }).fetcher,
+    );
+    assert.deepEqual(listed.type === 'ok' && listed.value.triggers.map((entry) => entry.firesOn), ['completed', 'failed']);
+    const refused = stub(400, { statusCode: 400, code: 'chain_trigger_invalid_fires_on' });
+    assert.deepEqual(await createChainTrigger(failedDraft.body, refused.fetcher), {
+      type: 'failed',
+      errorKey: 'errors.chain_trigger_invalid_fires_on',
+    });
+  });
+
   test('updateChainTrigger patches only what is sent and keeps an unknown code generic', async () => {
     const { fetcher, calls } = stub(200, { ...TRIGGER, enabled: false });
     const result = await updateChainTrigger('c 1', { enabled: false }, fetcher);

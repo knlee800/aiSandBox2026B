@@ -189,6 +189,7 @@ describe('chain triggers messages', () => {
       'schedules.chain.reasons.chain_depth',
       'schedules.chain.errors.chain_trigger_same_workflow',
       'schedules.chain.errors.chain_trigger_cycle',
+      'schedules.chain.errors.chain_trigger_invalid_fires_on',
       'schedules.chain.banner.resultToolOff',
       'schedules.chain.delayNotice',
       'schedules.chain.source.workflowGone',
@@ -201,7 +202,7 @@ describe('chain triggers messages', () => {
     assert.ok(CHAIN_TRIGGER_SKIP_REASONS.includes('chain_depth'));
     assert.ok(CHAIN_TRIGGER_SKIP_REASONS.includes('day_limit'));
     assert.equal(CHAIN_TRIGGER_SKIP_REASONS.length, 15);
-    assert.equal(CHAIN_TRIGGER_ERROR_CODES.length, 14);
+    assert.equal(CHAIN_TRIGGER_ERROR_CODES.length, 15);
   });
 
   test('the Chinese files hold real translations, not the English text, and differ from each other', () => {
@@ -222,6 +223,16 @@ describe('chain triggers messages', () => {
       'errors.chain_trigger_cycle',
       'errors.chain_trigger_invalid_source',
       'errors.chain_trigger_limit_reached',
+      'subtitle',
+      'emptyBody',
+      'form.firesOn',
+      'form.firesOnCompleted',
+      'form.firesOnFailed',
+      'form.firesOnFailedHelp',
+      'form.hintFailed',
+      'row.whenCompleted',
+      'row.whenFailed',
+      'errors.chain_trigger_invalid_fires_on',
     ];
     for (const { code, messages } of LOCALES.filter((locale) => locale.code !== 'en')) {
       for (const key of keys) {
@@ -277,7 +288,10 @@ describe('chain triggers section states', () => {
     assert.ok(has(all, 'Workflow triggers are switched off; nothing will start.'));
     assert.ok(has(all, en('banner.runsOff')));
     assert.ok(
-      has(all, 'The run result tool is switched off, so nothing starts after a workflow finishes until it is switched on.'),
+      has(
+        all,
+        'The run result tool is switched off, so triggers for a run that finishes normally start nothing until it is switched on. Triggers for a run that fails still work.',
+      ),
     );
     const toolOnly = render({ data: list([CHIEF_TRIGGER], { resultToolEnabled: false }) });
     assert.match(toolOnly, /data-testid="chain-triggers-banner-result-tool-off"/);
@@ -290,9 +304,34 @@ describe('chain triggers section states', () => {
   test('the delay sentence and the privacy hint show', () => {
     const html = render();
     assert.match(html, /data-testid="chain-triggers-delay-notice"/);
-    assert.ok(has(html, 'A run starts a few minutes after the source workflow finishes.'));
+    assert.ok(has(html, "A run starts a few minutes after the source workflow's run ends."));
     assert.match(html, /data-testid="chain-triggers-privacy-notice"/);
-    assert.ok(has(html, 'The next run is told only the finished run’s id and time, and reads its answer itself.'));
+    assert.ok(
+      has(html, 'After a run that finishes normally, the next run is told only its id and time, and reads its answer itself.'),
+    );
+    assert.ok(has(html, "After a run that fails, the next run is told the workflow's name, the run's id and time"));
+    assert.ok(has(html, 'The platform never reads an answer or an error text to start a run.'));
+  });
+
+  test('S3: the subtitle and the empty text name both outcomes, and each row says which it is', () => {
+    assert.equal(en('subtitle'), 'Start a run when one of your workflows finishes a run or fails.');
+    assert.ok(has(render(), en('subtitle')));
+    const empty = render({ data: list([]) });
+    assert.ok(has(empty, 'when one of your workflows finishes a run or fails.'));
+    const failedTrigger = { ...CHIEF_TRIGGER, id: 'c4', firesOn: 'failed' as const };
+    const html = render({ data: list([WORKFLOW_TRIGGER, failedTrigger]) });
+    assert.match(html, /data-testid="chain-trigger-fires-on-c1"[^>]*data-fires-on="completed"[^>]*>When it finishes normally</);
+    assert.match(html, /data-testid="chain-trigger-fires-on-c4"[^>]*data-fires-on="failed"[^>]*>When it fails</);
+    for (const { messages } of LOCALES) {
+      const zh = render({ data: list([failedTrigger]) }, messages);
+      assert.ok(has(zh, readMessage(messages, 'schedules.chain.row.whenFailed') as string));
+    }
+  });
+
+  test('S3: a trigger parsed from a view without firesOn shows the finishes-normally label', () => {
+    assert.equal(WORKFLOW_TRIGGER.firesOn, 'completed');
+    assert.ok(has(render({ data: list([WORKFLOW_TRIGGER]) }), 'When it finishes normally'));
+    assert.ok(!has(render({ data: list([WORKFLOW_TRIGGER]) }), 'When it fails'));
   });
 
   test('the list shows source, what starts next, task, zone, state, the last run with its step, and the deleted-source label', () => {
@@ -432,6 +471,56 @@ describe('chain triggers form', () => {
     assert.match(html, /data-testid="chain-trigger-enabled"/);
     assert.match(html, /data-testid="chain-trigger-loop-rule"/);
     assert.match(html, /<button[^>]*disabled=""[^>]*data-testid="chain-triggers-new"/);
+  });
+
+  test('S3: the outcome choice defaults to Finishes normally, with the original help and hint', () => {
+    const html = render({ form: create, data: list([]) });
+    assert.match(html, /data-testid="chain-trigger-fires-on"/);
+    assert.ok(has(html, 'Start when the run'));
+    assert.match(html, /<input[^>]*type="radio"[^>]*data-testid="chain-trigger-fires-on-completed"[^>]*checked=""/);
+    assert.doesNotMatch(html, /<input[^>]*data-testid="chain-trigger-fires-on-failed"[^>]*checked=""/);
+    assert.ok(has(html, 'Finishes normally') && has(html, 'Fails'));
+    assert.ok(has(html, en('form.sourceHelp')));
+    assert.ok(has(html, en('form.hint')));
+    assert.ok(!has(html, en('form.firesOnFailedHelp')));
+    assert.ok(!has(html, en('form.hintFailed')));
+  });
+
+  test('S3: choosing Fails swaps the help and the hint in every locale', () => {
+    for (const { messages } of LOCALES) {
+      const text = (key: string) => readMessage(messages, `schedules.chain.${key}`) as string;
+      const html = render({ form: { ...create, draft: { ...create.draft, firesOn: 'failed' } }, data: list([]) }, messages);
+      assert.match(html, /<input[^>]*type="radio"[^>]*data-testid="chain-trigger-fires-on-failed"[^>]*checked=""/);
+      assert.ok(has(html, text('form.firesOnFailedHelp')));
+      assert.ok(has(html, text('form.hintFailed')));
+      assert.ok(has(html, text('form.firesOn')));
+      assert.ok(!has(html, text('form.sourceHelp')));
+      assert.ok(!has(html, text('form.hint')));
+    }
+    assert.ok(has(render({ form: { ...create, draft: { ...create.draft, firesOn: 'failed' } } }), 'A run counts as failed when a step fails'));
+  });
+
+  test('S3: an edit loads the stored outcome, and saving disables the choice', () => {
+    const failedTrigger = { ...WORKFLOW_TRIGGER, firesOn: 'failed' as const };
+    const html = render({
+      form: { editingId: 'c1', draft: draftFromChainTrigger(failedTrigger), saving: false, errorKey: null },
+      data: list([failedTrigger]),
+    });
+    assert.match(html, /<input[^>]*data-testid="chain-trigger-fires-on-failed"[^>]*checked=""/);
+    const saving = render({ form: { ...create, saving: true } });
+    assert.match(saving, /<fieldset[^>]*disabled=""[^>]*data-testid="chain-trigger-fires-on"/);
+  });
+
+  test('S3: the invalid-fires-on error shows its sentence in the form in every locale', () => {
+    assert.equal(
+      en('errors.chain_trigger_invalid_fires_on'),
+      'Choose whether the trigger starts when the run finishes normally or when it fails.',
+    );
+    for (const { messages } of LOCALES) {
+      const html = render({ form: { ...create, errorKey: 'errors.chain_trigger_invalid_fires_on' } }, messages);
+      assert.match(html, /data-testid="chain-trigger-form-error"/);
+      assert.ok(has(html, readMessage(messages, 'schedules.chain.errors.chain_trigger_invalid_fires_on') as string));
+    }
   });
 
   test('the same-workflow refusal shows only when source and target are one workflow', () => {

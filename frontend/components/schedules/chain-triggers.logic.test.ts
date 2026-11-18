@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import {
+  CHAIN_FIRES_ON,
   CHAIN_TRIGGER_ERROR_CODES,
   CHAIN_TRIGGER_OUTCOMES,
   CHAIN_TRIGGER_SKIP_REASONS,
   CHAIN_WARNING_NOTICE_KEYS,
   chainDraftSourceStatus,
+  chainFiresOnRowKey,
   chainLimitReached,
   chainSourceName,
   chainSourceNotOn,
@@ -73,7 +75,8 @@ describe('chain trigger code lists are pinned to the backend source', () => {
     assert.ok(start >= 0);
     const block = source.slice(start, source.indexOf('} as const', start));
     const codes = [...block.matchAll(/'(chain_trigger_[a-z_]+)'/g)].map((match) => match[1]);
-    assert.equal(codes.length, 14);
+    assert.equal(codes.length, 15);
+    assert.ok(codes.includes('chain_trigger_invalid_fires_on'));
     assert.deepEqual([...CHAIN_TRIGGER_ERROR_CODES].sort(), [...codes].sort());
   });
 
@@ -328,7 +331,14 @@ describe('chain trigger source status (CHAIN-SOURCE-OFF-01)', () => {
 describe('chain trigger draft', () => {
   test('emptyChainDraft uses the given time zone, has no source yet and is switched on', () => {
     const draft = emptyChainDraft('Asia/Taipei');
-    assert.deepEqual(draft, { sourceId: '', targetId: '', task: '', timeZone: 'Asia/Taipei', enabled: true });
+    assert.deepEqual(draft, {
+      sourceId: '',
+      targetId: '',
+      task: '',
+      timeZone: 'Asia/Taipei',
+      enabled: true,
+      firesOn: 'completed',
+    });
   });
 
   test('draftToBody builds the request body for each target', () => {
@@ -340,6 +350,7 @@ describe('chain trigger draft', () => {
       task: 'Brief me',
       timeZone: 'UTC',
       enabled: true,
+      firesOn: 'completed',
     });
     const workflow = draftToBody({ ...emptyChainDraft('UTC'), sourceId: 'wA', targetId: 'wB', task: 't' });
     assert.ok(workflow.ok);
@@ -375,6 +386,48 @@ describe('chain trigger draft', () => {
     assert.equal(draft.timeZone, 'Europe/London');
     assert.equal(draft.task, 'Write the follow-up');
     assert.equal(draftFromChainTrigger(item({ target: { kind: 'chief-of-staff' } })).targetId, '');
+  });
+});
+
+describe('chain trigger outcome (TRIGGER-CHAIN-FAILED-01 S3)', () => {
+  test('firesOn is read from the view; absent or anything else reads as completed', () => {
+    assert.equal(item({ firesOn: 'failed' }).firesOn, 'failed');
+    assert.equal(item({ firesOn: 'completed' }).firesOn, 'completed');
+    assert.equal(item().firesOn, 'completed');
+    assert.equal(item({ firesOn: 'FAILED' }).firesOn, 'completed');
+    assert.equal(item({ firesOn: 7 }).firesOn, 'completed');
+    const listed = parseChainTriggerList({
+      enabled: true,
+      runsEnabled: true,
+      resultToolEnabled: true,
+      limit: 3,
+      triggers: [TRIGGER, { ...TRIGGER, id: 'c2', firesOn: 'failed' }],
+    });
+    assert.deepEqual(listed?.triggers.map((entry) => entry.firesOn), ['completed', 'failed']);
+  });
+
+  test('the draft carries the stored value into an edit and the body sends it', () => {
+    const failed = item({ firesOn: 'failed' });
+    assert.equal(draftFromChainTrigger(failed).firesOn, 'failed');
+    assert.equal(draftFromChainTrigger(item()).firesOn, 'completed');
+    const body = draftToBody({ ...draftFromChainTrigger(failed) });
+    assert.ok(body.ok);
+    assert.equal(body.body.firesOn, 'failed');
+    const normal = draftToBody({ ...emptyChainDraft('UTC'), sourceId: 'wA', task: 't' });
+    assert.ok(normal.ok);
+    assert.equal(normal.body.firesOn, 'completed');
+  });
+
+  test('the list is CHAIN_FIRES_ON, the row key follows it, and the error code maps to its key', () => {
+    assert.deepEqual([...CHAIN_FIRES_ON], ['completed', 'failed']);
+    assert.equal(chainFiresOnRowKey('completed'), 'row.whenCompleted');
+    assert.equal(chainFiresOnRowKey('failed'), 'row.whenFailed');
+    assert.equal(chainTriggerErrorKey('chain_trigger_invalid_fires_on'), 'errors.chain_trigger_invalid_fires_on');
+  });
+
+  test('the cycle check ignores the outcome: A fails to B, then B to A is refused', () => {
+    const aToB = item({ firesOn: 'failed' });
+    assert.equal(chainWouldLoop([aToB], { sourceId: 'wB', targetId: 'wA' }, null), true);
   });
 });
 
