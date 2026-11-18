@@ -41,7 +41,8 @@
         "services/ai-service/src/agent-harness/eval/briefing-prompt.ts",
         "services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts",
         "services/ai-service/src/agent-harness/eval/briefing-score.ts",
-        "services/ai-service/src/agent-harness/eval/briefing-score.spec.ts"
+        "services/ai-service/src/agent-harness/eval/briefing-score.spec.ts",
+        "services/api-gateway/src/orchestration/collaboration-workflow.spec.ts"
       ],
       "hotfiles": [
         "services/connectors-mcp/src/clients/imap-client.ts",
@@ -7117,7 +7118,8 @@
         "services/ai-service/src/agent-harness/eval/briefing-prompt.ts",
         "services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts",
         "services/ai-service/src/agent-harness/eval/briefing-score.ts",
-        "services/ai-service/src/agent-harness/eval/briefing-score.spec.ts"
+        "services/ai-service/src/agent-harness/eval/briefing-score.spec.ts",
+        "services/api-gateway/src/orchestration/collaboration-workflow.spec.ts"
       ],
       "hotfiles": [
         "services/connectors-mcp/src/clients/imap-client.ts",
