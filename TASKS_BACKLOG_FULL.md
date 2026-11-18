@@ -89618,7 +89618,7 @@ taskId=GOV-ARCH-MAIL-AUTH-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-18. Keith approved the exact text (2026-11-18, "Yes, land it"): ARCHITECTURE.md names sign_in_refused_at in the connector credentials data row, describes the refused-password handling on the internal connector call route (the fixed child text, the guarded mark, the 409 before any sign-in passed to the model, Verify still signing in with its 502, clearing on save or a good Verify, signInRefusedAt on GET /api/connectors), adds the sign_in_refused mailbox state to the mail-trigger paragraph and the proven state to the connector broker status row. No PRD.md change. Correction recorded: the CONN-MAIL-AUTH-STATE-01 stage-start and checkpoint call the list route GET /api/connections; the route is GET /api/connectors (the code is right; the locked documents are not edited). GOVERNANCE held for the record and released. Checkpoint: docs/GOV-ARCH-MAIL-AUTH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: READY — registered 2026-11-18 by the CONN-MAIL-AUTH-STATE-01 LOCK — not admitted.
 **Task ID:** GOV-ARCH-MAIL-AUTH-01
 **Title:** Name the refused mail sign-in state in ARCHITECTURE.md
 **Workstream:** AGENT (taxonomy only; zero admission weight)
