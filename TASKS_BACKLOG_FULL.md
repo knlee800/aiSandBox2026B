@@ -89543,7 +89543,7 @@ taskId=CONN-MAIL-AUTH-STATE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 (Step 2) — 2026-11-18 — Keith said "You pick one", then "Stop signing in", "Yes, refuse and say so" and "Yes, admit". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 (Step 3, slice S1) — 2026-11-18 — stage-start approved by Keith ("Yes, approve all"); Step 2 admitted on Keith said "You pick one", then "Stop signing in", "Yes, refuse and say so" and "Yes, admit". Was: READY — registered 2026-11-16 by the TRIGGER-MAIL-01 LOCK — not admitted.
 **Task ID:** CONN-MAIL-AUTH-STATE-01
 **Title:** A distinct sign-in-refused state for the mailbox
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -89551,9 +89551,9 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP (2026-11-18: the design adds a column to connector_connections, so a migration). Was: 3-STEP.
 **Start condition:** READY (Keith, 2026-11-18). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** TRIGGER-MAIL-01.
-**Primary write scope:** Step 2: docs/CONN-MAIL-AUTH-STATE-01-STAGE-START.md (EXACT). Step 3: set at the stage-start approval. Was: PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/api-gateway/src/triggers/, frontend/components/schedules/, frontend/components/connections/, the three message files.
-**Mutexes / resources:** Step 2: none. Step 3: set at the stage-start approval (GATEWAY, AI-SERVICE, FRONTEND, I18N, MIGRATION and connectors-mcp HOTFILE leases expected). Was: set at admission (GATEWAY, FRONTEND, I18N expected).
-**Hot-file leases:** none.
+**Primary write scope:** Step 2: docs/CONN-MAIL-AUTH-STATE-01-STAGE-START.md (done, 730ae82). Step 3 slice S1 (EXACT, 2026-11-18): services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/__tests__/imap-verbs.spec.ts, services/connectors-mcp/src/__tests__/mail-sign-in.spec.ts, services/api-gateway/src/migrations/1815000000000-AddConnectorSignInRefusedAt.ts, services/api-gateway/src/migrations/__tests__/1815000000000-AddConnectorSignInRefusedAt.spec.ts, services/api-gateway/src/entities/connector-connection.entity.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts, services/api-gateway/src/connectors/connector-broker.ts, services/api-gateway/src/connectors/connector-broker.spec.ts, services/api-gateway/src/connectors/connectors.service.ts, services/api-gateway/src/connectors/connectors.controller.ts, services/api-gateway/src/connectors/connectors.controller.spec.ts, services/api-gateway/src/triggers/mail-trigger-mailbox.ts, services/api-gateway/src/triggers/mail-trigger-mailbox.spec.ts, services/api-gateway/src/triggers/mail-trigger-reasons.ts, services/api-gateway/src/triggers/mail-trigger-reasons.spec.ts, services/api-gateway/src/triggers/mail-trigger.service.ts, services/api-gateway/src/triggers/mail-trigger.service.spec.ts, services/ai-service/src/agent-harness/tools/handlers/connector-tool-handlers.ts, services/ai-service/src/agent-harness/tools/handlers/connector-tool-handlers.spec.ts. Slice S2 (EXACT, set when admitted): the 10 paths in the stage-start section 3. Was: PROVISIONAL: services/connectors-mcp/src/, services/api-gateway/src/connectors/, services/api-gateway/src/triggers/, frontend/components/schedules/, frontend/components/connections/, the three message files.
+**Mutexes / resources:** Step 2: none. Slice S1: GATEWAY, AI-SERVICE, MIGRATION (2026-11-18). Slice S2: FRONTEND, I18N. Was: set at admission (GATEWAY, FRONTEND, I18N expected).
+**Hot-file leases:** slice S1: services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/__tests__/imap-verbs.spec.ts (2026-11-18).
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.

@@ -1,7 +1,7 @@
 # CONN-MAIL-AUTH-STATE-01 — Stage-start (Step 2)
 
 **Task:** CONN-MAIL-AUTH-STATE-01: a distinct state for a refused mail sign-in.
-**Status:** DRAFT for Keith's approval. 2026-11-18. Drafted by the control plane.
+**Status:** APPROVED by Keith on 2026-11-18 ("Yes, approve all"). Drafted by the control plane. The S1 path count was corrected from 24 to 22 at the S1 admission (a counting slip; the list is unchanged).
 **Lifecycle:** 4-STEP. It was 3-step until the design added a column, which needs a migration.
 **Source:** registered by the TRIGGER-MAIL-01 LOCK (stage-start P6, F4).
 
@@ -166,7 +166,7 @@ Gateway:
 AI worker:
 - `services/ai-service/src/agent-harness/tools/handlers/connector-tool-handlers.ts` and `.spec.ts`
 
-That's 24 paths.
+That's 22 paths.
 
 **S2 write set (exact):**
 
