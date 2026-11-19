@@ -184,6 +184,21 @@ export function deriveChatView(
   return 'unlinked';
 }
 
+/** CHAT-LINK-NOTICE-01: the "was this you?" notice shows while the link is younger than 7 days. */
+export const CHAT_RECENT_LINK_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** True while the link is younger than 7 days (a takeover signal); false without a link or a readable date. */
+export function showsRecentLinkNotice(link: ChatLinkLink | null, now: number): boolean {
+  if (!link) {
+    return false;
+  }
+  const linkedAt = Date.parse(link.linkedAt);
+  if (Number.isNaN(linkedAt)) {
+    return false;
+  }
+  return now - linkedAt < CHAT_RECENT_LINK_MS;
+}
+
 /** Poll only while an unexpired code exists, the owner is not linked and the page is visible. */
 export function shouldPoll(state: ChatLinksState | null, hidden: boolean, now: number): boolean {
   if (hidden || !state || !state.enabled || state.link || !state.pending) {

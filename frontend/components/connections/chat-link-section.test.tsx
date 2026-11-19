@@ -277,6 +277,60 @@ describe('chat link section states', () => {
     assert.notEqual(tw, cn);
   });
 
+  test('CHAT-LINK-NOTICE-01: a link younger than 7 days shows the "was this you?" notice, in all three languages', () => {
+    for (const { code, messages } of LOCALES) {
+      const template = readMessage(messages, 'connections.chat.linked.recentNotice');
+      assert.ok(template, `${code} chat.linked.recentNotice`);
+      const html = render({ state: LINKED, locale: code }, messages);
+      assert.match(html, /data-testid="chat-link-recent-notice"/);
+      const expected = fill(template, {
+        date: new Date(Date.parse(LINKED.link!.linkedAt)).toLocaleString(code),
+        last4: '5432',
+      });
+      assert.equal(has(html, expected), true, code);
+      assert.equal(html.includes('{date}') || html.includes('{last4}'), false, code);
+      if (code !== 'en') assert.match(template, /[一-鿿]/, code);
+      // The existing linked rows and test ids stay.
+      for (const testId of ['chat-link-linked', 'chat-link-linked-at', 'chat-link-id-ending', 'chat-link-last-used', 'chat-link-unlink']) {
+        assert.equal(html.includes(`data-testid="${testId}"`), true, `${code} ${testId}`);
+      }
+    }
+    assert.equal(
+      en('chat.linked.recentNotice'),
+      'Discord was linked on {date} (id ending {last4}). If this was not you, unlink it now and change your password.',
+    );
+    const tw = readMessage(zhTwMessages as Messages, 'connections.chat.linked.recentNotice');
+    const cn = readMessage(zhCnMessages as Messages, 'connections.chat.linked.recentNotice');
+    assert.notEqual(tw, cn);
+    // The notice is a status line, not an alert that interrupts on every visit.
+    const html = render({ state: LINKED });
+    assert.match(html, /role="status" data-testid="chat-link-recent-notice"/);
+  });
+
+  test('CHAT-LINK-NOTICE-01: the notice is hidden from 7 days on, and in every state other than linked', () => {
+    const linkedAt = Date.parse(LINKED.link!.linkedAt);
+    const DAY = 24 * 60 * 60 * 1000;
+    for (const { code, messages } of LOCALES) {
+      assert.equal(render({ state: LINKED, now: linkedAt + 7 * DAY - 1 }, messages).includes('chat-link-recent-notice'), true, code);
+      assert.equal(render({ state: LINKED, now: linkedAt + 7 * DAY }, messages).includes('chat-link-recent-notice'), false, code);
+      const old = render({ state: LINKED, now: linkedAt + 30 * DAY }, messages);
+      assert.equal(old.includes('chat-link-recent-notice'), false, code);
+      // Everything else in the linked view stays.
+      assert.equal(old.includes('data-testid="chat-link-id-ending"'), true, code);
+    }
+    const others: Array<Partial<ChatLinkSectionViewProps>> = [
+      { state: UNLINKED },
+      { state: CODE_MADE, code: { code: 'ABCD-2345', expiresAt: FUTURE } },
+      { state: CLAIMED },
+      { state: OFF },
+      { phase: 'loading', state: null },
+      { phase: 'error', state: null, errorKey: 'chat.errors.generic' },
+    ];
+    for (const overrides of others) {
+      assert.equal(render(overrides).includes('chat-link-recent-notice'), false);
+    }
+  });
+
   test('notices and errors are translated, and the rate limit shows the wait', () => {
     assert.equal(has(render({ noticeKey: 'chat.notice.expired' }), en('chat.notice.expired')), true);
     for (const key of Object.values(CHAT_ERROR_KEYS)) {
@@ -448,6 +502,7 @@ describe('chat link catalog', () => {
       'code.title', 'code.instruction', 'code.expires', 'code.waiting', 'code.hidden',
       'claim.title', 'claim.named', 'claim.unnamed', 'claim.warning',
       'linked.since', 'linked.lastUsed', 'linked.neverUsed', 'linked.idEnding', 'linked.notice', 'linked.everyRun',
+      'linked.recentNotice',
       'notice.unlinked', 'notice.cancelled', 'notice.expired',
       'steps.title', 'steps.install', 'steps.installButton', 'steps.open', 'steps.openLink',
       'steps.create', 'steps.link', 'steps.confirm', 'newTab', 'heldNote',
@@ -478,6 +533,7 @@ describe('chat link catalog', () => {
       assert.match(readMessage(messages, 'connections.chat.claim.unnamed') ?? '', /\{last4\}/, code);
       assert.match(readMessage(messages, 'connections.chat.code.expires') ?? '', /\{time\}/, code);
       assert.match(readMessage(messages, 'connections.chat.errors.rateLimited') ?? '', /\{minutes\}/, code);
+      assert.match(readMessage(messages, 'connections.chat.linked.recentNotice') ?? '', /\{date\}.*\{last4\}/, code);
     }
   });
 });

@@ -67,7 +67,8 @@
         "claimed": "已收到代码。请回到平台的连接页面点击“确认”完成关联。",
         "invalid": "这个代码无法使用。请在连接页面生成新代码后再试一次。",
         "alreadyLinked": "这个 Discord 账户已经关联。若要关联到其他账户，请先使用 /unlink。",
-        "paused": "关联功能暂时停用，请稍后再试。"
+        "paused": "关联功能暂时停用，请稍后再试。",
+        "confirmed": "已关联。这个 Discord 账户现在会收到你的代理的结果。输入 / 并选择 ask 即可开始。"
       },
       "unlink": {
         "done": "已取消关联。这个 Discord 账户不会再收到平台的任何消息。"
@@ -133,6 +134,19 @@
       "product-strategy": "产品策略",
       "technology-advisor": "技术顾问",
       "other": "一个代理"
+    },
+    "mail": {
+      "linked": {
+        "subject": "有一个 Discord 账户已关联到你的账户",
+        "body": "有一个 Discord 账户（ID 末位 {{last4}}）已于 {{time}} 关联到你的账户。",
+        "warning": "如果这不是你本人操作，请在该页面取消 Discord 关联并修改密码。"
+      },
+      "unlinked": {
+        "subject": "有一个 Discord 账户已与你的账户取消关联",
+        "body": "有一个 Discord 账户（ID 末位 {{last4}}）已于 {{time}} 与你的账户取消关联。",
+        "warning": "如果这不是你本人操作，请修改密码。"
+      },
+      "openConnections": "打开连接页面"
     }
   }
 }

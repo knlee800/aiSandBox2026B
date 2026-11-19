@@ -7,9 +7,15 @@ import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
+import { User } from '../entities/user.entity';
+import { EMAIL_PROVIDER } from '../email/email-provider.interface';
+import { EmailModule } from '../email/email.module';
+import { buildChatLinkMail } from './chat-link-mail';
+import { chatLocaleText, chatReply } from './chat-replies';
 import {
   CHAT_LINK_CODE_ALPHABET,
   CHAT_LINK_ERROR_CODES,
+  CHAT_LINK_NOTICE_TIMEOUT_MS,
   ChatLinkService,
   generateChatLinkCode,
   normalizeChatLinkCode,
@@ -934,6 +940,334 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       expectAbsent(secretsOf([code, 'ZZZZ-ZZZZ', 'YYYY-YYYY'], [DISCORD_ID, DISCORD_OTHER]), all);
       expect(all).not.toContain(DISPLAY_NAME);
       expect(all).not.toMatch(/4000000000000000\d\d/);
+    });
+  });
+
+  describe('link notices (CHAT-LINK-NOTICE-01)', () => {
+    const EMAIL = 'owner-mail@example.test';
+    const BASE = 'https://ainow.example';
+    const originalBase = process.env.APP_BASE_URL;
+    let transport: FakeChatTransport;
+    let mailer: { sendEmail: jest.Mock };
+    let users: { findOne: jest.Mock };
+    let addresses: Map<string, string | null>;
+
+    type SentMail = { to: string; subject: string; html: string; text: string };
+
+    function mails(): SentMail[] {
+      return mailer.sendEmail.mock.calls.map((call) => call[0] as SentMail);
+    }
+
+    function linkIdOf(userId = OWNER): string {
+      return store.links.rows.find((row) => row.userId === userId)!.id;
+    }
+
+    function expected(event: 'linked' | 'unlinked', locale: 'en' | 'zh-TW' | 'zh-CN', at: number): SentMail {
+      return {
+        to: EMAIL,
+        ...buildChatLinkMail({ event, locale, externalIdLast4: '5432', at: new Date(at), appBaseUrl: BASE }),
+      };
+    }
+
+    function expectNothingSecret(text: string, code: string): void {
+      expectAbsent(secretsOf([code], [DISCORD_ID]), text);
+      expect(text).not.toContain(DISPLAY_NAME);
+      expect(text).not.toMatch(/token/i);
+    }
+
+    async function claimAs(locale = 'en', discordId = DISCORD_ID): Promise<string> {
+      const { code } = await service.createCode(OWNER, locale);
+      expect((await service.claim(code, discordId, DISPLAY_NAME, 'en-US')).outcome).toBe('claimed');
+      return code;
+    }
+
+    async function flushUntil(done: () => boolean): Promise<void> {
+      for (let i = 0; i < 200 && !done(); i += 1) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      expect(done()).toBe(true);
+    }
+
+    beforeEach(() => {
+      process.env.APP_BASE_URL = BASE;
+      transport = new FakeChatTransport();
+      mailer = { sendEmail: jest.fn(async () => undefined) };
+      addresses = new Map<string, string | null>([[OWNER, EMAIL]]);
+      users = {
+        findOne: jest.fn(async (options: { where: { id: string } }) =>
+          addresses.has(options.where.id) ? { id: options.where.id, email: addresses.get(options.where.id) } : null,
+        ),
+      };
+      service = new ChatLinkService(
+        store.links as never,
+        store.codes as never,
+        store.deliveries as never,
+        transport,
+        undefined,
+        users as never,
+        mailer as never,
+      );
+    });
+
+    afterEach(() => {
+      if (originalBase === undefined) delete process.env.APP_BASE_URL;
+      else process.env.APP_BASE_URL = originalBase;
+    });
+
+    it('confirm sends one e-mail in the link language and one Discord confirmation; nothing secret', async () => {
+      const code = await claimAs('zh-TW');
+      const view = await service.confirm(OWNER);
+      expect(view.externalIdLast4).toBe('5432');
+      const linkId = linkIdOf();
+
+      expect(mails()).toEqual([expected('linked', 'zh-TW', START)]);
+      const [mail] = mails();
+      for (const part of [mail.text, mail.html]) {
+        expect(part).toContain('5432');
+        expect(part).toContain('2026-11-13 10:00 UTC');
+        expect(part).toContain(`${BASE}/zh-TW/connections`);
+      }
+      expect(mail.subject).toBe(chatLocaleText('zh-TW', 'mail.linked.subject'));
+      expectNothingSecret(JSON.stringify(mail), code);
+      expect(users.findOne).toHaveBeenCalledWith({ where: { id: OWNER }, select: { id: true, email: true } });
+
+      expect(transport.directMessages).toEqual([
+        { externalUserId: DISCORD_ID, message: { text: chatReply('zh-TW', 'link.confirmed') } },
+      ]);
+
+      expect(logs).toContain(`chat link mail sent event=linked userId=${OWNER} linkId=${linkId}`);
+      expect(logs).toContain(`chat link confirmation sent userId=${OWNER} linkId=${linkId}`);
+      const all = logs.join('\n');
+      expect(all).not.toContain(EMAIL);
+      expectNothingSecret(all, code);
+    });
+
+    it('the page unlink sends one e-mail in the link language (after /language), and no Discord message', async () => {
+      await claimAs('en');
+      await service.confirm(OWNER);
+      const linkId = linkIdOf();
+      await service.setLinkLocaleByExternalUser('discord', DISCORD_ID, 'zh-CN');
+      mailer.sendEmail.mockClear();
+      transport.directMessages.length = 0;
+      advance(5 * MINUTE);
+
+      expect(await service.unlink(OWNER)).toEqual({ channel: 'discord', removed: true });
+      expect(mails()).toEqual([expected('unlinked', 'zh-CN', START + 5 * MINUTE)]);
+      expect(mails()[0].text).toContain(`${BASE}/zh-CN/connections`);
+      expect(mails()[0].text).toContain('2026-11-13 10:05 UTC');
+      expect(transport.directMessages).toEqual([]);
+      expect(logs).toContain(`chat link mail sent event=unlinked userId=${OWNER} linkId=${linkId}`);
+
+      // Nothing to remove: nothing sent.
+      expect(await service.unlink(OWNER)).toEqual({ channel: 'discord', removed: false });
+      expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('/unlink in Discord sends one e-mail in the link language', async () => {
+      const code = await claimAs('en');
+      await service.confirm(OWNER);
+      mailer.sendEmail.mockClear();
+
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: true });
+      expect(mails()).toEqual([expected('unlinked', 'en', START)]);
+      expect(mails()[0].subject).toBe('A Discord account was unlinked from your account');
+      expect(mails()[0].text).toContain('If this was not you, change your password.');
+      expectNothingSecret(JSON.stringify(mails()), code);
+
+      // Again: no link, nothing sent.
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: false });
+      expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('a mailer failure never breaks or undoes the confirm or either unlink', async () => {
+      mailer.sendEmail.mockRejectedValue(new Error(`provider down for ${EMAIL}`));
+      await claimAs();
+      const view = await service.confirm(OWNER);
+      expect(view.channel).toBe('discord');
+      expect(store.links.rows).toHaveLength(1);
+      const linkId = linkIdOf();
+      expect(transport.directMessages).toHaveLength(1);
+      expect(logs).toContain(`chat link mail failed event=linked userId=${OWNER} linkId=${linkId} reason=send_failed`);
+
+      expect(await service.unlink(OWNER)).toEqual({ channel: 'discord', removed: true });
+      expect(store.links.rows).toHaveLength(0);
+      expect(logs).toContain(`chat link mail failed event=unlinked userId=${OWNER} linkId=${linkId} reason=send_failed`);
+
+      // A mailer that throws at once is contained too.
+      mailer.sendEmail.mockImplementation(() => {
+        throw new Error('sync failure');
+      });
+      await claimAs();
+      await service.confirm(OWNER);
+      expect(store.links.rows).toHaveLength(1);
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: true });
+      expect(store.links.rows).toHaveLength(0);
+      expect(logs.filter((line) => line.includes('reason=send_failed'))).toHaveLength(4);
+
+      const all = logs.join('\n');
+      expect(all).not.toContain(EMAIL);
+      expect(all).not.toContain('provider down');
+      expect(all).not.toContain('sync failure');
+    });
+
+    it('no address, a failed address lookup or no APP_BASE_URL: logged with a reason code, nothing sent, the link stands', async () => {
+      addresses.set(OWNER, '  ');
+      await claimAs();
+      await service.confirm(OWNER);
+      const first = linkIdOf();
+      expect(logs).toContain(`chat link mail failed event=linked userId=${OWNER} linkId=${first} reason=no_address`);
+
+      users.findOne.mockRejectedValueOnce(new Error('db down'));
+      expect(await service.unlink(OWNER)).toEqual({ channel: 'discord', removed: true });
+      expect(logs).toContain(`chat link mail failed event=unlinked userId=${OWNER} linkId=${first} reason=lookup_failed`);
+
+      delete process.env.APP_BASE_URL;
+      users.findOne.mockClear();
+      await claimAs();
+      await service.confirm(OWNER);
+      expect(store.links.rows).toHaveLength(1);
+      expect(logs).toContain(`chat link mail failed event=linked userId=${OWNER} linkId=${linkIdOf()} reason=no_base_url`);
+      expect(users.findOne).not.toHaveBeenCalled();
+
+      expect(mailer.sendEmail).not.toHaveBeenCalled();
+      // The Discord confirmation does not depend on the e-mail.
+      expect(transport.directMessages).toHaveLength(2);
+    });
+
+    it('no e-mail and no Discord message when the confirm or the unlink fails', async () => {
+      // No claim waiting.
+      await expectRefusal(service.confirm(OWNER), 404, CHAT_LINK_ERROR_CODES.noPendingClaim);
+      // The link insert fails: rolled back, nothing sent.
+      await claimAs();
+      const insert = store.links.insert.bind(store.links);
+      store.links.insert = async () => {
+        throw new Error('boom');
+      };
+      await expect(service.confirm(OWNER)).rejects.toThrow('boom');
+      // Someone else linked the same Discord account in between: 409, nothing sent.
+      store.links.insert = async () => {
+        throw Object.assign(new Error('duplicate'), { code: '23505' });
+      };
+      await expectRefusal(service.confirm(OWNER), 409, CHAT_LINK_ERROR_CODES.taken);
+      store.links.insert = insert;
+      expect(store.links.rows).toHaveLength(0);
+
+      // Nothing linked: both unlink paths remove nothing and send nothing.
+      expect(await service.unlink(OWNER)).toEqual({ channel: 'discord', removed: false });
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: false });
+
+      // A failed unlink transaction is rolled back and sends nothing.
+      await claimAs();
+      await service.confirm(OWNER);
+      mailer.sendEmail.mockClear();
+      transport.directMessages.length = 0;
+      const remove = store.links.delete.bind(store.links);
+      store.links.delete = async () => {
+        throw new Error('boom');
+      };
+      await expect(service.unlink(OWNER)).rejects.toThrow('boom');
+      await expect(service.unlinkByExternalUser('discord', DISCORD_ID)).rejects.toThrow('boom');
+      store.links.delete = remove;
+      expect(store.links.rows).toHaveLength(1);
+
+      // The switch off: refused, nothing sent.
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      await expectRefusal(service.unlink(OWNER), 503, CHAT_LINK_ERROR_CODES.unavailable);
+      expect(await service.unlinkByExternalUser('discord', DISCORD_ID)).toEqual({ channel: 'discord', removed: false });
+
+      expect(mailer.sendEmail).not.toHaveBeenCalled();
+      expect(transport.directMessages).toEqual([]);
+    });
+
+    it('a refused direct message is ignored and logged once with ids only; other send errors are contained', async () => {
+      transport.refusedUsers.add(DISCORD_ID);
+      const code = await claimAs();
+      await service.confirm(OWNER);
+      const linkId = linkIdOf();
+      expect(store.links.rows).toHaveLength(1);
+      expect(transport.directMessages).toEqual([]);
+      expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
+      expect(logs.filter((line) => line.startsWith('chat link confirmation'))).toEqual([
+        `chat link confirmation not sent userId=${OWNER} linkId=${linkId} reason=refused`,
+      ]);
+
+      await service.unlink(OWNER);
+      transport.sendToUser = async () => {
+        throw new Error(`failed for ${DISCORD_ID}`);
+      };
+      await claimAs();
+      await service.confirm(OWNER);
+      expect(store.links.rows).toHaveLength(1);
+      expect(logs).toContain(`chat link confirmation not sent userId=${OWNER} linkId=${linkIdOf()} reason=send_failed`);
+      expectNothingSecret(logs.join('\n'), code);
+    });
+
+    it('without a transport the confirm still links and e-mails', async () => {
+      service = new ChatLinkService(
+        store.links as never,
+        store.codes as never,
+        store.deliveries as never,
+        undefined,
+        undefined,
+        users as never,
+        mailer as never,
+      );
+      await claimAs();
+      await service.confirm(OWNER);
+      expect(store.links.rows).toHaveLength(1);
+      expect(mails()).toEqual([expected('linked', 'en', START)]);
+      expect(logs.some((line) => line.startsWith('chat link confirmation'))).toBe(false);
+    });
+
+    it(`a notice that hangs holds the confirm up for at most ${CHAT_LINK_NOTICE_TIMEOUT_MS} ms, then is logged as a time-out`, async () => {
+      mailer.sendEmail.mockImplementation(() => new Promise(() => undefined));
+      transport.sendToUser = () => new Promise(() => undefined);
+      const sendToUser = jest.spyOn(transport, 'sendToUser');
+      await claimAs();
+      let settled = false;
+      const confirming = service.confirm(OWNER).then((view) => {
+        settled = true;
+        return view;
+      });
+      await flushUntil(() => mailer.sendEmail.mock.calls.length === 1 && sendToUser.mock.calls.length === 1);
+      await jest.advanceTimersByTimeAsync(CHAT_LINK_NOTICE_TIMEOUT_MS - 1);
+      expect(settled).toBe(false);
+      await jest.advanceTimersByTimeAsync(1);
+      const view = await confirming;
+      expect(view.externalIdLast4).toBe('5432');
+      expect(store.links.rows).toHaveLength(1);
+      const linkId = linkIdOf();
+      expect(logs).toContain(`chat link mail failed event=linked userId=${OWNER} linkId=${linkId} reason=timeout`);
+      expect(logs).toContain(`chat link confirmation not sent userId=${OWNER} linkId=${linkId} reason=timeout`);
+    });
+
+    it('Nest injects the users repository and the mailer; ChatModule imports EmailModule and registers User', async () => {
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          ChatLinkService,
+          { provide: getRepositoryToken(ChatLink), useValue: store.links },
+          { provide: getRepositoryToken(ChatLinkCode), useValue: store.codes },
+          { provide: getRepositoryToken(User), useValue: users },
+          { provide: EMAIL_PROVIDER, useValue: mailer },
+          { provide: CHAT_TRANSPORT, useValue: transport },
+        ],
+      }).compile();
+      service = moduleRef.get(ChatLinkService);
+      await claimAs('zh-CN');
+      await service.confirm(OWNER);
+      expect(mails()).toEqual([expected('linked', 'zh-CN', START)]);
+      expect(transport.directMessages).toEqual([
+        { externalUserId: DISCORD_ID, message: { text: chatReply('zh-CN', 'link.confirmed') } },
+      ]);
+      await service.unlink(OWNER);
+      expect(mailer.sendEmail).toHaveBeenCalledTimes(2);
+
+      const imports = Reflect.getMetadata('imports', ChatModule) as Array<{ providers?: Array<{ provide?: unknown }> }>;
+      expect(imports).toContain(EmailModule);
+      const token = getRepositoryToken(User);
+      expect(
+        imports.some((entry) => Array.isArray(entry?.providers) && entry.providers.some((provider) => provider?.provide === token)),
+      ).toBe(true);
     });
   });
 });

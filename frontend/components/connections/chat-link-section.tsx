@@ -25,6 +25,7 @@ import {
   retryMinutes,
   shouldPoll,
   showsChatSteps,
+  showsRecentLinkNotice,
   type ChatLinksState,
 } from '@/components/connections/chat-link.logic';
 
@@ -397,6 +398,21 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
 
           {view === 'linked' && state?.link ? (
             <div className="mt-4 flex flex-col gap-3" data-testid="chat-link-linked">
+              {showsRecentLinkNotice(state.link, now) ? (
+                <div
+                  className="flex max-w-3xl items-start gap-2 rounded-lg border border-amber-900/80 bg-amber-950/40 px-3 py-2"
+                  role="status"
+                  data-testid="chat-link-recent-notice"
+                >
+                  <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                  <p className="min-w-0 break-words text-sm text-amber-100">
+                    {fillKnowledgeTemplate(t('chat.linked.recentNotice'), {
+                      date: formatConnectionDate(state.link.linkedAt, locale),
+                      last4: state.link.externalIdLast4,
+                    })}
+                  </p>
+                </div>
+              ) : null}
               <dl className="flex flex-col gap-2">
                 <Row
                   label={t('chat.linked.since')}

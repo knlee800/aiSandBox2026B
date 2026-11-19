@@ -14,7 +14,9 @@ import { CHAT_LINK_LOCALES, ChatLinkLocale } from './chat-link.service';
  *
  * Interpolation fills {{name}} only with values the caller passes, and callers
  * pass only the bot's own fixed text (a language name, "switched on"). Text
- * from Discord is never put into a reply.
+ * from Discord is never put into a reply. CHAT-LINK-NOTICE-01: the link
+ * e-mail (chatMailText) fills only the last four digits of the outside id
+ * and a time the server formats.
  */
 
 export const CHAT_REPLY_KEYS = [
@@ -29,6 +31,8 @@ export const CHAT_REPLY_KEYS = [
   'link.invalid',
   'link.alreadyLinked',
   'link.paused',
+  // CHAT-LINK-NOTICE-01: the one message after Confirm on the page.
+  'link.confirmed',
   'unlink.done',
   'status.summary',
   'status.runsOn',
@@ -122,6 +126,33 @@ export function chatReply(
   const safeLocale = isChatLocale(locale) ? locale : 'en';
   const template =
     chatLocaleText(safeLocale, `replies.${key}`) ?? chatLocaleText('en', `replies.${key}`) ?? key;
+  return fill(template, values);
+}
+
+/**
+ * CHAT-LINK-NOTICE-01: the e-mail to the owner when a Discord account is
+ * linked or unlinked (chat.mail in the gateway locale files).
+ */
+export const CHAT_MAIL_KEYS = [
+  'linked.subject',
+  'linked.body',
+  'linked.warning',
+  'unlinked.subject',
+  'unlinked.body',
+  'unlinked.warning',
+  'openConnections',
+] as const;
+
+export type ChatMailKey = (typeof CHAT_MAIL_KEYS)[number];
+
+/** A link-notice e-mail text in that locale, falling back to en; {{name}} filled only with the values passed. */
+export function chatMailText(
+  locale: ChatLinkLocale,
+  key: ChatMailKey,
+  values: Readonly<Record<string, string>> = {},
+): string {
+  const safeLocale = isChatLocale(locale) ? locale : 'en';
+  const template = chatLocaleText(safeLocale, `mail.${key}`) ?? chatLocaleText('en', `mail.${key}`) ?? key;
   return fill(template, values);
 }
 

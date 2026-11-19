@@ -67,7 +67,8 @@
         "claimed": "Code accepted. Go back to the Connections page on the platform and press Confirm to finish linking.",
         "invalid": "That code did not work. Make a new code on the Connections page and try again.",
         "alreadyLinked": "This Discord account is already linked. Use /unlink first to link it to another account.",
-        "paused": "Linking is paused for now. Try again later."
+        "paused": "Linking is paused for now. Try again later.",
+        "confirmed": "Linked. This Discord account now receives your agents' results. Type / and choose ask to start."
       },
       "unlink": {
         "done": "The link is removed. This Discord account no longer receives anything from the platform."
@@ -133,6 +134,19 @@
       "product-strategy": "Product Strategy",
       "technology-advisor": "Technology Advisor",
       "other": "an agent"
+    },
+    "mail": {
+      "linked": {
+        "subject": "A Discord account was linked to your account",
+        "body": "A Discord account (id ending {{last4}}) was linked to your account at {{time}}.",
+        "warning": "If this was not you, unlink Discord there and change your password."
+      },
+      "unlinked": {
+        "subject": "A Discord account was unlinked from your account",
+        "body": "A Discord account (id ending {{last4}}) was unlinked from your account at {{time}}.",
+        "warning": "If this was not you, change your password."
+      },
+      "openConnections": "Open the Connections page"
     }
   }
 }

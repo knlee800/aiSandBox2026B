@@ -16,9 +16,13 @@ import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
+import { User } from '../entities/user.entity';
+import { EMAIL_PROVIDER, type EmailProvider } from '../email/email-provider.interface';
 import { ChatLimits, chatLimitSubjectOfExternalUser } from './chat-limits';
+import { buildChatLinkMail, type ChatLinkMailEvent } from './chat-link-mail';
+import { chatReply } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
-import { CHAT_TRANSPORT, type ChatTransport } from './chat-transport';
+import { CHAT_TRANSPORT, ChatDirectMessageRefusedError, type ChatTransport } from './chat-transport';
 
 /**
  * CHAT-DISCORD-01 slice A1 (stage-start section 5): the account link.
@@ -58,6 +62,16 @@ import { CHAT_TRANSPORT, type ChatTransport } from './chat-transport';
  *   direct message), both built by the transport from the application id
  *   and the bot user id of the gateway READY payload. No secret. Null for
  *   both otherwise (switch off, not connected, ids unknown).
+ * - CHAT-LINK-NOTICE-01 (a takeover signal): after a successful confirm and
+ *   after each successful unlink (page or /unlink), one e-mail to the
+ *   owner's address through EMAIL_PROVIDER in the link's language
+ *   (chat-link-mail.ts); after a confirm, one message to the newly linked
+ *   Discord account through sendToUser. Both run after the transaction has
+ *   committed, each within CHAT_LINK_NOTICE_TIMEOUT_MS; any failure (no
+ *   address, no APP_BASE_URL, a mailer error, a refused direct message, a
+ *   time-out) is logged with ids and a reason code only and never fails or
+ *   undoes the link or the unlink. Nothing is sent when the confirm or the
+ *   unlink fails.
  */
 
 export const CHAT_CHANNEL_DISCORD = 'discord';
@@ -78,6 +92,9 @@ export const CHAT_LINK_LIMITS = {
   failedClaimsBeforePause: 100,
   pauseMs: 60 * 60 * 1000,
 } as const;
+
+/** CHAT-LINK-NOTICE-01: the longest a link notice (e-mail or Discord message) may hold up a confirm or an unlink. */
+export const CHAT_LINK_NOTICE_TIMEOUT_MS = 5000;
 
 export const CHAT_LINK_LOCALES = ['en', 'zh-TW', 'zh-CN'] as const;
 export type ChatLinkLocale = (typeof CHAT_LINK_LOCALES)[number];
@@ -270,6 +287,24 @@ function last4(externalUserId: string): string {
   return externalUserId.slice(-4);
 }
 
+/**
+ * CHAT-LINK-NOTICE-01: runs one notice; its answer, or 'timeout' after
+ * CHAT_LINK_NOTICE_TIMEOUT_MS (the work then goes on unobserved; its own
+ * errors are already caught). Never throws.
+ */
+async function withinNoticeTime(work: () => Promise<string>): Promise<string> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<string>((resolve) => {
+    timer = setTimeout(() => resolve('timeout'), CHAT_LINK_NOTICE_TIMEOUT_MS);
+    (timer as { unref?: () => void }).unref?.();
+  });
+  try {
+    return await Promise.race([work().catch(() => 'failed'), timeout]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 function isUniqueViolation(error: unknown): boolean {
   const candidate = error as { code?: unknown; driverError?: { code?: unknown } } | null;
   return candidate?.code === '23505' || candidate?.driverError?.code === '23505';
@@ -322,6 +357,14 @@ export class ChatLinkService {
     private readonly transport?: ChatTransport,
     // CHAT-STATE-PERSIST-01: present in ChatModule.
     @Optional() limits?: ChatLimits,
+    // CHAT-LINK-NOTICE-01: present in ChatModule (User via forFeature, the
+    // mailer via EmailModule). Without both, no link e-mail is sent.
+    @Optional()
+    @InjectRepository(User)
+    private readonly users?: Repository<User>,
+    @Optional()
+    @Inject(EMAIL_PROVIDER)
+    private readonly mailer?: EmailProvider,
   ) {
     this.limits = limits ?? ChatLimits.inMemory();
   }
@@ -594,6 +637,11 @@ export class ChatLinkService {
       throw error;
     }
     this.logger.log(`chat link confirmed userId=${userId} linkId=${link.id}`);
+    // CHAT-LINK-NOTICE-01: after the commit; neither can fail or undo the link.
+    await Promise.all([
+      this.sendLinkMail('linked', userId, link.id, link.locale, last4(externalUserId), link.createdAt),
+      this.sendLinkConfirmation(userId, link.id, externalUserId, link.locale),
+    ]);
     return this.linkView(link);
   }
 
@@ -629,7 +677,7 @@ export class ChatLinkService {
         .getRepository(ChatLinkCode)
         .delete({ userId, channel: CHAT_CHANNEL_DISCORD });
       if (!link) {
-        return { linkId: null as string | null, removedCodes: codes.affected ?? 0 };
+        return null;
       }
       const removedDeliveries = await this.deleteDeliveries(manager, link.id);
       await links.delete({ id: link.id });
@@ -639,12 +687,15 @@ export class ChatLinkService {
         removedCodes: codes.affected ?? 0,
         ...(removedDeliveries === null ? {} : { removedDeliveries }),
       });
-      return { linkId: link.id as string | null, removedCodes: codes.affected ?? 0 };
+      return { linkId: link.id, locale: link.locale, externalIdLast4: last4(link.externalUserId) };
     });
-    if (result.linkId) {
-      this.logger.log(`chat link removed userId=${userId} linkId=${result.linkId}`);
+    if (!result) {
+      return { channel: CHAT_CHANNEL_DISCORD, removed: false };
     }
-    return { channel: CHAT_CHANNEL_DISCORD, removed: result.linkId !== null };
+    this.logger.log(`chat link removed userId=${userId} linkId=${result.linkId}`);
+    // CHAT-LINK-NOTICE-01: after the commit; it never fails or undoes the unlink.
+    await this.sendLinkMail('unlinked', userId, result.linkId, result.locale, result.externalIdLast4, new Date());
+    return { channel: CHAT_CHANNEL_DISCORD, removed: true };
   }
 
   /**
@@ -713,13 +764,111 @@ export class ChatLinkService {
         ...(removedDeliveries === null ? {} : { removedDeliveries }),
         source: 'chat_command',
       });
-      return { linkId: link.id, userId: link.userId };
+      return {
+        linkId: link.id,
+        userId: link.userId,
+        locale: link.locale,
+        externalIdLast4: last4(link.externalUserId),
+      };
     });
     if (!result) {
       return { channel, removed: false };
     }
     this.logger.log(`chat link removed userId=${result.userId} linkId=${result.linkId} source=chat_command`);
+    // CHAT-LINK-NOTICE-01: after the commit; it never fails or undoes the unlink.
+    await this.sendLinkMail('unlinked', result.userId, result.linkId, result.locale, result.externalIdLast4, new Date());
     return { channel, removed: true };
+  }
+
+  /**
+   * CHAT-LINK-NOTICE-01: one e-mail to the owner. Never throws. Without the
+   * users repository or the mailer (a test building the service alone)
+   * nothing is sent. Logs ids and a reason code only: never the address,
+   * the outside id, the subject or the body.
+   */
+  private async sendLinkMail(
+    event: ChatLinkMailEvent,
+    userId: string,
+    linkId: string,
+    locale: unknown,
+    externalIdLast4: string,
+    at: Date,
+  ): Promise<void> {
+    const users = this.users;
+    const mailer = this.mailer;
+    if (!users || !mailer) {
+      return;
+    }
+    const fail = (reason: string): void => {
+      this.logger.warn(`chat link mail failed event=${event} userId=${userId} linkId=${linkId} reason=${reason}`);
+    };
+    const appBaseUrl = process.env.APP_BASE_URL?.trim();
+    if (!appBaseUrl) {
+      fail('no_base_url');
+      return;
+    }
+    const outcome = await withinNoticeTime(async () => {
+      let address: string | null;
+      try {
+        const user = await users.findOne({ where: { id: userId }, select: { id: true, email: true } });
+        address = typeof user?.email === 'string' && user.email.trim() ? user.email.trim() : null;
+      } catch {
+        return 'lookup_failed';
+      }
+      if (!address) {
+        return 'no_address';
+      }
+      const mail = buildChatLinkMail({
+        event,
+        locale: normalizeChatLocale(locale),
+        externalIdLast4,
+        at,
+        appBaseUrl,
+      });
+      try {
+        await mailer.sendEmail({ to: address, subject: mail.subject, html: mail.html, text: mail.text });
+      } catch {
+        return 'send_failed';
+      }
+      return 'sent';
+    });
+    if (outcome === 'sent') {
+      this.logger.log(`chat link mail sent event=${event} userId=${userId} linkId=${linkId}`);
+      return;
+    }
+    fail(outcome);
+  }
+
+  /**
+   * CHAT-LINK-NOTICE-01: after Confirm on the page, one message to the newly
+   * linked Discord account. Never throws. A refused direct message is
+   * ignored (logged once, ids only); without a transport nothing is sent.
+   */
+  private async sendLinkConfirmation(
+    userId: string,
+    linkId: string,
+    externalUserId: string,
+    locale: unknown,
+  ): Promise<void> {
+    const transport = this.transport;
+    if (!transport) {
+      return;
+    }
+    const outcome = await withinNoticeTime(async () => {
+      try {
+        await transport.sendToUser(externalUserId, {
+          text: chatReply(normalizeChatLocale(locale), 'link.confirmed'),
+        });
+        return 'sent';
+      } catch (error) {
+        return error instanceof ChatDirectMessageRefusedError ? 'refused' : 'send_failed';
+      }
+    });
+    if (outcome === 'sent') {
+      this.logger.log(`chat link confirmation sent userId=${userId} linkId=${linkId}`);
+      return;
+    }
+    this.logger.warn(`chat link confirmation not sent userId=${userId} linkId=${linkId} reason=${outcome}`);
   }
 
   /** C1: the link's delivery rows, in the unlink transaction. Null when the repository is not wired. */

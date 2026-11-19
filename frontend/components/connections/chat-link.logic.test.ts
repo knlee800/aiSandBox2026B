@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   CHAT_ERROR_KEYS,
+  CHAT_RECENT_LINK_MS,
   CHAT_SETUP_STEPS,
   canCreateCode,
   chatErrorKey,
@@ -16,6 +17,7 @@ import {
   retryMinutes,
   shouldPoll,
   showsChatSteps,
+  showsRecentLinkNotice,
   type ChatLinksState,
 } from '@/components/connections/chat-link.logic';
 
@@ -202,6 +204,26 @@ describe('shouldPoll', () => {
     assert.equal(shouldPoll(state({ link: LINK }), false, NOW), false, 'linked');
     assert.equal(shouldPoll(state({ enabled: false, pending: pending(false) }), false, NOW), false, 'off');
     assert.equal(shouldPoll(null, false, NOW), false);
+  });
+});
+
+describe('showsRecentLinkNotice (CHAT-LINK-NOTICE-01)', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const linkedAt = Date.parse(LINK.linkedAt);
+
+  test('shows while the link is younger than 7 days, and not from 7 days on', () => {
+    assert.equal(CHAT_RECENT_LINK_MS, 7 * DAY);
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt), true, 'just linked');
+    assert.equal(showsRecentLinkNotice(LINK, NOW), true, 'an hour later');
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt + 6 * DAY), true, '6 days');
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt + 7 * DAY - 1), true, 'just under 7 days');
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt + 7 * DAY), false, '7 days');
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt + 30 * DAY), false, '30 days');
+  });
+
+  test('no link or an unreadable date shows nothing', () => {
+    assert.equal(showsRecentLinkNotice(null, NOW), false);
+    assert.equal(showsRecentLinkNotice({ ...LINK, linkedAt: 'not a date' }, NOW), false);
   });
 });
 

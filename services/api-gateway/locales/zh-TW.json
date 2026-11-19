@@ -67,7 +67,8 @@
         "claimed": "已收到代碼。請回到平台的連線頁面按「確認」完成連結。",
         "invalid": "這個代碼無法使用。請在連線頁面產生新代碼後再試一次。",
         "alreadyLinked": "這個 Discord 帳號已經連結。若要連結到其他帳號，請先使用 /unlink。",
-        "paused": "連結功能暫時停用，請稍後再試。"
+        "paused": "連結功能暫時停用，請稍後再試。",
+        "confirmed": "已連結。這個 Discord 帳號現在會收到你的代理的結果。輸入 / 並選擇 ask 即可開始。"
       },
       "unlink": {
         "done": "已解除連結。這個 Discord 帳號不會再收到平台的任何訊息。"
@@ -133,6 +134,19 @@
       "product-strategy": "產品策略",
       "technology-advisor": "技術顧問",
       "other": "一個代理"
+    },
+    "mail": {
+      "linked": {
+        "subject": "有一個 Discord 帳號已連結到你的帳號",
+        "body": "有一個 Discord 帳號（ID 末碼 {{last4}}）已於 {{time}} 連結到你的帳號。",
+        "warning": "如果這不是你本人操作，請在該頁面解除 Discord 連結並變更密碼。"
+      },
+      "unlinked": {
+        "subject": "有一個 Discord 帳號已與你的帳號解除連結",
+        "body": "有一個 Discord 帳號（ID 末碼 {{last4}}）已於 {{time}} 與你的帳號解除連結。",
+        "warning": "如果這不是你本人操作，請變更密碼。"
+      },
+      "openConnections": "開啟連線頁面"
     }
   }
 }

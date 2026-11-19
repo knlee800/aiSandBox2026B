@@ -1750,7 +1750,8 @@
         "neverUsed": "Not used yet",
         "idEnding": "Discord id ending",
         "notice": "Discord is linked.",
-        "everyRun": "Results and approval requests of every run you start (Team page, schedules, triggers and Discord) arrive in this Discord."
+        "everyRun": "Results and approval requests of every run you start (Team page, schedules, triggers and Discord) arrive in this Discord.",
+        "recentNotice": "Discord was linked on {date} (id ending {last4}). If this was not you, unlink it now and change your password."
       },
       "unlink": "Unlink",
       "unlinkConfirm": "Unlink Discord? The bot will stop sending results to it. Messages already in Discord stay there.",

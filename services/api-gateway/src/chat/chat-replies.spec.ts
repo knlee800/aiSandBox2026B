@@ -1,11 +1,13 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
+  CHAT_MAIL_KEYS,
   CHAT_REPLY_KEYS,
   chatAgentName,
   chatLanguageName,
   chatLocalePaths,
   chatLocaleText,
+  chatMailText,
   chatReply,
 } from './chat-replies';
 
@@ -156,6 +158,46 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
       expect(at).toBe(help.length - 2);
       expect(Array.from(help.join('\n')).length).toBeLessThanOrEqual(2000);
     }
+  });
+
+  it('CHAT-LINK-NOTICE-01: the confirmation after Confirm on the page, in all three languages', () => {
+    expect(chatReply('en', 'link.confirmed')).toBe(
+      "Linked. This Discord account now receives your agents' results. Type / and choose ask to start.",
+    );
+    expect(chatReply('zh-TW', 'link.confirmed')).toBe(
+      '已連結。這個 Discord 帳號現在會收到你的代理的結果。輸入 / 並選擇 ask 即可開始。',
+    );
+    expect(chatReply('zh-CN', 'link.confirmed')).toBe(
+      '已关联。这个 Discord 账户现在会收到你的代理的结果。输入 / 并选择 ask 即可开始。',
+    );
+  });
+
+  it('CHAT-LINK-NOTICE-01: CHAT_MAIL_KEYS is exactly the mail set in every file, and chatMailText fills only the values passed', () => {
+    for (const locale of LOCALES) {
+      const json = JSON.parse(readFileSync(join(LOCALES_DIR, `${locale}.json`), 'utf8'));
+      const out: string[] = [];
+      const walk = (node: Record<string, unknown>, prefix: string): void => {
+        for (const [key, value] of Object.entries(node)) {
+          const path = prefix ? `${prefix}.${key}` : key;
+          if (typeof value === 'string') out.push(path);
+          else walk(value as Record<string, unknown>, path);
+        }
+      };
+      walk(json.chat.mail, '');
+      expect({ locale, keys: out.sort() }).toEqual({ locale, keys: [...CHAT_MAIL_KEYS].sort() });
+      for (const event of ['linked', 'unlinked']) {
+        expect(placeholders(json.chat.mail[event].body)).toEqual(['last4', 'time']);
+        expect(placeholders(json.chat.mail[event].subject)).toEqual([]);
+        expect(placeholders(json.chat.mail[event].warning)).toEqual([]);
+      }
+    }
+    expect(chatMailText('en', 'linked.body', { last4: '5432', time: '2026-11-19 10:05 UTC' })).toBe(
+      'A Discord account (id ending 5432) was linked to your account at 2026-11-19 10:05 UTC.',
+    );
+    expect(chatMailText('en', 'unlinked.body')).toBe(
+      'A Discord account (id ending {{last4}}) was unlinked from your account at {{time}}.',
+    );
+    expect(chatMailText('fr' as never, 'openConnections')).toBe('Open the Connections page');
   });
 
   it('falls back to en for an unknown locale', () => {

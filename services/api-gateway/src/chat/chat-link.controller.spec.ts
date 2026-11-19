@@ -17,7 +17,11 @@ import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
+import { User } from '../entities/user.entity';
+import { EMAIL_PROVIDER } from '../email/email-provider.interface';
+import { EmailModule } from '../email/email.module';
 import { SameOriginWriteGuard } from '../guards/same-origin-write.guard';
+import { chatReply } from './chat-replies';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
 import { ChatCommandService } from './chat-commands';
@@ -34,6 +38,7 @@ const OWNER = '11111111-1111-4111-8111-111111111111';
 const NOT_ENTITLED = '22222222-2222-4222-8222-222222222222';
 const DISCORD_ID = '987654321098765432';
 const APP_ORIGIN = 'http://localhost:3000';
+const OWNER_EMAIL = 'owner-mail@example.test';
 const VALID_API_KEY = 'test-harness-api-key';
 
 const TOKENS: Record<string, string> = {
@@ -48,6 +53,8 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
   let store: MemoryStore;
   let service: ChatLinkService;
   let transport: FakeChatTransport;
+  let mailer: { sendEmail: jest.Mock };
+  let users: { findOne: jest.Mock };
   let logs: string[];
   let restoreLogs: () => void;
 
@@ -57,6 +64,13 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     store = new MemoryStore();
     // CHAT-USER-INSTALL-01: the app's transport token; not connected unless a test connects it.
     transport = new FakeChatTransport();
+    // CHAT-LINK-NOTICE-01: a fake platform mailer and the owner's address.
+    mailer = { sendEmail: jest.fn(async () => undefined) };
+    users = {
+      findOne: jest.fn(async (options: { where: { id: string } }) =>
+        options.where.id === OWNER ? { id: OWNER, email: OWNER_EMAIL } : null,
+      ),
+    };
     logs = [];
     restoreLogs = watchLogs(logs);
 
@@ -102,6 +116,8 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
         },
         { provide: APP_GUARD, useClass: SameOriginWriteGuard },
         { provide: CHAT_TRANSPORT, useValue: transport },
+        { provide: getRepositoryToken(User), useValue: users },
+        { provide: EMAIL_PROVIDER, useValue: mailer },
       ],
     }).compile();
 
@@ -307,6 +323,17 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     });
     expect(linked.text).not.toContain(DISCORD_ID);
     expect(store.links.rows[0].locale).toBe('zh-TW');
+    // CHAT-LINK-NOTICE-01: one e-mail in the link's language and one Discord confirmation.
+    expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
+    const linkedMail = mailer.sendEmail.mock.calls[0][0] as { to: string; subject: string; html: string; text: string };
+    expect(linkedMail.to).toBe(OWNER_EMAIL);
+    expect(linkedMail.subject).toBe('有一個 Discord 帳號已連結到你的帳號');
+    expect(linkedMail.text).toContain('ID 末碼 5432');
+    expect(linkedMail.text).toContain(`${APP_ORIGIN}/zh-TW/connections`);
+    expect(linkedMail.html).toContain(`href="${APP_ORIGIN}/zh-TW/connections"`);
+    expect(transport.directMessages).toEqual([
+      { externalUserId: DISCORD_ID, message: { text: chatReply('zh-TW', 'link.confirmed') } },
+    ]);
 
     const again = await owner.post('/api/chat-links/discord/code').send({}).expect(409);
     expect(again.body).toEqual({
@@ -323,6 +350,16 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(store.codes.rows).toHaveLength(0);
     const after = await owner.get('/api/chat-links').expect(200);
     expect(after.body.discord).toEqual({ link: null, pending: null, installUrl: null, botProfileUrl: null });
+    expect(mailer.sendEmail).toHaveBeenCalledTimes(2);
+    const unlinkedMail = mailer.sendEmail.mock.calls[1][0] as { to: string; subject: string; text: string };
+    expect(unlinkedMail.to).toBe(OWNER_EMAIL);
+    expect(unlinkedMail.subject).toBe('有一個 Discord 帳號已與你的帳號解除連結');
+    expect(transport.directMessages).toHaveLength(1);
+    const mailText = JSON.stringify(mailer.sendEmail.mock.calls);
+    expect(mailText).not.toContain(DISCORD_ID);
+    expect(mailText).not.toContain('Keith');
+    expect(mailText).not.toContain(code);
+    expect(mailText).not.toContain(code.replace('-', ''));
 
     const responses = [empty, waiting, pending, confirmed, linked, removed, after].map((r) => r.text).join('\n');
     expect(responses).not.toContain(createHash('sha256').update(code.replace('-', '')).digest('hex'));
@@ -333,6 +370,31 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(allLogs).not.toContain(DISCORD_ID);
     expect(allLogs).not.toContain(code.replace('-', ''));
     expect(allLogs).not.toContain(code);
+    expect(allLogs).not.toContain(OWNER_EMAIL);
+  });
+
+  it('CHAT-LINK-NOTICE-01: a failing mailer and a refused direct message never change the confirm or unlink answers', async () => {
+    mailer.sendEmail.mockRejectedValue(new Error('provider down'));
+    transport.refusedUsers.add(DISCORD_ID);
+    const owner = as('owner-token');
+    const created = await owner.post('/api/chat-links/discord/code').send({ locale: 'en' }).expect(201);
+    expect((await service.claim(created.body.code, DISCORD_ID, 'Keith', 'en')).outcome).toBe('claimed');
+    const confirmed = await owner.post('/api/chat-links/discord/confirm').expect(200);
+    expect(confirmed.body.externalIdLast4).toBe('5432');
+    expect(store.links.rows).toHaveLength(1);
+    const removed = await owner.delete('/api/chat-links/discord').expect(200);
+    expect(removed.body).toEqual({ channel: 'discord', removed: true });
+    expect(store.links.rows).toHaveLength(0);
+    expect(mailer.sendEmail).toHaveBeenCalledTimes(2);
+    expect(transport.directMessages).toEqual([]);
+    expect(logs.filter((line) => line.includes('reason='))).toEqual([
+      expect.stringMatching(/^chat link (mail failed event=linked|confirmation not sent) .*reason=(send_failed|refused)$/),
+      expect.stringMatching(/^chat link (mail failed event=linked|confirmation not sent) .*reason=(send_failed|refused)$/),
+      expect.stringMatching(/^chat link mail failed event=unlinked .*reason=send_failed$/),
+    ]);
+    // Nothing to unlink: no e-mail.
+    await owner.delete('/api/chat-links/discord').expect(200);
+    expect(mailer.sendEmail).toHaveBeenCalledTimes(2);
   });
 
   it('confirm with no claim is 404 chat_link_no_pending_claim; cancel removes a claim', async () => {
@@ -356,6 +418,9 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(nothing.body).toEqual({ channel: 'discord', cancelled: false });
     const unlinkNothing = await owner.delete('/api/chat-links/discord').expect(200);
     expect(unlinkNothing.body).toEqual({ channel: 'discord', removed: false });
+    // CHAT-LINK-NOTICE-01: a failed confirm, a cancel and an unlink of nothing send nothing.
+    expect(mailer.sendEmail).not.toHaveBeenCalled();
+    expect(transport.directMessages).toEqual([]);
   });
 
   it('the sixth code in an hour is 429 chat_link_rate_limited', async () => {
@@ -455,6 +520,8 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(entities).toContain("export { ChatLimitHit, CHAT_LIMIT_BUCKETS } from './chat-limit-hit.entity';");
     expect(entities).toContain("export { ChatApprovalToken } from './chat-approval-token.entity';");
     const imports = Reflect.getMetadata('imports', ChatModule) as Array<{ providers?: Array<{ provide?: unknown }> }>;
+    // CHAT-LINK-NOTICE-01: the platform mailer for the link e-mails.
+    expect(imports).toContain(EmailModule);
     for (const entity of [ChatLimitHit, ChatApprovalToken]) {
       const token = getRepositoryToken(entity);
       expect(

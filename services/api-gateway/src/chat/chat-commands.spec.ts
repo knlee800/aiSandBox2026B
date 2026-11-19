@@ -385,6 +385,61 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       expect(await transport.invoke(dm('status'))).toEqual({ text: chatReply('en', 'linkFirst') });
     });
 
+    it('CHAT-LINK-NOTICE-01: /unlink e-mails the owner once in the link language; a failing mailer still unlinks', async () => {
+      const originalBase = process.env.APP_BASE_URL;
+      process.env.APP_BASE_URL = 'https://ainow.example';
+      try {
+        const mailer = { sendEmail: jest.fn(async () => undefined) };
+        const ownerRepo = { findOne: jest.fn(async () => ({ id: OWNER, email: 'owner-mail@example.test' })) };
+        const chatTransport = new FakeChatTransport();
+        links = new ChatLinkService(
+          store.links as never,
+          store.codes as never,
+          undefined,
+          chatTransport,
+          undefined,
+          ownerRepo as never,
+          mailer as never,
+        );
+        commands = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never);
+        await new ChatChannelRunner(chatTransport, commands, true).start();
+        transport = chatTransport;
+
+        await linkOwner();
+        // The confirm sent the link e-mail and the Discord confirmation.
+        expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
+        expect(chatTransport.directMessages).toEqual([
+          { externalUserId: DISCORD_ID, message: { text: chatReply('en', 'link.confirmed') } },
+        ]);
+        expect(await transport.invoke(dm('language', { language: 'zh-TW' }))).toEqual({
+          text: chatReply('zh-TW', 'language.set', { language: '繁體中文' }),
+        });
+        expect(await transport.invoke(dm('unlink'))).toEqual({ text: chatReply('zh-TW', 'unlink.done') });
+        expect(store.links.rows).toEqual([]);
+        expect(mailer.sendEmail).toHaveBeenCalledTimes(2);
+        const mail = (mailer.sendEmail.mock.calls as unknown as Array<[{ to: string; subject: string; text: string }]>)[1][0];
+        expect(mail.to).toBe('owner-mail@example.test');
+        expect(mail.subject).toBe('有一個 Discord 帳號已與你的帳號解除連結');
+        expect(mail.text).toContain('ID 末碼 5432');
+        expect(mail.text).toContain('https://ainow.example/zh-TW/connections');
+        expect(JSON.stringify(mail)).not.toContain(DISCORD_ID);
+        expect(JSON.stringify(mail)).not.toContain(DISPLAY_NAME);
+        // /unlink in Discord sends no extra Discord message.
+        expect(chatTransport.directMessages).toHaveLength(1);
+
+        // A failing mailer: /unlink still unlinks and answers as usual.
+        mailer.sendEmail.mockRejectedValue(new Error('provider down'));
+        await linkOwner();
+        expect(await transport.invoke(dm('unlink'))).toEqual({ text: chatReply('en', 'unlink.done') });
+        expect(store.links.rows).toEqual([]);
+        expect(mailer.sendEmail).toHaveBeenCalledTimes(4);
+        expect(logs.some((line) => /^chat link mail failed event=unlinked .*reason=send_failed$/.test(line))).toBe(true);
+        expect(logs.join('\n')).not.toContain('owner-mail@example.test');
+      } finally {
+        restore('APP_BASE_URL', originalBase);
+      }
+    });
+
     it('/ask hands only the text and agent options to ChatRunService and answers its reply (C1)', async () => {
       await linkOwner();
       const linkId = store.links.rows[0].id;

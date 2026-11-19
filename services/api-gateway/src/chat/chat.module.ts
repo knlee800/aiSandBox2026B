@@ -17,6 +17,7 @@ import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { User } from '../entities/user.entity';
+import { EmailModule } from '../email/email.module';
 import { CollaborationReferralEntity } from '../orchestration/collaboration-referral.entity';
 import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { ChatApprovalService } from './chat-approval.service';
@@ -125,6 +126,9 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * CHAT-STATE-PERSIST-01: ChatLimits counts the link, claim, pause and
  * command limits in chat_limit_hits; ChatApprovalService keeps button tokens
  * (hashed) in chat_approval_tokens; both tables come from migration 1817.
+ * CHAT-LINK-NOTICE-01: EmailModule gives ChatLinkService the platform mailer
+ * (EMAIL_PROVIDER) for the link and unlink e-mails (the same module instance
+ * AuthModule imports).
  * Only ChatLinkService is exported.
  */
 @Module({
@@ -141,6 +145,7 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     ]),
     AuthModule,
     OrchestrationModule,
+    EmailModule,
   ],
   controllers: [ChatLinkController],
   providers: [
