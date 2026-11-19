@@ -494,6 +494,10 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       expect(await transport.invoke(dm('unlink'))).toEqual({ text: chatReply('en', 'unlink.done') });
     });
 
+    it('CHAT-DISCORD-DM-01: the runner gives the transport the plain-message handler', () => {
+      expect(transport.messageHandler).not.toBeNull();
+    });
+
     it('a failure inside a command answers the fixed error text and logs no Discord value', async () => {
       await linkOwner();
       store.links.findOne = async () => {
@@ -508,6 +512,112 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       await transport.invoke(dm('status'));
       const linkId = store.links.rows[0].id;
       expect(logs).toContain(`chat command name=status outcome=ok linkId=${linkId}`);
+    });
+  });
+
+  describe('CHAT-DISCORD-DM-01: plain direct messages', () => {
+    function plain(text: string, externalUserId = DISCORD_ID) {
+      return { text, externalUserId };
+    }
+
+    it('an unlinked author gets "link first" (in English: a message has no locale); nothing is written or started', async () => {
+      store.resetCalls();
+      expect(await transport.send(plain(`${MARKER} change my settings`, STRANGER))).toEqual({
+        text: chatReply('en', 'linkFirst'),
+      });
+      expect(await transport.send(plain('', STRANGER))).toEqual({ text: chatReply('en', 'linkFirst') });
+      expect(store.writes()).toEqual([]);
+      expect(runs.ask).not.toHaveBeenCalled();
+      expect(runs.refuseOwner).not.toHaveBeenCalled();
+      expect(logs).toContain('chat message outcome=not_linked');
+    });
+
+    it('a linked owner: the trimmed text goes to ChatRunService.ask as { text } only, and its reply is the answer', async () => {
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
+      const reply = await transport.send(plain(`  ${MARKER} plan my week \n`));
+      expect(reply).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(runs.ask).toHaveBeenCalledTimes(1);
+      expect(runs.ask).toHaveBeenCalledWith({ linkId, userId: OWNER, locale: 'en' }, { text: `${MARKER} plan my week` });
+      expect(JSON.stringify(runs.ask.mock.calls)).not.toContain(DISCORD_ID);
+      expect(logs).toContain(`chat message outcome=handled linkId=${linkId}`);
+      // "@Name rest" is passed on as it is: ChatRunService picks the workflow, as for /ask.
+      await transport.send(plain(`@Sales Digest ${MARKER}`));
+      expect(runs.ask).toHaveBeenLastCalledWith(expect.anything(), { text: `@Sales Digest ${MARKER}` });
+    });
+
+    it('empty text, text starting with "/" and text over 6000 characters each get one line in the link language and start nothing', async () => {
+      await linkOwner();
+      await transport.invoke(dm('language', { language: 'zh-TW' }));
+      const linkId = store.links.rows[0].id;
+      expect(await transport.send(plain(''))).toEqual({ text: chatReply('zh-TW', 'message.textOnly') });
+      expect(await transport.send(plain('   \n '))).toEqual({ text: chatReply('zh-TW', 'message.textOnly') });
+      expect(await transport.send(plain(`/ask ${MARKER}`))).toEqual({ text: chatReply('zh-TW', 'message.useSlashMenu') });
+      expect(await transport.send(plain(`x${MARKER}`.padEnd(6001, 'y')))).toEqual({
+        text: chatReply('zh-TW', 'message.tooLong'),
+      });
+      // Counted in characters, not UTF-16 units: 6000 emoji are not too long.
+      expect(runs.ask).not.toHaveBeenCalled();
+      expect(await transport.send(plain('😀'.repeat(6000)))).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(await transport.send(plain('y'.repeat(6000)))).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(runs.ask).toHaveBeenCalledTimes(2);
+      expect(logs).toEqual(
+        expect.arrayContaining([
+          `chat message outcome=empty_text linkId=${linkId}`,
+          `chat message outcome=slash_text linkId=${linkId}`,
+          `chat message outcome=too_long linkId=${linkId}`,
+        ]),
+      );
+      expect(chatReply('en', 'message.tooLong')).toContain('6000');
+    });
+
+    it('an inactive or no longer entitled owner gets the /ask refusal through refuseOwner, never ask', async () => {
+      await linkOwner();
+      entitled.delete(OWNER);
+      expect(await transport.send(plain(MARKER))).toEqual({ text: chatReply('en', 'notEntitled') });
+      expect(runs.refuseOwner).toHaveBeenLastCalledWith(expect.objectContaining({ userId: OWNER }), 'not_entitled');
+      entitled.add(OWNER);
+      users.set(OWNER, { id: OWNER, isActive: false });
+      await transport.send(plain(MARKER));
+      expect(runs.refuseOwner).toHaveBeenLastCalledWith(expect.objectContaining({ userId: OWNER }), 'inactive');
+      expect(runs.ask).not.toHaveBeenCalled();
+    });
+
+    it('switch off: fixed "not available", nothing read and no activity', async () => {
+      const activity = new ChatActivityNotifier();
+      const listener = jest.fn();
+      activity.onActivity(listener);
+      const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
+      const fake = new FakeChatTransport();
+      await new ChatChannelRunner(fake, notified, true).start();
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      store.resetCalls();
+      expect(await fake.send(plain(MARKER))).toEqual({ text: chatReply('en', 'notAvailable') });
+      expect(store.calls).toEqual([]);
+      expect(listener).not.toHaveBeenCalled();
+      expect(runs.ask).not.toHaveBeenCalled();
+    });
+
+    it('a plain message tells the notifier the author is active (held results), linked or not', async () => {
+      const activity = new ChatActivityNotifier();
+      const seen: Array<[string, string]> = [];
+      activity.onActivity((channel, externalUserId) => void seen.push([channel, externalUserId]));
+      const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
+      const fake = new FakeChatTransport();
+      await new ChatChannelRunner(fake, notified, true).start();
+      await fake.send(plain(MARKER, STRANGER));
+      await fake.send(plain(''));
+      expect(seen).toEqual([
+        ['discord', STRANGER],
+        ['discord', DISCORD_ID],
+      ]);
+    });
+
+    it('a failure answers the fixed error line and logs the error class only', async () => {
+      await linkOwner();
+      runs.ask.mockRejectedValueOnce(new Error(`database said ${DISCORD_ID} ${MARKER}`));
+      expect(await transport.send(plain(MARKER))).toEqual({ text: chatReply('en', 'error') });
+      expect(logs).toContain('chat message failed reason=Error');
     });
   });
 });

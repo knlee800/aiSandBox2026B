@@ -5,6 +5,8 @@ import { Logger } from '@nestjs/common';
 import {
   GatewayCloseCodes,
   GatewayDispatchEvents,
+  GatewayIntentBits,
+  MessageType,
   InteractionType,
   ApplicationCommandType,
   ButtonStyle,
@@ -18,6 +20,7 @@ import {
   type ChatCommandInvocation,
   type ChatComponentPress,
   type ChatComponentResponse,
+  type ChatPlainMessage,
   type ChatReplyMessage,
 } from '../chat-transport';
 import * as transportModule from './discord-transport';
@@ -33,6 +36,11 @@ import {
   DISCORD_COMPONENT_ACTION_ROW,
   DISCORD_COMPONENT_BUTTON,
   DISCORD_DISPATCH_INTERACTION_CREATE,
+  DISCORD_DISPATCH_MESSAGE_CREATE,
+  DISCORD_MESSAGE_TYPE_DEFAULT,
+  DISCORD_MESSAGE_TYPE_REPLY,
+  discordReplyBody,
+  toChatPlainMessage,
   DISCORD_EPHEMERAL_FLAG,
   DISCORD_FATAL_CLOSE_CODES,
   DISCORD_GATEWAY_EVENTS,
@@ -106,6 +114,10 @@ function fakeCalls(): DiscordCalls & { log: string[]; bodies: unknown[] } {
     },
     async followUp(appId, _token, body) {
       log.push(`followUp ${appId}`);
+      bodies.push(body);
+    },
+    async replyToMessage(channelId, messageId, body) {
+      log.push(`replyToMessage ${channelId} ${messageId}`);
       bodies.push(body);
     },
   };
@@ -202,7 +214,16 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
   });
 
   it('uses the library constant values', () => {
-    expect(DISCORD_GATEWAY_INTENTS).toBe(0);
+    // CHAT-DISCORD-DM-01: DIRECT_MESSAGES only; no privileged intent (members, presences, message content).
+    expect(DISCORD_GATEWAY_INTENTS).toBe(GatewayIntentBits.DirectMessages);
+    expect(DISCORD_GATEWAY_INTENTS).toBe(4096);
+    expect(
+      DISCORD_GATEWAY_INTENTS &
+        (GatewayIntentBits.GuildMembers | GatewayIntentBits.GuildPresences | GatewayIntentBits.MessageContent),
+    ).toBe(0);
+    expect(DISCORD_DISPATCH_MESSAGE_CREATE).toBe(GatewayDispatchEvents.MessageCreate);
+    expect(DISCORD_MESSAGE_TYPE_DEFAULT).toBe(MessageType.Default);
+    expect(DISCORD_MESSAGE_TYPE_REPLY).toBe(MessageType.Reply);
     expect(DISCORD_INTERACTION_APPLICATION_COMMAND).toBe(InteractionType.ApplicationCommand);
     expect(DISCORD_COMMAND_DATA_CHAT_INPUT).toBe(ApplicationCommandType.ChatInput);
     expect(DISCORD_DISPATCH_INTERACTION_CREATE).toBe(GatewayDispatchEvents.InteractionCreate);
@@ -279,11 +300,11 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       real.mockRestore();
     });
 
-    it('connects with intents 0 and the token, without waiting for the session', async () => {
+    it('connects with the DIRECT_MESSAGES intent and the token, without waiting for the session', async () => {
       const h = harness(ON);
       expect(await h.transport.connect(jest.fn())).toBe(true);
       expect(h.factory).toHaveBeenCalledTimes(1);
-      expect(h.factory).toHaveBeenCalledWith(TOKEN, 0);
+      expect(h.factory).toHaveBeenCalledWith(TOKEN, GatewayIntentBits.DirectMessages);
       expect(h.gateway.connectCalls).toBe(1);
       expect(h.transport.state).toBe('connecting');
       // Never listens to library debug output.
@@ -1110,6 +1131,226 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       expect(discordInstallLinks(APP_ID, undefined)).toBeNull();
       expect(discordInstallLinks(APP_ID, '1 OR 1')).toBeNull();
       expect(discordInstallLinks(APP_ID, BOT_USER_ID)?.installUrl).toContain('integration_type=1');
+    });
+  });
+
+  describe('plain direct messages (CHAT-DISCORD-DM-01)', () => {
+    const BOT_USER_ID = '333333333333333333';
+    const DM_CHANNEL_ID = '666666666666666666';
+    const MESSAGE_ID = '777777777777777777';
+    const TEXT_MARKER = 'MARKER-dm-text-do-not-log';
+
+    function plainMessage(overrides: Record<string, unknown> = {}, author: Record<string, unknown> = {}): Record<string, unknown> {
+      return {
+        id: MESSAGE_ID,
+        channel_id: DM_CHANNEL_ID,
+        type: MessageType.Default,
+        content: `  ${TEXT_MARKER} plan my week \n`,
+        author: { id: USER_ID, username: 'keith_user', global_name: 'Keith Display', ...author },
+        mentions: [],
+        attachments: [],
+        ...overrides,
+      };
+    }
+
+    async function readyWith(
+      onMessage: jest.Mock | undefined,
+      botUserId: string | null = BOT_USER_ID,
+      command: jest.Mock = jest.fn(async () => ({ text: 'command' })),
+    ): Promise<Harness> {
+      const h = harness(ON);
+      await h.transport.connect(command, undefined, onMessage);
+      h.gateway.emit('ready', { application: { id: APP_ID }, ...(botUserId ? { user: { id: botUserId } } : {}) }, 0);
+      await flush();
+      h.calls.log.length = 0;
+      h.calls.bodies.length = 0;
+      logs.length = 0;
+      return h;
+    }
+
+    function send(h: Harness, raw: Record<string, unknown>): void {
+      h.gateway.emit('dispatch', { t: GatewayDispatchEvents.MessageCreate, op: 0, s: 2, d: raw }, 0);
+    }
+
+    function refused(code: number): Error {
+      return Object.assign(new Error(`Cannot send messages to this user ${USER_ID} ${DM_CHANNEL_ID}`), {
+        status: 403,
+        code,
+        name: `DiscordAPIError[${code}]`,
+      });
+    }
+
+    function expectNoValuesLogged(): void {
+      const all = logs.join('\n');
+      expect(all).not.toContain(TEXT_MARKER);
+      expect(all).not.toContain(USER_ID);
+      expect(all).not.toContain(DM_CHANNEL_ID);
+      expect(all).not.toContain(MESSAGE_ID);
+    }
+
+    it('a direct message goes to the message handler (trimmed text and author id only) and is answered as a reply, mentions off', async () => {
+      const onMessage = jest.fn(async (): Promise<ChatReplyMessage> => ({
+        text: 'started @everyone',
+        buttons: [{ customId: 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA', label: 'Approve', style: 'approve' }],
+      }));
+      const command = jest.fn();
+      const h = await readyWith(onMessage, BOT_USER_ID, command);
+      send(h, plainMessage());
+      await flush();
+      expect(command).not.toHaveBeenCalled();
+      expect(onMessage).toHaveBeenCalledTimes(1);
+      const received = (onMessage.mock.calls[0] as unknown[])[0] as ChatPlainMessage;
+      expect(received).toEqual({
+        channel: 'discord',
+        text: `${TEXT_MARKER} plan my week`,
+        externalUserId: USER_ID,
+        ref: expect.any(Object),
+      });
+      // The display name and anything else in the message are not read.
+      expect(JSON.stringify(received)).not.toContain('Keith Display');
+      expect(h.calls.log).toEqual([`replyToMessage ${DM_CHANNEL_ID} ${MESSAGE_ID}`]);
+      // No buttons on a reply to a plain message.
+      expect(h.calls.bodies).toEqual([{ content: 'started @everyone', allowed_mentions: { parse: [] } }]);
+      // A message keeps no interaction reference: a later result goes by direct message.
+      expect(h.transport.referenceCount).toBe(0);
+      await h.transport.sendToUser(USER_ID, { text: 'result' });
+      expect(h.calls.log).toEqual([`replyToMessage ${DM_CHANNEL_ID} ${MESSAGE_ID}`, `dm ${USER_ID}`]);
+      expectNoValuesLogged();
+    });
+
+    it('a reply (type 19) is read too; empty content (an attachment or sticker only) reaches the handler as empty text', async () => {
+      const onMessage = jest.fn(async () => ({ text: 'ok' }));
+      const h = await readyWith(onMessage);
+      send(h, plainMessage({ type: MessageType.Reply, message_reference: { message_id: '1' } }));
+      send(h, plainMessage({ content: '', attachments: [{ id: '1' }] }));
+      send(h, plainMessage({ content: undefined, sticker_items: [{ id: '1' }] }));
+      await flush();
+      expect(onMessage.mock.calls.map((call) => ((call as unknown[])[0] as ChatPlainMessage).text)).toEqual([
+        `${TEXT_MARKER} plan my week`,
+        '',
+        '',
+      ]);
+    });
+
+    it('ignores server messages, bots, system users, webhooks, the bot itself, other types and non-snowflake ids, silently', async () => {
+      const onMessage = jest.fn(async () => ({ text: 'x' }));
+      const h = await readyWith(onMessage);
+      const ignored: Array<Record<string, unknown>> = [
+        plainMessage({ guild_id: '888888888888888888' }),
+        plainMessage({ member: { roles: [] } }),
+        plainMessage({}, { bot: true }),
+        plainMessage({}, { system: true }),
+        plainMessage({ webhook_id: '999999999999999999' }),
+        plainMessage({}, { id: BOT_USER_ID }),
+        plainMessage({ type: MessageType.ChatInputCommand }),
+        plainMessage({ type: MessageType.UserJoin }),
+        plainMessage({ type: MessageType.ThreadCreated }),
+        plainMessage({ type: '0' }),
+        plainMessage({}, { id: '<@123>' }),
+        plainMessage({}, { id: 123 }),
+        plainMessage({ author: undefined }),
+        plainMessage({ id: 'not-a-snowflake' }),
+        plainMessage({ channel_id: '../channels/1' }),
+      ];
+      for (const raw of ignored) send(h, raw);
+      h.gateway.emit('dispatch', { t: GatewayDispatchEvents.MessageCreate, d: null }, 0);
+      h.gateway.emit('dispatch', { t: GatewayDispatchEvents.MessageUpdate, d: plainMessage() }, 0);
+      h.gateway.emit('dispatch', { t: GatewayDispatchEvents.InteractionCreate, d: plainMessage() }, 0);
+      await flush();
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(h.calls.log).toEqual([]);
+      expect(logs).toEqual([]);
+      // The same messages through the parser directly.
+      for (const raw of ignored) expect(toChatPlainMessage(raw, BOT_USER_ID)).toBeNull();
+      expect(toChatPlainMessage(plainMessage(), BOT_USER_ID)).not.toBeNull();
+    });
+
+    it('while the bot’s own user id is unknown, nothing is read (fail closed)', async () => {
+      const onMessage = jest.fn(async () => ({ text: 'x' }));
+      const h = await readyWith(onMessage, null);
+      send(h, plainMessage());
+      await flush();
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(toChatPlainMessage(plainMessage(), null)).toBeNull();
+      expect(toChatPlainMessage(plainMessage(), 'bot')).toBeNull();
+    });
+
+    it('no message handler, before ready or after disconnect: ignored', async () => {
+      const without = await readyWith(undefined);
+      send(without, plainMessage());
+      await flush();
+      expect(without.calls.log).toEqual([]);
+
+      const onMessage = jest.fn(async () => ({ text: 'x' }));
+      const h = harness(ON);
+      await h.transport.connect(jest.fn(), undefined, onMessage);
+      send(h, plainMessage());
+      await flush();
+      expect(onMessage).not.toHaveBeenCalled();
+      h.gateway.emit('ready', { application: { id: APP_ID }, user: { id: BOT_USER_ID } }, 0);
+      await h.transport.disconnect();
+      send(h, plainMessage());
+      await flush();
+      expect(onMessage).not.toHaveBeenCalled();
+    });
+
+    it('a null answer sends nothing', async () => {
+      const h = await readyWith(jest.fn(async () => null));
+      send(h, plainMessage());
+      await flush();
+      expect(h.calls.log).toEqual([]);
+    });
+
+    it.each(DISCORD_DM_REFUSED_CODES.map((code) => [code]))(
+      'a refused reply (403, code %i) is logged once with a reason code and otherwise ignored',
+      async (code) => {
+        const h = await readyWith(jest.fn(async () => ({ text: 'started' })));
+        h.calls.replyToMessage = async () => {
+          throw refused(code);
+        };
+        send(h, plainMessage());
+        await flush();
+        expect(logs).toEqual(['warn: chat discord message reply refused reason=dm_refused']);
+        expect(h.transport.state).toBe('ready');
+        expectNoValuesLogged();
+      },
+    );
+
+    it('another reply failure, or a handler failure, is logged by class and status only', async () => {
+      const h = await readyWith(jest.fn(async () => ({ text: 'started' })));
+      h.calls.replyToMessage = async () => {
+        throw Object.assign(new Error(`Missing Access ${DM_CHANNEL_ID}`), { status: 500, name: 'DiscordAPIError' });
+      };
+      send(h, plainMessage());
+      await flush();
+      expect(logs).toEqual(['warn: chat discord message reply failed reason=DiscordAPIError status=500']);
+
+      logs.length = 0;
+      const failing = await readyWith(
+        jest.fn(async () => {
+          throw new RangeError(`boom ${TEXT_MARKER} ${USER_ID}`);
+        }),
+      );
+      send(failing, plainMessage());
+      await flush();
+      expect(failing.calls.log).toEqual([]);
+      expect(logs).toEqual(['warn: chat discord message failed reason=RangeError']);
+      expectNoValuesLogged();
+    });
+
+    it('the reply body: a message reference that never fails, mentions off; Discord’s body type knows it', () => {
+      expect(discordReplyBody(MESSAGE_ID, { content: 'hi', allowed_mentions: { parse: [] } })).toEqual({
+        content: 'hi',
+        allowed_mentions: { parse: [] },
+        message_reference: { message_id: MESSAGE_ID, fail_if_not_exists: false },
+      });
+      // Compile-time check against discord-api-types (the Create Message JSON params).
+      const body: import('@discordjs/core').RESTPostAPIChannelMessageJSONBody = discordReplyBody(MESSAGE_ID, {
+        content: 'x',
+        allowed_mentions: { parse: [] },
+      });
+      expect(body.message_reference?.fail_if_not_exists).toBe(false);
+      expect(body.allowed_mentions?.replied_user).toBeUndefined();
     });
   });
 

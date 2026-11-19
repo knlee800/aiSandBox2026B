@@ -74,10 +74,15 @@ import type { ChatReplyMessage } from './chat-transport';
  * in chat_limit_hits (ChatLimits, bucket command, the owner id), so a restart
  * does not reset it; a store error answers the fixed error line and starts or
  * cancels nothing.
+ *
+ * CHAT-DISCORD-DM-01: a plain direct message to the bot runs ask(link,
+ * { text }) through ChatCommandService.handleMessage, the same path as /ask:
+ * it counts in the same 10-a-minute limit, writes the same audit rows and
+ * the same delivery row (origin 'chat'), and its text is never logged.
  */
 
 export const CHAT_RUN_LIMITS = {
-  /** /ask and /cancel per owner per minute. */
+  /** /ask, plain direct messages (CHAT-DISCORD-DM-01) and /cancel per owner per minute. */
   commandsPerMinute: 10,
   windowMs: 60 * 1000,
   /** Discord-started runs in progress (waiting delivery rows) per link. */

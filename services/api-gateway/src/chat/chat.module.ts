@@ -52,7 +52,8 @@ export const CHAT_TRANSPORT_PROVIDER: Provider = {
  * CHAT_RUNNER_ALLOW_UNDER_JEST is provided; the Discord transport refuses its
  * real library under Jest too. connect() never blocks on the network, so the
  * gateway boot never waits for Discord. Slice C2: button presses go to the
- * approval service (without it, presses are ignored).
+ * approval service (without it, presses are ignored). CHAT-DISCORD-DM-01:
+ * plain direct messages go to ChatCommandService.handleMessage.
  */
 @Injectable()
 export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestroy {
@@ -88,6 +89,8 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
       return await this.transport.connect(
         (invocation) => this.commands.handle(invocation),
         approvals ? (press) => approvals.handlePress(press) : undefined,
+        // CHAT-DISCORD-DM-01: plain direct messages take the /ask path.
+        (message) => this.commands.handleMessage(message),
       );
     } catch {
       this.logger.warn('chat channel start failed');
@@ -111,7 +114,8 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
 /**
  * CHAT-DISCORD-01: chat channels. Slice A1: the account link (tables, codes,
  * routes, audit). Slice B: the Discord bot connection (outbound only, intents
- * 0, CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN) and the slash commands
+ * 0, CHAT_DISCORD_ENABLED and DISCORD_BOT_TOKEN; CHAT-DISCORD-DM-01: intents
+ * DIRECT_MESSAGES, not privileged, for plain direct messages) and the slash commands
  * without runs. Slice C1: /ask (and the /cancel logic) through the Team
  * page's start and approve code (OrchestrationModule's CollaborationStartService), the
  * chat_run_deliveries table and the result poller. Slice C2: Approve and

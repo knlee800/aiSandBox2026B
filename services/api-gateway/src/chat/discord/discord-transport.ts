@@ -11,6 +11,8 @@ import {
   type ChatComponentPress,
   type ChatComponentResponse,
   type ChatInstallLinks,
+  type ChatMessageHandler,
+  type ChatPlainMessage,
   type ChatReplyMessage,
   type ChatSendOptions,
   type ChatTransport,
@@ -29,7 +31,7 @@ import {
 /**
  * CHAT-DISCORD-01 slice B (stage-start sections 2, 4, 7): the Discord
  * transport. An outbound WebSocket to Discord's gateway (@discordjs/ws) with
- * gateway intents 0, and HTTPS calls (@discordjs/rest through @discordjs/core's
+ * gateway intents 0 (CHAT-DISCORD-DM-01: DIRECT_MESSAGES, see below), and HTTPS calls (@discordjs/rest through @discordjs/core's
  * API). No inbound address, no listening port.
  *
  * It connects only when CHAT_DISCORD_ENABLED is exactly 'true' AND
@@ -84,11 +86,36 @@ import {
  * within a few minutes, so a part re-sent after a crash between Discord's
  * "sent" and the database write is not shown twice. Follow-ups cannot carry
  * a nonce, so they go without it.
+ *
+ * CHAT-DISCORD-DM-01: plain direct messages. The gateway intents are
+ * DIRECT_MESSAGES (1 << 12), which is not privileged; Discord delivers the
+ * content of direct messages to the bot without the privileged
+ * MESSAGE_CONTENT intent. A MESSAGE_CREATE is read only when it is in a
+ * direct message (no guild_id, no member), from a human author (not a bot,
+ * not a system user, not a webhook) other than the bot itself, of type
+ * normal (0) or reply (19), with snowflake author, message and channel ids,
+ * and only while the bot's own user id is known. Everything else is ignored
+ * silently. Only the trimmed content, the author id and the ids to reply
+ * with are read. The handler's answer goes out as a reply to that message in
+ * the direct message (mentions off, no buttons). A reply Discord refuses
+ * (HTTP 403, code 50007 or 50278) is logged once with a reason code and
+ * otherwise ignored. A plain message keeps no interaction reference (it has
+ * no interaction token). The text, the author id and the channel id are
+ * never logged.
  */
 
 export const DISCORD_BOT_TOKEN_ENV = 'DISCORD_BOT_TOKEN';
-/** Gateway intents: none. Interactions are not tied to an intent; no privileged intent is asked for. */
-export const DISCORD_GATEWAY_INTENTS = 0;
+/**
+ * Gateway intents: GatewayIntentBits.DirectMessages (1 << 12) only, for the
+ * MESSAGE_CREATE of plain direct messages (CHAT-DISCORD-DM-01). Not
+ * privileged. Interactions are not tied to an intent.
+ */
+export const DISCORD_GATEWAY_INTENTS = 1 << 12;
+/** GatewayDispatchEvents.MessageCreate (CHAT-DISCORD-DM-01) */
+export const DISCORD_DISPATCH_MESSAGE_CREATE = 'MESSAGE_CREATE';
+/** MessageType.Default and MessageType.Reply: the only message types read (CHAT-DISCORD-DM-01). */
+export const DISCORD_MESSAGE_TYPE_DEFAULT = 0;
+export const DISCORD_MESSAGE_TYPE_REPLY = 19;
 export const DISCORD_MAX_FAILED_IDENTIFIES = 20;
 export const DISCORD_IDENTIFY_WINDOW_MS = 24 * 60 * 60 * 1000;
 /** Answer directly when the handler is done within this time; otherwise defer and edit (Discord allows 3 s). */
@@ -190,6 +217,27 @@ export interface DiscordCalls {
   deferUpdate(interactionId: string, interactionToken: string): Promise<void>;
   /** Slice C2: a follow-up message to an interaction (an ephemeral answer after a deferred update). */
   followUp(applicationId: string, interactionToken: string, body: DiscordMessageBody): Promise<void>;
+  /**
+   * CHAT-DISCORD-DM-01: a reply to one message in its channel (the direct
+   * message), see discordReplyBody. The real connection always has it;
+   * optional so test fakes written before it still type-check (without it,
+   * a plain message is handled but not answered).
+   */
+  replyToMessage?(channelId: string, messageId: string, body: DiscordMessageBody): Promise<void>;
+}
+
+/** CHAT-DISCORD-DM-01: the Create Message body of a reply: the message reference, never failing when the message is gone. */
+export interface DiscordReplyBody extends DiscordMessageBody {
+  message_reference: { message_id: string; fail_if_not_exists: false };
+}
+
+/**
+ * CHAT-DISCORD-DM-01: a reply to the message with this id. Mentions stay off
+ * (parse [] and no replied_user, so not even the author is pinged); if the
+ * message was deleted meanwhile, Discord sends it as a plain message.
+ */
+export function discordReplyBody(messageId: string, message: DiscordMessageBody): DiscordReplyBody {
+  return { ...message, message_reference: { message_id: messageId, fail_if_not_exists: false } };
 }
 
 /** The gateway connection (a WebSocketManager), reduced to what the transport uses. */
@@ -249,6 +297,9 @@ export const createDiscordConnection: DiscordConnectionFactory = async (token, i
     },
     async followUp(applicationId, interactionToken, body) {
       await api.interactions.followUp(applicationId, interactionToken, body);
+    },
+    async replyToMessage(channelId, messageId, body) {
+      await api.channels.createMessage(channelId, discordReplyBody(messageId, body));
     },
   };
   return {
@@ -491,6 +542,51 @@ export function toChatComponentPress(raw: unknown, channel: ChatChannel = 'disco
   };
 }
 
+/** CHAT-DISCORD-DM-01: the ids to reply to one plain message with. Memory only; never logged. */
+interface DiscordMessageRef {
+  channelId: string;
+  messageId: string;
+}
+
+function isPresent(value: unknown): boolean {
+  return value !== undefined && value !== null;
+}
+
+/**
+ * CHAT-DISCORD-DM-01: turns a raw MESSAGE_CREATE into a plain message, or
+ * null when it is not one the bot reads: only a message in a direct message
+ * (no guild_id, no member), of type normal (0) or reply (19), not from a
+ * webhook, from an author who is not a bot, not a system user and not the
+ * bot itself (botUserId must be a known snowflake), with snowflake author,
+ * message and channel ids. Reads only the content (trimmed), the author id
+ * and the message and channel ids.
+ */
+export function toChatPlainMessage(
+  raw: unknown,
+  botUserId: string | null,
+  channel: ChatChannel = 'discord',
+): ChatPlainMessage | null {
+  const message = raw as Record<string, any> | null;
+  if (!message || typeof message !== 'object') return null;
+  if (isPresent(message.guild_id) || isPresent(message.member)) return null;
+  if (message.type !== DISCORD_MESSAGE_TYPE_DEFAULT && message.type !== DISCORD_MESSAGE_TYPE_REPLY) return null;
+  if (isPresent(message.webhook_id)) return null;
+  const author = message.author as Record<string, any> | undefined;
+  if (!author || typeof author !== 'object') return null;
+  if (author.bot || author.system) return null;
+  if (typeof author.id !== 'string' || !SNOWFLAKE.test(author.id)) return null;
+  if (typeof botUserId !== 'string' || !SNOWFLAKE.test(botUserId) || author.id === botUserId) return null;
+  if (typeof message.id !== 'string' || !SNOWFLAKE.test(message.id)) return null;
+  if (typeof message.channel_id !== 'string' || !SNOWFLAKE.test(message.channel_id)) return null;
+  const ref: DiscordMessageRef = { channelId: message.channel_id, messageId: message.id };
+  return {
+    channel,
+    text: typeof message.content === 'string' ? message.content.trim() : '',
+    externalUserId: author.id,
+    ref,
+  };
+}
+
 export class DiscordTransport implements ChatTransport {
   readonly channel: ChatChannel = 'discord';
   private readonly logger = new Logger('ChatDiscord');
@@ -506,6 +602,8 @@ export class DiscordTransport implements ChatTransport {
   private connection: DiscordConnection | null = null;
   private handler: ChatCommandHandler | null = null;
   private componentHandler: ChatComponentHandler | null = null;
+  /** CHAT-DISCORD-DM-01: the plain-message handler; without it plain messages are ignored. */
+  private messageHandler: ChatMessageHandler | null = null;
   private applicationId: string | null = null;
   private botUserId: string | null = null;
   private sessionUp = false;
@@ -538,7 +636,11 @@ export class DiscordTransport implements ChatTransport {
     return discordInstallLinks(this.applicationId, this.botUserId);
   }
 
-  async connect(handler: ChatCommandHandler, onComponent?: ChatComponentHandler): Promise<boolean> {
+  async connect(
+    handler: ChatCommandHandler,
+    onComponent?: ChatComponentHandler,
+    onMessage?: ChatMessageHandler,
+  ): Promise<boolean> {
     if (this.currentState !== 'off') {
       return false;
     }
@@ -559,6 +661,7 @@ export class DiscordTransport implements ChatTransport {
     this.currentState = 'connecting';
     this.handler = handler;
     this.componentHandler = onComponent ?? null;
+    this.messageHandler = onMessage ?? null;
     let connection: DiscordConnection;
     try {
       connection = await this.factory(token, DISCORD_GATEWAY_INTENTS);
@@ -566,6 +669,7 @@ export class DiscordTransport implements ChatTransport {
       this.currentState = 'stopped';
       this.handler = null;
       this.componentHandler = null;
+      this.messageHandler = null;
       this.logger.warn(`chat discord connect failed reason=${errorName(error)}`);
       return false;
     }
@@ -585,6 +689,7 @@ export class DiscordTransport implements ChatTransport {
     this.connection = null;
     this.handler = null;
     this.componentHandler = null;
+    this.messageHandler = null;
     this.sessionUp = false;
     this.references.clear();
     if (this.currentState !== 'off') {
@@ -743,8 +848,11 @@ export class DiscordTransport implements ChatTransport {
       this.logger.warn(`chat discord error reason=${errorName(error)}`);
     });
     gateway.on(DISCORD_GATEWAY_EVENTS.dispatch, (payload: GatewayDispatchPayload) => {
-      if (payload && (payload as { t?: unknown }).t === DISCORD_DISPATCH_INTERACTION_CREATE) {
+      const event = payload ? (payload as { t?: unknown }).t : undefined;
+      if (event === DISCORD_DISPATCH_INTERACTION_CREATE) {
         void this.onInteraction((payload as { d?: unknown }).d);
+      } else if (event === DISCORD_DISPATCH_MESSAGE_CREATE) {
+        void this.onMessage((payload as { d?: unknown }).d);
       }
     });
   }
@@ -793,6 +901,7 @@ export class DiscordTransport implements ChatTransport {
     this.sessionUp = false;
     this.handler = null;
     this.componentHandler = null;
+    this.messageHandler = null;
     this.references.clear();
     this.logger.warn(`chat discord stopped ${reason}`);
     const connection = this.connection;
@@ -893,6 +1002,45 @@ export class DiscordTransport implements ChatTransport {
       this.logger.warn(`chat discord press failed reason=${errorName(error)}${errorStatus(error)}`);
     } finally {
       answered();
+    }
+  }
+
+  /**
+   * CHAT-DISCORD-DM-01: a plain direct message. No 3-second limit applies
+   * (it is not an interaction), so the handler is awaited and its answer
+   * goes out as a reply to the message, mentions off and without buttons.
+   * A refused reply is logged once with a reason code; any failure is logged
+   * by class and status only, never with the text or an id.
+   */
+  private async onMessage(raw: unknown): Promise<void> {
+    const handler = this.messageHandler;
+    if (!handler || this.currentState !== 'ready') {
+      return;
+    }
+    const message = toChatPlainMessage(raw, this.botUserId, this.channel);
+    if (!message) {
+      return;
+    }
+    let answer: ChatReplyMessage | null;
+    try {
+      answer = await handler(message);
+    } catch (error) {
+      this.logger.warn(`chat discord message failed reason=${errorName(error)}`);
+      return;
+    }
+    const connection = this.connection;
+    if (!answer || !connection || this.currentState !== 'ready' || !connection.calls.replyToMessage) {
+      return;
+    }
+    const ref = message.ref as DiscordMessageRef;
+    try {
+      await connection.calls.replyToMessage(ref.channelId, ref.messageId, body({ text: answer.text }, false));
+    } catch (error) {
+      if (isDiscordDirectMessageRefused(error)) {
+        this.logger.warn('chat discord message reply refused reason=dm_refused');
+      } else {
+        this.logger.warn(`chat discord message reply failed reason=${errorName(error)}${errorStatus(error)}`);
+      }
     }
   }
 

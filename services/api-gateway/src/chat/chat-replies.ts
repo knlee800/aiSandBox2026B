@@ -79,6 +79,10 @@ export const CHAT_REPLY_KEYS = [
   'approval.overCap',
   'approval.workflow',
   'approval.refused',
+  // CHAT-DISCORD-DM-01: plain direct messages that start nothing.
+  'message.textOnly',
+  'message.useSlashMenu',
+  'message.tooLong',
 ] as const;
 
 export type ChatReplyKey = (typeof CHAT_REPLY_KEYS)[number];

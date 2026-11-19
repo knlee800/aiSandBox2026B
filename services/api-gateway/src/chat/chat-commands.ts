@@ -15,8 +15,13 @@ import {
 import { chatLanguageName, chatReply, ChatReplyKey } from './chat-replies';
 import { ChatRunService } from './chat-run.service';
 import { isChatDiscordEnabled } from './chat-switch';
-import { ChatActivityNotifier, type ChatCommandInvocation, type ChatReplyMessage } from './chat-transport';
-import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
+import {
+  ChatActivityNotifier,
+  type ChatCommandInvocation,
+  type ChatPlainMessage,
+  type ChatReplyMessage,
+} from './chat-transport';
+import { CHAT_ASK_TEXT_MAX, ChatCommandName, isChatCommandName } from './discord/discord-commands';
 
 /**
  * CHAT-DISCORD-01 slices B and C1 (stage-start sections 5, 6.1, 6.2, 6.4,
@@ -48,6 +53,16 @@ import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
  * ChatActivityNotifier that this outside user is active, so results held
  * after a refused direct message go out now, as follow-ups after this
  * command's own reply. The notifier only passes the id on in memory.
+ *
+ * CHAT-DISCORD-DM-01: a plain direct message (handleMessage) from a linked,
+ * active, harness-entitled owner runs exactly what /ask runs with { text }:
+ * ChatRunService.ask (the Chief of Staff, or "@Name rest" for one of the
+ * owner's workflows; the same limits, refusals, audit rows and delivery row
+ * with origin 'chat'). An unlinked author gets "link first"; empty text
+ * (an attachment or sticker only), text starting with "/" and text over
+ * 6000 characters each get one fixed line and start nothing. A plain message
+ * also tells ChatActivityNotifier the user is active. The text is never
+ * logged; log lines carry an outcome code and the link's own uuid only.
  */
 
 const CHANNEL = 'discord' as const;
@@ -141,6 +156,44 @@ export class ChatCommandService {
     }
   }
 
+  /**
+   * CHAT-DISCORD-DM-01: the transport's plain-message handler. Never throws.
+   * The transport passes only direct messages from a human author other
+   * than the bot. A plain message has no locale, so before the link is known
+   * the reply is in English; after that, in the link's language.
+   */
+  async handleMessage(plain: ChatPlainMessage): Promise<ChatReplyMessage | null> {
+    try {
+      if (!isChatDiscordEnabled()) {
+        return this.doneMessage('not_available', null, message('en', 'notAvailable'));
+      }
+      this.activity?.notify(CHANNEL, plain.externalUserId);
+      const link = await this.links.useLinkByExternalUser(CHANNEL, plain.externalUserId);
+      if (!link) {
+        return this.doneMessage('not_linked', null, message('en', 'linkFirst'));
+      }
+      const text = typeof plain.text === 'string' ? plain.text.trim() : '';
+      if (text.length === 0) {
+        return this.doneMessage('empty_text', link, message(link.locale, 'message.textOnly'));
+      }
+      if (text.startsWith('/')) {
+        return this.doneMessage('slash_text', link, message(link.locale, 'message.useSlashMenu'));
+      }
+      if (Array.from(text).length > CHAT_ASK_TEXT_MAX) {
+        return this.doneMessage('too_long', link, message(link.locale, 'message.tooLong'));
+      }
+      const owner = await this.ownerState(link.userId);
+      if (owner !== 'ok') {
+        return this.doneMessage(owner, link, await this.runs.refuseOwner(link, owner));
+      }
+      return this.doneMessage('handled', link, await this.runs.ask(link, { text }));
+    } catch (error) {
+      const reason = error instanceof Error && /^[A-Za-z0-9_]{1,64}$/.test(error.name) ? error.name : 'Error';
+      this.logger.warn(`chat message failed reason=${reason}`);
+      return message('en', 'error');
+    }
+  }
+
   private async link(invocation: ChatCommandInvocation): Promise<ChatReplyMessage | null> {
     const result = await this.links.claim(
       invocation.options.code,
@@ -195,6 +248,13 @@ export class ChatCommandService {
   ): T {
     const linkPart = link ? ` linkId=${link.linkId}` : '';
     this.logger.log(`chat command name=${command ?? 'unknown'} outcome=${outcome}${linkPart}`);
+    return reply;
+  }
+
+  /** CHAT-DISCORD-DM-01: one log line per plain message: an outcome code and the link uuid only. */
+  private doneMessage(outcome: string, link: ChatLinkUse | null, reply: ChatReplyMessage): ChatReplyMessage {
+    const linkPart = link ? ` linkId=${link.linkId}` : '';
+    this.logger.log(`chat message outcome=${outcome}${linkPart}`);
     return reply;
   }
 }

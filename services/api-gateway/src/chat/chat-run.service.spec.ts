@@ -12,6 +12,7 @@ import { workflowRefusal, WORKFLOW_REFUSAL_CODES } from '../orchestration/collab
 import { chatReply } from './chat-replies';
 import { ChatLimits, MemoryChatLimitStore } from './chat-limits';
 import { CHAT_RUN_LIMITS, ChatRunService, chatRunRefusalOf } from './chat-run.service';
+import { ChatCommandService } from './chat-commands';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const LINK_ID = '22222222-2222-4222-8222-222222222222';
@@ -668,6 +669,114 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       await new Promise((resolve) => setImmediate(resolve));
       expect(linksRepo.findOne).not.toHaveBeenCalled();
       expect(rows).toEqual([]);
+    });
+  });
+
+  describe('CHAT-DISCORD-DM-01: a plain direct message runs exactly the /ask path', () => {
+    const DISCORD_ID = '987654321098765432';
+    const originalChat = process.env.CHAT_DISCORD_ENABLED;
+    let commands: ChatCommandService;
+
+    beforeEach(() => {
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+      const links = { useLinkByExternalUser: jest.fn(async () => ({ ...link })) };
+      const entitlements = { resolveHarnessEntitled: jest.fn(async () => true) };
+      const users = { findOne: jest.fn(async () => ({ id: OWNER, isActive: true })) };
+      commands = new ChatCommandService(links as never, entitlements as never, users as never, service);
+    });
+
+    afterEach(() => {
+      if (originalChat === undefined) delete process.env.CHAT_DISCORD_ENABLED;
+      else process.env.CHAT_DISCORD_ENABLED = originalChat;
+      expect(logs.join('\n')).not.toContain(DISCORD_ID);
+    });
+
+    function slashAsk(text: string): Promise<unknown> {
+      return commands.handle({
+        channel: 'discord',
+        command: 'ask',
+        options: { text },
+        externalUserId: DISCORD_ID,
+        displayName: null,
+        locale: 'en-US',
+        directMessage: true,
+        ref: {},
+      });
+    }
+
+    function plain(text: string): Promise<unknown> {
+      return commands.handleMessage({ channel: 'discord', text, externalUserId: DISCORD_ID, ref: {} });
+    }
+
+    /** One run's trace with its run id replaced, to compare a /ask run with a plain-message run. */
+    function trace(runId: string, index: number) {
+      const swap = (value: unknown) => JSON.parse(JSON.stringify(value).split(runId).join('RUN'));
+      return {
+        readStartBody: starts.readStartBody.mock.calls[index],
+        start: starts.start.mock.calls[index],
+        approveStep: swap(starts.approveStep.mock.calls[index]),
+        row: swap({ ...rows.find((row) => row.collaborationRunId === runId), createdAt: 'x' }),
+        audit: swap(audit.filter((row) => row.subjectId === runId).map((row) => ({ ...row, occurredAt: 'x' }))),
+      };
+    }
+
+    it('same task text, same target, same audit row and the delivery row with origin chat', async () => {
+      expect(await slashAsk(`${MARKER} plan my week`)).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(await plain(`${MARKER} plan my week`)).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(starts.start).toHaveBeenCalledTimes(2);
+      const viaAsk = trace(RUN_ID, 0);
+      const viaMessage = trace(`${RUN_ID}-2`, 1);
+      expect(viaMessage).toEqual(viaAsk);
+      expect(viaMessage.readStartBody).toEqual([{ team: 'chief-of-staff', task: `${MARKER} plan my week` }]);
+      expect(viaMessage.row.origin).toBe('chat');
+      expect(viaMessage.audit).toEqual([
+        expect.objectContaining({
+          category: 'chat',
+          eventType: 'run_started',
+          payload: { channel: 'discord', linkId: LINK_ID, collaborationRunId: 'RUN', target: 'chief-of-staff' },
+        }),
+      ]);
+      expect(logs).toContain(`chat run started linkId=${LINK_ID} runId=${RUN_ID}-2 target=chief-of-staff`);
+      expect(logs).toContain(`chat message outcome=handled linkId=${LINK_ID}`);
+    });
+
+    it('"@Name rest" picks the workflow, as /ask does', async () => {
+      await plain(`@sales digest ${MARKER}`);
+      expect(starts.readStartBody).toHaveBeenLastCalledWith({ workflowId: WORKFLOW_A, task: ` ${MARKER}` });
+      expect(audit[0].payload).toEqual({
+        channel: 'discord',
+        linkId: LINK_ID,
+        collaborationRunId: RUN_ID,
+        target: 'workflow',
+        workflowId: WORKFLOW_A,
+      });
+      // An unknown name is refused like /ask, listing the switched-on names only.
+      expect(await plain(`@Nobody ${MARKER}`)).toEqual({
+        text: chatReply('en', 'ask.unknownAgent', { names: 'Sales Digest' }),
+      });
+    });
+
+    it('the 10-a-minute limit counts plain messages and /ask together', async () => {
+      for (let i = 0; i < CHAT_RUN_LIMITS.commandsPerMinute; i += 1) {
+        rows.length = 0;
+        await (i % 2 === 0 ? slashAsk(MARKER) : plain(MARKER));
+      }
+      expect(starts.start).toHaveBeenCalledTimes(CHAT_RUN_LIMITS.commandsPerMinute);
+      rows.length = 0;
+      starts.start.mockClear();
+      expect(await plain(MARKER)).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(await slashAsk(MARKER)).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(starts.start).not.toHaveBeenCalled();
+      expect(audit.slice(-2).map((row) => row.payload.reason)).toEqual(['rate_limited', 'rate_limited']);
+    });
+
+    it('runs switched off: the same refusal and audit row as /ask, nothing created', async () => {
+      process.env.GLOBAL_EXECUTION_ENABLED = 'false';
+      expect(await plain(MARKER)).toEqual({ text: chatReply('en', 'ask.runsOff') });
+      expect(starts.start).not.toHaveBeenCalled();
+      expect(audit.map((row) => [row.eventType, row.payload.reason, row.payload.stage])).toEqual([
+        ['run_refused', 'runs_off', 'precheck'],
+      ]);
     });
   });
 

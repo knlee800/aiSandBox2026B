@@ -92,6 +92,29 @@ export type ChatComponentResponse =
 export type ChatComponentHandler = (press: ChatComponentPress) => Promise<ChatComponentResponse>;
 
 /**
+ * CHAT-DISCORD-DM-01: one plain message (no slash command) in the direct
+ * message with the bot, from a human author other than the bot. The
+ * transport passes nothing else (no server message, no bot or system author,
+ * no other message type, no author id that is not a snowflake). Every field
+ * is untrusted: the text is the task and is never logged, audited or echoed.
+ */
+export interface ChatPlainMessage {
+  readonly channel: ChatChannel;
+  /** The message content, trimmed; empty for an attachment or sticker only. */
+  readonly text: string;
+  /** The outside user id of the author (Discord: a snowflake as a decimal string). */
+  readonly externalUserId: string;
+  /** Opaque to everyone but the transport that made it (ids to reply with). */
+  readonly ref: object;
+}
+
+/**
+ * Returns the answer, which the transport sends as a reply to the message in
+ * the direct message (mentions off), or null to answer nothing.
+ */
+export type ChatMessageHandler = (message: ChatPlainMessage) => Promise<ChatReplyMessage | null>;
+
+/**
  * off: never connected (switch off, no token, or under tests).
  * connecting: connecting or reconnecting.
  * ready: connected; commands are answered.
@@ -129,9 +152,14 @@ export interface ChatTransport {
   /**
    * Starts the connection when allowed. Never throws, never blocks on the
    * network. True when a connection was started. Button presses go to
-   * onComponent (slice C2); without it they are ignored.
+   * onComponent (slice C2); without it they are ignored. CHAT-DISCORD-DM-01:
+   * plain direct messages go to onMessage; without it they are ignored.
    */
-  connect(handler: ChatCommandHandler, onComponent?: ChatComponentHandler): Promise<boolean>;
+  connect(
+    handler: ChatCommandHandler,
+    onComponent?: ChatComponentHandler,
+    onMessage?: ChatMessageHandler,
+  ): Promise<boolean>;
   /** Closes the connection; safe to call in any state. */
   disconnect(): Promise<void>;
   /** Registers the command list with the chat service (the transport calls it itself once ready). */
@@ -154,13 +182,18 @@ export interface ChatTransport {
   installLinks(): ChatInstallLinks | null;
 }
 
-/** A listener for ChatActivityNotifier: one outside user just used a command or pressed a button. */
+/**
+ * A listener for ChatActivityNotifier: one outside user just used a command,
+ * pressed a button or (CHAT-DISCORD-DM-01) sent a plain direct message.
+ */
 export type ChatActivityListener = (channel: ChatChannel, externalUserId: string) => void;
 
 /**
  * CHAT-USER-INSTALL-01: tells the delivery that an outside user is active
  * (a command or a button press in the direct message), so results held for
- * that user go out now as follow-ups. A small shared notifier, so the command
+ * that user go out now as follow-ups. CHAT-DISCORD-DM-01: a plain direct
+ * message notifies too; it carries no interaction token, so held results go
+ * by direct message (or wait for the next command or button press). A small shared notifier, so the command
  * and component handlers reach the delivery without a Nest dependency cycle
  * (the delivery already depends on the approval service). Memory only;
  * nothing is logged here. notify never throws.
@@ -197,6 +230,8 @@ export class FakeChatTransport implements ChatTransport {
   state: ChatTransportState = 'off';
   handler: ChatCommandHandler | null = null;
   componentHandler: ChatComponentHandler | null = null;
+  /** CHAT-DISCORD-DM-01: the plain-message handler given to connect, if any. */
+  messageHandler: ChatMessageHandler | null = null;
   connectCalls = 0;
   disconnectCalls = 0;
   registeredCommands = 0;
@@ -206,6 +241,8 @@ export class FakeChatTransport implements ChatTransport {
   /** CHAT-STATE-PERSIST-01: the dedupe key of each message sent (same order as directMessages). */
   readonly dedupeKeys: Array<string | undefined> = [];
   readonly componentResponses: Array<{ press: ChatComponentPress; response: ChatComponentResponse }> = [];
+  /** CHAT-DISCORD-DM-01: every plain message and the answer sent as its reply (null: nothing sent). */
+  readonly messageReplies: Array<{ message: ChatPlainMessage; reply: ChatReplyMessage | null }> = [];
   /** Users whose messages are refused (sendToUser throws ChatDirectMessageRefusedError). */
   readonly refusedUsers = new Set<string>();
   /** What installLinks() answers while ready. */
@@ -213,13 +250,18 @@ export class FakeChatTransport implements ChatTransport {
 
   constructor(private readonly allowConnect = true) {}
 
-  async connect(handler: ChatCommandHandler, onComponent?: ChatComponentHandler): Promise<boolean> {
+  async connect(
+    handler: ChatCommandHandler,
+    onComponent?: ChatComponentHandler,
+    onMessage?: ChatMessageHandler,
+  ): Promise<boolean> {
     this.connectCalls += 1;
     if (!this.allowConnect) {
       return false;
     }
     this.handler = handler;
     this.componentHandler = onComponent ?? null;
+    this.messageHandler = onMessage ?? null;
     this.state = 'ready';
     await this.registerCommands();
     return true;
@@ -229,6 +271,7 @@ export class FakeChatTransport implements ChatTransport {
     this.disconnectCalls += 1;
     this.handler = null;
     this.componentHandler = null;
+    this.messageHandler = null;
     this.state = this.state === 'off' ? 'off' : 'stopped';
   }
 
@@ -272,5 +315,16 @@ export class FakeChatTransport implements ChatTransport {
     const response = await this.componentHandler(full);
     this.componentResponses.push({ press: full, response });
     return response;
+  }
+
+  /** CHAT-DISCORD-DM-01: simulates one plain direct message: the message handler answers, the reply is recorded. */
+  async send(message: Omit<ChatPlainMessage, 'channel' | 'ref'>): Promise<ChatReplyMessage | null> {
+    if (!this.messageHandler) {
+      throw new Error('fake transport has no message handler');
+    }
+    const full: ChatPlainMessage = { ...message, channel: this.channel, ref: {} };
+    const reply = await this.messageHandler(full);
+    this.messageReplies.push({ message: full, reply });
+    return reply;
   }
 }

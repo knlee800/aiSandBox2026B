@@ -160,6 +160,44 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
     }
   });
 
+  it('CHAT-DISCORD-DM-01: /help says plain messages work, @name picks a workflow, and /ask is the fallback', () => {
+    const lines = {
+      en: 'You can also just send a message here: it goes to the Chief of Staff, or start it with @name to ask one of your workflows. If the bot does not answer plain messages, use /ask.',
+      'zh-TW': '你也可以直接在這裡傳送訊息：訊息會交給幕僚長；以 @名稱 開頭即可向你的某個工作流程提問。如果機器人沒有回應一般訊息，請使用 /ask。',
+      'zh-CN': '你也可以直接在这里发送消息：消息会交给幕僚长；以 @名称 开头即可向你的某个工作流提问。如果机器人没有回应普通消息，请使用 /ask。',
+    } as const;
+    for (const locale of LOCALES) {
+      const help = chatReply(locale, 'help').split('\n');
+      // One line, right after /ask and before /cancel.
+      expect(help.filter((line) => line === lines[locale])).toHaveLength(1);
+      const at = help.indexOf(lines[locale]);
+      expect(help[at - 1].startsWith('/ask')).toBe(true);
+      expect(help[at + 1].startsWith('/cancel')).toBe(true);
+      expect(Array.from(help.join('\n')).length).toBeLessThanOrEqual(2000);
+    }
+  });
+
+  it('CHAT-DISCORD-DM-01: the plain-message lines exist in all three languages and say nothing was started', () => {
+    expect(CHAT_REPLY_KEYS.filter((key) => key.startsWith('message.'))).toEqual([
+      'message.textOnly',
+      'message.useSlashMenu',
+      'message.tooLong',
+    ]);
+    expect(chatReply('en', 'message.textOnly')).toBe(
+      'Only the text of a message is read. Write your question or task as text. Nothing was started.',
+    );
+    expect(chatReply('en', 'message.useSlashMenu')).toBe(
+      'To use a command, type / and choose it from the menu. Nothing was started.',
+    );
+    expect(chatReply('en', 'message.tooLong')).toBe(
+      'That message is too long (at most 6000 characters). Nothing was started.',
+    );
+    for (const locale of ['zh-TW', 'zh-CN'] as const) {
+      expect(chatReply(locale, 'message.tooLong')).toContain('6000');
+      expect(chatReply(locale, 'message.useSlashMenu')).toContain('/');
+    }
+  });
+
   it('CHAT-LINK-NOTICE-01: the confirmation after Confirm on the page, in all three languages', () => {
     expect(chatReply('en', 'link.confirmed')).toBe(
       "Linked. This Discord account now receives your agents' results. Type / and choose ask to start.",
