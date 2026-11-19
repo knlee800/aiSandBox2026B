@@ -1749,7 +1749,8 @@
         "lastUsed": "最近使用",
         "neverUsed": "尚未使用",
         "idEnding": "Discord ID 末位",
-        "notice": "Discord 已关联。"
+        "notice": "Discord 已关联。",
+        "everyRun": "你启动的每一次运行（团队页面、计划任务、触发器和 Discord）的结果和批准请求，都会发送到这个 Discord。"
       },
       "unlink": "取消关联",
       "unlinkConfirm": "要取消 Discord 关联吗？机器人将不再发送结果。已在 Discord 中的消息会保留。",

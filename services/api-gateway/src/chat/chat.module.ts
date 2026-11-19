@@ -116,6 +116,9 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * ChatActivityNotifier passes "this outside user just used a command or a
  * button" from the command and approval handlers to the delivery (no Nest
  * dependency cycle), and ChatLinkService reads the transport's install links.
+ * CHAT-RESULTS-OTHER-01: ChatRunService listens on OrchestrationModule's
+ * exported CollaborationRunStartedNotifier, so every run the owner starts
+ * gets a delivery row (orchestration never imports chat code).
  * Only ChatLinkService is exported.
  */
 @Module({

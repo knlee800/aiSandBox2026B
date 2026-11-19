@@ -1,9 +1,11 @@
 import { EventEmitter } from 'events';
 import { Logger } from '@nestjs/common';
 import { FindOperator } from 'typeorm';
+import { CollaborationRunStartedNotifier } from '../orchestration/collaboration-start.service';
 import { CHAT_APPROVAL_CUSTOM_ID, ChatApprovalService } from './chat-approval.service';
 import { CHAT_DELIVERY_LIMITS, ChatDeliveryService } from './chat-delivery.service';
 import { chatReply } from './chat-replies';
+import { ChatRunService } from './chat-run.service';
 import { ChatActivityNotifier, ChatDirectMessageRefusedError, FakeChatTransport } from './chat-transport';
 import { DiscordCalls, DiscordConnection, DiscordTransport } from './discord/discord-transport';
 
@@ -72,6 +74,32 @@ class DeliveryRepo {
     const before = this.rows.length;
     this.rows = this.rows.filter((row) => !matches(row, where));
     return { affected: before - this.rows.length };
+  }
+  /** CHAT-RESULTS-OTHER-01: ChatRunService's insert-or-ignore chain (a row whose run id exists is kept). */
+  createQueryBuilder() {
+    let values: Row | null = null;
+    let ignore = false;
+    const chain = {
+      insert: () => chain,
+      into: () => chain,
+      values: (row: Row) => {
+        values = row;
+        return chain;
+      },
+      orIgnore: () => {
+        ignore = true;
+        return chain;
+      },
+      execute: async () => {
+        if (!ignore || !values) throw new Error('insert without orIgnore');
+        const row = values as Row;
+        if (!this.rows.some((existing) => existing.collaborationRunId === row.collaborationRunId)) {
+          this.rows.push({ ...row, notifiedReferralIds: [...row.notifiedReferralIds] });
+        }
+        return { identifiers: [], raw: [] };
+      },
+    };
+    return chain;
   }
 }
 
@@ -365,6 +393,43 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2', 'r3']);
       expect(approvals.liveTokens).toBe(1);
       expect(audit).toEqual([]);
+    });
+
+    it('CHAT-RESULTS-OTHER-01: a run started on the Team page (row from the start listener) gets the approval notice, then the result', async () => {
+      const notifier = new CollaborationRunStartedNotifier();
+      const runsService = new ChatRunService(
+        {} as never,
+        {} as never,
+        { wake: jest.fn() } as never,
+        deliveries as never,
+        { insert: async () => ({}), find: async () => [] } as never,
+        { findOne: async ({ where }: { where: { userId: string } }) => [...links.values()].find((row) => row.userId === where.userId) ?? null } as never,
+        { findOne: async () => ({ id: OWNER, isActive: true }) } as never,
+        notifier,
+      );
+      // What CollaborationStartService.start does for a page start: ids only.
+      expect(await runsService.onRunStarted({ collaborationRunId: RUN_ID, userId: OWNER })).toBe(true);
+      expect(deliveries.rows).toEqual([
+        expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting', notifiedReferralIds: [] }),
+      ]);
+      step('r1', 'chief-of-staff', `plan my week ${MARKER}`);
+      const referrals: FakeReferral[] = [{ referralId: 'r1', status: 'pending_approval', result: null }];
+      runs.set(RUN_ID, { run: { userId: OWNER, status: 'active' }, referrals });
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      const notice = transport.directMessages[0].message;
+      expect(notice.text.startsWith(chatReply('en', 'approval.request', { step: '1', agent: 'Chief of Staff' }))).toBe(true);
+      expect(notice.buttons?.map((button) => button.style)).toEqual(['approve', 'reject']);
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r1']);
+
+      ended('completed', `The page run answer ${MARKER}`);
+      await service.tick();
+      expect(transport.directMessages[1]).toEqual({
+        externalUserId: DISCORD_ID,
+        message: { text: `The page run answer ${MARKER}` },
+      });
+      expect(deliveries.rows[0]).toMatchObject({ status: 'delivered' });
+      runsService.onModuleDestroy();
     });
 
     it('a send that fails: the button is forgotten, the step is not marked, the next tick sends it again', async () => {

@@ -27,12 +27,21 @@ import { ConversationService } from '../conversations/conversation.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
 import { SessionService } from '../sessions/session.service';
 import { ChatRunService } from '../chat/chat-run.service';
+import { ChatDeliveryService } from '../chat/chat-delivery.service';
+import { ChatModule } from '../chat/chat.module';
+import { AuditEventEntity } from '../entities/audit-event.entity';
+import { ChatLink } from '../entities/chat-link.entity';
+import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
+import { User } from '../entities/user.entity';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { CollaborationBusinessSessionService } from './collaboration-business-session';
 import { CollaborationController } from './collaboration.controller';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import {
   COLLABORATION_OMITTED_CANCEL_REASON,
+  CollaborationRunStartedNotifier,
   CollaborationStartService,
   collaborationHttpException,
 } from './collaboration-start.service';
@@ -132,6 +141,56 @@ function createOrchestrationRepoFakes() {
   return { runRepo, referralRepo, runs, referrals };
 }
 
+/**
+ * CHAT-RESULTS-OTHER-01: the chat_run_deliveries stand-in. createQueryBuilder
+ * is the service's insert-or-ignore chain; a row whose run id exists is kept
+ * as it is.
+ */
+function createChatDeliveryStore() {
+  const rows: Array<Record<string, unknown>> = [];
+  const insertOrIgnore = jest.fn(async (row: Record<string, unknown>) => {
+    if (!rows.some((existing) => existing.collaborationRunId === row.collaborationRunId)) {
+      rows.push({ ...row });
+    }
+    return { identifiers: [], raw: [] };
+  });
+  const repo = {
+    createQueryBuilder: () => {
+      let values: Record<string, unknown> = {};
+      let ignore = false;
+      const chain = {
+        insert: () => chain,
+        into: () => chain,
+        values: (row: Record<string, unknown>) => {
+          values = row;
+          return chain;
+        },
+        orIgnore: () => {
+          ignore = true;
+          return chain;
+        },
+        execute: async () => {
+          if (!ignore) throw new Error('insert without orIgnore');
+          return insertOrIgnore(values);
+        },
+      };
+      return chain;
+    },
+    update: async (where: Record<string, unknown>, patch: Record<string, unknown>) => {
+      let affected = 0;
+      for (const row of rows) {
+        if (row.collaborationRunId === where.collaborationRunId && (!where.status || row.status === where.status)) {
+          Object.assign(row, patch);
+          affected += 1;
+        }
+      }
+      return { affected };
+    },
+    find: async () => [],
+  };
+  return { rows, insertOrIgnore, repo };
+}
+
 function restoreEnv(name: string, value: string | undefined): void {
   if (value === undefined) {
     delete process.env[name];
@@ -181,9 +240,16 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     provider: process.env.AI_PROVIDER,
     abort: process.env.ABORT_MODE,
     secret: process.env.HARNESS_ENTITLEMENT_HMAC_SECRET,
+    chat: process.env.CHAT_DISCORD_ENABLED,
   };
 
   let app: INestApplication;
+  /** CHAT-RESULTS-OTHER-01: the module's own listening ChatRunService and its stores. */
+  let chatStore: ReturnType<typeof createChatDeliveryStore>;
+  let chatLinks: Array<{ id: string; userId: string; channel: string }>;
+  let chatUsers: Map<string, { id: string; isActive: boolean }>;
+  let chatWake: jest.Mock;
+  let notifier: CollaborationRunStartedNotifier;
   let fakes: ReturnType<typeof createOrchestrationRepoFakes>;
   let starts: CollaborationStartService;
   let orchestration: OrchestrationService;
@@ -199,8 +265,14 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     process.env.AI_PROVIDER = 'stub';
     process.env.ABORT_MODE = 'NONE';
     process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    // CHAT-RESULTS-OTHER-01: the chat switch is off unless a test turns it on.
+    delete process.env.CHAT_DISCORD_ENABLED;
     AbortConfig.initialize();
 
+    chatStore = createChatDeliveryStore();
+    chatLinks = [];
+    chatUsers = new Map([[OWNER_ID, { id: OWNER_ID, isActive: true }]]);
+    chatWake = jest.fn();
     fakes = createOrchestrationRepoFakes();
     sessionReads = jest.fn(async (id: string) => {
       throw new NotFoundException(`Session with ID ${id} not found`);
@@ -303,6 +375,24 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
           },
         },
         { provide: CollaborationWorkflowService, useValue: workflowService },
+        // CHAT-RESULTS-OTHER-01: the notifier as OrchestrationModule provides it, and the
+        // chat listener as ChatModule builds it (Nest injects the notifier: no cycle).
+        CollaborationRunStartedNotifier,
+        ChatRunService,
+        { provide: ChatDeliveryService, useValue: { wake: chatWake } },
+        { provide: getRepositoryToken(ChatRunDelivery), useValue: chatStore.repo },
+        { provide: getRepositoryToken(AuditEventEntity), useValue: { insert: async () => ({}), find: async () => [] } },
+        {
+          provide: getRepositoryToken(ChatLink),
+          useValue: {
+            findOne: async ({ where }: { where: { userId: string; channel: string } }) =>
+              chatLinks.find((row) => row.userId === where.userId && row.channel === where.channel) ?? null,
+          },
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: { findOne: async ({ where }: { where: { id: string } }) => chatUsers.get(where.id) ?? null },
+        },
       ],
     })
       .overrideGuard(SessionOrApiKeyAuthGuard)
@@ -327,6 +417,7 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     await app.init();
     starts = app.get(CollaborationStartService);
     orchestration = app.get(OrchestrationService);
+    notifier = app.get(CollaborationRunStartedNotifier);
   });
 
   afterEach(async () => {
@@ -336,32 +427,20 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     restoreEnv('AI_PROVIDER', original.provider);
     restoreEnv('ABORT_MODE', original.abort);
     restoreEnv('HARNESS_ENTITLEMENT_HMAC_SECRET', original.secret);
+    restoreEnv('CHAT_DISCORD_ENABLED', original.chat);
   });
 
   function chatRuns(): { service: ChatRunService; deliveries: Array<Record<string, unknown>>; audit: unknown[] } {
-    const deliveries: Array<Record<string, unknown>> = [];
+    const store = createChatDeliveryStore();
     const audit: unknown[] = [];
     const service = new ChatRunService(
       starts,
       orchestration,
       { wake: jest.fn() } as never,
-      {
-        count: async () => 0,
-        insert: async (row: Record<string, unknown>) => {
-          deliveries.push({ ...row });
-          return {};
-        },
-        update: async (where: Record<string, unknown>, patch: Record<string, unknown>) => {
-          for (const row of deliveries) {
-            if (row.collaborationRunId === where.collaborationRunId) Object.assign(row, patch);
-          }
-          return { affected: 1 };
-        },
-        find: async () => [],
-      } as never,
-      { insert: async (row: unknown) => audit.push(row) } as never,
+      store.repo as never,
+      { insert: async (row: unknown) => audit.push(row), find: async () => [] } as never,
     );
-    return { service, deliveries, audit };
+    return { service, deliveries: store.rows, audit };
   }
 
   const link = { linkId: LINK_ID, userId: OWNER_ID, locale: 'en' as const };
@@ -498,7 +577,159 @@ describe('CollaborationStartService (CHAT-DISCORD-01 C1 D1)', () => {
     expect(Reflect.getMetadata('exports', OrchestrationModule)).toEqual([
       OrchestrationService,
       CollaborationStartService,
+      CollaborationRunStartedNotifier,
     ]);
+  });
+
+  describe('CHAT-RESULTS-OTHER-01: every start tells the chat channel', () => {
+    const caller = {
+      userId: OWNER_ID,
+      apiKeyId: 'browser-session',
+      scopes: ['ai:execute'],
+      isInternal: true,
+      harnessEntitled: true,
+    };
+
+    function linkOwner(): void {
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+      chatLinks = [{ id: LINK_ID, userId: OWNER_ID, channel: 'discord' }];
+    }
+
+    /** The listener runs on its own after start returns; let it finish. */
+    async function settle(): Promise<void> {
+      for (let i = 0; i < 5; i += 1) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+    }
+
+    it('OrchestrationModule provides and exports the notifier; orchestration code never imports chat code', () => {
+      expect(Reflect.getMetadata('providers', OrchestrationModule)).toContain(CollaborationRunStartedNotifier);
+      expect(Reflect.getMetadata('imports', ChatModule)).toContain(OrchestrationModule);
+      expect(Reflect.getMetadata('imports', OrchestrationModule)).not.toContain(ChatModule);
+      for (const file of ['collaboration-start.service.ts', 'orchestration.module.ts']) {
+        expect(readFileSync(join(__dirname, file), 'utf8')).not.toMatch(/from '\.\.\/chat\//);
+      }
+      // The compiled test module injected the module's one notifier into the start service and the chat listener.
+      const params = Reflect.getMetadata('design:paramtypes', ChatRunService) as unknown[];
+      expect(params).toContain(CollaborationRunStartedNotifier);
+      expect(app.get(ChatRunService)).toBeInstanceOf(ChatRunService);
+    });
+
+    it('a Team page start gives exactly one waiting row for the linked owner, ids only', async () => {
+      linkOwner();
+      const started = await request(app.getHttpServer())
+        .post('/api/collaboration/runs')
+        .send({ team: 'chief-of-staff', task: TASK })
+        .expect(201);
+      await settle();
+      expect(chatStore.rows).toEqual([
+        {
+          collaborationRunId: started.body.collaborationRunId,
+          linkId: LINK_ID,
+          status: 'waiting',
+          notifiedReferralIds: [],
+          createdAt: expect.any(Date),
+          deliveredAt: null,
+        },
+      ]);
+      expect(JSON.stringify(chatStore.rows)).not.toContain(TASK);
+      expect(chatWake).toHaveBeenCalledTimes(1);
+      // The response shape is unchanged.
+      expect(Object.keys(started.body).sort()).toEqual(
+        ['collaborationRunId', 'conversationCreated', 'conversationId', 'handoffStatus', 'projectId', 'referralId', 'roster', 'source', 'status', 'target'],
+      );
+    });
+
+    it('a trigger-style start (any non-chat caller of start, here a workflow) gives exactly one row', async () => {
+      linkOwner();
+      const started = await starts.start(caller, starts.readStartBody({ workflowId: WORKFLOW_ID, task: TASK }));
+      await settle();
+      expect(chatStore.rows.map((row) => row.collaborationRunId)).toEqual([started.collaborationRunId]);
+    });
+
+    it('a Discord /ask start gives exactly one row (the listener and /ask write the same table)', async () => {
+      linkOwner();
+      const chatService = app.get(ChatRunService);
+      const reply = await chatService.ask(link, { text: TASK });
+      expect(reply.text).toContain('Started');
+      await settle();
+      expect(chatStore.rows).toHaveLength(1);
+      expect(chatStore.insertOrIgnore).toHaveBeenCalledTimes(2);
+      expect(chatStore.rows[0]).toMatchObject({ linkId: LINK_ID, status: 'waiting' });
+    });
+
+    it('no link, an inactive owner, or the chat switch off: no row', async () => {
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+      await starts.start(caller, starts.readStartBody({ team: 'chief-of-staff', task: TASK }));
+      chatLinks = [{ id: LINK_ID, userId: OWNER_ID, channel: 'discord' }];
+      chatUsers.set(OWNER_ID, { id: OWNER_ID, isActive: false });
+      await starts.start(caller, starts.readStartBody({ team: 'chief-of-staff', task: TASK }));
+      chatUsers.set(OWNER_ID, { id: OWNER_ID, isActive: true });
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      await starts.start(caller, starts.readStartBody({ team: 'chief-of-staff', task: TASK }));
+      await settle();
+      expect(fakes.runs.size).toBe(3);
+      expect(chatStore.rows).toEqual([]);
+      expect(chatWake).not.toHaveBeenCalled();
+    });
+
+    it('a listener that throws or rejects never breaks a start; start does not wait for it', async () => {
+      linkOwner();
+      notifier.onStarted(() => {
+        throw new Error('boom');
+      });
+      notifier.onStarted(async () => {
+        throw new Error('later boom');
+      });
+      let release!: () => void;
+      const slow = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let slowDone = false;
+      notifier.onStarted(async () => {
+        await slow;
+        slowDone = true;
+      });
+      const started = await request(app.getHttpServer())
+        .post('/api/collaboration/runs')
+        .send({ team: 'chief-of-staff', task: TASK })
+        .expect(201);
+      // start returned while the slow listener still waits.
+      expect(slowDone).toBe(false);
+      expect(fakes.runs.get(started.body.collaborationRunId)!.status).toBe('active');
+      release();
+      await settle();
+      expect(slowDone).toBe(true);
+      // The chat listener still wrote its row.
+      expect(chatStore.rows.map((row) => row.collaborationRunId)).toEqual([started.body.collaborationRunId]);
+    });
+
+    it('a start that fails before the first hand-off exists tells nobody', async () => {
+      linkOwner();
+      const told = jest.fn();
+      notifier.onStarted(told);
+      jest.spyOn(orchestration, 'createPendingReferral').mockRejectedValueOnce(new Error('boom'));
+      await expect(
+        starts.start(caller, starts.readStartBody({ team: 'chief-of-staff', task: TASK })),
+      ).rejects.toBeDefined();
+      await settle();
+      expect(told).not.toHaveBeenCalled();
+      expect(chatStore.rows).toEqual([]);
+    });
+
+    it('notify passes ids only, ignores a malformed event, and a removed listener is not called', () => {
+      const own = new CollaborationRunStartedNotifier();
+      const seen: unknown[] = [];
+      const stop = own.onStarted((event) => {
+        seen.push(event);
+      });
+      own.notify({ collaborationRunId: 'run-1', userId: OWNER_ID, task: TASK } as never);
+      own.notify({ collaborationRunId: '', userId: OWNER_ID });
+      own.notify(null as never);
+      stop();
+      own.notify({ collaborationRunId: 'run-2', userId: OWNER_ID });
+      expect(seen).toEqual([{ collaborationRunId: 'run-1', userId: OWNER_ID }]);
+    });
   });
 
   describe('chat refusals through the existing checks (acceptance 4)', () => {

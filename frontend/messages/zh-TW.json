@@ -1749,7 +1749,8 @@
         "lastUsed": "最後使用",
         "neverUsed": "尚未使用",
         "idEnding": "Discord ID 末碼",
-        "notice": "Discord 已連結。"
+        "notice": "Discord 已連結。",
+        "everyRun": "你啟動的每一次執行（團隊頁面、排程、觸發器和 Discord）的結果與核准請求，都會送到這個 Discord。"
       },
       "unlink": "解除連結",
       "unlinkConfirm": "要解除 Discord 連結嗎？機器人將不再傳送結果。已在 Discord 的訊息會保留。",

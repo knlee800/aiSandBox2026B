@@ -1,11 +1,15 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import type { ApiKeyIdentity } from '../auth/api-key.config';
 import { AuditEventEntity } from '../entities/audit-event.entity';
+import { ChatLink } from '../entities/chat-link.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
+import { User } from '../entities/user.entity';
 import {
+  CollaborationRunStartedNotifier,
   CollaborationStartService,
+  type CollaborationRunStartedEvent,
   type CollaborationStartInput,
 } from '../orchestration/collaboration-start.service';
 import { WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow';
@@ -14,6 +18,7 @@ import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { CHAT_RUN_AUDIT_EVENTS, ChatDeliveryService } from './chat-delivery.service';
 import { CHAT_AUDIT_CATEGORY, CHAT_CHANNEL_DISCORD, ChatLinkUse } from './chat-link.service';
 import { chatReply, ChatReplyKey } from './chat-replies';
+import { isChatDiscordEnabled } from './chat-switch';
 import type { ChatReplyMessage } from './chat-transport';
 
 /**
@@ -44,6 +49,18 @@ import type { ChatReplyMessage } from './chat-transport';
  * options are read. The text is the task; it is never logged, audited or
  * echoed. Audit rows (category chat) and log lines hold ids, reason codes
  * and counts only.
+ *
+ * CHAT-RESULTS-OTHER-01: every run the owner starts anywhere (Team page,
+ * public API route, schedules, triggers, Discord) gets a delivery row, so its
+ * approval notices and result arrive in the linked Discord. The listener on
+ * CollaborationRunStartedNotifier (onRunStarted) inserts the row when the
+ * chat switch is on and the owner is active with a Discord link, then wakes
+ * the delivery. Both that insert and /ask's own insert are insert-or-ignore
+ * on the run id, so a Discord-started run has exactly one row whichever comes
+ * first. The listener never breaks a start: failures are logged with ids and
+ * a reason code only. The /ask limit of 3 runs in progress, /cancel and
+ * /status still count only runs started from Discord: a waiting row whose run
+ * has this owner's run_started chat audit row (written by /ask only).
  */
 
 export const CHAT_RUN_LIMITS = {
@@ -55,6 +72,8 @@ export const CHAT_RUN_LIMITS = {
   /** Workflow names listed in a refusal. */
   listedNames: 10,
   listedNameChars: 60,
+  /** CHAT-RESULTS-OTHER-01: waiting rows read to find the link's Discord-started runs (newest first). */
+  waitingRowsRead: 100,
 } as const;
 
 /** Why /ask did not start a run (audit reason codes; never text from Discord). */
@@ -177,9 +196,10 @@ function errorName(error: unknown): string {
 }
 
 @Injectable()
-export class ChatRunService {
+export class ChatRunService implements OnModuleDestroy {
   private readonly logger = new Logger('ChatRuns');
   private readonly commands = new MinuteCounter();
+  private readonly stopListening: (() => void) | null;
 
   constructor(
     private readonly starts: CollaborationStartService,
@@ -189,7 +209,55 @@ export class ChatRunService {
     private readonly deliveries: Repository<ChatRunDelivery>,
     @InjectRepository(AuditEventEntity)
     private readonly audit: Repository<AuditEventEntity>,
-  ) {}
+    @Optional() @InjectRepository(ChatLink)
+    private readonly links?: Repository<ChatLink>,
+    @Optional() @InjectRepository(User)
+    private readonly users?: Repository<User>,
+    @Optional() startedRuns?: CollaborationRunStartedNotifier,
+  ) {
+    // CHAT-RESULTS-OTHER-01: start never waits for this; onRunStarted never throws.
+    this.stopListening = startedRuns ? startedRuns.onStarted((event) => this.onRunStarted(event)) : null;
+  }
+
+  onModuleDestroy(): void {
+    this.stopListening?.();
+  }
+
+  /**
+   * CHAT-RESULTS-OTHER-01: a run was started anywhere. With the chat switch on
+   * and the owner active with a Discord link, its delivery row is inserted
+   * (insert-or-ignore on the run id) and the delivery is woken. True when the
+   * row was written or was already there. Never throws; a failure is logged
+   * with ids and a reason code only.
+   */
+  async onRunStarted(event: CollaborationRunStartedEvent): Promise<boolean> {
+    const runId = event.collaborationRunId;
+    try {
+      if (!isChatDiscordEnabled() || !this.links || !this.users) {
+        return false;
+      }
+      const link = await this.links.findOne({ where: { userId: event.userId, channel: CHAT_CHANNEL_DISCORD } });
+      if (!link) {
+        return false;
+      }
+      const owner = await this.users.findOne({ where: { id: event.userId }, select: ['id', 'isActive'] });
+      if (!owner || owner.isActive !== true) {
+        return false;
+      }
+      try {
+        await this.insertDeliveryRow(runId, link.id);
+      } catch (error) {
+        this.logger.warn(`chat run delivery row failed runId=${runId} linkId=${link.id} reason=${errorName(error)}`);
+        return false;
+      }
+      this.logger.log(`chat run delivery row runId=${runId} linkId=${link.id}`);
+      this.delivery.wake();
+      return true;
+    } catch (error) {
+      this.logger.warn(`chat run started listener failed runId=${runId} reason=${errorName(error)}`);
+      return false;
+    }
+  }
 
   /** /ask for a linked owner who is active and harness-entitled now (checked by the caller). */
   async ask(link: ChatLinkUse, options: ChatAskOptions): Promise<ChatReplyMessage> {
@@ -199,7 +267,7 @@ export class ChatRunService {
     if (!this.commands.take(link.userId, CHAT_RUN_LIMITS.commandsPerMinute, Date.now())) {
       return this.refuse(link, 'rate_limited', 'precheck');
     }
-    const inProgress = await this.deliveries.count({ where: { linkId: link.linkId, status: 'waiting' } });
+    const inProgress = (await this.discordWaitingRows(link)).length;
     if (inProgress >= CHAT_RUN_LIMITS.activeRuns) {
       return this.refuse(link, 'too_many_runs', 'precheck');
     }
@@ -230,15 +298,9 @@ export class ChatRunService {
       return this.refuse(link, chatRunRefusalOf(error), 'start');
     }
 
+    // CHAT-RESULTS-OTHER-01: insert-or-ignore; the start's listener may have written it already.
     try {
-      await this.deliveries.insert({
-        collaborationRunId: started.collaborationRunId,
-        linkId: link.linkId,
-        status: 'waiting',
-        notifiedReferralIds: [],
-        createdAt: new Date(),
-        deliveredAt: null,
-      });
+      await this.insertDeliveryRow(started.collaborationRunId, link.linkId);
     } catch (error) {
       await this.cancelRefused(started.collaborationRunId, link, 'delivery_row');
       this.logger.warn(`chat run delivery row failed linkId=${link.linkId} reason=${errorName(error)}`);
@@ -288,11 +350,7 @@ export class ChatRunService {
     if (!this.commands.take(link.userId, CHAT_RUN_LIMITS.commandsPerMinute, Date.now())) {
       return { text: chatReply(link.locale, 'ask.tooMany') };
     }
-    const waiting = await this.deliveries.find({
-      where: { linkId: link.linkId, status: 'waiting' },
-      order: { createdAt: 'DESC' },
-      take: CHAT_RUN_LIMITS.activeRuns * 4,
-    });
+    const waiting = (await this.discordWaitingRows(link)).slice(0, CHAT_RUN_LIMITS.activeRuns * 4);
     for (const row of waiting) {
       const cancelled = await this.starts.cancelOwnedActiveRun(row.collaborationRunId, link.userId);
       if (cancelled) {
@@ -306,10 +364,7 @@ export class ChatRunService {
 
   /** /status: Discord-started runs in progress and their steps waiting for approval (counts only). */
   async statusCounts(link: ChatLinkUse): Promise<{ running: number; waiting: number }> {
-    const rows = await this.deliveries.find({
-      where: { linkId: link.linkId, status: 'waiting' },
-      take: CHAT_RUN_LIMITS.activeRuns * 4,
-    });
+    const rows = (await this.discordWaitingRows(link)).slice(0, CHAT_RUN_LIMITS.activeRuns * 4);
     let running = 0;
     let waiting = 0;
     for (const row of rows) {
@@ -326,6 +381,56 @@ export class ChatRunService {
       }
     }
     return { running, waiting };
+  }
+
+  /**
+   * CHAT-RESULTS-OTHER-01: one delivery row (ids only), insert-or-ignore on
+   * the run id (ON CONFLICT DO NOTHING). Throws when the insert fails.
+   */
+  private async insertDeliveryRow(collaborationRunId: string, linkId: string): Promise<void> {
+    await this.deliveries
+      .createQueryBuilder()
+      .insert()
+      .into(ChatRunDelivery)
+      .values({
+        collaborationRunId,
+        linkId,
+        status: 'waiting',
+        notifiedReferralIds: [],
+        createdAt: new Date(),
+        deliveredAt: null,
+      })
+      .orIgnore()
+      .execute();
+  }
+
+  /**
+   * CHAT-RESULTS-OTHER-01: the link's waiting rows of runs started from
+   * Discord, newest first. Rows of runs started elsewhere also wait now, so a
+   * row counts only when the owner has the run's run_started chat audit row
+   * (/ask writes it after the first step is approved).
+   */
+  private async discordWaitingRows(link: ChatLinkUse): Promise<ChatRunDelivery[]> {
+    const rows = await this.deliveries.find({
+      where: { linkId: link.linkId, status: 'waiting' },
+      order: { createdAt: 'DESC' },
+      take: CHAT_RUN_LIMITS.waitingRowsRead,
+    });
+    if (rows.length === 0) {
+      return [];
+    }
+    const started = await this.audit.find({
+      where: {
+        category: CHAT_AUDIT_CATEGORY,
+        eventType: CHAT_RUN_AUDIT_EVENTS.runStarted,
+        subjectType: 'collaboration_run',
+        subjectId: In(rows.map((row) => row.collaborationRunId)),
+        userId: link.userId,
+      },
+      select: ['subjectId'],
+    });
+    const fromDiscord = new Set(started.map((row) => row.subjectId));
+    return rows.filter((row) => fromDiscord.has(row.collaborationRunId));
   }
 
   /** The identity the session guard builds for the owner (D7), harness access already checked. */

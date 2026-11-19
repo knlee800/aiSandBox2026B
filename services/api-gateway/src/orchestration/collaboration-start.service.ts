@@ -153,6 +153,64 @@ export function raiseCollaborationError(error: unknown): never {
   throw collaborationHttpException(error);
 }
 
+/** CHAT-RESULTS-OTHER-01: a run and its first hand-off exist. Ids only, never the task text. */
+export interface CollaborationRunStartedEvent {
+  readonly collaborationRunId: string;
+  readonly userId: string;
+}
+
+/** A listener may be async; start never waits for it, and its errors are swallowed. */
+export type CollaborationRunStartedListener = (event: CollaborationRunStartedEvent) => void | Promise<unknown>;
+
+/**
+ * CHAT-RESULTS-OTHER-01: tells listeners (the chat channel) that a run was
+ * started, whoever started it: the Team page, the public API route, a
+ * schedule or trigger, or Discord /ask. Every start goes through
+ * CollaborationStartService.start, which calls notify once the run and its
+ * first hand-off exist. OrchestrationModule provides and exports it, so
+ * ChatModule (which imports OrchestrationModule) listens without
+ * orchestration code importing chat code (no Nest dependency cycle).
+ *
+ * notify never throws and never waits: a listener that throws is skipped, a
+ * listener that returns a promise runs on its own and a rejection is
+ * swallowed. Memory only; nothing is logged here.
+ */
+@Injectable()
+export class CollaborationRunStartedNotifier {
+  private readonly listeners = new Set<CollaborationRunStartedListener>();
+
+  /** Adds a listener; returns the function that removes it. */
+  onStarted(listener: CollaborationRunStartedListener): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  notify(event: CollaborationRunStartedEvent): void {
+    if (
+      typeof event?.collaborationRunId !== 'string' ||
+      event.collaborationRunId.length === 0 ||
+      typeof event.userId !== 'string' ||
+      event.userId.length === 0
+    ) {
+      return;
+    }
+    for (const listener of [...this.listeners]) {
+      try {
+        const result = listener(
+          Object.freeze({ collaborationRunId: event.collaborationRunId, userId: event.userId }),
+        );
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          (result as Promise<unknown>).then(undefined, () => undefined);
+        }
+      } catch {
+        // A listener never breaks or delays a start.
+      }
+    }
+  }
+}
+
 @Injectable()
 export class CollaborationStartService {
   constructor(
@@ -162,6 +220,7 @@ export class CollaborationStartService {
     @Optional() private readonly workflowService?: CollaborationWorkflowService,
     @Optional() private readonly businessSessions?: CollaborationBusinessSessionService,
     @Optional() private readonly rosterService?: CollaborationRosterService,
+    @Optional() private readonly startedRuns?: CollaborationRunStartedNotifier,
   ) {}
 
   /** POST /api/collaboration/runs: the run and its first hand-off, waiting for approval. */
@@ -202,6 +261,7 @@ export class CollaborationStartService {
       initiatorAgent: COLLABORATION_USER_ACTOR,
     });
 
+    let response: CollaborationStartResponse;
     try {
       const started = await this.orchestrationService.createPendingReferral({
         collaborationRunId: run.collaborationRunId,
@@ -225,7 +285,7 @@ export class CollaborationStartService {
         // D7 (DECISION D): a run with no session has no files to read.
         ...(workspace ? {} : { projectInstructions: COLLABORATION_BUSINESS_RUN_NOTE }),
       });
-      return {
+      response = {
         collaborationRunId: run.collaborationRunId,
         projectId: run.projectId,
         status: run.status,
@@ -248,6 +308,18 @@ export class CollaborationStartService {
         // The original error is the one the page should see.
       }
       raiseCollaborationError(error);
+    }
+    // CHAT-RESULTS-OTHER-01: outside the try, so a listener can never cancel the run.
+    this.notifyStarted(run.collaborationRunId, caller.userId);
+    return response;
+  }
+
+  /** CHAT-RESULTS-OTHER-01: ids only; never throws and never waits for a listener. */
+  private notifyStarted(collaborationRunId: string, userId: string): void {
+    try {
+      this.startedRuns?.notify({ collaborationRunId, userId });
+    } catch {
+      // The start has succeeded; a listener never changes that.
     }
   }
 

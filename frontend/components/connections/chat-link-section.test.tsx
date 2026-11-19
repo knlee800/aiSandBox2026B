@@ -247,6 +247,36 @@ describe('chat link section states', () => {
     assert.equal(asking.includes('data-testid="chat-link-unlink"'), false);
   });
 
+  test('CHAT-RESULTS-OTHER-01: linked says results and approval requests of every run arrive in Discord, in all three languages', () => {
+    for (const { code, messages } of LOCALES) {
+      const text = readMessage(messages, 'connections.chat.linked.everyRun');
+      assert.ok(text, `${code} chat.linked.everyRun`);
+      const html = render({ state: LINKED }, messages);
+      assert.match(html, /data-testid="chat-link-every-run"/);
+      assert.equal(has(html, text), true, code);
+      if (code !== 'en') assert.match(text, /[一-鿿]/, code);
+    }
+    assert.equal(
+      en('chat.linked.everyRun'),
+      'Results and approval requests of every run you start (Team page, schedules, triggers and Discord) arrive in this Discord.',
+    );
+    // Only once linked: not while linking, switched off, loading or failed.
+    const others: Array<Partial<ChatLinkSectionViewProps>> = [
+      { state: UNLINKED },
+      { state: CODE_MADE, code: { code: 'ABCD-2345', expiresAt: FUTURE } },
+      { state: CLAIMED },
+      { state: OFF },
+      { phase: 'loading', state: null },
+      { phase: 'error', state: null, errorKey: 'chat.errors.generic' },
+    ];
+    for (const overrides of others) {
+      assert.equal(render(overrides).includes('data-testid="chat-link-every-run"'), false);
+    }
+    const tw = readMessage(zhTwMessages as Messages, 'connections.chat.linked.everyRun');
+    const cn = readMessage(zhCnMessages as Messages, 'connections.chat.linked.everyRun');
+    assert.notEqual(tw, cn);
+  });
+
   test('notices and errors are translated, and the rate limit shows the wait', () => {
     assert.equal(has(render({ noticeKey: 'chat.notice.expired' }), en('chat.notice.expired')), true);
     for (const key of Object.values(CHAT_ERROR_KEYS)) {
@@ -417,7 +447,7 @@ describe('chat link catalog', () => {
       'consent.title', 'consent.sent', 'consent.kept', 'consent.unlink', 'consent.checkbox',
       'code.title', 'code.instruction', 'code.expires', 'code.waiting', 'code.hidden',
       'claim.title', 'claim.named', 'claim.unnamed', 'claim.warning',
-      'linked.since', 'linked.lastUsed', 'linked.neverUsed', 'linked.idEnding', 'linked.notice',
+      'linked.since', 'linked.lastUsed', 'linked.neverUsed', 'linked.idEnding', 'linked.notice', 'linked.everyRun',
       'notice.unlinked', 'notice.cancelled', 'notice.expired',
       'steps.title', 'steps.install', 'steps.installButton', 'steps.open', 'steps.openLink',
       'steps.create', 'steps.link', 'steps.confirm', 'newTab', 'heldNote',

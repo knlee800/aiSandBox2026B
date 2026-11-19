@@ -34,7 +34,7 @@ import { CollaborationRosterEntity } from './collaboration-roster.entity';
 import { CollaborationRosterService } from './collaboration-roster';
 import { CollaborationRosterController } from './collaboration-roster.controller';
 import { CollaborationBusinessSessionService } from './collaboration-business-session';
-import { CollaborationStartService } from './collaboration-start.service';
+import { CollaborationRunStartedNotifier, CollaborationStartService } from './collaboration-start.service';
 import { Project } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
 
@@ -86,6 +86,8 @@ import { Session } from '../entities/session.entity';
     CollaborationBusinessSessionService,
     // CHAT-DISCORD-01 C1 D1: the Team page's start and approve code, shared with the chat channel.
     CollaborationStartService,
+    // CHAT-RESULTS-OTHER-01: every start tells the chat channel (ids only); ChatModule listens.
+    CollaborationRunStartedNotifier,
     ExecutionResultService,
     CollaborationSweepWorker,
     {
@@ -93,6 +95,6 @@ import { Session } from '../entities/session.entity';
       useClass: StoredOrchestrationAuditRecorder,
     },
   ],
-  exports: [OrchestrationService, CollaborationStartService],
+  exports: [OrchestrationService, CollaborationStartService, CollaborationRunStartedNotifier],
 })
 export class OrchestrationModule {}

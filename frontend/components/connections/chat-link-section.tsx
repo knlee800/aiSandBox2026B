@@ -418,6 +418,9 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
                   testId="chat-link-last-used"
                 />
               </dl>
+              <p className="max-w-3xl break-words text-sm text-slate-300" data-testid="chat-link-every-run">
+                {t('chat.linked.everyRun')}
+              </p>
               {state.botProfileUrl ? (
                 <div>
                   <ExternalLink

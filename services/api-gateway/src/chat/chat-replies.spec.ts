@@ -141,6 +141,23 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
     }
   });
 
+  it('CHAT-RESULTS-OTHER-01: /help says in one line that every run’s results and approval requests arrive here', () => {
+    const lines = {
+      en: 'Results and approval requests of every run you start (Team page, schedules, triggers and Discord) arrive here.',
+      'zh-TW': '你啟動的每一次執行（團隊頁面、排程、觸發器和 Discord）的結果與核准請求都會送到這裡。',
+      'zh-CN': '你启动的每一次运行（团队页面、计划任务、触发器和 Discord）的结果和批准请求都会发送到这里。',
+    } as const;
+    for (const locale of LOCALES) {
+      const help = chatReply(locale, 'help').split('\n');
+      // One line, right after /cancel and before the held-results line.
+      expect(help.filter((line) => line === lines[locale])).toHaveLength(1);
+      const at = help.indexOf(lines[locale]);
+      expect(help[at - 1].startsWith('/cancel')).toBe(true);
+      expect(at).toBe(help.length - 2);
+      expect(Array.from(help.join('\n')).length).toBeLessThanOrEqual(2000);
+    }
+  });
+
   it('falls back to en for an unknown locale', () => {
     expect(chatReply('fr' as never, 'notAvailable')).toBe(chatReply('en', 'notAvailable'));
     expect(chatLanguageName('fr' as never)).toBe('English');

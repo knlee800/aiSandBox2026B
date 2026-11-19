@@ -5,6 +5,9 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { FindOperator } from 'typeorm';
+import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
+import { CollaborationRunStartedNotifier } from '../orchestration/collaboration-start.service';
 import { workflowRefusal, WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow';
 import { chatReply } from './chat-replies';
 import { CHAT_RUN_LIMITS, ChatRunService, chatRunRefusalOf } from './chat-run.service';
@@ -26,11 +29,64 @@ type DeliveryRow = {
   deliveredAt: Date | null;
 };
 
+type AuditRow = {
+  category?: string;
+  eventType: string;
+  subjectType: string;
+  subjectId: string;
+  userId: string;
+  payload: Record<string, unknown>;
+};
+
+/** Matches a where clause with plain values and In(...) only. */
+function matchesWhere(row: Record<string, unknown>, where: Record<string, unknown>): boolean {
+  return Object.entries(where).every(([key, expected]) => {
+    if (expected instanceof FindOperator) {
+      if (expected.type !== 'in') throw new Error(`unsupported operator ${expected.type}`);
+      return (expected.value as unknown[]).includes(row[key]);
+    }
+    return row[key] === expected;
+  });
+}
+
+/**
+ * CHAT-RESULTS-OTHER-01: the query builder chain the service uses for its
+ * insert-or-ignore (createQueryBuilder().insert().into().values().orIgnore().execute()).
+ * insertOrIgnore stands for the statement; it ignores a row whose run id exists.
+ */
+function insertOrIgnoreBuilder(insertOrIgnore: jest.Mock, calls: string[]) {
+  return () => {
+    let values: unknown;
+    let ignore = false;
+    const chain = {
+      insert: () => chain,
+      into: (target: unknown) => {
+        calls.push(target === ChatRunDelivery ? 'into:ChatRunDelivery' : 'into:other');
+        return chain;
+      },
+      values: (row: unknown) => {
+        values = row;
+        return chain;
+      },
+      orIgnore: () => {
+        ignore = true;
+        return chain;
+      },
+      execute: async () => {
+        if (!ignore) throw new Error('insert without orIgnore');
+        return insertOrIgnore(values);
+      },
+    };
+    return chain;
+  };
+}
+
 describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
   const original = process.env.GLOBAL_EXECUTION_ENABLED;
   const link = { linkId: LINK_ID, userId: OWNER, locale: 'en' as const };
   let rows: DeliveryRow[];
-  let audit: Array<{ eventType: string; subjectType: string; subjectId: string; userId: string; payload: Record<string, unknown> }>;
+  let audit: AuditRow[];
+  let builderCalls: string[];
   let starts: {
     readStartBody: jest.Mock;
     start: jest.Mock;
@@ -40,7 +96,13 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
   };
   let orchestration: { cancelCollaboration: jest.Mock; getCollaborationRun: jest.Mock; getReferral: jest.Mock };
   let delivery: { wake: jest.Mock };
-  let deliveries: { count: jest.Mock; insert: jest.Mock; update: jest.Mock; find: jest.Mock };
+  let deliveries: {
+    insertOrIgnore: jest.Mock;
+    createQueryBuilder: () => unknown;
+    update: jest.Mock;
+    find: jest.Mock;
+  };
+  let auditRepo: { insert: jest.Mock; find: jest.Mock };
   let service: ChatRunService;
   let logs: string[];
   let restoreLogs: () => void;
@@ -49,6 +111,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
     rows = [];
     audit = [];
+    builderCalls = [];
     let runCounter = 0;
     starts = {
       // The page parser is tested in collaboration-start.service.spec.ts; here it passes the body on.
@@ -76,14 +139,15 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       getReferral: jest.fn(async () => null),
     };
     delivery = { wake: jest.fn() };
-    deliveries = {
-      count: jest.fn(async ({ where }: { where: Partial<DeliveryRow> }) =>
-        rows.filter((row) => row.linkId === where.linkId && row.status === where.status).length,
-      ),
-      insert: jest.fn(async (row: DeliveryRow) => {
+    const insertOrIgnore = jest.fn(async (row: DeliveryRow) => {
+      if (!rows.some((existing) => existing.collaborationRunId === row.collaborationRunId)) {
         rows.push({ ...row });
-        return {};
-      }),
+      }
+      return { identifiers: [], raw: [] };
+    });
+    deliveries = {
+      insertOrIgnore,
+      createQueryBuilder: insertOrIgnoreBuilder(insertOrIgnore, builderCalls),
       update: jest.fn(async (where: Partial<DeliveryRow>, patch: Partial<DeliveryRow>) => {
         let affected = 0;
         for (const row of rows) {
@@ -94,11 +158,18 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
         }
         return { affected };
       }),
-      find: jest.fn(async ({ where }: { where: Partial<DeliveryRow> }) =>
+      find: jest.fn(async ({ where, take }: { where: Partial<DeliveryRow>; take?: number }) =>
         rows
           .filter((row) => row.linkId === where.linkId && row.status === where.status)
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          .slice(0, take ?? Infinity)
           .map((row) => ({ ...row })),
+      ),
+    };
+    auditRepo = {
+      insert: jest.fn(async (row: AuditRow) => audit.push(row)),
+      find: jest.fn(async ({ where }: { where: Record<string, unknown> }) =>
+        audit.filter((row) => matchesWhere(row as unknown as Record<string, unknown>, where)).map((row) => ({ subjectId: row.subjectId })),
       ),
     };
     service = new ChatRunService(
@@ -106,7 +177,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       orchestration as never,
       delivery as never,
       deliveries as never,
-      { insert: jest.fn(async (row: (typeof audit)[number]) => audit.push(row)) } as never,
+      auditRepo as never,
     );
     logs = [];
     restoreLogs = watchLogs(logs);
@@ -139,7 +210,11 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
         approveWithoutPassingTests: false,
       });
       // The delivery row is written before the approval and holds ids only.
-      expect(deliveries.insert.mock.invocationCallOrder[0]).toBeLessThan(starts.approveStep.mock.invocationCallOrder[0]);
+      expect(deliveries.insertOrIgnore.mock.invocationCallOrder[0]).toBeLessThan(
+        starts.approveStep.mock.invocationCallOrder[0],
+      );
+      // CHAT-RESULTS-OTHER-01: insert-or-ignore into chat_run_deliveries.
+      expect(builderCalls).toEqual(['into:ChatRunDelivery']);
       expect(rows).toEqual([
         {
           collaborationRunId: RUN_ID,
@@ -307,12 +382,175 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
     });
 
     it('the delivery row cannot be written: the run is cancelled and nothing is approved', async () => {
-      deliveries.insert.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
+      deliveries.insertOrIgnore.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
       expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'error') });
       expect(orchestration.cancelCollaboration).toHaveBeenCalledWith(
         expect.objectContaining({ collaborationRunId: RUN_ID, cancelReason: 'chat_refused:delivery_row' }),
       );
       expect(starts.approveStep).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('CHAT-RESULTS-OTHER-01: every run the owner starts gets one delivery row', () => {
+    const PLATFORM_RUN = 'platform-run-1';
+    const originalSwitch = process.env.CHAT_DISCORD_ENABLED;
+    let notifier: CollaborationRunStartedNotifier;
+    let linkRows: Array<{ id: string; userId: string; channel: string; externalUserId: string }>;
+    let users: Map<string, { id: string; isActive: boolean }>;
+    let linksRepo: { findOne: jest.Mock };
+    let usersRepo: { findOne: jest.Mock };
+    let listening: ChatRunService;
+
+    beforeEach(() => {
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+      notifier = new CollaborationRunStartedNotifier();
+      linkRows = [{ id: LINK_ID, userId: OWNER, channel: 'discord', externalUserId: '987654321098765432' }];
+      users = new Map([[OWNER, { id: OWNER, isActive: true }]]);
+      linksRepo = {
+        findOne: jest.fn(async ({ where }: { where: { userId: string; channel: string } }) =>
+          linkRows.find((row) => row.userId === where.userId && row.channel === where.channel) ?? null,
+        ),
+      };
+      usersRepo = { findOne: jest.fn(async ({ where }: { where: { id: string } }) => users.get(where.id) ?? null) };
+      listening = new ChatRunService(
+        starts as never,
+        orchestration as never,
+        delivery as never,
+        deliveries as never,
+        auditRepo as never,
+        linksRepo as never,
+        usersRepo as never,
+        notifier,
+      );
+    });
+
+    afterEach(() => {
+      listening.onModuleDestroy();
+      if (originalSwitch === undefined) delete process.env.CHAT_DISCORD_ENABLED;
+      else process.env.CHAT_DISCORD_ENABLED = originalSwitch;
+    });
+
+    /** What CollaborationStartService.start does once the run and its first hand-off exist; waits for the listener here. */
+    async function startedElsewhere(runId = PLATFORM_RUN, userId = OWNER): Promise<void> {
+      const spy = jest.spyOn(listening, 'onRunStarted');
+      notifier.notify({ collaborationRunId: runId, userId });
+      await Promise.all(spy.mock.results.map((result) => result.value));
+      spy.mockRestore();
+    }
+
+    it('a run started elsewhere (Team page, schedule, trigger): one waiting row with ids only, and the delivery wakes', async () => {
+      await startedElsewhere();
+      expect(rows).toEqual([
+        {
+          collaborationRunId: PLATFORM_RUN,
+          linkId: LINK_ID,
+          status: 'waiting',
+          notifiedReferralIds: [],
+          createdAt: expect.any(Date),
+          deliveredAt: null,
+        },
+      ]);
+      expect(builderCalls).toEqual(['into:ChatRunDelivery']);
+      expect(delivery.wake).toHaveBeenCalledTimes(1);
+      expect(audit).toEqual([]);
+      expect(logs).toContain(`chat run delivery row runId=${PLATFORM_RUN} linkId=${LINK_ID}`);
+      // The same start told twice still gives one row.
+      await startedElsewhere();
+      expect(rows).toHaveLength(1);
+    });
+
+    it('no link, an inactive or missing owner, or the switch off: no row and no wake', async () => {
+      linkRows = [];
+      await startedElsewhere('run-no-link');
+      linkRows = [{ id: LINK_ID, userId: OWNER, channel: 'other', externalUserId: '1' }];
+      await startedElsewhere('run-other-channel');
+      linkRows = [{ id: LINK_ID, userId: OWNER, channel: 'discord', externalUserId: '1' }];
+      users.set(OWNER, { id: OWNER, isActive: false });
+      await startedElsewhere('run-inactive');
+      users.delete(OWNER);
+      await startedElsewhere('run-no-owner');
+      users.set(OWNER, { id: OWNER, isActive: true });
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      linksRepo.findOne.mockClear();
+      await startedElsewhere('run-switch-off');
+      expect(linksRepo.findOne).not.toHaveBeenCalled();
+      expect(rows).toEqual([]);
+      expect(delivery.wake).not.toHaveBeenCalled();
+    });
+
+    it('without the link and user repositories the listener does nothing', async () => {
+      const bare = new ChatRunService(
+        starts as never,
+        orchestration as never,
+        delivery as never,
+        deliveries as never,
+        auditRepo as never,
+      );
+      expect(await bare.onRunStarted({ collaborationRunId: PLATFORM_RUN, userId: OWNER })).toBe(false);
+      expect(rows).toEqual([]);
+    });
+
+    it('an insert or read that fails is logged with ids and a reason code only, and never throws', async () => {
+      deliveries.insertOrIgnore.mockRejectedValueOnce(new Error(`db said ${MARKER} 987654321098765432`));
+      await expect(listening.onRunStarted({ collaborationRunId: PLATFORM_RUN, userId: OWNER })).resolves.toBe(false);
+      expect(logs).toContain(`chat run delivery row failed runId=${PLATFORM_RUN} linkId=${LINK_ID} reason=Error`);
+      linksRepo.findOne.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
+      await expect(listening.onRunStarted({ collaborationRunId: PLATFORM_RUN, userId: OWNER })).resolves.toBe(false);
+      expect(logs).toContain(`chat run started listener failed runId=${PLATFORM_RUN} reason=Error`);
+      expect(rows).toEqual([]);
+      expect(delivery.wake).not.toHaveBeenCalled();
+      expect(logs.join('\n')).not.toContain('987654321098765432');
+    });
+
+    it('/ask: the listener inserts first, /ask’s own insert is ignored: exactly one row', async () => {
+      starts.start.mockImplementationOnce(async () => {
+        // The start's notify fires before start returns; here the listener finishes first.
+        await listening.onRunStarted({ collaborationRunId: RUN_ID, userId: OWNER });
+        return { collaborationRunId: RUN_ID, referralId: REFERRAL_ID };
+      });
+      expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(deliveries.insertOrIgnore).toHaveBeenCalledTimes(2);
+      expect(rows).toEqual([expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting' })]);
+      expect(starts.approveStep).toHaveBeenCalledTimes(1);
+      expect(orchestration.cancelCollaboration).not.toHaveBeenCalled();
+    });
+
+    it('/ask: /ask inserts first, the listener’s insert is ignored and never resets the row', async () => {
+      starts.approveStep.mockRejectedValueOnce(new ServiceUnavailableException('Provider anthropic temporarily unavailable'));
+      await listening.ask(link, { text: MARKER });
+      expect(rows).toEqual([expect.objectContaining({ collaborationRunId: RUN_ID, status: 'dropped' })]);
+      // The start's listener lands late.
+      expect(await listening.onRunStarted({ collaborationRunId: RUN_ID, userId: OWNER })).toBe(true);
+      expect(rows).toEqual([expect.objectContaining({ collaborationRunId: RUN_ID, status: 'dropped' })]);
+    });
+
+    it('rows of runs started elsewhere do not count for the /ask limit, /cancel or /status', async () => {
+      for (const runId of ['p1', 'p2', 'p3', 'p4']) {
+        await startedElsewhere(runId);
+      }
+      expect(rows).toHaveLength(4);
+      // The limit counts only Discord-started runs: /ask still starts.
+      expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+      starts.cancelOwnedActiveRun.mockImplementation(async (runId: string) => ({ collaborationRunId: runId, status: 'cancelled' }));
+      expect(await listening.cancel(link)).toEqual({ text: chatReply('en', 'cancel.done') });
+      expect(starts.cancelOwnedActiveRun.mock.calls.map((call) => call[0])).toEqual([RUN_ID]);
+      expect(rows.filter((row) => row.status === 'waiting').map((row) => row.collaborationRunId)).toEqual([
+        'p1',
+        'p2',
+        'p3',
+        'p4',
+      ]);
+      orchestration.getCollaborationRun.mockResolvedValue({ userId: OWNER, status: 'active', referralIds: [] });
+      expect(await listening.statusCounts(link)).toEqual({ running: 0, waiting: 0 });
+      expect(await listening.cancel(link)).toEqual({ text: chatReply('en', 'cancel.nothing') });
+    });
+
+    it('stops listening on module destroy', async () => {
+      listening.onModuleDestroy();
+      notifier.notify({ collaborationRunId: PLATFORM_RUN, userId: OWNER });
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(linksRepo.findOne).not.toHaveBeenCalled();
+      expect(rows).toEqual([]);
     });
   });
 
