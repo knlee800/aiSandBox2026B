@@ -90247,13 +90247,13 @@ taskId=STAGING-DEPLOY-EVALFAIL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-EVALFAIL-01
 **Title:** Deploy the chain-failed eval case
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith approves a deploy; it rides with the next deploy. Keith decides.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, deploy"). Was: NOT_READY. Ready when: Keith approves a deploy; it rides with the next deploy. Keith decides.
 **Depends on:** COS-EVAL-FAILCHAIN-01.
 **Primary write scope:** records; host state (deploy only; no migration and no env change expected).
 **Mutexes / resources:** STAGING.
