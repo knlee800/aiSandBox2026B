@@ -88332,6 +88332,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F2): a per-owner setting to send only "your result is ready" so no answer text leaves the platform.
 
+Note (CHAT-RESULTS-OTHER-01 LOCK, 2026-11-19): every Team-page start now sends its step-1 approval notice to Discord within about 10 seconds, and workflow test runs go to Discord too; the notice-only or opt-out setting is the place to quiet that.
 ### CHAT-SESSION-01 — Start coding and advisors team runs from Discord
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-SESSION-01
@@ -88362,7 +88363,7 @@ taskId=CHAT-RESULTS-OTHER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; FRONTEND and I18N released, GATEWAY passed to CHAT-STATE-PERSIST-01. results and approval requests of every run the owner starts (Team page, API, schedules and every trigger, and /ask) go to the linked Discord: an orchestration run-started notifier (no chat import), a chat listener that inserts one delivery row with insert-or-ignore; /ask's limit, /cancel and /status still count only Discord-started runs; the page and /help say so in three languages; by an opus subagent (47bbd54, fast-forwarded); control-plane gates on the branch: gateway 6860 passed, only the 14 known smoke.integration failures, tsc and build rc 0; frontend 2262 of 2262, tsc and build rc 0. Not deployed: STAGING-DEPLOY-CHATBATCH-01. Checkpoint: docs/CHAT-RESULTS-OTHER-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 4 superseded (the run origin on the delivery row into CHAT-STATE-PERSIST-01; the poll-before-approve race into CHAT-TIDY-01; Team-page step-1 notices and workflow test runs in Discord into CHAT-NOTIFY-ONLY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-RESULTS-OTHER-01
 **Title:** Send results of platform-started runs to the linked chat
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88412,6 +88413,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F6, Q1 chose a gateway module): a separate service and unit with a narrow internal key.
 
+Note (CHAT-STATE-PERSIST-01 stage-start, 2026-11-19): one owner of the Discord connection is needed before a second gateway process.
 ### CHAT-EVAL-01 — Injection eval cases for chat-started tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-EVAL-01
@@ -88488,13 +88490,14 @@ nature=IMPLEMENTATION
 **Scope:** From CHAT-DISCORD-01 (F10 and slice A1): expired chat_link_codes rows, including the claimed display name, are deleted only on the next link call, and the delivery prune runs only while the switch is on; a prune that runs regardless.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+Note (CHAT-STATE-PERSIST-01 stage-start, 2026-11-19): include chat_limit_hits and expired chat_approval_tokens rows.
 ### CHAT-STATE-PERSIST-01 — Keep chat limits, retries and button tokens across restarts
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-STATE-PERSIST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — stage-start approved by Keith ("Yes, approve it"). Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-STATE-PERSIST-01
 **Title:** Keep chat limits, retries and button tokens across restarts
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88502,18 +88505,20 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP.
 **Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides; before more than one gateway process.
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, a migration.
-**Mutexes / resources:** set at admission (GATEWAY, MIGRATION expected).
+**Primary write scope:** EXACT (2026-11-19): services/api-gateway/src/migrations/1817000000000-AddChatPersistedState.ts, services/api-gateway/src/migrations/__tests__/1817000000000-AddChatPersistedState.spec.ts, services/api-gateway/src/entities/chat-run-delivery.entity.ts, services/api-gateway/src/entities/chat-limit-hit.entity.ts, services/api-gateway/src/entities/chat-approval-token.entity.ts, services/api-gateway/src/entities/index.ts, services/api-gateway/src/chat/chat-limits.ts, services/api-gateway/src/chat/chat-limits.spec.ts, services/api-gateway/src/chat/chat-link.service.ts, services/api-gateway/src/chat/chat-link.service.spec.ts, services/api-gateway/src/chat/chat-run.service.ts, services/api-gateway/src/chat/chat-run.service.spec.ts, services/api-gateway/src/chat/chat-delivery.service.ts, services/api-gateway/src/chat/chat-delivery.service.spec.ts, services/api-gateway/src/chat/chat-approval.service.ts, services/api-gateway/src/chat/chat-approval.service.spec.ts, services/api-gateway/src/chat/chat-transport.ts, services/api-gateway/src/chat/discord/discord-transport.ts, services/api-gateway/src/chat/discord/discord-transport.spec.ts, services/api-gateway/src/chat/chat.module.ts, services/api-gateway/src/chat/chat-link.controller.spec.ts, services/api-gateway/src/chat/chat-commands.spec.ts. Was: PROVISIONAL: services/api-gateway/src/chat/, a migration.
+**Mutexes / resources:** GATEWAY, MIGRATION (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01 (slices A1, C1, C2): the link rate limits and pause, the delivery retry state and the approval button tokens are held in memory, so a restart resets limits, may resend parts and makes old buttons stop working; waiting steps are not re-sent with fresh buttons; a multi-process gateway would break them.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): include the held-delivery marks and interaction references of CHAT-USER-INSTALL-01 (memory only today, so a restart retries the direct message and holds again, one log line per run per restart).
+Stage-start approved (Keith 2026-11-19, "Yes, approve it", with the recommendation on all seven questions): docs/CHAT-STATE-PERSIST-01-STAGE-START.md. Delivery state as six columns on chat_run_deliveries (parts_sent, send_failures, next_attempt_at, held_at, claimed_by, claimed_until) plus origin (added at approval from the CHAT-RESULTS-OTHER-01 LOCK); chat_limit_hits for the link-code, claim, failed-claim, pause and per-minute command counts (Discord ids only as SHA-256, at most an hour); chat_approval_tokens (SHA-256 at rest, 24 hours, one per step; custom id form and press checks unchanged; one repair message for a notified read-only step with no live token); interaction tokens never stored (Q1); the one part in flight during a crash accepted, with Discord's nonce if documented as described (Q2); the identify guard stays in memory (Q5). One migration 1817000000000-AddChatPersistedState with up and down; slices S1 (migration, entities, delivery) and S2 (limits, tokens, repair). Mutexes GATEWAY and MIGRATION; LOCAL-TESTS; opus subagent (Opus 5.5: a migration and the delivery and approval paths). At LOCK the control plane updates the ARCHITECTURE.md chat wording (GOVERNANCE). Write set of 22 paths.
+Dropped follow-up (Keith, 2026-11-19, "Yes, approve it", Q5): persisting the Discord identify guard across restarts; it matters only if the host crash-loops.
 ### CHAT-TIDY-01 — Small Discord chat fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-TIDY-01
@@ -88540,6 +88545,7 @@ nature=IMPLEMENTATION
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): sendToUser returns silently when the transport is not ready (as sendDirectMessage did); a disconnect in the middle of a delivery pass could count a result as delivered. Make it throw or report not-sent.
+Note (CHAT-RESULTS-OTHER-01 LOCK, 2026-11-19): a pre-existing race: a delivery poll can announce /ask's first step just before /ask approves it.
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
