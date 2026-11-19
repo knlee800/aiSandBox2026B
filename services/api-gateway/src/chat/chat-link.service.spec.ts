@@ -15,6 +15,7 @@ import {
   normalizeChatLinkCode,
   normalizeChatLocale,
 } from './chat-link.service';
+import { CHAT_TRANSPORT, FakeChatTransport } from './chat-transport';
 import { ChatModule } from './chat.module';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -689,7 +690,7 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       expect(await service.getState(OWNER)).toEqual({
         enabled: false,
         paused: false,
-        discord: { link: null, pending: null },
+        discord: { link: null, pending: null, installUrl: null, botProfileUrl: null },
       });
       await expectRefusal(service.createCode(OWNER, 'en'), 503, CHAT_LINK_ERROR_CODES.unavailable);
       await expectRefusal(service.confirm(OWNER), 503, CHAT_LINK_ERROR_CODES.unavailable);
@@ -711,6 +712,67 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       else process.env.CHAT_DISCORD_ENABLED = value;
       await expectRefusal(service.createCode(OWNER, 'en'), 503, CHAT_LINK_ERROR_CODES.unavailable);
       expect(store.calls).toEqual([]);
+    });
+  });
+
+  describe('install and bot links (CHAT-USER-INSTALL-01)', () => {
+    const LINKS = {
+      installUrl: 'https://discord.com/oauth2/authorize?client_id=111111111111111111&integration_type=1&scope=applications.commands',
+      botProfileUrl: 'https://discord.com/users/222222222222222222',
+    };
+
+    it('the state carries the transport links while the connection is ready', async () => {
+      const transport = new FakeChatTransport();
+      transport.links = LINKS;
+      await transport.connect(async () => null);
+      service = new ChatLinkService(store.links as never, store.codes as never, undefined, transport);
+      const state = await service.getState(OWNER);
+      expect(state).toEqual({
+        enabled: true,
+        paused: false,
+        discord: { link: null, pending: null, ...LINKS },
+      });
+      // Linked owners get them too (to open the bot again).
+      await linkOwner();
+      expect((await service.getState(OWNER)).discord).toMatchObject(LINKS);
+    });
+
+    it('null while not connected, without a transport, with the switch off, or when the transport throws', async () => {
+      const transport = new FakeChatTransport();
+      transport.links = LINKS;
+      service = new ChatLinkService(store.links as never, store.codes as never, undefined, transport);
+      expect((await service.getState(OWNER)).discord).toMatchObject({ installUrl: null, botProfileUrl: null });
+
+      service = new ChatLinkService(store.links as never, store.codes as never);
+      expect((await service.getState(OWNER)).discord).toMatchObject({ installUrl: null, botProfileUrl: null });
+
+      await transport.connect(async () => null);
+      service = new ChatLinkService(store.links as never, store.codes as never, undefined, transport);
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      expect((await service.getState(OWNER)).discord).toMatchObject({ installUrl: null, botProfileUrl: null });
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+
+      transport.installLinks = () => {
+        throw new Error('boom');
+      };
+      expect((await service.getState(OWNER)).discord).toMatchObject({ installUrl: null, botProfileUrl: null });
+    });
+
+    it('Nest injects the transport by token; the state has no secret', async () => {
+      const transport = new FakeChatTransport();
+      transport.links = LINKS;
+      await transport.connect(async () => null);
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          ChatLinkService,
+          { provide: getRepositoryToken(ChatLink), useValue: store.links },
+          { provide: getRepositoryToken(ChatLinkCode), useValue: store.codes },
+          { provide: CHAT_TRANSPORT, useValue: transport },
+        ],
+      }).compile();
+      const state = await moduleRef.get(ChatLinkService).getState(OWNER);
+      expect(state.discord).toMatchObject(LINKS);
+      expect(JSON.stringify(state)).not.toMatch(/token|secret/i);
     });
   });
 

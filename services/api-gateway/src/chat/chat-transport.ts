@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import type { ChatChannel } from './chat-link.service';
 
 /**
@@ -87,6 +88,30 @@ export type ChatComponentHandler = (press: ChatComponentPress) => Promise<ChatCo
  */
 export type ChatTransportState = 'off' | 'connecting' | 'ready' | 'stopped';
 
+/**
+ * CHAT-USER-INSTALL-01: the chat service refused to open or use the direct
+ * message with this user (Discord: HTTP 403 with code 50007 or 50278, for
+ * example a user who installed the bot to their own account but shares no
+ * server with it). Not a failed attempt: the delivery holds the message until
+ * the user's next command or button press and sends it as a follow-up then.
+ * Carries no id and no text.
+ */
+export class ChatDirectMessageRefusedError extends Error {
+  constructor() {
+    super('The chat service refused the direct message');
+    this.name = 'ChatDirectMessageRefusedError';
+  }
+}
+
+/**
+ * CHAT-USER-INSTALL-01: the public links the Connections page shows (the
+ * install link and the bot's profile). Built only from public ids; no secret.
+ */
+export interface ChatInstallLinks {
+  readonly installUrl: string;
+  readonly botProfileUrl: string;
+}
+
 export interface ChatTransport {
   readonly channel: ChatChannel;
   readonly state: ChatTransportState;
@@ -102,8 +127,55 @@ export interface ChatTransport {
   registerCommands(): Promise<void>;
   /** Answers one invocation; null answers nothing. */
   reply(invocation: ChatCommandInvocation, message: ChatReplyMessage | null): Promise<void>;
-  /** Sends a direct message to an outside user (used from slice C1; with buttons from slice C2). */
-  sendDirectMessage(externalUserId: string, message: ChatReplyMessage): Promise<void>;
+  /**
+   * CHAT-USER-INSTALL-01 (replaces sendDirectMessage): sends a message to an
+   * outside user, with buttons when it has them. When the user's latest
+   * command or button press is recent enough, the message goes as a
+   * follow-up to that interaction (after its own answer); otherwise, or when
+   * the follow-up fails, by direct message. A direct message the chat
+   * service refuses throws ChatDirectMessageRefusedError; other failures
+   * throw as they are.
+   */
+  sendToUser(externalUserId: string, message: ChatReplyMessage): Promise<void>;
+  /** CHAT-USER-INSTALL-01: the install and bot links while connected and known, else null. */
+  installLinks(): ChatInstallLinks | null;
+}
+
+/** A listener for ChatActivityNotifier: one outside user just used a command or pressed a button. */
+export type ChatActivityListener = (channel: ChatChannel, externalUserId: string) => void;
+
+/**
+ * CHAT-USER-INSTALL-01: tells the delivery that an outside user is active
+ * (a command or a button press in the direct message), so results held for
+ * that user go out now as follow-ups. A small shared notifier, so the command
+ * and component handlers reach the delivery without a Nest dependency cycle
+ * (the delivery already depends on the approval service). Memory only;
+ * nothing is logged here. notify never throws.
+ */
+@Injectable()
+export class ChatActivityNotifier {
+  private readonly listeners = new Set<ChatActivityListener>();
+
+  /** Adds a listener; returns the function that removes it. */
+  onActivity(listener: ChatActivityListener): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  notify(channel: ChatChannel, externalUserId: string): void {
+    if (typeof externalUserId !== 'string' || externalUserId.length === 0) {
+      return;
+    }
+    for (const listener of this.listeners) {
+      try {
+        listener(channel, externalUserId);
+      } catch {
+        // A listener never breaks the command or the press.
+      }
+    }
+  }
 }
 
 /** In-memory transport for tests: records everything, connects to nothing. */
@@ -116,8 +188,13 @@ export class FakeChatTransport implements ChatTransport {
   disconnectCalls = 0;
   registeredCommands = 0;
   readonly replies: Array<{ invocation: ChatCommandInvocation; message: ChatReplyMessage | null }> = [];
+  /** Every message sent to a user (sendToUser). */
   readonly directMessages: Array<{ externalUserId: string; message: ChatReplyMessage }> = [];
   readonly componentResponses: Array<{ press: ChatComponentPress; response: ChatComponentResponse }> = [];
+  /** Users whose messages are refused (sendToUser throws ChatDirectMessageRefusedError). */
+  readonly refusedUsers = new Set<string>();
+  /** What installLinks() answers while ready. */
+  links: ChatInstallLinks | null = null;
 
   constructor(private readonly allowConnect = true) {}
 
@@ -148,8 +225,15 @@ export class FakeChatTransport implements ChatTransport {
     this.replies.push({ invocation, message });
   }
 
-  async sendDirectMessage(externalUserId: string, message: ChatReplyMessage): Promise<void> {
+  async sendToUser(externalUserId: string, message: ChatReplyMessage): Promise<void> {
+    if (this.refusedUsers.has(externalUserId)) {
+      throw new ChatDirectMessageRefusedError();
+    }
     this.directMessages.push({ externalUserId, message });
+  }
+
+  installLinks(): ChatInstallLinks | null {
+    return this.state === 'ready' ? this.links : null;
   }
 
   /** Simulates one incoming command: the handler answers, the reply is recorded. */

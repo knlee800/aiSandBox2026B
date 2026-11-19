@@ -17,7 +17,7 @@ import {
   cutApprovalRequest,
 } from './chat-approval.service';
 import { chatReply } from './chat-replies';
-import type { ChatComponentPress, ChatReplyMessage } from './chat-transport';
+import { ChatActivityNotifier, type ChatComponentPress, type ChatReplyMessage } from './chat-transport';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const OTHER_OWNER = '99999999-9999-4999-8999-999999999999';
@@ -87,7 +87,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
   let logs: string[];
   let restoreLogs: () => void;
 
-  function build(): ChatApprovalService {
+  function build(activity?: ChatActivityNotifier): ChatApprovalService {
     const orchestration = {
       approveReferral,
       rejectReferral,
@@ -114,6 +114,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       { findOne: referralReads } as never,
       { insert: async (row: (typeof audit)[number]) => audit.push(row) } as never,
       { now: () => now },
+      activity,
     );
   }
 
@@ -532,6 +533,27 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       });
       expectNothing(await service.handlePress(press(ids.approve)), 'error');
       expect(logs).toContain('chat approval failed reason=TypeError');
+    });
+  });
+
+  describe('CHAT-USER-INSTALL-01: every press in the direct message wakes held results', () => {
+    it('a press tells the notifier the presser id, even on a button that no longer works; not outside the DM or with the switch off', async () => {
+      const activity = new ChatActivityNotifier();
+      const seen: Array<[string, string]> = [];
+      activity.onActivity((channel, externalUserId) => void seen.push([channel, externalUserId]));
+      service = build(activity);
+      const ids = await buttons();
+      await service.handlePress(press('ap1:a:AAAAAAAAAAAAAAAAAAAAAA'));
+      await service.handlePress(press(ids.approve));
+      await service.handlePress(press(ids.reject, { directMessage: false }));
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      await service.handlePress(press(ids.reject));
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+      expect(seen).toEqual([
+        ['discord', DISCORD_ID],
+        ['discord', DISCORD_ID],
+      ]);
+      expect(logs.join(' ')).not.toContain(DISCORD_ID);
     });
   });
 });

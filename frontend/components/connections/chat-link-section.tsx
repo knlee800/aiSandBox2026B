@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { fillKnowledgeTemplate } from '@/components/knowledge/knowledge-limits';
 import { formatConnectionDate } from '@/components/connections/connections-api';
 import {
@@ -16,12 +16,15 @@ import {
 } from '@/components/connections/chat-link-api';
 import {
   CHAT_LINK_POLL_MS,
+  CHAT_SETUP_STEPS,
   UNAVAILABLE_CHAT_STATE,
   canCreateCode,
+  currentChatStep,
   deriveChatView,
   isCodeLive,
   retryMinutes,
   shouldPoll,
+  showsChatSteps,
   type ChatLinksState,
 } from '@/components/connections/chat-link.logic';
 
@@ -68,6 +71,27 @@ function Row({ label, value, testId }: { label: string; value: string; testId: s
   );
 }
 
+/** An external Discord link: a new tab, without opener or referrer (CHAT-USER-INSTALL-01). */
+function ExternalLink({
+  href,
+  label,
+  t,
+  testId,
+}: {
+  href: string;
+  label: string;
+  t: (key: string) => string;
+  testId: string;
+}) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={QUIET_BUTTON} data-testid={testId}>
+      {label}
+      <ArrowTopRightOnSquareIcon className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+      <span className="sr-only">{t('chat.newTab')}</span>
+    </a>
+  );
+}
+
 function StatusPill({ linked, t }: { linked: boolean; t: (key: string) => string }) {
   return linked ? (
     <span
@@ -111,6 +135,7 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
     onRetry,
   } = props;
   const view = phase === 'ready' ? deriveChatView(state, isCodeLive(code, now), now) : 'unavailable';
+  const activeStep = currentChatStep(view);
   const paused = state?.paused === true;
   const working = busy !== 'idle';
   const errorText = errorKey
@@ -172,6 +197,58 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
             <p className="mt-3 text-sm text-amber-200" role="status" data-testid="chat-link-paused">
               {t('chat.paused')}
             </p>
+          ) : null}
+
+          {showsChatSteps(view) ? (
+            <div className="mt-4" data-testid="chat-link-steps">
+              <h3 className="text-xs font-semibold text-slate-200">{t('chat.steps.title')}</h3>
+              <ol className="mt-2 flex max-w-3xl flex-col gap-3">
+                {CHAT_SETUP_STEPS.map((step, index) => {
+                  const current = step === activeStep;
+                  return (
+                    <li
+                      key={step}
+                      className="flex items-start gap-3"
+                      aria-current={current ? 'step' : undefined}
+                      data-testid={`chat-link-step-${step}`}
+                    >
+                      <span
+                        className={`mt-px inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums ${
+                          current ? 'bg-brand text-white' : 'border border-slate-600 text-slate-300'
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {index + 1}
+                      </span>
+                      <div className="flex min-w-0 flex-col items-start gap-2">
+                        <p className={`break-words text-sm ${current ? 'text-slate-100' : 'text-slate-300'}`}>
+                          {t(`chat.steps.${step}`)}
+                        </p>
+                        {step === 'install' && state?.installUrl ? (
+                          <ExternalLink
+                            href={state.installUrl}
+                            label={t('chat.steps.installButton')}
+                            t={t}
+                            testId="chat-link-install"
+                          />
+                        ) : null}
+                        {step === 'open' && state?.botProfileUrl ? (
+                          <ExternalLink
+                            href={state.botProfileUrl}
+                            label={t('chat.steps.openLink')}
+                            t={t}
+                            testId="chat-link-open-bot"
+                          />
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+              <p className="mt-3 max-w-3xl text-xs text-slate-400" data-testid="chat-link-held-note">
+                {t('chat.heldNote')}
+              </p>
+            </div>
           ) : null}
 
           {view === 'unlinked' ? (
@@ -341,6 +418,19 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
                   testId="chat-link-last-used"
                 />
               </dl>
+              {state.botProfileUrl ? (
+                <div>
+                  <ExternalLink
+                    href={state.botProfileUrl}
+                    label={t('chat.steps.openLink')}
+                    t={t}
+                    testId="chat-link-open-bot"
+                  />
+                </div>
+              ) : null}
+              <p className="max-w-3xl text-xs text-slate-400" data-testid="chat-link-held-note">
+                {t('chat.heldNote')}
+              </p>
               {errorText ? (
                 <div
                   className="flex items-start gap-2 rounded-lg border border-red-700/40 bg-red-950/30 px-3 py-2"
@@ -547,6 +637,8 @@ export default function ChatLinkSection({ t, locale }: ChatLinkSectionProps): Re
       setState((current) => ({
         enabled: true,
         paused: current?.paused ?? false,
+        installUrl: current?.installUrl ?? null,
+        botProfileUrl: current?.botProfileUrl ?? null,
         link: null,
         pending: {
           channel: 'discord',
@@ -577,6 +669,8 @@ export default function ChatLinkSection({ t, locale }: ChatLinkSectionProps): Re
       setState((current) => ({
         enabled: true,
         paused: current?.paused ?? false,
+        installUrl: current?.installUrl ?? null,
+        botProfileUrl: current?.botProfileUrl ?? null,
         link: result.value,
         pending: null,
       }));

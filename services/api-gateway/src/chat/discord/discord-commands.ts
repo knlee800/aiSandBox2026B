@@ -6,8 +6,12 @@ import { chatLanguageName, chatLocaleText } from '../chat-replies';
  * as registered with Discord.
  *
  * - Global commands, usable only in the direct message with the bot
- *   (contexts = [BOT_DM]); installed with the bot into Keith's private server
- *   (integration_types = [GUILD_INSTALL]).
+ *   (contexts = [BOT_DM]). CHAT-USER-INSTALL-01: registered for both install
+ *   types (integration_types = [GUILD_INSTALL, USER_INSTALL]), so any Discord
+ *   account that adds the bot to its own apps ("Add to my apps") gets the
+ *   commands in the bot's direct message, not only members of a server the
+ *   bot is in. The transport still accepts commands only in that direct
+ *   message.
  * - Command and option names are English in every client (no
  *   name_localizations), so /link, /unlink, /status, /language, /help,
  *   /ask and /cancel match the Connections page and the bot's replies everywhere.
@@ -30,6 +34,8 @@ export const DISCORD_OPTION_TYPE_STRING = 3;
 export const DISCORD_CONTEXT_BOT_DM = 1;
 /** ApplicationIntegrationType.GuildInstall */
 export const DISCORD_INTEGRATION_GUILD_INSTALL = 0;
+/** ApplicationIntegrationType.UserInstall (CHAT-USER-INSTALL-01) */
+export const DISCORD_INTEGRATION_USER_INSTALL = 1;
 
 /** Discord's option limit is 6000 characters; the platform's task limit is 8000. */
 export const CHAT_ASK_TEXT_MAX = 6000;
@@ -150,7 +156,7 @@ export function buildDiscordCommands(): DiscordCommandDefinition[] {
       description: requireText('en', path),
       description_localizations: descriptionLocalizations(path),
       contexts: [DISCORD_CONTEXT_BOT_DM],
-      integration_types: [DISCORD_INTEGRATION_GUILD_INSTALL],
+      integration_types: [DISCORD_INTEGRATION_GUILD_INSTALL, DISCORD_INTEGRATION_USER_INSTALL],
     };
     const options = OPTION_SPECS[command].map((spec) => buildOption(command, spec));
     if (options.length > 0) definition.options = options;

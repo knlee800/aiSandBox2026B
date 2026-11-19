@@ -73,11 +73,17 @@ function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (full, key: string) => values[key] ?? full);
 }
 
-const OFF: ChatLinksState = { enabled: false, paused: false, link: null, pending: null };
-const UNLINKED: ChatLinksState = { enabled: true, paused: false, link: null, pending: null };
+const NO_LINKS = { installUrl: null, botProfileUrl: null };
+const INSTALL_URL =
+  'https://discord.com/oauth2/authorize?client_id=111111111111111111&integration_type=1&scope=applications.commands';
+const PROFILE_URL = 'https://discord.com/users/222222222222222222';
+const DISCORD_LINKS = { installUrl: INSTALL_URL, botProfileUrl: PROFILE_URL };
+const OFF: ChatLinksState = { enabled: false, paused: false, link: null, pending: null, ...NO_LINKS };
+const UNLINKED: ChatLinksState = { enabled: true, paused: false, link: null, pending: null, ...NO_LINKS };
 const CODE_MADE: ChatLinksState = {
   enabled: true,
   paused: false,
+  ...NO_LINKS,
   link: null,
   pending: {
     channel: 'discord',
@@ -91,6 +97,7 @@ const CODE_MADE: ChatLinksState = {
 const CLAIMED: ChatLinksState = {
   enabled: true,
   paused: false,
+  ...NO_LINKS,
   link: null,
   pending: {
     channel: 'discord',
@@ -104,6 +111,7 @@ const CLAIMED: ChatLinksState = {
 const LINKED: ChatLinksState = {
   enabled: true,
   paused: false,
+  ...NO_LINKS,
   link: {
     channel: 'discord',
     linkedAt: '2026-11-13T09:00:00.000Z',
@@ -189,7 +197,7 @@ describe('chat link section states', () => {
     const html = render({ state: CODE_MADE, code: { code: 'ABCD-2345', expiresAt: FUTURE } });
     assert.match(html, /data-testid="chat-link-code"[^>]*>ABCD-2345</);
     assert.equal(has(html, en('chat.code.instruction')), true);
-    assert.match(en('chat.code.instruction'), /\/link/);
+    assert.match(en('chat.code.instruction'), /type \/ and choose link from the menu/);
     assert.equal(html.includes('data-testid="chat-link-code-expiry"'), true);
     assert.equal(has(html, en('chat.code.waiting')), true);
     assert.equal(html.includes('data-testid="chat-link-consent"'), false);
@@ -262,6 +270,9 @@ describe('chat link section states', () => {
       { state: UNLINKED, errorKey: 'chat.errors.taken', noticeKey: 'chat.notice.cancelled' },
       { phase: 'loading', state: null },
       { phase: 'error', state: null, errorKey: 'chat.errors.generic' },
+      { state: { ...UNLINKED, ...DISCORD_LINKS } },
+      { state: { ...CLAIMED, ...DISCORD_LINKS } },
+      { state: { ...LINKED, ...DISCORD_LINKS } },
     ];
     for (const { code, messages } of LOCALES) {
       for (const [index, overrides] of states.entries()) {
@@ -269,6 +280,118 @@ describe('chat link section states', () => {
         assert.equal(html.includes('connections.chat.'), false, `${code} state ${index} shows a raw key`);
         assert.equal(/connections\.chat/.test(html), false);
         assert.equal(html.includes('{name}') || html.includes('{last4}') || html.includes('{time}'), false, `${code} ${index}`);
+      }
+    }
+  });
+});
+
+function stepsOf(html: string): string[] {
+  return [...html.matchAll(/data-testid="chat-link-step-([a-z]+)"/g)].map((match) => match[1]);
+}
+
+function currentSteps(html: string): string[] {
+  return [...html.matchAll(/<li[^>]*aria-current="step"[^>]*data-testid="chat-link-step-([a-z]+)"/g)].map(
+    (match) => match[1],
+  );
+}
+
+function anchorTag(html: string, testId: string): string {
+  const match = html.match(new RegExp(`<a[^>]*data-testid="${testId}"[^>]*>`));
+  assert.ok(match, `link ${testId} missing`);
+  return match[0];
+}
+
+describe('chat link setup steps (CHAT-USER-INSTALL-01)', () => {
+  test('not linked: five numbered steps in order, with the Add to Discord button and the Open the bot link', () => {
+    const html = render({ state: { ...UNLINKED, ...DISCORD_LINKS } });
+    assert.equal(html.includes('data-testid="chat-link-steps"'), true);
+    assert.match(html, /<ol[^>]*>/);
+    assert.deepEqual(stepsOf(html), ['install', 'open', 'create', 'link', 'confirm']);
+    for (const key of ['title', 'install', 'open', 'create', 'link', 'confirm']) {
+      assert.equal(has(html, en(`chat.steps.${key}`)), true, key);
+    }
+    assert.match(en('chat.steps.install'), /Add to my apps/);
+    assert.match(en('chat.steps.open'), /press Message/);
+    assert.match(en('chat.steps.link'), /type \/ and choose link from the menu/);
+
+    const install = anchorTag(html, 'chat-link-install');
+    assert.equal(install.includes(`href="${escapeHtml(INSTALL_URL)}"`), true);
+    assert.match(install, /target="_blank"/);
+    assert.match(install, /rel="noopener noreferrer"/);
+    assert.equal(has(html, en('chat.steps.installButton')), true);
+    const open = anchorTag(html, 'chat-link-open-bot');
+    assert.equal(open.includes(`href="${PROFILE_URL}"`), true);
+    assert.match(open, /target="_blank"/);
+    assert.match(open, /rel="noopener noreferrer"/);
+    assert.equal(has(html, en('chat.steps.openLink')), true);
+    // Screen readers hear that the links open a new tab.
+    assert.equal(has(html, en('chat.newTab')), true);
+    // The statement and Create code stay as they were (step 3).
+    assert.equal(html.includes('data-testid="chat-link-consent"'), true);
+    assert.equal(html.includes('data-testid="chat-link-create"'), true);
+  });
+
+  test('the button and the link are hidden while the server has no links', () => {
+    const html = render({ state: UNLINKED });
+    assert.deepEqual(stepsOf(html), ['install', 'open', 'create', 'link', 'confirm']);
+    assert.equal(html.includes('data-testid="chat-link-install"'), false);
+    assert.equal(html.includes('data-testid="chat-link-open-bot"'), false);
+    assert.equal(html.includes('<a '), false);
+    const onlyProfile = render({ state: { ...UNLINKED, botProfileUrl: PROFILE_URL } });
+    assert.equal(onlyProfile.includes('data-testid="chat-link-install"'), false);
+    assert.equal(onlyProfile.includes('data-testid="chat-link-open-bot"'), true);
+  });
+
+  test('the line about held results shows while linking and once linked', () => {
+    const cases: Array<Partial<ChatLinkSectionViewProps>> = [
+      { state: UNLINKED },
+      { state: CODE_MADE, code: { code: 'ABCD-2345', expiresAt: FUTURE } },
+      { state: CLAIMED },
+      { state: LINKED },
+    ];
+    for (const overrides of cases) {
+      const html = render(overrides);
+      assert.equal(html.includes('data-testid="chat-link-held-note"'), true);
+      assert.equal(has(html, en('chat.heldNote')), true);
+    }
+    assert.match(en('chat.heldNote'), /next time you use a command/);
+    assert.match(en('chat.heldNote'), /Results page/);
+  });
+
+  test('the current step is marked: the code is live or hidden (4) or claimed (5); none before a code', () => {
+    assert.deepEqual(currentSteps(render({ state: UNLINKED })), []);
+    assert.deepEqual(currentSteps(render({ state: CODE_MADE, code: { code: 'ABCD-2345', expiresAt: FUTURE } })), ['link']);
+    assert.deepEqual(currentSteps(render({ state: CODE_MADE, code: null })), ['link']);
+    assert.deepEqual(currentSteps(render({ state: CLAIMED })), ['confirm']);
+  });
+
+  test('linked: no steps, and the Open the bot link when known; unavailable, loading and error: no steps and no links', () => {
+    const linked = render({ state: { ...LINKED, ...DISCORD_LINKS } });
+    assert.equal(linked.includes('data-testid="chat-link-steps"'), false);
+    assert.equal(linked.includes('data-testid="chat-link-install"'), false);
+    assert.match(anchorTag(linked, 'chat-link-open-bot'), /rel="noopener noreferrer"/);
+    assert.equal(linked.includes('data-testid="chat-link-unlink"'), true);
+    assert.equal(render({ state: LINKED }).includes('data-testid="chat-link-open-bot"'), false);
+    const others: Array<Partial<ChatLinkSectionViewProps>> = [
+      { state: { ...OFF, ...DISCORD_LINKS } },
+      { phase: 'loading', state: null },
+      { phase: 'error', state: null, errorKey: 'chat.errors.generic' },
+    ];
+    for (const overrides of others) {
+      const html = render(overrides);
+      assert.equal(html.includes('data-testid="chat-link-steps"'), false);
+      assert.equal(html.includes('<a '), false);
+    }
+  });
+
+  test('the steps render in zh-TW and zh-CN with their own text', () => {
+    for (const { code, messages } of LOCALES.slice(1)) {
+      const html = render({ state: { ...UNLINKED, ...DISCORD_LINKS } }, messages);
+      for (const key of ['steps.title', 'steps.install', 'steps.installButton', 'steps.open', 'steps.openLink', 'heldNote']) {
+        const text = readMessage(messages, `connections.chat.${key}`);
+        assert.ok(text, `${code} ${key}`);
+        assert.equal(has(html, text), true, `${code} ${key}`);
+        assert.match(text, /[一-鿿]/, `${code} ${key}`);
       }
     }
   });
@@ -296,6 +419,8 @@ describe('chat link catalog', () => {
       'claim.title', 'claim.named', 'claim.unnamed', 'claim.warning',
       'linked.since', 'linked.lastUsed', 'linked.neverUsed', 'linked.idEnding', 'linked.notice',
       'notice.unlinked', 'notice.cancelled', 'notice.expired',
+      'steps.title', 'steps.install', 'steps.installButton', 'steps.open', 'steps.openLink',
+      'steps.create', 'steps.link', 'steps.confirm', 'newTab', 'heldNote',
     ]) {
       for (const { code, messages } of LOCALES) {
         assert.ok(readMessage(messages, `connections.chat.${stem}`), `chat.${stem} missing in ${code}`);
@@ -306,7 +431,10 @@ describe('chat link catalog', () => {
   test('zh-TW and zh-CN chat copy differs from English and from each other', () => {
     const tw = zhTwMessages as Messages;
     const cn = zhCnMessages as Messages;
-    for (const key of ['chat.consent.sent', 'chat.consent.checkbox', 'chat.claim.named', 'chat.createCode', 'chat.unlinkConfirm']) {
+    for (const key of [
+      'chat.consent.sent', 'chat.consent.checkbox', 'chat.claim.named', 'chat.createCode', 'chat.unlinkConfirm',
+      'chat.steps.install', 'chat.steps.open', 'chat.steps.link', 'chat.heldNote', 'chat.code.instruction',
+    ]) {
       const path = `connections.${key}`;
       assert.notEqual(readMessage(tw, path), readMessage(EN, path), `${key} tw = en`);
       assert.notEqual(readMessage(cn, path), readMessage(EN, path), `${key} cn = en`);
@@ -388,6 +516,16 @@ describe('chat link api', () => {
     const ok = stub(200, { enabled: true, paused: false, discord: { link: null, pending: null } });
     const loaded = await loadChatLinks(ok.fetcher);
     assert.equal(loaded.type, 'ok');
+    // CHAT-USER-INSTALL-01: the install and bot links come through; an older answer without them gives null.
+    assert.equal(loaded.type === 'ok' && loaded.value.installUrl, null);
+    const withLinks = await loadChatLinks(
+      stub(200, { enabled: true, paused: false, discord: { link: null, pending: null, ...DISCORD_LINKS } }).fetcher,
+    );
+    assert.ok(withLinks.type === 'ok');
+    assert.deepEqual(
+      { installUrl: withLinks.value.installUrl, botProfileUrl: withLinks.value.botProfileUrl },
+      DISCORD_LINKS,
+    );
     assert.deepEqual(ok.calls[0], { path: '/api/chat-links', method: 'GET', body: undefined });
     assert.equal((await loadChatLinks(stub(401, { statusCode: 401 }).fetcher)).type, 'unauthorized');
     assert.equal((await loadChatLinks(stub(403, { statusCode: 403 }).fetcher)).type, 'forbidden');

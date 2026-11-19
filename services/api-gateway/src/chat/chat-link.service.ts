@@ -2,6 +2,7 @@ import {
   ConflictException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -16,6 +17,7 @@ import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { isChatDiscordEnabled } from './chat-switch';
+import { CHAT_TRANSPORT, type ChatTransport } from './chat-transport';
 
 /**
  * CHAT-DISCORD-01 slice A1 (stage-start section 5): the account link.
@@ -45,6 +47,12 @@ import { isChatDiscordEnabled } from './chat-switch';
  *   transaction (the foreign key's ON DELETE CASCADE does the same in the
  *   database). Runs already started keep going; their results stay on the
  *   Results page only.
+ * - CHAT-USER-INSTALL-01: the state read also gives the page two public
+ *   links while the Discord connection is ready: installUrl (add the bot to
+ *   your own Discord apps) and botProfileUrl (the bot's profile, to open its
+ *   direct message), both built by the transport from the application id
+ *   and the bot user id of the gateway READY payload. No secret. Null for
+ *   both otherwise (switch off, not connected, ids unknown).
  */
 
 export const CHAT_CHANNEL_DISCORD = 'discord';
@@ -142,6 +150,10 @@ export interface ChatLinkState {
   discord: {
     link: ChatLinkView | null;
     pending: ChatLinkPendingView | null;
+    /** CHAT-USER-INSTALL-01: https://discord.com/oauth2/authorize?client_id=<application id>&integration_type=1&scope=applications.commands, or null. */
+    installUrl: string | null;
+    /** CHAT-USER-INSTALL-01: https://discord.com/users/<bot user id>, or null. */
+    botProfileUrl: string | null;
   };
 }
 
@@ -338,12 +350,20 @@ export class ChatLinkService {
     @Optional()
     @InjectRepository(ChatRunDelivery)
     private readonly deliveries?: Repository<ChatRunDelivery>,
+    // CHAT-USER-INSTALL-01: present in ChatModule; without it the links are null.
+    @Optional()
+    @Inject(CHAT_TRANSPORT)
+    private readonly transport?: ChatTransport,
   ) {}
 
   /** GET /api/chat-links. Switch off: nothing is read. */
   async getState(userId: string): Promise<ChatLinkState> {
     if (!isChatDiscordEnabled()) {
-      return { enabled: false, paused: false, discord: { link: null, pending: null } };
+      return {
+        enabled: false,
+        paused: false,
+        discord: { link: null, pending: null, installUrl: null, botProfileUrl: null },
+      };
     }
     const now = Date.now();
     await this.deleteExpiredCodes(now);
@@ -366,11 +386,26 @@ export class ChatLinkService {
             }
           : { channel: CHAT_CHANNEL_DISCORD, claimed: false, expiresAt: latest.expiresAt.toISOString() };
     }
+    const links = this.installLinks();
     return {
       enabled: true,
       paused: this.isPaused(now),
-      discord: { link: link ? this.linkView(link) : null, pending },
+      discord: {
+        link: link ? this.linkView(link) : null,
+        pending,
+        installUrl: links?.installUrl ?? null,
+        botProfileUrl: links?.botProfileUrl ?? null,
+      },
     };
+  }
+
+  /** CHAT-USER-INSTALL-01: the transport's public links, or null; never throws. */
+  private installLinks(): { installUrl: string; botProfileUrl: string } | null {
+    try {
+      return this.transport?.installLinks() ?? null;
+    } catch {
+      return null;
+    }
   }
 
   /** POST /api/chat-links/discord/code. The code is in this answer only. */

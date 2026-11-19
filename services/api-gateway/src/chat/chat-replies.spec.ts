@@ -118,6 +118,29 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
     expect([chatReply('zh-CN', 'approval.approveButton'), chatReply('zh-CN', 'approval.rejectButton')]).toEqual(['批准', '拒绝']);
   });
 
+  it('CHAT-USER-INSTALL-01: /help says commands come from the / menu and that held results arrive after the next command', () => {
+    const en = chatReply('en', 'help');
+    expect(en.split('\n')[0]).toBe('Type / in this direct message and choose a command from the menu:');
+    expect(en.split('\n').slice(-1)[0]).toBe(
+      "If Discord blocks the bot's messages to you, your results arrive after your next command. They are always on the Results page.",
+    );
+    const tw = chatReply('zh-TW', 'help');
+    expect(tw.split('\n')[0]).toBe('在這個私訊中輸入 /，再從選單中選擇指令：');
+    expect(tw).toContain('結果會在你下次使用指令後送達');
+    expect(tw).toContain('結果頁面');
+    const cn = chatReply('zh-CN', 'help');
+    expect(cn.split('\n')[0]).toBe('在这个私信中输入 /，再从菜单中选择指令：');
+    expect(cn).toContain('结果会在你下次使用指令后送达');
+    expect(cn).toContain('结果页面');
+    // Every command is still listed, in every language.
+    for (const text of [en, tw, cn]) {
+      for (const command of ['/link', '/unlink', '/status', '/language', '/ask', '/cancel']) {
+        expect(text).toContain(command);
+      }
+      expect(Array.from(text).length).toBeLessThanOrEqual(2000);
+    }
+  });
+
   it('falls back to en for an unknown locale', () => {
     expect(chatReply('fr' as never, 'notAvailable')).toBe(chatReply('en', 'notAvailable'));
     expect(chatLanguageName('fr' as never)).toBe('English');

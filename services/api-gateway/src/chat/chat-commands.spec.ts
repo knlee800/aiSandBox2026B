@@ -13,7 +13,7 @@ import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { ChatLinkService } from './chat-link.service';
 import { chatReply } from './chat-replies';
-import { CHAT_TRANSPORT, ChatCommandInvocation, FakeChatTransport } from './chat-transport';
+import { CHAT_TRANSPORT, ChatActivityNotifier, ChatCommandInvocation, FakeChatTransport } from './chat-transport';
 import {
   CHAT_RUNNER_ALLOW_UNDER_JEST,
   CHAT_TRANSPORT_PROVIDER,
@@ -154,6 +154,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
         ChatRunService,
         ChatDeliveryService,
         ChatApprovalService,
+        ChatActivityNotifier,
       ]);
       expect(Reflect.getMetadata('exports', ChatModule)).toEqual([ChatLinkService]);
       expect(CHAT_TRANSPORT_PROVIDER).toEqual({ provide: CHAT_TRANSPORT, useFactory: createChatTransport });
@@ -246,6 +247,61 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
         });
       }
       expect(store.calls).toEqual([]);
+    });
+  });
+
+  describe('CHAT-USER-INSTALL-01: every command in the direct message wakes held results', () => {
+    it('a command in the direct message tells the notifier the outside user id; nothing is logged with it', async () => {
+      const activity = new ChatActivityNotifier();
+      const seen: Array<[string, string]> = [];
+      activity.onActivity((channel, externalUserId) => void seen.push([channel, externalUserId]));
+      const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
+      const fake = new FakeChatTransport();
+      await new ChatChannelRunner(fake, notified, true).start();
+      await fake.invoke(dm('help', {}, STRANGER));
+      await fake.invoke(dm('status'));
+      await fake.invoke(dm('link', { code: 'ABCD-EFGH' }));
+      await fake.invoke(dm(MARKER));
+      expect(seen).toEqual([
+        ['discord', STRANGER],
+        ['discord', DISCORD_ID],
+        ['discord', DISCORD_ID],
+        ['discord', DISCORD_ID],
+      ]);
+    });
+
+    it('not outside the direct message, and not with the switch off', async () => {
+      const activity = new ChatActivityNotifier();
+      const listener = jest.fn();
+      activity.onActivity(listener);
+      const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
+      const fake = new FakeChatTransport();
+      await new ChatChannelRunner(fake, notified, true).start();
+      await fake.invoke({ ...dm('status'), directMessage: false });
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      await fake.invoke(dm('status'));
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('a listener that throws never breaks the command', async () => {
+      const activity = new ChatActivityNotifier();
+      activity.onActivity(() => {
+        throw new Error('boom');
+      });
+      const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
+      const fake = new FakeChatTransport();
+      await new ChatChannelRunner(fake, notified, true).start();
+      expect(await fake.invoke(dm('help', {}, STRANGER))).toEqual({ text: chatReply('en', 'help') });
+    });
+
+    it('Nest wires one notifier from the delivery to the command handler (no dependency cycle)', () => {
+      const params = Reflect.getMetadata('design:paramtypes', ChatCommandService) as unknown[];
+      expect(params[params.length - 1]).toBe(ChatActivityNotifier);
+      const deliveryParams = Reflect.getMetadata('design:paramtypes', ChatDeliveryService) as unknown[];
+      expect(deliveryParams[deliveryParams.length - 1]).toBe(ChatActivityNotifier);
+      const approvalParams = Reflect.getMetadata('design:paramtypes', ChatApprovalService) as unknown[];
+      expect(approvalParams[approvalParams.length - 1]).toBe(ChatActivityNotifier);
+      expect(deliveryParams).not.toContain(ChatCommandService);
     });
   });
 

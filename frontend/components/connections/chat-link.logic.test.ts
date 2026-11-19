@@ -2,15 +2,20 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   CHAT_ERROR_KEYS,
+  CHAT_SETUP_STEPS,
   canCreateCode,
   chatErrorKey,
+  currentChatStep,
   deriveChatView,
   formatLinkCode,
   isCodeLive,
+  parseBotProfileUrl,
   parseChatLinks,
+  parseInstallUrl,
   pickChatLocale,
   retryMinutes,
   shouldPoll,
+  showsChatSteps,
   type ChatLinksState,
 } from '@/components/connections/chat-link.logic';
 
@@ -26,7 +31,7 @@ const LINK = {
 };
 
 function state(overrides: Partial<ChatLinksState> = {}): ChatLinksState {
-  return { enabled: true, paused: false, link: null, pending: null, ...overrides };
+  return { enabled: true, paused: false, link: null, pending: null, installUrl: null, botProfileUrl: null, ...overrides };
 }
 
 function pending(claimed: boolean, expiresAt = FUTURE) {
@@ -43,7 +48,14 @@ function pending(claimed: boolean, expiresAt = FUTURE) {
 describe('parseChatLinks', () => {
   test('the switch-off answer parses to a disabled state', () => {
     const parsed = parseChatLinks({ enabled: false, paused: false, discord: { link: null, pending: null } });
-    assert.deepEqual(parsed, { enabled: false, paused: false, link: null, pending: null });
+    assert.deepEqual(parsed, {
+      enabled: false,
+      paused: false,
+      link: null,
+      pending: null,
+      installUrl: null,
+      botProfileUrl: null,
+    });
   });
 
   test('unclaimed, claimed and linked answers keep only the public fields', () => {
@@ -87,6 +99,74 @@ describe('parseChatLinks', () => {
       parseChatLinks({ enabled: true, paused: false, discord: { link: { channel: 'x' }, pending: null } }),
       null,
     );
+  });
+});
+
+describe('install and bot links (CHAT-USER-INSTALL-01)', () => {
+  const INSTALL = 'https://discord.com/oauth2/authorize?client_id=111111111111111111&integration_type=1&scope=applications.commands';
+  const PROFILE = 'https://discord.com/users/222222222222222222';
+
+  test('the server links are kept; a payload without them (an older server) has null links', () => {
+    const parsed = parseChatLinks({
+      enabled: true,
+      paused: false,
+      discord: { link: null, pending: null, installUrl: INSTALL, botProfileUrl: PROFILE },
+    });
+    assert.equal(parsed?.installUrl, INSTALL);
+    assert.equal(parsed?.botProfileUrl, PROFILE);
+    const older = parseChatLinks({ enabled: true, paused: false, discord: { link: null, pending: null } });
+    assert.equal(older?.installUrl, null);
+    assert.equal(older?.botProfileUrl, null);
+  });
+
+  test('only Discord https links are kept; anything else is null and hides the button', () => {
+    assert.equal(parseInstallUrl(INSTALL), INSTALL);
+    for (const bad of [
+      'javascript:alert(1)',
+      'http://discord.com/oauth2/authorize?client_id=1',
+      'https://discord.com.evil.example/oauth2/authorize?client_id=1',
+      'https://discord.com/oauth2/authorize?client_id=abc',
+      'https://discord.com/oauth2/authorize?',
+      'https://discord.com/api/oauth2/authorize?client_id=1',
+      `${INSTALL}${'x'.repeat(600)}`,
+      42,
+      null,
+    ]) {
+      assert.equal(parseInstallUrl(bad), null, String(bad));
+    }
+    assert.equal(parseBotProfileUrl(PROFILE), PROFILE);
+    for (const bad of [
+      'https://discord.com/users/abc',
+      'https://discord.com/users/1/x',
+      'http://discord.com/users/1',
+      'https://evil.example/users/1',
+      'javascript:alert(1)',
+      undefined,
+    ]) {
+      assert.equal(parseBotProfileUrl(bad), null, String(bad));
+    }
+    const mixed = parseChatLinks({
+      enabled: true,
+      paused: false,
+      discord: { link: null, pending: null, installUrl: 'javascript:alert(1)', botProfileUrl: PROFILE },
+    });
+    assert.equal(mixed?.installUrl, null);
+    assert.equal(mixed?.botProfileUrl, PROFILE);
+  });
+
+  test('the five steps, which show while not linked, and the current step', () => {
+    assert.deepEqual([...CHAT_SETUP_STEPS], ['install', 'open', 'create', 'link', 'confirm']);
+    for (const view of ['unlinked', 'codeLive', 'codeHidden', 'claimed'] as const) {
+      assert.equal(showsChatSteps(view), true, view);
+    }
+    for (const view of ['unavailable', 'linked'] as const) {
+      assert.equal(showsChatSteps(view), false, view);
+    }
+    assert.equal(currentChatStep('unlinked'), null);
+    assert.equal(currentChatStep('codeLive'), 'link');
+    assert.equal(currentChatStep('codeHidden'), 'link');
+    assert.equal(currentChatStep('claimed'), 'confirm');
+    assert.equal(currentChatStep('linked'), null);
   });
 });
 

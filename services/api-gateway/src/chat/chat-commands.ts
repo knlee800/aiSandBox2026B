@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EntitlementService } from '../auth/entitlement.service';
@@ -15,7 +15,7 @@ import {
 import { chatLanguageName, chatReply, ChatReplyKey } from './chat-replies';
 import { ChatRunService } from './chat-run.service';
 import { isChatDiscordEnabled } from './chat-switch';
-import type { ChatCommandInvocation, ChatReplyMessage } from './chat-transport';
+import { ChatActivityNotifier, type ChatCommandInvocation, type ChatReplyMessage } from './chat-transport';
 import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
 
 /**
@@ -43,6 +43,11 @@ import { ChatCommandName, isChatCommandName } from './discord/discord-commands';
  * ChatRunService as the task and the agent name; no value from Discord is
  * ever logged or put into a reply. Log lines carry the command
  * name, an outcome code and the link's own uuid.
+ *
+ * CHAT-USER-INSTALL-01: every command in the direct message (switch on) tells
+ * ChatActivityNotifier that this outside user is active, so results held
+ * after a refused direct message go out now, as follow-ups after this
+ * command's own reply. The notifier only passes the id on in memory.
  */
 
 const CHANNEL = 'discord' as const;
@@ -70,6 +75,7 @@ export class ChatCommandService {
     @InjectRepository(User)
     private readonly users: Repository<User>,
     private readonly runs: ChatRunService,
+    @Optional() private readonly activity?: ChatActivityNotifier,
   ) {}
 
   /** The transport's handler. Never throws. */
@@ -83,6 +89,7 @@ export class ChatCommandService {
       if (!invocation.directMessage) {
         return this.done(command, 'not_direct_message', null, message(fallback, 'useDirectMessage'));
       }
+      this.activity?.notify(CHANNEL, invocation.externalUserId);
       if (!command) {
         return this.done(null, 'unknown_command', null, message(fallback, 'unknownCommand'));
       }

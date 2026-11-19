@@ -10,16 +10,23 @@ import {
   ButtonStyle,
   ComponentType,
   MessageFlags,
+  RESTJSONErrorCodes,
 } from '@discordjs/core';
 import { WebSocketShardEvents } from '@discordjs/ws';
-import type {
-  ChatCommandInvocation,
-  ChatComponentPress,
-  ChatComponentResponse,
-  ChatReplyMessage,
+import {
+  ChatDirectMessageRefusedError,
+  type ChatCommandInvocation,
+  type ChatComponentPress,
+  type ChatComponentResponse,
+  type ChatReplyMessage,
 } from '../chat-transport';
 import * as transportModule from './discord-transport';
 import {
+  DISCORD_ANSWER_WAIT_MS,
+  DISCORD_DM_REFUSED_CODES,
+  DISCORD_REFERENCE_MAX_AGE_MS,
+  discordInstallLinks,
+  isDiscordDirectMessageRefused,
   DISCORD_BUTTON_STYLE_DANGER,
   DISCORD_BUTTON_STYLE_SUCCESS,
   DISCORD_COMMAND_DATA_CHAT_INPUT,
@@ -710,12 +717,12 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
     it('sends only when ready, only to a snowflake, with mentions off', async () => {
       const h = harness(ON);
       await h.transport.connect(jest.fn());
-      await h.transport.sendDirectMessage(USER_ID, { text: 'early' });
+      await h.transport.sendToUser(USER_ID, { text: 'early' });
       h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
       await flush();
       h.calls.log.length = 0;
-      await h.transport.sendDirectMessage('@everyone', { text: 'x' });
-      await h.transport.sendDirectMessage(USER_ID, { text: 'result' });
+      await h.transport.sendToUser('@everyone', { text: 'x' });
+      await h.transport.sendToUser(USER_ID, { text: 'result' });
       expect(h.calls.log).toEqual([`dm ${USER_ID}`]);
       expect(h.calls.bodies).toEqual([{ content: 'result', allowed_mentions: { parse: [] } }]);
     });
@@ -736,7 +743,7 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
           { customId: 'ok', label: '', style: 'approve' },
         ],
       };
-      await h.transport.sendDirectMessage(USER_ID, message);
+      await h.transport.sendToUser(USER_ID, message);
       expect(h.calls.bodies).toEqual([
         {
           content: 'Step 2 is waiting',
@@ -753,8 +760,301 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
         },
       ]);
       // A plain message has no components key at all.
-      await h.transport.sendDirectMessage(USER_ID, { text: 'plain', buttons: [] });
+      await h.transport.sendToUser(USER_ID, { text: 'plain', buttons: [] });
       expect(h.calls.bodies[1]).toEqual({ content: 'plain', allowed_mentions: { parse: [] } });
+    });
+  });
+
+  describe('any Discord account: user installs, follow-ups and refused direct messages (CHAT-USER-INSTALL-01)', () => {
+    const OTHER_USER = '876543210987654321';
+    const BOT_USER_ID = '333333333333333333';
+    const APPROVE: ChatReplyMessage = {
+      text: 'Step 2 is waiting @everyone',
+      buttons: [{ customId: 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA', label: 'Approve', style: 'approve' }],
+    };
+    let now: number;
+    let followUps: Array<{ appId: string; token: string; body: unknown }>;
+
+    async function readyWith(
+      handler: jest.Mock = jest.fn(async () => ({ text: 'reply' })),
+      options: { onComponent?: jest.Mock; deferAfterMs?: number; answerWaitMs?: number } = {},
+    ): Promise<Harness> {
+      const gateway = new FakeGateway();
+      const calls = fakeCalls();
+      calls.followUp = async (appId, token, body) => {
+        calls.log.push(`followUp ${appId}`);
+        followUps.push({ appId, token, body });
+      };
+      let closed = 0;
+      const factory = jest.fn(async (): Promise<DiscordConnection> => ({ calls, gateway, close: () => (closed += 1) }));
+      const transport = new DiscordTransport({
+        env: ON,
+        factory,
+        now: () => now,
+        deferAfterMs: options.deferAfterMs ?? 50,
+        answerWaitMs: options.answerWaitMs ?? 1000,
+      });
+      await transport.connect(handler, options.onComponent);
+      gateway.emit('ready', { application: { id: APP_ID }, user: { id: BOT_USER_ID } }, 0);
+      await flush();
+      calls.log.length = 0;
+      calls.bodies.length = 0;
+      return { transport, gateway, calls, factory, closeCalls: () => closed };
+    }
+
+    function dispatch(h: Harness, raw: Record<string, unknown>): void {
+      h.gateway.emit('dispatch', { t: 'INTERACTION_CREATE', op: 0, s: 1, d: raw }, 0);
+    }
+
+    /** A command from an account that added the bot to its own apps (authorizing owner key 1 = user install). */
+    function userInstall(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      return interaction({ authorizing_integration_owners: { '1': USER_ID }, context: 1, ...overrides });
+    }
+
+    function refusal(code: number): Error {
+      return Object.assign(new Error(`Cannot send messages to this user ${USER_ID}`), {
+        status: 403,
+        code,
+        name: `DiscordAPIError[${code}]`,
+      });
+    }
+
+    beforeEach(() => {
+      now = Date.parse('2026-11-19T10:00:00.000Z');
+      followUps = [];
+    });
+
+    it('a user-install command in the bot direct message (no guild_id, context 1) is accepted and answered there', async () => {
+      const handler = jest.fn(async () => ({ text: 'hello' }));
+      const h = await readyWith(handler);
+      const raw = userInstall();
+      expect(raw.guild_id).toBeUndefined();
+      dispatch(h, raw);
+      await flush();
+      expect(handler).toHaveBeenCalledTimes(1);
+      const invocation = (handler.mock.calls[0] as unknown[])[0] as ChatCommandInvocation;
+      expect(invocation).toEqual(expect.objectContaining({ externalUserId: USER_ID, directMessage: true, command: 'status' }));
+      expect(h.calls.log).toEqual(['reply 222222222222222222 token']);
+      expect(h.calls.bodies).toEqual([{ content: 'hello', allowed_mentions: { parse: [] } }]);
+      expect(h.transport.referenceCount).toBe(1);
+    });
+
+    it('a user-install command in a server, or in another context, is refused: ephemeral and no reference kept', async () => {
+      const handler = jest.fn(async () => ({ text: 'use the DM' }));
+      const h = await readyWith(handler);
+      dispatch(
+        h,
+        userInstall({ guild_id: '444444444444444444', context: 0, user: undefined, member: { user: { id: USER_ID } } }),
+      );
+      dispatch(h, userInstall({ context: 2 }));
+      await flush();
+      expect(handler).toHaveBeenCalledTimes(2);
+      for (const call of handler.mock.calls as unknown[][]) {
+        expect((call[0] as ChatCommandInvocation).directMessage).toBe(false);
+      }
+      expect(h.calls.bodies).toEqual([
+        { content: 'use the DM', allowed_mentions: { parse: [] }, flags: 64 },
+        { content: 'use the DM', allowed_mentions: { parse: [] }, flags: 64 },
+      ]);
+      expect(h.transport.referenceCount).toBe(0);
+      await h.transport.sendToUser(USER_ID, { text: 'result' });
+      expect(h.calls.log.slice(-1)).toEqual([`dm ${USER_ID}`]);
+    });
+
+    it('a fresh reference sends a follow-up (mentions off, not ephemeral, buttons kept); after 14 minutes the direct message', async () => {
+      expect(DISCORD_REFERENCE_MAX_AGE_MS).toBe(14 * 60 * 1000);
+      const h = await readyWith();
+      dispatch(h, userInstall());
+      await flush();
+      h.calls.log.length = 0;
+      h.calls.bodies.length = 0;
+
+      now += DISCORD_REFERENCE_MAX_AGE_MS - 1;
+      await h.transport.sendToUser(USER_ID, APPROVE);
+      expect(h.calls.log).toEqual([`followUp ${APP_ID}`]);
+      expect(followUps).toEqual([
+        {
+          appId: APP_ID,
+          token: 'interaction-token',
+          body: {
+            content: 'Step 2 is waiting @everyone',
+            allowed_mentions: { parse: [] },
+            components: [
+              {
+                type: ComponentType.ActionRow,
+                components: [
+                  { type: ComponentType.Button, style: ButtonStyle.Success, label: 'Approve', custom_id: 'ap1:a:AAAAAAAAAAAAAAAAAAAAAA' },
+                ],
+              },
+            ],
+          },
+        },
+      ]);
+
+      now += 1;
+      await h.transport.sendToUser(USER_ID, { text: 'later' });
+      expect(h.calls.log).toEqual([`followUp ${APP_ID}`, `dm ${USER_ID}`]);
+      expect(h.transport.referenceCount).toBe(0);
+    });
+
+    it('a reference belongs to its user only: another user gets the direct message', async () => {
+      const h = await readyWith();
+      dispatch(h, userInstall());
+      await flush();
+      h.calls.log.length = 0;
+      await h.transport.sendToUser(OTHER_USER, { text: 'result' });
+      expect(h.calls.log).toEqual([`dm ${OTHER_USER}`]);
+      expect(followUps).toEqual([]);
+    });
+
+    it('a button press keeps a reference too; the latest interaction wins', async () => {
+      const onComponent = jest.fn(async (): Promise<ChatComponentResponse> => ({ kind: 'ephemeral', message: { text: 'ok' } }));
+      const h = await readyWith(undefined, { onComponent });
+      dispatch(h, userInstall());
+      await flush();
+      now += 60 * 1000;
+      dispatch(h, buttonPress({ token: 'press-token' }));
+      await flush();
+      expect(h.transport.referenceCount).toBe(1);
+      await h.transport.sendToUser(USER_ID, { text: 'result' });
+      expect(followUps.map((entry) => entry.token)).toEqual(['press-token']);
+    });
+
+    it('the follow-up goes out only after the command’s own answer', async () => {
+      let release: (value: ChatReplyMessage | null) => void = () => undefined;
+      const handler = jest.fn(
+        () =>
+          new Promise<ChatReplyMessage | null>((resolve) => {
+            release = resolve;
+          }),
+      );
+      const h = await readyWith(handler, { deferAfterMs: 60 * 1000, answerWaitMs: 60 * 1000 });
+      dispatch(h, userInstall());
+      await flush();
+      const sending = h.transport.sendToUser(USER_ID, { text: 'result' });
+      await flush();
+      expect(h.calls.log).toEqual([]);
+      release({ text: 'the reply' });
+      await sending;
+      expect(h.calls.log).toEqual(['reply 222222222222222222 token', `followUp ${APP_ID}`]);
+    });
+
+    it('waits for the answer at most answerWaitMs', async () => {
+      const h = await readyWith(jest.fn(() => new Promise<ChatReplyMessage | null>(() => undefined)), {
+        deferAfterMs: 60 * 1000,
+        answerWaitMs: 20,
+      });
+      dispatch(h, userInstall());
+      await flush();
+      await h.transport.sendToUser(USER_ID, { text: 'result' });
+      expect(h.calls.log).toEqual([`followUp ${APP_ID}`]);
+      expect(DISCORD_ANSWER_WAIT_MS).toBe(5000);
+    });
+
+    it('a follow-up that fails falls back to the direct message and forgets the reference, logged by class and status only', async () => {
+      const h = await readyWith();
+      h.calls.followUp = async () => {
+        throw Object.assign(new Error('Unknown Webhook interaction-token'), { status: 404, name: 'DiscordAPIError' });
+      };
+      dispatch(h, userInstall());
+      await flush();
+      h.calls.log.length = 0;
+      await h.transport.sendToUser(USER_ID, { text: 'result' });
+      expect(h.calls.log).toEqual([`dm ${USER_ID}`]);
+      expect(h.transport.referenceCount).toBe(0);
+      expect(logs).toContain('warn: chat discord follow-up failed reason=DiscordAPIError status=404');
+      expect(logs.join('\n')).not.toContain('interaction-token');
+      expect(logs.join('\n')).not.toContain(USER_ID);
+    });
+
+    it.each([50007, 50278])('a direct message refused with HTTP 403 and code %i throws ChatDirectMessageRefusedError', async (code) => {
+      const h = await readyWith();
+      h.calls.sendDirectMessage = async () => {
+        throw refusal(code);
+      };
+      const error = await h.transport.sendToUser(USER_ID, { text: 'result' }).catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(ChatDirectMessageRefusedError);
+      expect((error as Error).name).toBe('ChatDirectMessageRefusedError');
+      expect((error as Error).message).not.toContain(USER_ID);
+    });
+
+    it('a refused follow-up then a refused direct message also throws the refused error', async () => {
+      const h = await readyWith();
+      h.calls.followUp = async () => {
+        throw Object.assign(new Error('Invalid Webhook Token'), { status: 401, name: 'DiscordAPIError' });
+      };
+      h.calls.sendDirectMessage = async () => {
+        throw refusal(50007);
+      };
+      dispatch(h, userInstall());
+      await flush();
+      await expect(h.transport.sendToUser(USER_ID, { text: 'result' })).rejects.toBeInstanceOf(ChatDirectMessageRefusedError);
+    });
+
+    it('other direct message errors are thrown unchanged', async () => {
+      const h = await readyWith();
+      const missingAccess = Object.assign(new Error('Missing Access'), { status: 403, code: 50001 });
+      const serverError = Object.assign(new Error('Internal Server Error'), { status: 500 });
+      for (const failure of [missingAccess, serverError]) {
+        h.calls.sendDirectMessage = async () => {
+          throw failure;
+        };
+        await expect(h.transport.sendToUser(USER_ID, { text: 'result' })).rejects.toBe(failure);
+      }
+      expect(isDiscordDirectMessageRefused({ status: 403, code: 50007 })).toBe(true);
+      expect(isDiscordDirectMessageRefused({ status: 403, code: '50278' })).toBe(true);
+      expect(isDiscordDirectMessageRefused({ status: 401, code: 50007 })).toBe(false);
+      expect(isDiscordDirectMessageRefused({ status: 403, code: 50001 })).toBe(false);
+      expect(isDiscordDirectMessageRefused(null)).toBe(false);
+      expect(DISCORD_DM_REFUSED_CODES).toEqual([
+        RESTJSONErrorCodes.CannotSendMessagesToThisUser,
+        RESTJSONErrorCodes.CannotSendMessagesToThisUserDueToHavingNoMutualGuilds,
+      ]);
+    });
+
+    it('references are memory only: cleared on disconnect and on a stop, never logged', async () => {
+      const h = await readyWith();
+      dispatch(h, userInstall());
+      await flush();
+      expect(h.transport.referenceCount).toBe(1);
+      await h.transport.disconnect();
+      expect(h.transport.referenceCount).toBe(0);
+
+      const stopped = await readyWith();
+      dispatch(stopped, userInstall());
+      await flush();
+      expect(stopped.transport.referenceCount).toBe(1);
+      stopped.gateway.emit('closed', GatewayCloseCodes.AuthenticationFailed, 0);
+      await flush();
+      expect(stopped.transport.state).toBe('stopped');
+      expect(stopped.transport.referenceCount).toBe(0);
+      expect(logs.join('\n')).not.toContain('interaction-token');
+    });
+
+    it('install links: from the READY application id and bot user id while ready; null otherwise', async () => {
+      const h = await readyWith();
+      const links = h.transport.installLinks();
+      expect(links).toEqual({
+        installUrl: `https://discord.com/oauth2/authorize?client_id=${APP_ID}&integration_type=1&scope=applications.commands`,
+        botProfileUrl: `https://discord.com/users/${BOT_USER_ID}`,
+      });
+      expect(JSON.stringify(links)).not.toContain(TOKEN);
+      await h.transport.disconnect();
+      expect(h.transport.installLinks()).toBeNull();
+
+      const plain = harness(ON);
+      await plain.transport.connect(jest.fn());
+      expect(plain.transport.installLinks()).toBeNull();
+      plain.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      expect(plain.transport.installLinks()).toBeNull();
+      plain.gateway.emit('ready', { application: { id: APP_ID }, user: { id: '<@1>' } }, 0);
+      expect(plain.transport.installLinks()).toBeNull();
+
+      expect(discordInstallLinks('12x', BOT_USER_ID)).toBeNull();
+      expect(discordInstallLinks(APP_ID, undefined)).toBeNull();
+      expect(discordInstallLinks(APP_ID, '1 OR 1')).toBeNull();
+      expect(discordInstallLinks(APP_ID, BOT_USER_ID)?.installUrl).toContain('integration_type=1');
     });
   });
 

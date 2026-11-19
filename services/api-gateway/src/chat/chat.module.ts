@@ -23,7 +23,7 @@ import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
 import { ChatRunService } from './chat-run.service';
-import { CHAT_TRANSPORT, ChatTransport } from './chat-transport';
+import { CHAT_TRANSPORT, ChatActivityNotifier, ChatTransport } from './chat-transport';
 import { DiscordTransport } from './discord/discord-transport';
 
 /**
@@ -112,7 +112,11 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * page's start and approve code (OrchestrationModule's CollaborationStartService), the
  * chat_run_deliveries table and the result poller. Slice C2: Approve and
  * Reject buttons for read-only steps (ChatApprovalService; it reads the
- * hand-off rows, it does not write them). Only ChatLinkService is exported.
+ * hand-off rows, it does not write them). CHAT-USER-INSTALL-01:
+ * ChatActivityNotifier passes "this outside user just used a command or a
+ * button" from the command and approval handlers to the delivery (no Nest
+ * dependency cycle), and ChatLinkService reads the transport's install links.
+ * Only ChatLinkService is exported.
  */
 @Module({
   imports: [
@@ -136,6 +140,7 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     ChatRunService,
     ChatDeliveryService,
     ChatApprovalService,
+    ChatActivityNotifier,
   ],
   exports: [ChatLinkService],
 })

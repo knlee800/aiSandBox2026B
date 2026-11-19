@@ -29,10 +29,11 @@ import {
 } from './chat-link.service';
 import { chatAgentName, chatReply, ChatReplyKey } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
-import type {
-  ChatComponentPress,
-  ChatComponentResponse,
-  ChatReplyMessage,
+import {
+  ChatActivityNotifier,
+  type ChatComponentPress,
+  type ChatComponentResponse,
+  type ChatReplyMessage,
 } from './chat-transport';
 
 /**
@@ -82,6 +83,11 @@ import type {
  * The request text is sent cut to 1000 characters (acceptance 4). Log lines
  * and audit rows carry ids, outcome and reason codes only: never the request
  * text, the token, the custom id or the Discord user id.
+ *
+ * CHAT-USER-INSTALL-01: every press in the direct message (switch on), even
+ * one on a button that no longer works, tells ChatActivityNotifier that this
+ * outside user is active, so results and notices held after a refused direct
+ * message go out now, as follow-ups after this press's own answer.
  */
 
 export const CHAT_APPROVAL_AUDIT_EVENTS = {
@@ -268,6 +274,7 @@ export class ChatApprovalService {
     @InjectRepository(AuditEventEntity)
     private readonly audit: Repository<AuditEventEntity>,
     @Optional() @Inject(CHAT_APPROVAL_OPTIONS) options?: ChatApprovalOptions,
+    @Optional() private readonly activity?: ChatActivityNotifier,
   ) {
     this.now = options?.now ?? Date.now;
   }
@@ -341,6 +348,7 @@ export class ChatApprovalService {
       if (!press.directMessage) {
         return this.refuse(null, null, 'unavailable', fallback);
       }
+      this.activity?.notify(CHAT_CHANNEL_DISCORD, press.externalUserId);
       const parsed = typeof press.customId === 'string' ? CHAT_APPROVAL_CUSTOM_ID.exec(press.customId) : null;
       const action = parsed?.[1] === 'a' ? 'approve' : 'reject';
       const tokenKey = parsed?.[2] ?? '';

@@ -4,7 +4,7 @@ import { FindOperator } from 'typeorm';
 import { CHAT_APPROVAL_CUSTOM_ID, ChatApprovalService } from './chat-approval.service';
 import { CHAT_DELIVERY_LIMITS, ChatDeliveryService } from './chat-delivery.service';
 import { chatReply } from './chat-replies';
-import { FakeChatTransport } from './chat-transport';
+import { ChatActivityNotifier, ChatDirectMessageRefusedError, FakeChatTransport } from './chat-transport';
 import { DiscordCalls, DiscordConnection, DiscordTransport } from './discord/discord-transport';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -29,13 +29,21 @@ function asNumber(value: unknown): number {
   return value instanceof Date ? value.getTime() : Number(value);
 }
 
+function satisfies(actual: unknown, expected: FindOperator<unknown>): boolean {
+  if (expected.type === 'not') {
+    const child = expected.child;
+    return child ? !satisfies(actual, child) : actual !== expected.value;
+  }
+  if (expected.type === 'in') return (expected.value as unknown[]).includes(actual);
+  if (expected.type === 'lessThan') return asNumber(actual) < asNumber(expected.value);
+  throw new Error(`unsupported operator ${expected.type}`);
+}
+
 function matches(row: Record<string, unknown>, where: Record<string, unknown>): boolean {
   return Object.entries(where).every(([key, expected]) => {
     const actual = row[key];
     if (expected instanceof FindOperator) {
-      if (expected.type === 'in') return (expected.value as unknown[]).includes(actual);
-      if (expected.type === 'lessThan') return asNumber(actual) < asNumber(expected.value);
-      throw new Error(`unsupported operator ${expected.type}`);
+      return satisfies(actual, expected);
     }
     return actual === expected;
   });
@@ -87,7 +95,11 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
   let logs: string[];
   let restoreLogs: () => void;
 
-  function build(target: { sendDirectMessage: unknown; state: unknown } = transport, options: Record<string, unknown> = {}) {
+  function build(
+    target: { sendToUser: unknown; state: unknown } = transport,
+    options: Record<string, unknown> = {},
+    activity?: ChatActivityNotifier,
+  ) {
     return new ChatDeliveryService(
       target as never,
       { getCollaborationRunWithReferrals: reads } as never,
@@ -103,6 +115,8 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         },
         ...options,
       },
+      undefined,
+      activity,
     );
   }
 
@@ -291,7 +305,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       });
     }
 
-    function withApprovals(target: { sendDirectMessage: unknown; state: unknown } = transport): ChatDeliveryService {
+    function withApprovals(target: { sendToUser: unknown; state: unknown } = transport): ChatDeliveryService {
       approvals = new ChatApprovalService(
         {} as never,
         {} as never,
@@ -362,20 +376,44 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       });
       const failing = {
         state: 'ready',
-        sendDirectMessage: jest.fn(async (): Promise<void> => {
+        sendToUser: jest.fn(async (): Promise<void> => {
           throw new Error(`discord said ${MARKER}`);
         }),
       };
       service = withApprovals(failing);
       await service.tick();
-      expect(failing.sendDirectMessage).toHaveBeenCalledTimes(1);
+      expect(failing.sendToUser).toHaveBeenCalledTimes(1);
       expect(approvals.liveTokens).toBe(0);
       expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
       expect(logs).toContain(`chat delivery notice failed runId=${RUN_ID} linkId=${LINK_ID} reason=Error`);
-      failing.sendDirectMessage.mockImplementation(async () => undefined);
+      failing.sendToUser.mockImplementation(async () => undefined);
       await service.tick();
       expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
       expect(approvals.liveTokens).toBe(1);
+    });
+
+    it('CHAT-USER-INSTALL-01: a refused approval message is held: its button is forgotten, the step not marked; the next command sends it', async () => {
+      waiting();
+      step('r2', 'chief-of-staff', 'Report back');
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      transport.refusedUsers.add(DISCORD_ID);
+      await service.tick();
+      expect(approvals.liveTokens).toBe(0);
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
+      expect(service.heldCount).toBe(1);
+      expect(logs).toContain(`chat delivery held runId=${RUN_ID} linkId=${LINK_ID} reason=dm_refused`);
+      await service.tick();
+      expect(transport.directMessages).toEqual([]);
+      transport.refusedUsers.delete(DISCORD_ID);
+      expect(await service.resume('discord', DISCORD_ID)).toBe(1);
+      expect(transport.directMessages).toHaveLength(1);
+      expect(transport.directMessages[0].message.buttons?.map((button) => button.style)).toEqual(['approve', 'reject']);
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
+      expect(approvals.liveTokens).toBe(1);
+      expect(audit).toEqual([]);
     });
 
     it('through the Discord transport the approval message has one row of buttons and mentions off', async () => {
@@ -438,7 +476,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
 
   it('sending fails: 3 retries with backoff, then failed with a delivery_failed audit row', async () => {
     let sends = 0;
-    transport.sendDirectMessage = async () => {
+    transport.sendToUser = async () => {
       sends += 1;
       throw new Error(`discord said ${MARKER}`);
     };
@@ -470,7 +508,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
   it('a retry after a failed part sends only the parts not yet sent', async () => {
     const sent: string[] = [];
     let failOnce = true;
-    transport.sendDirectMessage = async (_id, message) => {
+    transport.sendToUser = async (_id, message) => {
       if (sent.length === 1 && failOnce) {
         failOnce = false;
         throw new Error('rate limited');
@@ -522,6 +560,248 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     expect(await service.prune()).toBe(3);
     expect(deliveries.rows.map((row) => row.collaborationRunId)).toEqual(['d-new', 'w-old']);
     expect(logs).toContain('chat deliveries pruned count=3');
+  });
+
+  describe('CHAT-USER-INSTALL-01: a refused direct message is held until the user is active', () => {
+    const LINK_2 = '33333333-3333-4333-8333-333333333333';
+    const OTHER_DISCORD = '123456789012345678';
+    const HELD_LINE = `chat delivery held runId=${RUN_ID} linkId=${LINK_ID} reason=dm_refused`;
+    let activity: ChatActivityNotifier;
+
+    async function settle(until: () => boolean): Promise<void> {
+      for (let i = 0; i < 200 && !until(); i += 1) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+    }
+
+    beforeEach(() => {
+      service.onModuleDestroy();
+      activity = new ChatActivityNotifier();
+      service = build(transport, {}, activity);
+    });
+
+    it('the row keeps waiting and is held: one log line with ids only, no audit row, no failed attempt', async () => {
+      transport.refusedUsers.add(DISCORD_ID);
+      waiting();
+      ended('completed', `The answer ${MARKER}`);
+      expect(await service.tick()).toBe(1);
+      expect(transport.directMessages).toEqual([]);
+      expect(deliveries.rows[0].status).toBe('waiting');
+      expect(service.heldCount).toBe(1);
+      expect(logs.filter((line) => line.startsWith('chat delivery held'))).toEqual([HELD_LINE]);
+
+      // The poller skips the held row: nothing read, nothing sent, no retry counted, no audit, no new line.
+      reads.mockClear();
+      for (const wait of [...CHAT_DELIVERY_LIMITS.backoffMs, 60 * 1000]) {
+        now += wait;
+        expect(await service.tick()).toBe(0);
+      }
+      expect(reads).not.toHaveBeenCalled();
+      expect(deliveries.rows[0].status).toBe('waiting');
+      expect(audit).toEqual([]);
+      expect(logs.filter((line) => line.startsWith('chat delivery held'))).toHaveLength(1);
+      expect(logs.some((line) => line.includes('send failed') || line.includes('delivery failed'))).toBe(false);
+    });
+
+    it('the user’s next command or button press (the notifier) sends it and the row is delivered', async () => {
+      transport.refusedUsers.add(DISCORD_ID);
+      waiting();
+      ended('completed', `The answer ${MARKER}`);
+      await service.tick();
+      expect(service.heldCount).toBe(1);
+
+      // Another user, or another channel: nothing happens.
+      activity.notify('discord', OTHER_DISCORD);
+      expect(await service.resume('line' as never, DISCORD_ID)).toBe(0);
+      expect(service.heldCount).toBe(1);
+
+      // The user runs a command: the transport can now answer them (a follow-up in Discord).
+      transport.refusedUsers.delete(DISCORD_ID);
+      activity.notify('discord', DISCORD_ID);
+      await settle(() => deliveries.rows[0].status === 'delivered');
+      expect(transport.directMessages).toEqual([{ externalUserId: DISCORD_ID, message: { text: `The answer ${MARKER}` } }]);
+      expect(deliveries.rows[0].status).toBe('delivered');
+      expect(service.heldCount).toBe(0);
+      expect(logs).toContain(`chat delivery resumed linkId=${LINK_ID} runs=1`);
+      expect(audit).toEqual([
+        expect.objectContaining({
+          eventType: 'result_delivered',
+          payload: { channel: 'discord', linkId: LINK_ID, collaborationRunId: RUN_ID, outcome: 'completed', parts: 1, cut: 0 },
+        }),
+      ]);
+    });
+
+    it('a part already sent is not sent again: only the rest goes out after the hold', async () => {
+      const sent: string[] = [];
+      let blocked = false;
+      transport.sendToUser = async (_id, message) => {
+        if (blocked) throw new ChatDirectMessageRefusedError();
+        sent.push(message.text);
+        blocked = true;
+      };
+      waiting();
+      ended('completed', `${'a'.repeat(1800)}\n\n${'b'.repeat(1800)}`);
+      await service.tick();
+      expect(sent).toEqual(['a'.repeat(1800)]);
+      expect(service.heldCount).toBe(1);
+      blocked = false;
+      transport.sendToUser = async (_id, message) => void sent.push(message.text);
+      expect(await service.resume('discord', DISCORD_ID)).toBe(1);
+      expect(sent).toEqual(['a'.repeat(1800), 'b'.repeat(1800)]);
+      expect(deliveries.rows[0].status).toBe('delivered');
+      expect(audit[0].payload).toMatchObject({ outcome: 'completed', parts: 2 });
+    });
+
+    it('a held row is dropped at 24 hours like any waiting row; the poller keeps running until then', async () => {
+      transport.refusedUsers.add(DISCORD_ID);
+      waiting();
+      ended('completed', MARKER);
+      service.wake();
+      await service.tick();
+      expect(await service.tick()).toBe(0);
+      expect(service.polling).toBe(true);
+      now = T0 + DAY + 1;
+      await service.tick();
+      expect(deliveries.rows[0].status).toBe('dropped');
+      expect(service.heldCount).toBe(0);
+      expect(logs).toContain(`chat delivery dropped runId=${RUN_ID} linkId=${LINK_ID} reason=too_old`);
+      await service.tick();
+      expect(service.polling).toBe(false);
+      expect(transport.directMessages).toEqual([]);
+      expect(audit).toEqual([]);
+    });
+
+    it('an approval notice that is refused is held and not marked; the next command sends it and marks it', async () => {
+      transport.refusedUsers.add(DISCORD_ID);
+      waiting();
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      await service.tick();
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
+      expect(service.heldCount).toBe(1);
+      expect(logs).toContain(HELD_LINE);
+      expect(logs.some((line) => line.startsWith('chat delivery notice failed'))).toBe(false);
+      transport.refusedUsers.delete(DISCORD_ID);
+      expect(await service.resume('discord', DISCORD_ID)).toBe(1);
+      expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatReply('en', 'result.waitingApproval')]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'waiting', notifiedReferralIds: ['r2'] });
+      expect(audit).toEqual([]);
+    });
+
+    it('held rows do not take the batch from other users', async () => {
+      links.set(LINK_2, { id: LINK_2, userId: OWNER, externalUserId: OTHER_DISCORD, locale: 'en' });
+      transport.refusedUsers.add(DISCORD_ID);
+      for (let i = 0; i < CHAT_DELIVERY_LIMITS.batch; i += 1) {
+        const runId = `held-${String(i).padStart(2, '0')}`;
+        waiting(runId, new Date(T0 + i));
+        ended('completed', MARKER, runId);
+      }
+      await service.tick();
+      expect(service.heldCount).toBe(CHAT_DELIVERY_LIMITS.batch);
+      deliveries.rows.push({
+        collaborationRunId: 'other-run',
+        linkId: LINK_2,
+        status: 'waiting',
+        notifiedReferralIds: [],
+        createdAt: new Date(T0 + 100),
+        deliveredAt: null,
+      });
+      ended('completed', 'Other answer', 'other-run');
+      expect(await service.tick()).toBe(1);
+      expect(transport.directMessages).toEqual([{ externalUserId: OTHER_DISCORD, message: { text: 'Other answer' } }]);
+    });
+
+    it('resume does nothing without holds, under Jest unless allowed, or after shutdown', async () => {
+      expect(await service.resume('discord', DISCORD_ID)).toBe(0);
+      expect(reads).not.toHaveBeenCalled();
+      const idle = build(transport, { allowUnderJest: false }, new ChatActivityNotifier());
+      expect(await idle.resume('discord', DISCORD_ID)).toBe(0);
+      transport.refusedUsers.add(DISCORD_ID);
+      waiting();
+      ended('completed', MARKER);
+      await service.tick();
+      service.onModuleDestroy();
+      activity.notify('discord', DISCORD_ID);
+      expect(await service.resume('discord', DISCORD_ID)).toBe(0);
+      expect(transport.directMessages).toEqual([]);
+    });
+
+    it('end to end through the Discord transport: refused, held, then a follow-up after the next command’s own reply', async () => {
+      const order: string[] = [];
+      const followUps: Array<{ token: string; body: Record<string, unknown> }> = [];
+      const gateway = new EventEmitter() as EventEmitter & { connect: () => Promise<void>; destroy: () => void };
+      gateway.connect = () => new Promise<void>(() => undefined);
+      gateway.destroy = () => undefined;
+      const discordCalls: DiscordCalls = {
+        reply: async () => void order.push('reply'),
+        defer: async () => undefined,
+        editReply: async () => undefined,
+        deleteReply: async () => undefined,
+        registerGlobalCommands: async () => undefined,
+        sendDirectMessage: async () => {
+          order.push('dm');
+          throw Object.assign(new Error('Cannot send messages to this user'), { status: 403, code: 50278 });
+        },
+        updateMessage: async () => undefined,
+        deferUpdate: async () => undefined,
+        followUp: async (_appId, token, body) => {
+          order.push('followUp');
+          followUps.push({ token, body: body as never });
+        },
+      };
+      const discord = new DiscordTransport({
+        env: { CHAT_DISCORD_ENABLED: 'true', DISCORD_BOT_TOKEN: 'test-token-value' },
+        factory: async (): Promise<DiscordConnection> => ({ calls: discordCalls, gateway, close: () => undefined }),
+        now: () => now,
+      });
+      // The command handler tells the notifier, as ChatCommandService does.
+      await discord.connect(async (invocation) => {
+        activity.notify('discord', invocation.externalUserId);
+        return { text: 'status reply' };
+      });
+      gateway.emit('ready', { application: { id: '111111111111111111' }, user: { id: '222222222222222222' } }, 0);
+      await settle(() => discord.state === 'ready');
+      service.onModuleDestroy();
+      service = build(discord, {}, activity);
+
+      waiting();
+      ended('completed', `The answer @everyone ${MARKER}`);
+      await service.tick();
+      expect(order).toEqual(['dm']);
+      expect(service.heldCount).toBe(1);
+      expect(deliveries.rows[0].status).toBe('waiting');
+
+      gateway.emit(
+        'dispatch',
+        {
+          t: 'INTERACTION_CREATE',
+          d: {
+            id: '444444444444444444',
+            application_id: '111111111111111111',
+            type: 2,
+            token: 'user-install-token',
+            context: 1,
+            authorizing_integration_owners: { '1': DISCORD_ID },
+            user: { id: DISCORD_ID, username: 'someone' },
+            data: { type: 1, name: 'status', options: [] },
+          },
+        },
+        0,
+      );
+      await settle(() => deliveries.rows[0].status === 'delivered');
+      expect(order).toEqual(['dm', 'reply', 'followUp']);
+      expect(followUps).toEqual([
+        {
+          token: 'user-install-token',
+          body: { content: `The answer @everyone ${MARKER}`, allowed_mentions: { parse: [] } },
+        },
+      ]);
+      expect(deliveries.rows[0].status).toBe('delivered');
+      expect(audit.map((row) => row.eventType)).toEqual(['result_delivered']);
+      await discord.disconnect();
+    });
   });
 
   describe('poller', () => {

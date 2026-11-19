@@ -12,6 +12,7 @@ import {
   DISCORD_COMMAND_TYPE_CHAT_INPUT,
   DISCORD_CONTEXT_BOT_DM,
   DISCORD_INTEGRATION_GUILD_INSTALL,
+  DISCORD_INTEGRATION_USER_INSTALL,
   DISCORD_OPTION_TYPE_STRING,
 } from './discord-commands';
 
@@ -26,6 +27,7 @@ describe('Discord commands (CHAT-DISCORD-01 B)', () => {
     expect(DISCORD_OPTION_TYPE_STRING).toBe(ApplicationCommandOptionType.String);
     expect(DISCORD_CONTEXT_BOT_DM).toBe(InteractionContextType.BotDM);
     expect(DISCORD_INTEGRATION_GUILD_INSTALL).toBe(ApplicationIntegrationType.GuildInstall);
+    expect(DISCORD_INTEGRATION_USER_INSTALL).toBe(ApplicationIntegrationType.UserInstall);
   });
 
   it('registers exactly link, unlink, status, language, help, ask and cancel', () => {
@@ -33,11 +35,16 @@ describe('Discord commands (CHAT-DISCORD-01 B)', () => {
     expect(CHAT_COMMAND_NAMES).toEqual(commands.map((command) => command.name));
   });
 
-  it('every command is a slash command for the direct message with the bot only', () => {
+  it('every command is a slash command for the direct message with the bot only, for server and user installs', () => {
     for (const command of commands) {
       expect(command.type).toBe(ApplicationCommandType.ChatInput);
+      // CHAT-USER-INSTALL-01: still the bot's direct message only.
       expect(command.contexts).toEqual([InteractionContextType.BotDM]);
-      expect(command.integration_types).toEqual([ApplicationIntegrationType.GuildInstall]);
+      // CHAT-USER-INSTALL-01: any account that adds the bot to its own apps gets the commands too.
+      expect(command.integration_types).toEqual([
+        ApplicationIntegrationType.GuildInstall,
+        ApplicationIntegrationType.UserInstall,
+      ]);
       expect(Object.keys(command).sort()).toEqual(
         expect.arrayContaining(['type', 'name', 'description', 'description_localizations', 'contexts', 'integration_types']),
       );

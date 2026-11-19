@@ -21,6 +21,10 @@ export interface ChatLinksState {
   paused: boolean;
   link: ChatLinkLink | null;
   pending: ChatLinkPending | null;
+  /** CHAT-USER-INSTALL-01: adds the bot to the owner's own Discord apps; null hides the button. */
+  installUrl: string | null;
+  /** CHAT-USER-INSTALL-01: the bot's Discord profile (Message opens its direct message); null hides the link. */
+  botProfileUrl: string | null;
 }
 
 export const UNAVAILABLE_CHAT_STATE: ChatLinksState = {
@@ -28,7 +32,56 @@ export const UNAVAILABLE_CHAT_STATE: ChatLinksState = {
   paused: false,
   link: null,
   pending: null,
+  installUrl: null,
+  botProfileUrl: null,
 };
+
+/** The five linking steps shown while not linked (CHAT-USER-INSTALL-01). */
+export const CHAT_SETUP_STEPS = ['install', 'open', 'create', 'link', 'confirm'] as const;
+export type ChatSetupStep = (typeof CHAT_SETUP_STEPS)[number];
+
+const DISCORD_INSTALL_PREFIX = 'https://discord.com/oauth2/authorize?';
+const DISCORD_BOT_PROFILE = /^https:\/\/discord\.com\/users\/[0-9]{1,32}$/;
+
+/**
+ * Keeps the install link only when it is Discord's own authorize page over https
+ * (never another host or a script URL); anything else is null and hides the button.
+ */
+export function parseInstallUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.startsWith(DISCORD_INSTALL_PREFIX) || value.length > 512) {
+    return null;
+  }
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || url.host !== 'discord.com' || url.pathname !== '/oauth2/authorize') {
+      return null;
+    }
+    return /^[0-9]{1,32}$/.test(url.searchParams.get('client_id') ?? '') ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Keeps the bot profile link only when it is https://discord.com/users/<digits>. */
+export function parseBotProfileUrl(value: unknown): string | null {
+  return typeof value === 'string' && DISCORD_BOT_PROFILE.test(value) ? value : null;
+}
+
+/** The step the owner is on: the code is live (4) or claimed (5); none before a code exists. */
+export function currentChatStep(view: ChatLinkView): ChatSetupStep | null {
+  if (view === 'codeLive' || view === 'codeHidden') {
+    return 'link';
+  }
+  if (view === 'claimed') {
+    return 'confirm';
+  }
+  return null;
+}
+
+/** The steps show while linking is possible and the owner is not linked yet. */
+export function showsChatSteps(view: ChatLinkView): boolean {
+  return view === 'unlinked' || view === 'codeLive' || view === 'codeHidden' || view === 'claimed';
+}
 
 /** How often the page asks for a claim while a code is live. */
 export const CHAT_LINK_POLL_MS = 4000;
@@ -90,7 +143,14 @@ export function parseChatLinks(payload: unknown): ChatLinksState | null {
   if ((inner.link != null && !link) || (inner.pending != null && !pending)) {
     return null;
   }
-  return { enabled: row.enabled, paused: row.paused, link, pending };
+  return {
+    enabled: row.enabled,
+    paused: row.paused,
+    link,
+    pending,
+    installUrl: parseInstallUrl(inner.installUrl),
+    botProfileUrl: parseBotProfileUrl(inner.botProfileUrl),
+  };
 }
 
 export function isExpired(expiresAt: string, now: number): boolean {

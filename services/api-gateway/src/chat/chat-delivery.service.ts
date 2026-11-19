@@ -7,7 +7,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, Repository } from 'typeorm';
+import { In, LessThan, Not, Repository } from 'typeorm';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
@@ -17,10 +17,22 @@ import type { CollaborationReferral } from '../orchestration/orchestration.contr
 import { OrchestrationService } from '../orchestration/orchestration.service';
 import { ChatApprovalService } from './chat-approval.service';
 import { chunkChatText } from './chat-chunk';
-import { CHAT_AUDIT_CATEGORY, CHAT_CHANNEL_DISCORD, ChatLinkLocale, normalizeChatLocale } from './chat-link.service';
+import {
+  CHAT_AUDIT_CATEGORY,
+  CHAT_CHANNEL_DISCORD,
+  ChatChannel,
+  ChatLinkLocale,
+  normalizeChatLocale,
+} from './chat-link.service';
 import { chatReply, ChatReplyKey } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
-import { CHAT_TRANSPORT, ChatReplyMessage, ChatTransport } from './chat-transport';
+import {
+  CHAT_TRANSPORT,
+  ChatActivityNotifier,
+  ChatDirectMessageRefusedError,
+  ChatReplyMessage,
+  ChatTransport,
+} from './chat-transport';
 
 /**
  * CHAT-DISCORD-01 slice C1 (stage-start sections 6.3, 7; decisions D5, D6):
@@ -55,6 +67,21 @@ import { CHAT_TRANSPORT, ChatReplyMessage, ChatTransport } from './chat-transpor
  *
  * Log lines and audit rows carry ids, states, reason codes and counts only:
  * never the answer, the task, the outside user id or any Discord text.
+ *
+ * CHAT-USER-INSTALL-01: every message goes through transport.sendToUser (a
+ * follow-up to the user's latest interaction while it is fresh, else the
+ * direct message). A direct message Discord refuses
+ * (ChatDirectMessageRefusedError) is not a failed attempt: the row stays
+ * waiting and is held in memory, with one log line (`chat delivery held
+ * runId=... linkId=... reason=dm_refused`) and no audit row. The poller skips
+ * held rows (apart from the 24-hour drop) until that user's next command or
+ * button press (ChatActivityNotifier), which releases the user's held rows
+ * and runs a pass at once; the transport sends the parts as follow-ups after
+ * the command's own answer. Approval notices are held the same way and are
+ * marked notified only once sent. The 24-hour drop, the retries for other
+ * errors, the part limits, the one-message-a-second spacing and the Results
+ * page are unchanged. Holds are lost on a restart: the boot pass tries again
+ * and holds again if Discord still refuses.
  */
 
 export const CHAT_RUN_AUDIT_EVENTS = {
@@ -91,6 +118,14 @@ interface AttemptState {
   failures: number;
   nextAt: number;
   partsSent: number;
+}
+
+/** CHAT-USER-INSTALL-01: a row whose direct message Discord refused, held until the user is active. Memory only. */
+interface HeldDelivery {
+  linkId: string;
+  /** The link's outside user id, to match the user's next command or press. Never logged. */
+  externalUserId: string;
+  createdAt: number;
 }
 
 const END_LINES: Readonly<Record<Exclude<ChatDeliveryOutcome, 'completed'>, ChatReplyKey>> = {
@@ -145,8 +180,13 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
   private readonly spacingMs: number;
   private readonly attempts = new Map<string, AttemptState>();
   private readonly lastSentAt = new Map<string, number>();
+  /** CHAT-USER-INSTALL-01: rows held after a refused direct message, by run id. Memory only. */
+  private readonly holds = new Map<string, HeldDelivery>();
+  private readonly stopListening: (() => void) | null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private ticking = false;
+  /** A pass was asked for while one was running: run once more after it. */
+  private again = false;
   private destroyed = false;
 
   constructor(
@@ -160,12 +200,18 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     private readonly audit: Repository<AuditEventEntity>,
     @Optional() @Inject(CHAT_DELIVERY_OPTIONS) options?: ChatDeliveryOptions,
     @Optional() private readonly approvals?: ChatApprovalService,
+    @Optional() activity?: ChatActivityNotifier,
   ) {
     this.testEnvironment = process.env.JEST_WORKER_ID !== undefined && options?.allowUnderJest !== true;
     this.now = options?.now ?? Date.now;
     this.sleep = options?.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms).unref?.()));
     this.intervalMs = options?.intervalMs ?? CHAT_DELIVERY_LIMITS.intervalMs;
     this.spacingMs = options?.spacingMs ?? CHAT_DELIVERY_LIMITS.spacingMs;
+    this.stopListening = activity
+      ? activity.onActivity((channel, externalUserId) => {
+          void this.resume(channel, externalUserId);
+        })
+      : null;
   }
 
   onApplicationBootstrap(): void {
@@ -175,11 +221,50 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
   onModuleDestroy(): void {
     this.destroyed = true;
     this.stopTimer();
+    this.stopListening?.();
   }
 
   /** True while the poller's timer runs. */
   get polling(): boolean {
     return this.timer !== null;
+  }
+
+  /** CHAT-USER-INSTALL-01: the number of rows held after a refused direct message. */
+  get heldCount(): number {
+    return this.holds.size;
+  }
+
+  /**
+   * CHAT-USER-INSTALL-01: the outside user used a command or pressed a
+   * button. Their held rows are released and a pass runs at once (or right
+   * after the one running); the transport sends the messages as follow-ups
+   * after the command's own answer. Nothing held for that user: nothing
+   * happens and nothing is read. Never throws. Returns the rows released.
+   */
+  async resume(channel: ChatChannel, externalUserId: string): Promise<number> {
+    if (channel !== CHAT_CHANNEL_DISCORD || this.testEnvironment || this.destroyed) {
+      return 0;
+    }
+    let released = 0;
+    let linkId = '';
+    for (const [runId, hold] of this.holds) {
+      if (hold.externalUserId === externalUserId) {
+        this.holds.delete(runId);
+        released += 1;
+        linkId = hold.linkId;
+      }
+    }
+    if (released === 0) {
+      return 0;
+    }
+    this.logger.log(`chat delivery resumed linkId=${linkId} runs=${released}`);
+    this.wake();
+    if (this.ticking) {
+      this.again = true;
+    } else {
+      await this.tick();
+    }
+    return released;
   }
 
   /** Starts the poller if it is not running. Never under Jest unless allowed. Never throws. */
@@ -205,13 +290,19 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
         return 0;
       }
       await this.prune();
+      await this.dropOldHolds();
+      // CHAT-USER-INSTALL-01: held rows are skipped until their user is active again.
+      const held = [...this.holds.keys()];
       const rows = await this.deliveries.find({
-        where: { status: 'waiting' },
+        where: held.length > 0 ? { status: 'waiting', collaborationRunId: Not(In(held)) } : { status: 'waiting' },
         order: { createdAt: 'ASC' },
         take: CHAT_DELIVERY_LIMITS.batch,
       });
       if (rows.length === 0) {
-        this.stopTimer();
+        // Held rows still wait: keep polling so they are dropped at 24 hours.
+        if (this.holds.size === 0) {
+          this.stopTimer();
+        }
         return 0;
       }
       for (const row of rows) {
@@ -227,7 +318,42 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
       return 0;
     } finally {
       this.ticking = false;
+      if (this.again) {
+        this.again = false;
+        if (!this.destroyed) {
+          void this.tick();
+        }
+      }
     }
+  }
+
+  /** CHAT-USER-INSTALL-01: a held row older than 24 hours is dropped (the Results page keeps the result). */
+  private async dropOldHolds(): Promise<void> {
+    const now = this.now();
+    for (const [runId, hold] of this.holds) {
+      if (now - hold.createdAt <= CHAT_DELIVERY_LIMITS.maxAgeMs) {
+        continue;
+      }
+      this.holds.delete(runId);
+      this.attempts.delete(runId);
+      const result = await this.deliveries.update({ collaborationRunId: runId, status: 'waiting' }, { status: 'dropped' });
+      if ((result.affected ?? 0) > 0) {
+        this.logger.log(`chat delivery dropped runId=${runId} linkId=${hold.linkId} reason=too_old`);
+      }
+    }
+  }
+
+  /** CHAT-USER-INSTALL-01: holds a row after a refused direct message; one log line, ids only, no audit row. */
+  private hold(row: ChatRunDelivery, link: ChatLink): void {
+    if (this.holds.has(row.collaborationRunId)) {
+      return;
+    }
+    this.holds.set(row.collaborationRunId, {
+      linkId: row.linkId,
+      externalUserId: link.externalUserId,
+      createdAt: new Date(row.createdAt).getTime(),
+    });
+    this.logger.log(`chat delivery held runId=${row.collaborationRunId} linkId=${row.linkId} reason=dm_refused`);
   }
 
   /** Deletes delivered, failed and dropped rows older than 30 days. */
@@ -294,6 +420,12 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
         attempt.partsSent += 1;
       }
     } catch (error) {
+      if (error instanceof ChatDirectMessageRefusedError) {
+        // Not a failed attempt: the parts sent so far are kept; the rest waits for the user.
+        this.attempts.set(runId, attempt);
+        this.hold(row, link);
+        return;
+      }
       attempt.failures += 1;
       if (attempt.failures > CHAT_DELIVERY_LIMITS.retries) {
         this.attempts.delete(runId);
@@ -368,9 +500,14 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
         }
       }
     } catch (error) {
-      this.logger.warn(
-        `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,
-      );
+      if (error instanceof ChatDirectMessageRefusedError) {
+        // CHAT-USER-INSTALL-01: held like a result; the step is not marked, so it is sent on the user's next command.
+        this.hold(row, link);
+      } else {
+        this.logger.warn(
+          `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,
+        );
+      }
     }
     if (sent.length === 0) {
       return;
@@ -382,14 +519,18 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     );
   }
 
-  /** One message, at most one a second per owner. The transport sends it with mentions off. */
+  /**
+   * One message, at most one a second per owner. The transport sends it with
+   * mentions off: a follow-up to the user's latest interaction when it is
+   * fresh, else the direct message (CHAT-USER-INSTALL-01).
+   */
   private async send(link: ChatLink, message: ChatReplyMessage): Promise<void> {
     const last = this.lastSentAt.get(link.id);
     const now = this.now();
     if (last !== undefined && now - last < this.spacingMs) {
       await this.sleep(this.spacingMs - (now - last));
     }
-    await this.transport.sendDirectMessage(link.externalUserId, message);
+    await this.transport.sendToUser(link.externalUserId, message);
     this.lastSentAt.set(link.id, this.now());
   }
 
@@ -398,6 +539,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     status: 'delivered' | 'failed' | 'dropped',
     reason: string,
   ): Promise<void> {
+    this.holds.delete(row.collaborationRunId);
     await this.deliveries.update(
       { collaborationRunId: row.collaborationRunId, status: 'waiting' },
       status === 'delivered' ? { status, deliveredAt: new Date(this.now()) } : { status },

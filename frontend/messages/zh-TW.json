@@ -1698,6 +1698,18 @@
     "chat": {
       "title": "聊天（Discord）",
       "intro": "連結你的 Discord 帳號，即可在與機器人的私訊中啟動代理工作並接收結果。",
+      "steps": {
+        "title": "連結步驟",
+        "install": "把機器人加入你的 Discord。Discord 詢問時，請選擇 Add to my apps（加入我的應用程式）。",
+        "installButton": "加入 Discord",
+        "open": "開啟機器人，按下 Message（傳送訊息）與它開始私訊。",
+        "openLink": "開啟機器人",
+        "create": "勾選下方的聲明，然後按「產生代碼」。",
+        "link": "在機器人的私訊中輸入 /，從選單選擇 link，然後貼上代碼。",
+        "confirm": "回到這裡按「確認」。"
+      },
+      "heldNote": "如果 Discord 不讓機器人傳訊息給你，結果會在你下次使用指令時送達，也一律可在結果頁面查看。",
+      "newTab": "（在新分頁開啟）",
       "loading": "正在載入聊天連結…",
       "retry": "再試一次",
       "unavailable": "聊天連結目前無法使用。",
@@ -1717,7 +1729,7 @@
       "paused": "連結功能暫時停用，請稍後再試。",
       "code": {
         "title": "你的連結代碼",
-        "instruction": "在 Discord 私訊機器人，輸入 /link 並附上這個代碼。",
+        "instruction": "在機器人的私訊中輸入 /，從選單選擇 link，然後貼上這個代碼。",
         "expires": "到期時間：{time}。代碼只會顯示一次。",
         "waiting": "正在等你在 Discord 使用 /link…",
         "hidden": "已產生代碼，但無法再次顯示。請產生新代碼以取代。"

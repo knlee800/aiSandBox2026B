@@ -1698,6 +1698,18 @@
     "chat": {
       "title": "Chat (Discord)",
       "intro": "Link your Discord account to start agent work and receive results in a direct message with the bot.",
+      "steps": {
+        "title": "How to link",
+        "install": "Add the bot to your Discord. When Discord asks, choose Add to my apps.",
+        "installButton": "Add to Discord",
+        "open": "Open the bot and press Message to start a direct message with it.",
+        "openLink": "Open the bot",
+        "create": "Tick the statement below and press Create code.",
+        "link": "In the bot's direct message, type / and choose link from the menu, then paste the code.",
+        "confirm": "Come back here and press Confirm."
+      },
+      "heldNote": "If Discord does not let the bot message you, your results arrive the next time you use a command. They are always on the Results page.",
+      "newTab": "(opens in a new tab)",
       "loading": "Loading chat link…",
       "retry": "Try again",
       "unavailable": "Chat link is not available right now.",
@@ -1717,7 +1729,7 @@
       "paused": "Linking is paused for now. Try again later.",
       "code": {
         "title": "Your link code",
-        "instruction": "In Discord, send a direct message to the bot and type /link with this code.",
+        "instruction": "In the bot's direct message, type / and choose link from the menu, then paste this code.",
         "expires": "Expires {time}. It is shown only once.",
         "waiting": "Waiting for you to use /link in Discord…",
         "hidden": "A code was made but cannot be shown again. Create a new code to replace it."

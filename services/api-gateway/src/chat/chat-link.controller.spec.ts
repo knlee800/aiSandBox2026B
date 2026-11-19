@@ -25,6 +25,7 @@ import { ChatApprovalService } from './chat-approval.service';
 import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT_PROVIDER, ChatChannelRunner, ChatModule } from './chat.module';
+import { CHAT_TRANSPORT, ChatActivityNotifier, FakeChatTransport } from './chat-transport';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const NOT_ENTITLED = '22222222-2222-4222-8222-222222222222';
@@ -43,6 +44,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
   let app: INestApplication;
   let store: MemoryStore;
   let service: ChatLinkService;
+  let transport: FakeChatTransport;
   let logs: string[];
   let restoreLogs: () => void;
 
@@ -50,6 +52,8 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     process.env.CHAT_DISCORD_ENABLED = 'true';
     process.env.APP_BASE_URL = APP_ORIGIN;
     store = new MemoryStore();
+    // CHAT-USER-INSTALL-01: the app's transport token; not connected unless a test connects it.
+    transport = new FakeChatTransport();
     logs = [];
     restoreLogs = watchLogs(logs);
 
@@ -94,6 +98,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
           useValue: { resolveHarnessEntitled: async (userId: string) => userId === OWNER },
         },
         { provide: APP_GUARD, useClass: SameOriginWriteGuard },
+        { provide: CHAT_TRANSPORT, useValue: transport },
       ],
     }).compile();
 
@@ -182,7 +187,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
         .set('Cookie', cookie)
         .set('Authorization', `Bearer ${VALID_API_KEY}`)
         .expect(200);
-      expect(state.body).toEqual({ enabled: true, paused: false, discord: { link: null, pending: null } });
+      expect(state.body).toEqual({ enabled: true, paused: false, discord: { link: null, pending: null, installUrl: null, botProfileUrl: null } });
 
       const created = await request(app.getHttpServer())
         .post('/api/chat-links/discord/code')
@@ -228,7 +233,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       expect(response.body).toEqual({
         enabled: false,
         paused: false,
-        discord: { link: null, pending: null },
+        discord: { link: null, pending: null, installUrl: null, botProfileUrl: null },
       });
       expect(store.calls).toEqual([]);
     });
@@ -253,7 +258,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
 
     // No link.
     const empty = await owner.get('/api/chat-links').expect(200);
-    expect(empty.body).toEqual({ enabled: true, paused: false, discord: { link: null, pending: null } });
+    expect(empty.body).toEqual({ enabled: true, paused: false, discord: { link: null, pending: null, installUrl: null, botProfileUrl: null } });
 
     // Code: shown once.
     const created = await owner.post('/api/chat-links/discord/code').send({ locale: 'zh-TW' }).expect(201);
@@ -295,7 +300,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(linked.body).toEqual({
       enabled: true,
       paused: false,
-      discord: { link: confirmed.body, pending: null },
+      discord: { link: confirmed.body, pending: null, installUrl: null, botProfileUrl: null },
     });
     expect(linked.text).not.toContain(DISCORD_ID);
     expect(store.links.rows[0].locale).toBe('zh-TW');
@@ -314,7 +319,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(store.links.rows).toHaveLength(0);
     expect(store.codes.rows).toHaveLength(0);
     const after = await owner.get('/api/chat-links').expect(200);
-    expect(after.body.discord).toEqual({ link: null, pending: null });
+    expect(after.body.discord).toEqual({ link: null, pending: null, installUrl: null, botProfileUrl: null });
 
     const responses = [empty, waiting, pending, confirmed, linked, removed, after].map((r) => r.text).join('\n');
     expect(responses).not.toContain(createHash('sha256').update(code.replace('-', '')).digest('hex'));
@@ -375,6 +380,49 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     expect(store.codes.rows[0].locale).toBe('en');
   });
 
+  describe('install and bot links (CHAT-USER-INSTALL-01)', () => {
+    const LINKS = {
+      installUrl: 'https://discord.com/oauth2/authorize?client_id=111111111111111111&integration_type=1&scope=applications.commands',
+      botProfileUrl: 'https://discord.com/users/222222222222222222',
+    };
+
+    it('GET gives the install link and the bot link while the Discord connection is ready, with the guards unchanged', async () => {
+      transport.links = LINKS;
+      await transport.connect(async () => null);
+      const state = await as('owner-token').get('/api/chat-links').expect(200);
+      expect(state.body).toEqual({
+        enabled: true,
+        paused: false,
+        discord: { link: null, pending: null, ...LINKS },
+      });
+      expect(state.text).not.toMatch(/token|secret/i);
+      // Still session only and harness only.
+      await as().get('/api/chat-links').expect(401);
+      await as('plain-token').get('/api/chat-links').expect(403);
+      await request(app.getHttpServer())
+        .get('/api/chat-links')
+        .set('Authorization', `Bearer ${VALID_API_KEY}`)
+        .expect(401);
+    });
+
+    it('GET gives null links while the connection is not ready, and with the switch off', async () => {
+      transport.links = LINKS;
+      const notReady = await as('owner-token').get('/api/chat-links').expect(200);
+      expect(notReady.body.discord).toMatchObject({ installUrl: null, botProfileUrl: null });
+      await transport.connect(async () => null);
+      await transport.disconnect();
+      const stopped = await as('owner-token').get('/api/chat-links').expect(200);
+      expect(stopped.body.discord).toMatchObject({ installUrl: null, botProfileUrl: null });
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      const off = await as('owner-token').get('/api/chat-links').expect(200);
+      expect(off.body).toEqual({
+        enabled: false,
+        paused: false,
+        discord: { link: null, pending: null, installUrl: null, botProfileUrl: null },
+      });
+    });
+  });
+
   it('ChatModule wires the controller, the service and the three repositories, and the app imports it', () => {
     const controllers = Reflect.getMetadata('controllers', ChatModule);
     const providers = Reflect.getMetadata('providers', ChatModule);
@@ -388,6 +436,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       ChatRunService,
       ChatDeliveryService,
       ChatApprovalService,
+      ChatActivityNotifier,
     ]);
     expect(exportsList).toEqual([ChatLinkService]);
 

@@ -1698,6 +1698,18 @@
     "chat": {
       "title": "聊天（Discord）",
       "intro": "关联你的 Discord 账号，即可在与机器人的私信中启动代理工作并接收结果。",
+      "steps": {
+        "title": "关联步骤",
+        "install": "把机器人添加到你的 Discord。Discord 询问时，请选择 Add to my apps（添加到我的应用）。",
+        "installButton": "添加到 Discord",
+        "open": "打开机器人，点击 Message（发消息）与它开始私信。",
+        "openLink": "打开机器人",
+        "create": "勾选下方的声明，然后点击“生成代码”。",
+        "link": "在机器人的私信中输入 /，从菜单选择 link，然后粘贴代码。",
+        "confirm": "回到这里点击“确认”。"
+      },
+      "heldNote": "如果 Discord 不让机器人给你发消息，结果会在你下次使用指令时送达，也始终可在结果页面查看。",
+      "newTab": "（在新标签页打开）",
       "loading": "正在加载聊天关联…",
       "retry": "重试",
       "unavailable": "聊天关联目前不可用。",
@@ -1717,7 +1729,7 @@
       "paused": "关联功能暂时停用，请稍后再试。",
       "code": {
         "title": "你的关联代码",
-        "instruction": "在 Discord 中私信机器人，输入 /link 并附上这个代码。",
+        "instruction": "在机器人的私信中输入 /，从菜单选择 link，然后粘贴这个代码。",
         "expires": "过期时间：{time}。代码只会显示一次。",
         "waiting": "正在等你在 Discord 中使用 /link…",
         "hidden": "已生成代码，但无法再次显示。请生成新代码来替换。"

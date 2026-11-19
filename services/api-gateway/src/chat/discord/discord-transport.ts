@@ -2,15 +2,17 @@ import { Logger } from '@nestjs/common';
 import type { APIInteraction, GatewayDispatchPayload, GatewayReadyDispatchData } from '@discordjs/core';
 import type { ChatChannel } from '../chat-link.service';
 import { isChatDiscordEnabled } from '../chat-switch';
-import type {
-  ChatCommandHandler,
-  ChatCommandInvocation,
-  ChatComponentHandler,
-  ChatComponentPress,
-  ChatComponentResponse,
-  ChatReplyMessage,
-  ChatTransport,
-  ChatTransportState,
+import {
+  ChatDirectMessageRefusedError,
+  type ChatCommandHandler,
+  type ChatCommandInvocation,
+  type ChatComponentHandler,
+  type ChatComponentPress,
+  type ChatComponentResponse,
+  type ChatInstallLinks,
+  type ChatReplyMessage,
+  type ChatTransport,
+  type ChatTransportState,
 } from '../chat-transport';
 import {
   buildDiscordCommands,
@@ -55,6 +57,22 @@ import {
  * an edit of the original message); an ephemeral answer is a reply only the
  * presser sees (callback type 4 with the ephemeral flag, or a follow-up).
  * Mentions are off in every message.
+ *
+ * CHAT-USER-INSTALL-01: any Discord account can add the bot to its own apps
+ * (a user install). Such an account may share no server with the bot, and
+ * Discord may then refuse the bot's direct messages (HTTP 403, code 50007 or
+ * 50278). So the transport keeps, per outside user id, the latest
+ * interaction reference (application id, interaction token, time received)
+ * of every accepted command and button press in the direct message. It is
+ * held in memory only: never logged, stored, returned or put in an audit
+ * row; cleared on disconnect and stop; used only while younger than 14
+ * minutes (Discord's interaction tokens last 15). sendToUser sends a message
+ * as a follow-up to that interaction (mentions off, not ephemeral, buttons
+ * kept), after the interaction's own answer; without a fresh reference, or
+ * when the follow-up fails, it opens the direct message as before. A refused
+ * direct message throws ChatDirectMessageRefusedError (no id, no text).
+ * installLinks gives the page the install link and the bot's profile link,
+ * built from the application id and the bot user id of the READY payload.
  */
 
 export const DISCORD_BOT_TOKEN_ENV = 'DISCORD_BOT_TOKEN';
@@ -88,6 +106,21 @@ export const DISCORD_ROW_BUTTONS_MAX = 5;
 export const DISCORD_DISPATCH_INTERACTION_CREATE = 'INTERACTION_CREATE';
 /** GatewayCloseCodes after which the library does not reconnect. */
 export const DISCORD_FATAL_CLOSE_CODES: readonly number[] = [4004, 4010, 4011, 4012, 4013, 4014];
+/**
+ * CHAT-USER-INSTALL-01: an interaction token works for 15 minutes; a
+ * reference is used for follow-ups only while younger than 14.
+ */
+export const DISCORD_REFERENCE_MAX_AGE_MS = 14 * 60 * 1000;
+/** At most this many references are kept; the oldest go first. */
+export const DISCORD_REFERENCES_MAX = 10000;
+/** A follow-up waits at most this long for the interaction's own answer to go out first. */
+export const DISCORD_ANSWER_WAIT_MS = 5000;
+/**
+ * RESTJSONErrorCodes.CannotSendMessagesToThisUser (50007) and
+ * CannotSendMessagesToThisUserDueToHavingNoMutualGuilds (50278), sent with HTTP 403.
+ */
+export const DISCORD_DM_REFUSED_CODES: readonly number[] = [50007, 50278];
+export const DISCORD_DM_REFUSED_STATUS = 403;
 
 /** WebSocketShardEvents names used here. Debug is deliberately not among them. */
 export const DISCORD_GATEWAY_EVENTS = {
@@ -233,6 +266,15 @@ interface DiscordRef {
   deferred: boolean;
 }
 
+/** CHAT-USER-INSTALL-01: the latest accepted interaction of one outside user. Memory only. */
+interface DiscordInteractionReference {
+  applicationId: string;
+  interactionToken: string;
+  receivedAt: number;
+  /** Settles once the interaction's own answer has gone out (or failed). */
+  answered: Promise<void>;
+}
+
 export interface DiscordTransportOptions {
   /** Defaults to process.env, read at connect time. */
   env?: NodeJS.ProcessEnv;
@@ -240,6 +282,32 @@ export interface DiscordTransportOptions {
   factory?: DiscordConnectionFactory;
   now?: () => number;
   deferAfterMs?: number;
+  /** CHAT-USER-INSTALL-01: how long a follow-up waits for the interaction's own answer. */
+  answerWaitMs?: number;
+}
+
+/** CHAT-USER-INSTALL-01: Discord refused the direct message (HTTP 403 with code 50007 or 50278). */
+export function isDiscordDirectMessageRefused(error: unknown): boolean {
+  const candidate = error as { status?: unknown; code?: unknown } | null;
+  if (!candidate || typeof candidate !== 'object' || candidate.status !== DISCORD_DM_REFUSED_STATUS) {
+    return false;
+  }
+  const code = typeof candidate.code === 'number' ? candidate.code : Number(candidate.code);
+  return DISCORD_DM_REFUSED_CODES.includes(code);
+}
+
+/**
+ * CHAT-USER-INSTALL-01: the install link (a user install with the commands
+ * scope only) and the bot's profile link, or null unless both ids are
+ * snowflakes. Public ids only; no token or secret.
+ */
+export function discordInstallLinks(applicationId: unknown, botUserId: unknown): ChatInstallLinks | null {
+  if (typeof applicationId !== 'string' || !SNOWFLAKE.test(applicationId)) return null;
+  if (typeof botUserId !== 'string' || !SNOWFLAKE.test(botUserId)) return null;
+  return {
+    installUrl: `https://discord.com/oauth2/authorize?client_id=${applicationId}&integration_type=1&scope=applications.commands`,
+    botProfileUrl: `https://discord.com/users/${botUserId}`,
+  };
 }
 
 function errorName(error: unknown): string {
@@ -408,11 +476,15 @@ export class DiscordTransport implements ChatTransport {
   private readonly injected: boolean;
   private readonly now: () => number;
   private readonly deferAfterMs: number;
+  private readonly answerWaitMs: number;
   private readonly guard = new DiscordIdentifyGuard();
+  /** CHAT-USER-INSTALL-01: per outside user id, the latest accepted interaction. Memory only; never logged. */
+  private readonly references = new Map<string, DiscordInteractionReference>();
   private connection: DiscordConnection | null = null;
   private handler: ChatCommandHandler | null = null;
   private componentHandler: ChatComponentHandler | null = null;
   private applicationId: string | null = null;
+  private botUserId: string | null = null;
   private sessionUp = false;
   private commandsRegistered = false;
   private currentState: ChatTransportState = 'off';
@@ -423,10 +495,24 @@ export class DiscordTransport implements ChatTransport {
     this.injected = options.factory !== undefined;
     this.now = options.now ?? Date.now;
     this.deferAfterMs = options.deferAfterMs ?? DISCORD_DEFER_AFTER_MS;
+    this.answerWaitMs = options.answerWaitMs ?? DISCORD_ANSWER_WAIT_MS;
   }
 
   get state(): ChatTransportState {
     return this.currentState;
+  }
+
+  /** CHAT-USER-INSTALL-01: the number of interaction references held (for tests; never their content). */
+  get referenceCount(): number {
+    return this.references.size;
+  }
+
+  /** CHAT-USER-INSTALL-01: the install and bot links while ready and both ids are known. */
+  installLinks(): ChatInstallLinks | null {
+    if (this.currentState !== 'ready' || !this.connection) {
+      return null;
+    }
+    return discordInstallLinks(this.applicationId, this.botUserId);
   }
 
   async connect(handler: ChatCommandHandler, onComponent?: ChatComponentHandler): Promise<boolean> {
@@ -477,6 +563,7 @@ export class DiscordTransport implements ChatTransport {
     this.handler = null;
     this.componentHandler = null;
     this.sessionUp = false;
+    this.references.clear();
     if (this.currentState !== 'off') {
       this.currentState = 'stopped';
     }
@@ -520,12 +607,96 @@ export class DiscordTransport implements ChatTransport {
     }
   }
 
-  async sendDirectMessage(externalUserId: string, message: ChatReplyMessage): Promise<void> {
+  /**
+   * CHAT-USER-INSTALL-01: a follow-up to the user's latest interaction while
+   * it is younger than 14 minutes (after that interaction's own answer),
+   * else the direct message. A follow-up that fails falls back to the direct
+   * message and forgets the reference. A refused direct message throws
+   * ChatDirectMessageRefusedError.
+   */
+  async sendToUser(externalUserId: string, message: ChatReplyMessage): Promise<void> {
     const connection = this.connection;
     if (!connection || this.currentState !== 'ready' || !SNOWFLAKE.test(externalUserId)) {
       return;
     }
-    await connection.calls.sendDirectMessage(externalUserId, body(message, false));
+    const outgoing = body(message, false);
+    const reference = this.freshReference(externalUserId);
+    if (reference) {
+      await this.waitForAnswer(reference);
+      try {
+        await connection.calls.followUp(reference.applicationId, reference.interactionToken, outgoing);
+        return;
+      } catch (error) {
+        if (this.references.get(externalUserId) === reference) {
+          this.references.delete(externalUserId);
+        }
+        this.logger.warn(`chat discord follow-up failed reason=${errorName(error)}${errorStatus(error)}`);
+      }
+    }
+    try {
+      await connection.calls.sendDirectMessage(externalUserId, outgoing);
+    } catch (error) {
+      if (isDiscordDirectMessageRefused(error)) {
+        throw new ChatDirectMessageRefusedError();
+      }
+      throw error;
+    }
+  }
+
+  /** The user's latest reference while younger than 14 minutes; an older one is forgotten. */
+  private freshReference(externalUserId: string): DiscordInteractionReference | null {
+    const reference = this.references.get(externalUserId);
+    if (!reference) {
+      return null;
+    }
+    if (this.now() - reference.receivedAt >= DISCORD_REFERENCE_MAX_AGE_MS) {
+      this.references.delete(externalUserId);
+      return null;
+    }
+    return reference;
+  }
+
+  /**
+   * Keeps the latest reference of an accepted interaction (in the direct
+   * message, from a snowflake user). Returns the function that marks the
+   * interaction's own answer as done.
+   */
+  private remember(externalUserId: string, directMessage: boolean, ref: DiscordRef): () => void {
+    if (!directMessage || !SNOWFLAKE.test(externalUserId)) {
+      return () => undefined;
+    }
+    const now = this.now();
+    for (const [key, held] of this.references) {
+      if (now - held.receivedAt >= DISCORD_REFERENCE_MAX_AGE_MS) this.references.delete(key);
+    }
+    this.references.delete(externalUserId);
+    while (this.references.size >= DISCORD_REFERENCES_MAX) {
+      const oldest = this.references.keys().next().value;
+      if (oldest === undefined) break;
+      this.references.delete(oldest);
+    }
+    let settle: () => void = () => undefined;
+    const answered = new Promise<void>((resolve) => {
+      settle = resolve;
+    });
+    this.references.set(externalUserId, {
+      applicationId: ref.applicationId,
+      interactionToken: ref.interactionToken,
+      receivedAt: now,
+      answered,
+    });
+    return settle;
+  }
+
+  /** Waits for the interaction's own answer, at most answerWaitMs. */
+  private async waitForAnswer(reference: DiscordInteractionReference): Promise<void> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const limit = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, this.answerWaitMs);
+      timer.unref?.();
+    });
+    await Promise.race([reference.answered, limit]);
+    if (timer) clearTimeout(timer);
   }
 
   private listen(gateway: DiscordGateway): void {
@@ -555,6 +726,9 @@ export class DiscordTransport implements ChatTransport {
     }
     const applicationId = data?.application?.id;
     this.applicationId = typeof applicationId === 'string' && SNOWFLAKE.test(applicationId) ? applicationId : null;
+    // CHAT-USER-INSTALL-01: the bot's own user id, for the bot profile link on the Connections page.
+    const botUserId = (data as { user?: { id?: unknown } } | undefined)?.user?.id;
+    this.botUserId = typeof botUserId === 'string' && SNOWFLAKE.test(botUserId) ? botUserId : null;
     this.sessionUp = true;
     this.currentState = 'ready';
     this.logger.log('chat discord ready');
@@ -590,6 +764,7 @@ export class DiscordTransport implements ChatTransport {
     this.sessionUp = false;
     this.handler = null;
     this.componentHandler = null;
+    this.references.clear();
     this.logger.warn(`chat discord stopped ${reason}`);
     const connection = this.connection;
     this.connection = null;
@@ -624,6 +799,7 @@ export class DiscordTransport implements ChatTransport {
     if (!invocation) {
       return;
     }
+    const answered = this.remember(invocation.externalUserId, invocation.directMessage, invocation.ref as DiscordRef);
     try {
       const pending = handler(invocation);
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -649,6 +825,8 @@ export class DiscordTransport implements ChatTransport {
       await this.reply(invocation, await pending);
     } catch (error) {
       this.logger.warn(`chat discord interaction failed reason=${errorName(error)}${errorStatus(error)}`);
+    } finally {
+      answered();
     }
   }
 
@@ -662,6 +840,7 @@ export class DiscordTransport implements ChatTransport {
     if (!press) {
       return;
     }
+    const answered = this.remember(press.externalUserId, press.directMessage, press.ref as DiscordRef);
     try {
       const pending = handler(press);
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -683,6 +862,8 @@ export class DiscordTransport implements ChatTransport {
       await this.respond(press, await pending);
     } catch (error) {
       this.logger.warn(`chat discord press failed reason=${errorName(error)}${errorStatus(error)}`);
+    } finally {
+      answered();
     }
   }
 
