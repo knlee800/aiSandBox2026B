@@ -90222,24 +90222,25 @@ taskId=COS-EVAL-FAILCHAIN-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "yes admit". Was: READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-FAILCHAIN-TIDY-01
 **Title:** Tidy the chain-failed eval case's request and live report
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith picks it. Keith decides.
+**Start condition:** READY (Keith, 2026-11-19). Was: NOT_READY. Ready when: Keith picks it. Keith decides.
 **Depends on:** COS-EVAL-FAILCHAIN-01.
-**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/briefing-instructions.ts, briefing-prompt.ts, briefing-types.ts and their specs, services/ai-service/src/agent-harness/eval/live/briefing-live-run.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-execute.ts.
-**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Primary write scope:** EXACT (2026-11-19): services/ai-service/src/agent-harness/eval/briefing-instructions.ts, services/ai-service/src/agent-harness/eval/briefing-prompt.ts, services/ai-service/src/agent-harness/eval/briefing-types.ts, services/ai-service/src/agent-harness/eval/briefing-loader.ts, services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts, services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts, services/ai-service/src/agent-harness/eval/briefing-loader.spec.ts, services/ai-service/src/agent-harness/eval/briefing-score.spec.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-run.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-runner.spec.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-execute.ts. Was: PROVISIONAL: services/ai-service/src/agent-harness/eval/briefing-instructions.ts, briefing-prompt.ts, briefing-types.ts and their specs, services/ai-service/src/agent-harness/eval/live/briefing-live-run.ts, services/ai-service/src/agent-harness/eval/live/briefing-live-execute.ts.
+**Mutexes / resources:** AI-SERVICE (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From COS-EVAL-FAILCHAIN-01 (the worker's follow-ups): move chainFailedOwnerRequest into briefing-instructions.ts so briefingTaskOwnerRequest handles chain-failed cases (the field may then be renamed failedAt); print causeClaims and reasonUnavailable in the live console report; update the twelve-case comment on the whole-run token cap.
 
+Design (Keith approved 2026-11-19, "yes admit"): move chainFailedOwnerRequest, chainFailedWorkflowLabel and the CHAIN_FAILED_ constants from briefing-prompt.ts into briefing-instructions.ts; briefingTaskOwnerRequest returns the failure request for a chain-failed case; briefingCaseOwnerRequest is removed and its callers use briefingTaskOwnerRequest; the runner spec pin that the two differ becomes a pin that briefingTaskOwnerRequest returns the failure request; the field stays completedAt (the gateway's chainTriggerTask input name), with no case or loader rule change; the live console report prints reasonUnavailable and causeClaims per case and causeClaims in the totals, with a test; the token-cap comment says thirteen cases. COS_EVAL_CHIEF_OF_STAFF_INSTRUCTIONS and its version, the phrase lists, scoring, cases and baselines are unchanged.
 ### STAGING-DEPLOY-EVALFAIL-01 — Deploy the chain-failed eval case
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=STAGING-DEPLOY-EVALFAIL-01
