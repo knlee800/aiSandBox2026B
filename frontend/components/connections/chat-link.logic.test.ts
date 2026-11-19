@@ -225,6 +225,12 @@ describe('showsRecentLinkNotice (CHAT-LINK-NOTICE-01)', () => {
     assert.equal(showsRecentLinkNotice(null, NOW), false);
     assert.equal(showsRecentLinkNotice({ ...LINK, linkedAt: 'not a date' }, NOW), false);
   });
+
+  test('CHAT-TIDY-01: right after Confirm on the page it waits for a later view; the default is a later view', () => {
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt, true), false, 'just confirmed');
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt, false), true, 'a later view');
+    assert.equal(showsRecentLinkNotice(LINK, linkedAt), true, 'default');
+  });
 });
 
 describe('canCreateCode', () => {

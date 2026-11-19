@@ -11,10 +11,10 @@ import { ChatCommandService } from './chat-commands';
 import { ChatApprovalService } from './chat-approval.service';
 import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatPruneService } from './chat-prune.service';
-import { ChatRunService } from './chat-run.service';
+import { CHAT_RUN_LIMITS, ChatRunService, chatUnlinkedReplySubject } from './chat-run.service';
 import { ChatLinkService } from './chat-link.service';
 import { chatReply } from './chat-replies';
-import { ChatLimits } from './chat-limits';
+import { ChatLimits, MemoryChatLimitStore } from './chat-limits';
 import { CHAT_TRANSPORT, ChatActivityNotifier, ChatCommandInvocation, FakeChatTransport } from './chat-transport';
 import {
   CHAT_RUNNER_ALLOW_UNDER_JEST,
@@ -50,7 +50,18 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
   let commands: ChatCommandService;
   let entitlements: { resolveHarnessEntitled: jest.Mock };
   let userRepo: { findOne: jest.Mock };
-  let runs: { ask: jest.Mock; refuseOwner: jest.Mock; cancel: jest.Mock; statusCounts: jest.Mock };
+  let runs: {
+    ask: jest.Mock;
+    refuseOwner: jest.Mock;
+    cancel: jest.Mock;
+    statusCounts: jest.Mock;
+    takeCommandLimit: jest.Mock;
+    takeUnlinkedReply: jest.Mock;
+    refuseRateLimited: jest.Mock;
+    askableAgents: jest.Mock;
+  };
+  /** CHAT-TIDY-01: the limit rows the runs mock counts in (the real ChatRunService rules, in memory). */
+  let limitRows: MemoryChatLimitStore;
   let logs: string[];
   let restoreLogs: () => void;
 
@@ -65,11 +76,38 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
     userRepo = {
       findOne: jest.fn(async (options: { where: { id: string } }) => users.get(options.where.id) ?? null),
     };
+    limitRows = new MemoryChatLimitStore();
+    const limits = ChatLimits.inMemory(limitRows);
     runs = {
       ask: jest.fn(async () => ({ text: chatReply('en', 'ask.started') })),
       refuseOwner: jest.fn(async () => ({ text: chatReply('en', 'notEntitled') })),
       cancel: jest.fn(async () => ({ text: chatReply('en', 'cancel.nothing') })),
       statusCounts: jest.fn(async () => ({ running: 0, waiting: 0 })),
+      // CHAT-TIDY-01: the same rules as ChatRunService (tested there), over in-memory rows.
+      takeCommandLimit: jest.fn(
+        async (link: { userId: string }) =>
+          (
+            await limits.take(
+              'command',
+              link.userId,
+              { limit: CHAT_RUN_LIMITS.commandsPerMinute, windowMs: CHAT_RUN_LIMITS.windowMs },
+              Date.now(),
+            )
+          ).allowed,
+      ),
+      takeUnlinkedReply: jest.fn(
+        async (externalUserId: string) =>
+          (
+            await limits.take(
+              'command',
+              chatUnlinkedReplySubject(externalUserId),
+              { limit: CHAT_RUN_LIMITS.unlinkedRepliesPerMinute, windowMs: CHAT_RUN_LIMITS.windowMs },
+              Date.now(),
+            )
+          ).allowed,
+      ),
+      refuseRateLimited: jest.fn(async () => ({ text: chatReply('en', 'ask.tooMany') })),
+      askableAgents: jest.fn(async () => [{ name: 'Sales Digest', value: 'Sales Digest' }]),
     };
     commands = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never);
     transport = new FakeChatTransport();
@@ -255,22 +293,27 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
   });
 
   describe('CHAT-USER-INSTALL-01: every command in the direct message wakes held results', () => {
-    it('a command in the direct message tells the notifier the outside user id; nothing is logged with it', async () => {
+    it('CHAT-TIDY-01: a command of a linked user tells the notifier the outside user id and the link id it read; nothing is logged with it', async () => {
       const activity = new ChatActivityNotifier();
-      const seen: Array<[string, string]> = [];
-      activity.onActivity((channel, externalUserId) => void seen.push([channel, externalUserId]));
+      const seen: Array<[string, string, string | undefined]> = [];
+      activity.onActivity((channel, externalUserId, linkId) => void seen.push([channel, externalUserId, linkId]));
       const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
       const fake = new FakeChatTransport();
       await new ChatChannelRunner(fake, notified, true).start();
+      transport = fake;
+      // Unlinked: nothing can be held, so no notice (and no read for it).
       await fake.invoke(dm('help', {}, STRANGER));
+      await fake.invoke(dm('status', {}, STRANGER));
+      await fake.invoke(dm('link', { code: 'ABCD-EFGH' }, STRANGER));
+      await fake.invoke(dm(MARKER, {}, STRANGER));
+      expect(seen).toEqual([]);
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
       await fake.invoke(dm('status'));
-      await fake.invoke(dm('link', { code: 'ABCD-EFGH' }));
-      await fake.invoke(dm(MARKER));
+      await fake.invoke(dm('help'));
       expect(seen).toEqual([
-        ['discord', STRANGER],
-        ['discord', DISCORD_ID],
-        ['discord', DISCORD_ID],
-        ['discord', DISCORD_ID],
+        ['discord', DISCORD_ID, linkId],
+        ['discord', DISCORD_ID, linkId],
       ]);
     });
 
@@ -515,6 +558,116 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       const linkId = store.links.rows[0].id;
       expect(logs).toContain(`chat command name=status outcome=ok linkId=${linkId}`);
     });
+
+    it('CHAT-TIDY-01: the 10-a-minute limit covers every command and plain message except /link and /help', async () => {
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
+      // Ten counted: /status, /language, /cancel, /ask and plain messages share one count per owner.
+      const counted = [
+        () => transport.invoke(dm('status')),
+        () => transport.invoke(dm('language', { language: 'en' })),
+        () => transport.invoke(dm('cancel')),
+        () => transport.invoke(dm('ask', { text: MARKER })),
+        () => transport.send({ text: MARKER, externalUserId: DISCORD_ID }),
+      ];
+      for (let i = 0; i < CHAT_RUN_LIMITS.commandsPerMinute; i += 1) {
+        await counted[i % counted.length]();
+      }
+      expect(runs.takeCommandLimit).toHaveBeenCalledTimes(CHAT_RUN_LIMITS.commandsPerMinute);
+      // /help and /link are not counted and still answer.
+      expect(await transport.invoke(dm('help'))).toEqual({ text: chatReply('en', 'help') });
+      expect(await transport.invoke(dm('link', { code: 'ABCD-EFGH' }))).toEqual({ text: chatReply('en', 'link.alreadyLinked') });
+      expect(runs.takeCommandLimit).toHaveBeenCalledTimes(CHAT_RUN_LIMITS.commandsPerMinute);
+      // Over the limit: the fixed line, nothing else done.
+      runs.statusCounts.mockClear();
+      runs.cancel.mockClear();
+      expect(await transport.invoke(dm('status'))).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(await transport.invoke(dm('cancel'))).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(await transport.invoke(dm('language', { language: 'zh-TW' }))).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(await transport.invoke(dm('unlink'))).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(store.links.rows).toHaveLength(1);
+      expect(store.links.rows[0].locale).toBe('en');
+      expect(runs.statusCounts).not.toHaveBeenCalled();
+      expect(runs.cancel).not.toHaveBeenCalled();
+      // /ask over the limit goes to refuseRateLimited (the run_refused audit row), never to ask.
+      const asks = runs.ask.mock.calls.length;
+      expect(await transport.invoke(dm('ask', { text: MARKER }))).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(runs.refuseRateLimited).toHaveBeenCalledTimes(1);
+      expect(runs.ask).toHaveBeenCalledTimes(asks);
+      expect(logs).toContain(`chat command name=status outcome=rate_limited linkId=${linkId}`);
+      expect(limitRows.rows.filter((row) => row.subjectKey === OWNER)).toHaveLength(CHAT_RUN_LIMITS.commandsPerMinute);
+    });
+
+    it('CHAT-TIDY-01: a limit store error answers the fixed error line and does nothing else', async () => {
+      await linkOwner();
+      runs.takeCommandLimit.mockResolvedValueOnce(null);
+      expect(await transport.invoke(dm('status'))).toEqual({ text: chatReply('en', 'error') });
+      expect(runs.statusCounts).not.toHaveBeenCalled();
+      runs.takeCommandLimit.mockResolvedValueOnce(null);
+      expect(await transport.send({ text: MARKER, externalUserId: DISCORD_ID })).toEqual({ text: chatReply('en', 'error') });
+      expect(runs.ask).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('CHAT-TIDY-01: /ask agent suggestions (autocomplete)', () => {
+    function typing(value: string, overrides: Record<string, unknown> = {}) {
+      return {
+        command: 'ask',
+        option: 'agent',
+        value,
+        externalUserId: DISCORD_ID,
+        locale: 'en-US',
+        directMessage: true,
+        ...overrides,
+      };
+    }
+
+    it('the runner gives the transport the suggestion handler', () => {
+      expect(transport.autocompleteHandler).not.toBeNull();
+    });
+
+    it('a linked, active, entitled owner gets ChatRunService.askableAgents for the typed text; nothing written, counted, logged or notified', async () => {
+      const activity = new ChatActivityNotifier();
+      const listener = jest.fn();
+      activity.onActivity(listener);
+      const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
+      const fake = new FakeChatTransport();
+      await new ChatChannelRunner(fake, notified, true).start();
+      transport = fake;
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
+      logs.length = 0;
+      store.resetCalls();
+      expect(await fake.autocomplete(typing(`sal${MARKER}`))).toEqual([{ name: 'Sales Digest', value: 'Sales Digest' }]);
+      expect(runs.askableAgents).toHaveBeenCalledWith({ linkId, userId: OWNER, locale: 'en' }, `sal${MARKER}`);
+      expect(store.writes()).toEqual([]);
+      expect(store.links.rows[0].lastUsedAt).toBeNull();
+      expect(runs.takeCommandLimit).not.toHaveBeenCalled();
+      expect(limitRows.rows).toEqual([]);
+      expect(listener).not.toHaveBeenCalled();
+      expect(logs).toEqual([]);
+    });
+
+    it('unlinked, switched off, outside the direct message, another command or option, an owner without access, or a failure: none', async () => {
+      expect(await transport.autocomplete(typing('s', { externalUserId: STRANGER }))).toEqual([]);
+      await linkOwner();
+      expect(await transport.autocomplete(typing('s', { directMessage: false }))).toEqual([]);
+      expect(await transport.autocomplete(typing('s', { command: 'status' }))).toEqual([]);
+      expect(await transport.autocomplete(typing('s', { option: 'text' }))).toEqual([]);
+      entitled.delete(OWNER);
+      expect(await transport.autocomplete(typing('s'))).toEqual([]);
+      entitled.add(OWNER);
+      users.set(OWNER, { id: OWNER, isActive: false });
+      expect(await transport.autocomplete(typing('s'))).toEqual([]);
+      users.set(OWNER, { id: OWNER, isActive: true });
+      runs.askableAgents.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
+      expect(await transport.autocomplete(typing('s'))).toEqual([]);
+      expect(runs.askableAgents).toHaveBeenCalledTimes(1);
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      expect(await transport.autocomplete(typing('s'))).toEqual([]);
+      expect(runs.askableAgents).toHaveBeenCalledTimes(1);
+      expect(logs.filter((line) => line.includes('autocomplete') || line.includes('failed'))).toEqual([]);
+    });
   });
 
   describe('CHAT-DISCORD-DM-01: plain direct messages', () => {
@@ -600,19 +753,67 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
       expect(runs.ask).not.toHaveBeenCalled();
     });
 
-    it('a plain message tells the notifier the author is active (held results), linked or not', async () => {
+    it('CHAT-TIDY-01: a plain message of a linked author tells the notifier with the link id; an unlinked author does not', async () => {
       const activity = new ChatActivityNotifier();
-      const seen: Array<[string, string]> = [];
-      activity.onActivity((channel, externalUserId) => void seen.push([channel, externalUserId]));
+      const seen: Array<[string, string, string | undefined]> = [];
+      activity.onActivity((channel, externalUserId, linkId) => void seen.push([channel, externalUserId, linkId]));
       const notified = new ChatCommandService(links, entitlements as never, userRepo as never, runs as never, activity);
       const fake = new FakeChatTransport();
       await new ChatChannelRunner(fake, notified, true).start();
+      transport = fake;
+      await linkOwner();
+      const linkId = store.links.rows[0].id;
       await fake.send(plain(MARKER, STRANGER));
       await fake.send(plain(''));
-      expect(seen).toEqual([
-        ['discord', STRANGER],
-        ['discord', DISCORD_ID],
+      expect(seen).toEqual([['discord', DISCORD_ID, linkId]]);
+    });
+
+    it('CHAT-TIDY-01: an unlinked author gets at most 3 replies a minute; beyond that no reply and no log line', async () => {
+      const replies: unknown[] = [];
+      for (let i = 0; i < 6; i += 1) {
+        replies.push(await transport.send(plain(`${MARKER} ${i}`, STRANGER)));
+      }
+      expect(replies).toEqual([
+        { text: chatReply('en', 'linkFirst') },
+        { text: chatReply('en', 'linkFirst') },
+        { text: chatReply('en', 'linkFirst') },
+        null,
+        null,
+        null,
       ]);
+      expect(logs.filter((line) => line === 'chat message outcome=not_linked')).toHaveLength(3);
+      expect(logs.filter((line) => line.startsWith('chat message'))).toHaveLength(3);
+      // Counted per author: another unlinked author still gets an answer.
+      expect(await transport.send(plain(MARKER, '223456789012345678'))).toEqual({ text: chatReply('en', 'linkFirst') });
+      // Bucket command, subject the SHA-256 of "unlinked:" and the id (64 hex characters; the id is never stored).
+      const subject = chatUnlinkedReplySubject(STRANGER);
+      expect(subject).toMatch(/^[0-9a-f]{64}$/);
+      expect(limitRows.rows.filter((row) => row.subjectKey === subject).map((row) => row.bucket)).toEqual([
+        'command',
+        'command',
+        'command',
+      ]);
+      expect(JSON.stringify(limitRows.rows)).not.toContain(STRANGER);
+      expect(runs.ask).not.toHaveBeenCalled();
+      expect(runs.takeCommandLimit).not.toHaveBeenCalled();
+    });
+
+    it('CHAT-TIDY-01: a limit store error sends no reply to an unlinked author and logs one line without an id', async () => {
+      runs.takeUnlinkedReply.mockResolvedValueOnce(null);
+      expect(await transport.send(plain(MARKER, STRANGER))).toBeNull();
+      expect(logs).toContain('chat message limit store failed');
+    });
+
+    it('CHAT-TIDY-01: a linked owner’s plain messages count in the 10-a-minute limit; over it the /ask refusal (audit row) answers', async () => {
+      await linkOwner();
+      for (let i = 0; i < CHAT_RUN_LIMITS.commandsPerMinute; i += 1) {
+        await transport.send(plain(MARKER));
+      }
+      expect(runs.ask).toHaveBeenCalledTimes(CHAT_RUN_LIMITS.commandsPerMinute);
+      expect(await transport.send(plain(MARKER))).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(runs.refuseRateLimited).toHaveBeenCalledTimes(1);
+      expect(runs.ask).toHaveBeenCalledTimes(CHAT_RUN_LIMITS.commandsPerMinute);
+      expect(logs).toContain(`chat message outcome=rate_limited linkId=${store.links.rows[0].id}`);
     });
 
     it('a failure answers the fixed error line and logs the error class only', async () => {

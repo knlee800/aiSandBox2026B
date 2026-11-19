@@ -187,9 +187,13 @@ export function deriveChatView(
 /** CHAT-LINK-NOTICE-01: the "was this you?" notice shows while the link is younger than 7 days. */
 export const CHAT_RECENT_LINK_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** True while the link is younger than 7 days (a takeover signal); false without a link or a readable date. */
-export function showsRecentLinkNotice(link: ChatLinkLink | null, now: number): boolean {
-  if (!link) {
+/**
+ * True while the link is younger than 7 days (a takeover signal); false without a link or a readable date.
+ * CHAT-TIDY-01: false right after the owner pressed Confirm on this page (justConfirmed): then only the
+ * green "Discord is linked." line shows; the notice shows on later views.
+ */
+export function showsRecentLinkNotice(link: ChatLinkLink | null, now: number, justConfirmed = false): boolean {
+  if (!link || justConfirmed) {
     return false;
   }
   const linkedAt = Date.parse(link.linkedAt);

@@ -5,13 +5,14 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { FindOperator } from 'typeorm';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { CollaborationRunStartedNotifier } from '../orchestration/collaboration-start.service';
 import { workflowRefusal, WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow';
 import { chatReply } from './chat-replies';
 import { ChatLimits, MemoryChatLimitStore } from './chat-limits';
-import { CHAT_RUN_LIMITS, ChatRunService, chatRunRefusalOf } from './chat-run.service';
+import { CHAT_RUN_LIMITS, ChatRunService, chatRunRefusalOf, chatUnlinkedReplySubject } from './chat-run.service';
 import { ChatCommandService } from './chat-commands';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -213,8 +214,9 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
         decidedBy: OWNER,
         approveWithoutPassingTests: false,
       });
-      // The delivery row is written before the approval and holds ids only.
-      expect(deliveries.insertOrIgnore.mock.invocationCallOrder[0]).toBeLessThan(
+      // CHAT-TIDY-01: the delivery row is written only after the first step is approved
+      // (so no delivery pass can announce it) and holds ids only.
+      expect(deliveries.insertOrIgnore.mock.invocationCallOrder[0]).toBeGreaterThan(
         starts.approveStep.mock.invocationCallOrder[0],
       );
       // CHAT-RESULTS-OTHER-01: insert-or-ignore into chat_run_deliveries.
@@ -312,16 +314,69 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       expect(audit.map((row) => row.payload.reason)).toEqual(['inactive', 'not_entitled']);
     });
 
-    it('more than 10 a minute per owner', async () => {
+    it('CHAT-TIDY-01: more than 10 a minute per owner (takeCommandLimit); over it refuseRateLimited writes the audit row; ask and cancel no longer count', async () => {
       for (let i = 0; i < CHAT_RUN_LIMITS.commandsPerMinute; i += 1) {
-        rows.length = 0;
-        await service.ask(link, { text: MARKER });
+        expect(await service.takeCommandLimit(link)).toBe(true);
       }
-      rows.length = 0;
+      expect(await service.takeCommandLimit(link)).toBe(false);
+      expect(await service.refuseRateLimited(link)).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(audit[audit.length - 1].payload).toEqual({
+        channel: 'discord',
+        linkId: LINK_ID,
+        reason: 'rate_limited',
+        stage: 'precheck',
+      });
+      // ask and cancel themselves never take the limit (ChatCommandService took it once).
       starts.start.mockClear();
-      expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooMany') });
-      expect(starts.start).not.toHaveBeenCalled();
-      expect(audit[audit.length - 1].payload.reason).toBe('rate_limited');
+      expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(await service.cancel(link)).toEqual({ text: chatReply('en', 'cancel.nothing') });
+      expect(starts.start).toHaveBeenCalledTimes(1);
+    });
+
+    it('CHAT-TIDY-01: an unlinked author: 3 replies a minute per author, subject SHA-256 of "unlinked:" and the id', async () => {
+      const limitRows = new MemoryChatLimitStore();
+      const counted = new ChatRunService(
+        starts as never,
+        orchestration as never,
+        delivery as never,
+        deliveries as never,
+        auditRepo as never,
+        undefined,
+        undefined,
+        undefined,
+        ChatLimits.inMemory(limitRows),
+      );
+      const author = '123456789012345678';
+      const results = [];
+      for (let i = 0; i < 5; i += 1) results.push(await counted.takeUnlinkedReply(author));
+      expect(results).toEqual([true, true, true, false, false]);
+      expect(await counted.takeUnlinkedReply('223456789012345678')).toBe(true);
+      const subject = createHash('sha256').update(`unlinked:${author}`).digest('hex');
+      expect(chatUnlinkedReplySubject(author)).toBe(subject);
+      expect(subject).toHaveLength(64);
+      expect(limitRows.rows.filter((row) => row.subjectKey === subject)).toHaveLength(3);
+      expect(limitRows.rows.every((row) => row.bucket === 'command')).toBe(true);
+      expect(JSON.stringify(limitRows.rows)).not.toContain(author);
+      // A store error: null, nothing logged here.
+      const broken = new ChatRunService(
+        starts as never,
+        orchestration as never,
+        delivery as never,
+        deliveries as never,
+        auditRepo as never,
+        undefined,
+        undefined,
+        undefined,
+        ChatLimits.inMemory({
+          locked: async () => {
+            throw new Error('db down');
+          },
+          times: async () => [],
+          pruneUpTo: async () => 0,
+        }),
+      );
+      expect(await broken.takeUnlinkedReply(author)).toBeNull();
+      expect(logs.join('\n')).not.toContain(author);
     });
 
     it('CHAT-STATE-PERSIST-01: the 10-a-minute limit survives a restart (a new service over the same limit rows)', async () => {
@@ -340,22 +395,17 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
         );
       let current = instance();
       for (let i = 0; i < CHAT_RUN_LIMITS.commandsPerMinute; i += 1) {
-        rows.length = 0;
         if (i === 5) current = instance();
-        await (i % 2 === 0 ? current.ask(link, { text: MARKER }) : current.cancel(link));
+        expect(await current.takeCommandLimit(link)).toBe(true);
       }
       current = instance();
-      rows.length = 0;
-      starts.start.mockClear();
-      expect(await current.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooMany') });
-      expect(await current.cancel(link)).toEqual({ text: chatReply('en', 'ask.tooMany') });
-      expect(starts.start).not.toHaveBeenCalled();
+      expect(await current.takeCommandLimit(link)).toBe(false);
       expect(limitRows.rows.map((row) => [row.bucket, row.subjectKey])).toEqual(
         Array.from({ length: CHAT_RUN_LIMITS.commandsPerMinute }, () => ['command', OWNER]),
       );
     });
 
-    it('CHAT-STATE-PERSIST-01: a limit store error answers the error line and starts or cancels nothing', async () => {
+    it('CHAT-STATE-PERSIST-01: a limit store error gives null (the caller answers the error line) and is logged with a reason code', async () => {
       const broken = {
         locked: async () => {
           throw new Error(`db down ${MARKER}`);
@@ -374,8 +424,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
         undefined,
         ChatLimits.inMemory(broken),
       );
-      expect(await failing.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'error') });
-      expect(await failing.cancel(link)).toEqual({ text: chatReply('en', 'error') });
+      expect(await failing.takeCommandLimit(link)).toBeNull();
       expectNothingCreated();
       expect(starts.cancelOwnedActiveRun).not.toHaveBeenCalled();
       expect(logs).toContain(`chat run limit store failed linkId=${LINK_ID} reason=Error`);
@@ -444,13 +493,15 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       expect(delivery.wake).not.toHaveBeenCalled();
     });
 
-    it('the delivery row cannot be written: the run is cancelled and nothing is approved', async () => {
+    it('CHAT-TIDY-01: the delivery row cannot be written after the approval: the run is cancelled and the error line answers', async () => {
       deliveries.insertOrIgnore.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
       expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'error') });
+      expect(starts.approveStep).toHaveBeenCalledTimes(1);
       expect(orchestration.cancelCollaboration).toHaveBeenCalledWith(
         expect.objectContaining({ collaborationRunId: RUN_ID, cancelReason: 'chat_refused:delivery_row' }),
       );
-      expect(starts.approveStep).not.toHaveBeenCalled();
+      expect(audit.filter((row) => row.eventType === 'run_started')).toEqual([]);
+      expect(delivery.wake).not.toHaveBeenCalled();
     });
   });
 
@@ -565,22 +616,82 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       expect(logs.join('\n')).not.toContain('987654321098765432');
     });
 
-    it('/ask: the listener inserts first, /ask’s own insert is ignored: exactly one row', async () => {
+    it('CHAT-TIDY-01: /ask: the start’s listener fires inside the start and waits for /ask; no row exists until the first step is approved', async () => {
+      let listener: Promise<boolean> | null = null;
+      let rowsDuringApproval: DeliveryRow[] | null = null;
       starts.start.mockImplementationOnce(async () => {
-        // The start's notify fires before start returns; here the listener finishes first.
-        await listening.onRunStarted({ collaborationRunId: RUN_ID, userId: OWNER });
+        // What CollaborationStartService.start does: notify (never awaited) before it returns.
+        const spy = jest.spyOn(listening, 'onRunStarted');
+        notifier.notify({ collaborationRunId: RUN_ID, userId: OWNER });
+        listener = spy.mock.results[0].value as Promise<boolean>;
+        spy.mockRestore();
+        // Let the listener run as far as it can before /ask goes on.
+        await new Promise((resolve) => setImmediate(resolve));
         return { collaborationRunId: RUN_ID, referralId: REFERRAL_ID };
       });
+      starts.approveStep.mockImplementationOnce(async () => {
+        await new Promise((resolve) => setImmediate(resolve));
+        rowsDuringApproval = rows.map((row) => ({ ...row }));
+        return { referral: { referralId: REFERRAL_ID }, executionId: 'x' };
+      });
       expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+      // Nothing a delivery pass could read existed while the first step waited.
+      expect(rowsDuringApproval).toEqual([]);
+      expect(listener).not.toBeNull();
+      // The listener waited for /ask: /ask's insert (origin chat) came first, the listener's was ignored.
+      expect(await listener).toBe(true);
       expect(deliveries.insertOrIgnore).toHaveBeenCalledTimes(2);
-      // CHAT-STATE-PERSIST-01: the listener's insert names no origin; /ask then marks the row 'chat'.
-      expect(deliveries.insertOrIgnore.mock.calls[0][0]).not.toHaveProperty('origin');
-      expect(deliveries.insertOrIgnore.mock.calls[1][0]).toMatchObject({ origin: 'chat' });
+      expect(deliveries.insertOrIgnore.mock.calls[0][0]).toMatchObject({ origin: 'chat', status: 'waiting' });
+      expect(deliveries.insertOrIgnore.mock.calls[1][0]).not.toHaveProperty('origin');
+      expect(deliveries.insertOrIgnore.mock.invocationCallOrder[0]).toBeGreaterThan(starts.approveStep.mock.invocationCallOrder[0]);
       expect(rows).toEqual([
         expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting', origin: 'chat' }),
       ]);
       expect(starts.approveStep).toHaveBeenCalledTimes(1);
       expect(orchestration.cancelCollaboration).not.toHaveBeenCalled();
+    });
+
+    it('CHAT-TIDY-01: when /ask cannot write its row the run is cancelled and the waiting listener adds none', async () => {
+      deliveries.insertOrIgnore.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
+      let listener: Promise<boolean> | null = null;
+      starts.start.mockImplementationOnce(async () => {
+        const spy = jest.spyOn(listening, 'onRunStarted');
+        notifier.notify({ collaborationRunId: RUN_ID, userId: OWNER });
+        listener = spy.mock.results[0].value as Promise<boolean>;
+        spy.mockRestore();
+        return { collaborationRunId: RUN_ID, referralId: REFERRAL_ID };
+      });
+      expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'error') });
+      expect(await listener).toBe(false);
+      expect(rows).toEqual([]);
+      expect(orchestration.cancelCollaboration).toHaveBeenCalledWith(
+        expect.objectContaining({ collaborationRunId: RUN_ID, cancelReason: 'chat_refused:delivery_row' }),
+      );
+    });
+
+    it('CHAT-TIDY-01: while an /ask is in flight, another run of the same owner (Team page) still gets its row once /ask is done', async () => {
+      let release: () => void = () => undefined;
+      starts.approveStep.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            release = () => resolve({ referral: { referralId: REFERRAL_ID }, executionId: 'x' });
+          }),
+      );
+      const asking = listening.ask(link, { text: MARKER });
+      await new Promise((resolve) => setImmediate(resolve));
+      const spy = jest.spyOn(listening, 'onRunStarted');
+      notifier.notify({ collaborationRunId: PLATFORM_RUN, userId: OWNER });
+      const other = spy.mock.results[0].value as Promise<boolean>;
+      spy.mockRestore();
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(rows).toEqual([]);
+      release();
+      await asking;
+      expect(await other).toBe(true);
+      expect(rows.map((row) => [row.collaborationRunId, row.origin ?? 'platform'])).toEqual([
+        [RUN_ID, 'chat'],
+        [PLATFORM_RUN, 'platform'],
+      ]);
     });
 
     it('/ask: /ask inserts first, the listener’s insert is ignored and never resets the row', async () => {
@@ -777,6 +888,50 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       expect(audit.map((row) => [row.eventType, row.payload.reason, row.payload.stage])).toEqual([
         ['run_refused', 'runs_off', 'precheck'],
       ]);
+    });
+  });
+
+  describe('CHAT-TIDY-01: askableAgents (the /ask agent suggestions)', () => {
+    it('the switched-on workflows /ask can run by name, filtered by the typed text (case-insensitive), at most 25', async () => {
+      starts.listOwnerWorkflows.mockResolvedValue([
+        { id: 'w1', name: 'Sales Digest', status: 'active' },
+        { id: 'w2', name: 'Draft Writer', status: 'disabled' },
+        { id: 'w3', name: '  Weekly   SALES  report ', status: 'active' },
+        { id: 'w4', name: 'Twin', status: 'active' },
+        { id: 'w5', name: 'twin', status: 'active' },
+        { id: 'w6', name: 'x'.repeat(101), status: 'active' },
+        { id: 'w7', name: '   ', status: 'active' },
+        ...Array.from({ length: 40 }, (_, i) => ({ id: `m${i}`, name: `Many ${i}`, status: 'active' })),
+      ]);
+      // A name only one workflow has (as resolveTarget matches it), switched on, at most 100 characters.
+      expect(await service.askableAgents(link, 'SAL')).toEqual([
+        { name: 'Sales Digest', value: 'Sales Digest' },
+        { name: 'Weekly SALES report', value: 'Weekly SALES report' },
+      ]);
+      expect(await service.askableAgents(link, '  sales   report ')).toEqual([
+        { name: 'Weekly SALES report', value: 'Weekly SALES report' },
+      ]);
+      expect(await service.askableAgents(link, 'twin')).toEqual([]);
+      expect(await service.askableAgents(link, 'draft')).toEqual([]);
+      const all = await service.askableAgents(link, '');
+      expect(all).toHaveLength(25);
+      expect(all.slice(0, 2).map((choice) => choice.name)).toEqual(['Sales Digest', 'Weekly SALES report']);
+      expect(starts.listOwnerWorkflows).toHaveBeenCalledWith(OWNER);
+      // Each suggestion resolves as /ask resolves the agent option.
+      starts.listOwnerWorkflows.mockResolvedValue([{ id: WORKFLOW_A, name: '  Weekly   SALES  report ', status: 'active' }]);
+      const [choice] = await service.askableAgents(link, 'weekly');
+      await service.ask(link, { text: MARKER, agent: choice.value });
+      expect(starts.readStartBody).toHaveBeenLastCalledWith({ workflowId: WORKFLOW_A, task: MARKER });
+    });
+
+    it('a failing list gives none; nothing is counted, written or logged', async () => {
+      starts.listOwnerWorkflows.mockRejectedValueOnce(new Error(`db said ${MARKER}`));
+      logs.length = 0;
+      expect(await service.askableAgents(link, 'sal')).toEqual([]);
+      expect(await service.askableAgents(link, 'sal')).toEqual([{ name: 'Sales Digest', value: 'Sales Digest' }]);
+      expect(logs).toEqual([]);
+      expect(audit).toEqual([]);
+      expect(rows).toEqual([]);
     });
   });
 

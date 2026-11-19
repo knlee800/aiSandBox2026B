@@ -10,7 +10,6 @@ import { User } from '../entities/user.entity';
 import { FRONT_DOOR_LEAD_ID } from '../orchestration/collaboration-front-door';
 import { CollaborationReferralEntity } from '../orchestration/collaboration-referral.entity';
 import { CollaborationStartService } from '../orchestration/collaboration-start.service';
-import { COLLABORATION_OMITTED_REJECT_REASON } from '../orchestration/collaboration-team';
 import { TESTS_NOT_PASSED_CODE } from '../orchestration/collaboration-tests-gate';
 import {
   autoApprovalTargetIsReadOnly,
@@ -34,6 +33,7 @@ import {
   ChatActivityNotifier,
   type ChatComponentPress,
   type ChatComponentResponse,
+  type ChatModal,
   type ChatReplyMessage,
 } from './chat-transport';
 
@@ -76,8 +76,8 @@ import {
  *    so every existing check runs. A refusal is answered by a translated line
  *    and the step keeps waiting.
  *  - Reject: OrchestrationService.rejectReferral, the Team page's own reject
- *    call, with the owner as decidedBy and the page's omitted-reason token
- *    (`omitted`, the reason the page stores when no reason is typed).
+ *    call, with the owner as decidedBy (CHAT-TIDY-01: from the reason form,
+ *    with the typed reason or "Rejected in Discord"; see below).
  *  - The message is edited to show the decision and its buttons are removed;
  *    the token is spent. Audit: approval_decided (ids, decision, reason code).
  *
@@ -103,6 +103,26 @@ import {
  * gone: rows are bounded by waiting steps and the 24-hour expiry.
  * needsFreshButtons is the delivery's repair rule: a waiting, positively
  * read-only step with no live token gets one fresh message.
+ *
+ * CHAT-TIDY-01:
+ * - Reject with a reason: pressing Reject decides nothing; it opens a form
+ *   (custom id `ap1:f:<token>`, the same token) with one optional one-line
+ *   field of at most 500 characters. Closing the form leaves the step
+ *   waiting and the token live. Sending the form is the press that decides:
+ *   it runs the six checks above (the same token, the same order), then
+ *   rejects with the typed reason, trimmed and cut to 500 characters, or,
+ *   when empty, the translated fixed text "Rejected in Discord" in the
+ *   link's language. The reason is stored as the Team page stores one
+ *   (OrchestrationService.rejectReferral) and is never logged or audited
+ *   (the audit row says typed or default). A form custom id is read only
+ *   from a form submit and a button custom id only from a button press.
+ * - One decision per token: before the decision the token row is deleted,
+ *   and the delete must remove exactly one row. When it removes none (a
+ *   second press of the same button, or Approve and a form sent together),
+ *   the press decides nothing and answers "no longer works". When the
+ *   decision is then refused for a reason that leaves the step waiting
+ *   (switched off, credits, caps, tests, workflow), the row is put back so
+ *   the buttons keep working, as before.
  */
 
 export const CHAT_APPROVAL_AUDIT_EVENTS = {
@@ -117,10 +137,34 @@ export const CHAT_APPROVAL_LIMITS = {
   requestChars: 1000,
   /** A workflow name in the message is cut to this many characters. */
   agentNameChars: 60,
+  /** CHAT-TIDY-01: a reject reason typed in Discord is cut to this many characters. */
+  rejectReasonChars: 500,
 } as const;
 
 /** The custom id form: version, action (a approve, r reject), a 22-character base64url token. */
 export const CHAT_APPROVAL_CUSTOM_ID = /^ap1:([ar]):([A-Za-z0-9_-]{22})$/;
+
+/** CHAT-TIDY-01: the reject form's custom id: the same token as the buttons. */
+export const CHAT_APPROVAL_REASON_FORM_ID = /^ap1:f:([A-Za-z0-9_-]{22})$/;
+
+/** CHAT-TIDY-01: the custom id of the reject form's one field. */
+export const CHAT_APPROVAL_REASON_FIELD = 'reason';
+
+/**
+ * CHAT-TIDY-01: the reason typed into the reject form: trimmed and cut to
+ * 500 characters (code points); null when nothing is typed.
+ */
+export function chatRejectReason(modalValues: Readonly<Record<string, string>> | undefined): string | null {
+  const typed =
+    modalValues && Object.prototype.hasOwnProperty.call(modalValues, CHAT_APPROVAL_REASON_FIELD)
+      ? modalValues[CHAT_APPROVAL_REASON_FIELD]
+      : '';
+  if (typeof typed !== 'string') {
+    return null;
+  }
+  const cut = Array.from(typed.trim()).slice(0, CHAT_APPROVAL_LIMITS.rejectReasonChars).join('').trim();
+  return cut.length > 0 ? cut : null;
+}
 
 /** Optional provider token: tests pass a clock. */
 export const CHAT_APPROVAL_OPTIONS = Symbol('CHAT_APPROVAL_OPTIONS');
@@ -389,7 +433,7 @@ export class ChatApprovalService {
     return !live;
   }
 
-  /** The transport's component handler. Never throws. */
+  /** The transport's component handler (button presses and, CHAT-TIDY-01, reject form submits). Never throws. */
   async handlePress(press: ChatComponentPress): Promise<ChatComponentResponse> {
     const fallback = normalizeChatLocale(press.locale);
     try {
@@ -400,10 +444,20 @@ export class ChatApprovalService {
         return this.refuse(null, null, 'unavailable', fallback);
       }
       this.activity?.notify(CHAT_CHANNEL_DISCORD, press.externalUserId);
-      const parsed = typeof press.customId === 'string' ? CHAT_APPROVAL_CUSTOM_ID.exec(press.customId) : null;
-      const action = parsed?.[1] === 'a' ? 'approve' : 'reject';
-      const tokenKey = parsed ? hashApprovalToken(parsed[2]) : '';
-      const token = parsed ? await this.lookup(tokenKey) : null;
+      const customId = typeof press.customId === 'string' ? press.customId : '';
+      const fromForm = press.modalValues !== undefined;
+      // CHAT-TIDY-01: a button custom id only from a button press, a form custom id only from a form submit.
+      const button = fromForm ? null : CHAT_APPROVAL_CUSTOM_ID.exec(customId);
+      const form = fromForm ? CHAT_APPROVAL_REASON_FORM_ID.exec(customId) : null;
+      if (button?.[1] === 'r') {
+        // CHAT-TIDY-01: Reject opens the reason form; nothing is read, decided or spent until it is sent.
+        this.logger.log('chat approval reject form opened');
+        return { kind: 'modal', modal: this.rejectForm(fallback, button[2]) };
+      }
+      const action: 'approve' | 'reject' = button ? 'approve' : 'reject';
+      const rawToken = button?.[2] ?? form?.[1] ?? null;
+      const tokenKey = rawToken ? hashApprovalToken(rawToken) : '';
+      const token = rawToken ? await this.lookup(tokenKey) : null;
       if (!token) {
         return this.refuse(null, null, 'unavailable', fallback);
       }
@@ -426,11 +480,18 @@ export class ChatApprovalService {
         return this.refuse(link, token, 'unavailable', link.locale);
       }
 
+      if (action === 'approve' && !chatStepIsReadOnly(entity)) {
+        await this.writeAudit(CHAT_APPROVAL_AUDIT_EVENTS.refused, link, token, { reason: 'not_read_only' });
+        return this.refuse(link, token, 'not_read_only', link.locale);
+      }
+
+      // CHAT-TIDY-01: one decision per token: the delete must remove exactly one row.
+      if (!(await this.spendOnce(tokenKey))) {
+        return this.refuse(link, token, 'unavailable', link.locale, 'already_spent');
+      }
+
+      const typedReason = action === 'reject' ? chatRejectReason(press.modalValues) : null;
       if (action === 'approve') {
-        if (!chatStepIsReadOnly(entity)) {
-          await this.writeAudit(CHAT_APPROVAL_AUDIT_EVENTS.refused, link, token, { reason: 'not_read_only' });
-          return this.refuse(link, token, 'not_read_only', link.locale);
-        }
         try {
           await this.starts.approveStep({
             collaborationRunId: token.collaborationRunId,
@@ -440,9 +501,8 @@ export class ChatApprovalService {
           });
         } catch (error) {
           const reason = chatApprovalRefusalOf(error);
-          if (reason === 'unavailable') {
-            await this.spend(tokenKey);
-          } else {
+          if (reason !== 'unavailable') {
+            await this.restore(tokenKey, token);
             await this.writeAudit(CHAT_APPROVAL_AUDIT_EVENTS.refused, link, token, { reason });
           }
           return this.refuse(link, token, reason, link.locale);
@@ -453,22 +513,23 @@ export class ChatApprovalService {
             collaborationRunId: token.collaborationRunId,
             referralId: token.referralId,
             decidedBy: link.userId,
-            reason: COLLABORATION_OMITTED_REJECT_REASON,
+            // CHAT-TIDY-01: the typed reason (stored as the Team page stores one), else the translated fixed text.
+            reason: typedReason ?? chatReply(link.locale, 'approval.rejectDefaultReason'),
           });
         } catch (error) {
           const reason = chatApprovalRefusalOf(error);
-          if (reason === 'unavailable') {
-            await this.spend(tokenKey);
+          if (reason !== 'unavailable') {
+            await this.restore(tokenKey, token);
           }
           return this.refuse(link, token, reason === 'unavailable' ? 'unavailable' : 'refused', link.locale);
         }
       }
 
-      await this.spend(tokenKey);
       const decision = action === 'approve' ? 'approved' : 'rejected';
       await this.writeAudit(CHAT_APPROVAL_AUDIT_EVENTS.decided, link, token, {
         decision,
-        reason: action === 'approve' ? 'owner' : COLLABORATION_OMITTED_REJECT_REASON,
+        // A reason code only; the typed reason is never audited or logged.
+        reason: action === 'approve' ? 'owner' : typedReason ? 'typed' : 'default',
       });
       this.logger.log(
         `chat approval decided linkId=${link.linkId} runId=${token.collaborationRunId} referralId=${token.referralId} decision=${decision}`,
@@ -560,9 +621,53 @@ export class ChatApprovalService {
     };
   }
 
-  /** The button is spent: its row is deleted. */
+  /** The button is spent: its row is deleted (a clean-up; no count is needed). */
   private async spend(tokenHash: string): Promise<void> {
     await this.tokens.delete({ tokenHash });
+  }
+
+  /**
+   * CHAT-TIDY-01: spends the token before the decision. True only when the
+   * delete removed exactly one row; none means another press spent it first.
+   */
+  private async spendOnce(tokenHash: string): Promise<boolean> {
+    const result = await this.tokens.delete({ tokenHash });
+    return (result.affected ?? 0) === 1;
+  }
+
+  /**
+   * CHAT-TIDY-01: the decision was refused and the step still waits: the
+   * token row is put back, so the buttons keep working. A newer message for
+   * the step (its own row) wins; a failure is logged with a reason code only.
+   */
+  private async restore(tokenHash: string, token: ApprovalToken): Promise<void> {
+    try {
+      await this.tokens.insert({
+        tokenHash,
+        collaborationRunId: token.collaborationRunId,
+        linkId: token.linkId,
+        userId: token.userId,
+        referralId: token.referralId,
+        step: token.step,
+        expiresAt: new Date(token.expiresAt),
+        createdAt: new Date(this.now()),
+      });
+    } catch (error) {
+      this.logger.warn(`chat approval token not restored reason=${errorName(error)}`);
+    }
+  }
+
+  /** CHAT-TIDY-01: the reject form in the presser's language; its custom id carries the same token. */
+  private rejectForm(locale: ChatLinkLocale, token: string): ChatModal {
+    return {
+      customId: `ap1:f:${token}`,
+      title: chatReply(locale, 'approval.rejectFormTitle'),
+      field: {
+        customId: CHAT_APPROVAL_REASON_FIELD,
+        label: chatReply(locale, 'approval.rejectReasonLabel'),
+        maxLength: CHAT_APPROVAL_LIMITS.rejectReasonChars,
+      },
+    };
   }
 
   private refuse(
@@ -570,10 +675,12 @@ export class ChatApprovalService {
     token: ApprovalToken | null,
     reason: ChatApprovalRefusal,
     locale: ChatLinkLocale,
+    detail?: 'already_spent',
   ): ChatComponentResponse {
     const linkPart = link ? ` linkId=${link.linkId}` : '';
     const stepPart = token && link ? ` runId=${token.collaborationRunId} referralId=${token.referralId}` : '';
-    this.logger.log(`chat approval refused reason=${reason}${linkPart}${stepPart}`);
+    const detailPart = detail ? ` detail=${detail}` : '';
+    this.logger.log(`chat approval refused reason=${reason}${detailPart}${linkPart}${stepPart}`);
     return ephemeral(locale, REFUSAL_REPLIES[reason]);
   }
 

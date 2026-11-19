@@ -22,7 +22,12 @@ import { ChatLimits, chatLimitSubjectOfExternalUser } from './chat-limits';
 import { buildChatLinkMail, type ChatLinkMailEvent } from './chat-link-mail';
 import { chatReply } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
-import { CHAT_TRANSPORT, ChatDirectMessageRefusedError, type ChatTransport } from './chat-transport';
+import {
+  CHAT_TRANSPORT,
+  ChatDirectMessageRefusedError,
+  ChatTransportNotReadyError,
+  type ChatTransport,
+} from './chat-transport';
 
 /**
  * CHAT-DISCORD-01 slice A1 (stage-start section 5): the account link.
@@ -716,6 +721,22 @@ export class ChatLinkService {
   }
 
   /**
+   * CHAT-TIDY-01: the link of an outside user, read only (nothing is
+   * written: the /ask agent suggestions call it on every keystroke). Switch
+   * off, a malformed id or no link: null.
+   */
+  async readLinkByExternalUser(channel: ChatChannel, externalUserId: unknown): Promise<ChatLinkUse | null> {
+    if (!isChatDiscordEnabled() || !isExternalUserId(externalUserId)) {
+      return null;
+    }
+    const link = await this.links.findOne({ where: { channel, externalUserId } });
+    if (!link) {
+      return null;
+    }
+    return { linkId: link.id, userId: link.userId, locale: normalizeChatLocale(link.locale) };
+  }
+
+  /**
    * Slice B: /language stores the reply language on the link and updates
    * last_used_at. False when there is no link (or the switch is off).
    */
@@ -861,6 +882,10 @@ export class ChatLinkService {
         });
         return 'sent';
       } catch (error) {
+        if (error instanceof ChatTransportNotReadyError) {
+          // CHAT-TIDY-01: the bot is not connected; nothing was sent.
+          return 'not_ready';
+        }
         return error instanceof ChatDirectMessageRefusedError ? 'refused' : 'send_failed';
       }
     });

@@ -1,10 +1,14 @@
 import { Logger } from '@nestjs/common';
 import { createHash } from 'crypto';
-import type { APIInteraction, GatewayDispatchPayload, GatewayReadyDispatchData } from '@discordjs/core';
+import type { GatewayDispatchPayload, GatewayReadyDispatchData } from '@discordjs/core';
 import type { ChatChannel } from '../chat-link.service';
 import { isChatDiscordEnabled } from '../chat-switch';
 import {
   ChatDirectMessageRefusedError,
+  ChatTransportNotReadyError,
+  type ChatAutocompleteChoice,
+  type ChatAutocompleteHandler,
+  type ChatAutocompleteRequest,
   type ChatCommandHandler,
   type ChatCommandInvocation,
   type ChatComponentHandler,
@@ -12,6 +16,7 @@ import {
   type ChatComponentResponse,
   type ChatInstallLinks,
   type ChatMessageHandler,
+  type ChatModal,
   type ChatPlainMessage,
   type ChatReplyMessage,
   type ChatSendOptions,
@@ -102,6 +107,28 @@ import {
  * otherwise ignored. A plain message keeps no interaction reference (it has
  * no interaction token). The text, the author id and the channel id are
  * never logged.
+ *
+ * CHAT-TIDY-01:
+ * - Suggestions (autocomplete, interaction type 4) for a command option that
+ *   offers them (the /ask agent option): the focused option's name and typed
+ *   text go to the autocomplete handler; the answer (callback type 8) holds
+ *   at most 25 suggestions, name and value cut to 100 characters. A handler
+ *   that fails or is not done within the defer time answers an empty list.
+ *   Nothing is logged per keystroke and no interaction reference is kept
+ *   (an autocomplete token cannot send follow-ups).
+ * - Forms (modals): a button handler may answer a press with a form
+ *   (callback type 9) holding one optional one-line text field in a Label
+ *   component. Its submit (interaction type 5) goes to the component handler
+ *   as a press with the form's custom id and the typed values (each cut to
+ *   4000 characters); an update then edits the message the button is on.
+ *   A form cannot follow a deferred answer or another form; then nothing is
+ *   shown and one line is logged.
+ * - Plain messages that arrive while the transport is connecting (Discord
+ *   replays missed events while it resumes a session) are kept in memory, at
+ *   most 50 (the rest are dropped), and handled once the session is ready or
+ *   resumed; they are dropped on disconnect and stop.
+ * - sendToUser throws ChatTransportNotReadyError while not ready, and when
+ *   the connection went away during the send.
  */
 
 export const DISCORD_BOT_TOKEN_ENV = 'DISCORD_BOT_TOKEN';
@@ -163,6 +190,25 @@ export const DISCORD_DM_REFUSED_STATUS = 403;
 /** CHAT-STATE-PERSIST-01: Discord's nonce is at most 25 characters. */
 export const DISCORD_NONCE_MAX = 25;
 
+/** InteractionType.ApplicationCommandAutocomplete (CHAT-TIDY-01) */
+export const DISCORD_INTERACTION_AUTOCOMPLETE = 4;
+/** InteractionType.ModalSubmit (CHAT-TIDY-01) */
+export const DISCORD_INTERACTION_MODAL_SUBMIT = 5;
+/** ComponentType.TextInput and ComponentType.Label (CHAT-TIDY-01: the form's one field) */
+export const DISCORD_COMPONENT_TEXT_INPUT = 4;
+export const DISCORD_COMPONENT_LABEL = 18;
+/** TextInputStyle.Short: a one-line field */
+export const DISCORD_TEXT_INPUT_SHORT = 1;
+/** Discord's limits: 25 suggestions, each name and value at most 100 characters. */
+export const DISCORD_CHOICES_MAX = 25;
+export const DISCORD_CHOICE_MAX = 100;
+/** Discord's limits: a form title and a field label at most 45 characters, a field value at most 4000. */
+export const DISCORD_MODAL_TITLE_MAX = 45;
+export const DISCORD_FIELD_LABEL_MAX = 45;
+export const DISCORD_FIELD_VALUE_MAX = 4000;
+/** CHAT-TIDY-01: plain messages kept while the transport is connecting. */
+export const DISCORD_PENDING_MESSAGES_MAX = 50;
+
 /** WebSocketShardEvents names used here. Debug is deliberately not among them. */
 export const DISCORD_GATEWAY_EVENTS = {
   closed: 'closed',
@@ -198,6 +244,104 @@ export interface DiscordMessageBody {
   enforce_nonce?: boolean;
 }
 
+/** CHAT-TIDY-01: one suggestion as Discord takes it (callback type 8). */
+export interface DiscordChoice {
+  name: string;
+  value: string;
+}
+
+/** CHAT-TIDY-01: a form as Discord takes it (callback type 9): one optional one-line field in a Label. */
+export interface DiscordModalBody {
+  custom_id: string;
+  title: string;
+  components: Array<{
+    type: typeof DISCORD_COMPONENT_LABEL;
+    label: string;
+    component: {
+      type: typeof DISCORD_COMPONENT_TEXT_INPUT;
+      custom_id: string;
+      style: typeof DISCORD_TEXT_INPUT_SHORT;
+      max_length: number;
+      required: false;
+    };
+  }>;
+}
+
+/** Code points, cut to max. */
+function cutText(value: string, max: number): string {
+  return Array.from(value).slice(0, max).join('');
+}
+
+/** A plain object read from untrusted JSON, or null. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+/**
+ * CHAT-TIDY-01: the suggestions as Discord takes them: strings only, trimmed,
+ * name and value cut to 100 characters, empty ones and repeated values left
+ * out, at most 25.
+ */
+export function discordChoices(choices: readonly ChatAutocompleteChoice[]): DiscordChoice[] {
+  const result: DiscordChoice[] = [];
+  const seen = new Set<string>();
+  for (const choice of Array.isArray(choices) ? choices : []) {
+    if (result.length >= DISCORD_CHOICES_MAX) break;
+    if (!choice || typeof choice.name !== 'string' || typeof choice.value !== 'string') continue;
+    const name = cutText(choice.name.trim(), DISCORD_CHOICE_MAX);
+    const value = cutText(choice.value, DISCORD_CHOICE_MAX);
+    if (name.length === 0 || value.length === 0 || seen.has(value)) continue;
+    seen.add(value);
+    result.push({ name, value });
+  }
+  return result;
+}
+
+/**
+ * CHAT-TIDY-01: the form body, or null when its custom ids are not usable.
+ * Title and label are cut to 45 characters; the field's limit is kept
+ * between 1 and 4000; the field is never required.
+ */
+export function discordModalBody(modal: ChatModal): DiscordModalBody | null {
+  const field = modal?.field;
+  if (
+    typeof modal?.customId !== 'string' ||
+    modal.customId.length === 0 ||
+    modal.customId.length > DISCORD_CUSTOM_ID_MAX ||
+    !field ||
+    typeof field.customId !== 'string' ||
+    field.customId.length === 0 ||
+    field.customId.length > DISCORD_CUSTOM_ID_MAX
+  ) {
+    return null;
+  }
+  const title = cutText(typeof modal.title === 'string' ? modal.title : '', DISCORD_MODAL_TITLE_MAX);
+  const label = cutText(typeof field.label === 'string' ? field.label : '', DISCORD_FIELD_LABEL_MAX);
+  if (title.length === 0 || label.length === 0) {
+    return null;
+  }
+  const maxLength = Number.isInteger(field.maxLength)
+    ? Math.min(Math.max(field.maxLength, 1), DISCORD_FIELD_VALUE_MAX)
+    : DISCORD_FIELD_VALUE_MAX;
+  return {
+    custom_id: modal.customId,
+    title,
+    components: [
+      {
+        type: DISCORD_COMPONENT_LABEL,
+        label,
+        component: {
+          type: DISCORD_COMPONENT_TEXT_INPUT,
+          custom_id: field.customId,
+          style: DISCORD_TEXT_INPUT_SHORT,
+          max_length: maxLength,
+          required: false,
+        },
+      },
+    ],
+  };
+}
+
 /** CHAT-STATE-PERSIST-01: the nonce for a dedupe key: 25 hex characters of its SHA-256 (no id is readable from it). */
 export function discordNonceOf(dedupeKey: string): string {
   return createHash('sha256').update(`aisb-chat:${dedupeKey}`).digest('hex').slice(0, DISCORD_NONCE_MAX);
@@ -224,6 +368,14 @@ export interface DiscordCalls {
    * a plain message is handled but not answered).
    */
   replyToMessage?(channelId: string, messageId: string, body: DiscordMessageBody): Promise<void>;
+  /**
+   * CHAT-TIDY-01: callback type 8, the suggestions for the option being
+   * typed. The real connection always has it; optional so older test fakes
+   * still type-check (without it no suggestion is answered).
+   */
+  autocomplete?(interactionId: string, interactionToken: string, choices: DiscordChoice[]): Promise<void>;
+  /** CHAT-TIDY-01: callback type 9, opens a form. Optional for the same reason; without it no form opens. */
+  showModal?(interactionId: string, interactionToken: string, body: DiscordModalBody): Promise<void>;
 }
 
 /** CHAT-DISCORD-DM-01: the Create Message body of a reply: the message reference, never failing when the message is gone. */
@@ -242,7 +394,7 @@ export function discordReplyBody(messageId: string, message: DiscordMessageBody)
 
 /** The gateway connection (a WebSocketManager), reduced to what the transport uses. */
 export interface DiscordGateway {
-  on(event: string, listener: (...args: any[]) => void): unknown;
+  on(event: string, listener: (...args: unknown[]) => void): unknown;
   connect(): Promise<void>;
   destroy(): unknown;
 }
@@ -300,6 +452,16 @@ export const createDiscordConnection: DiscordConnectionFactory = async (token, i
     },
     async replyToMessage(channelId, messageId, body) {
       await api.channels.createMessage(channelId, discordReplyBody(messageId, body));
+    },
+    async autocomplete(interactionId, interactionToken, choices) {
+      await api.interactions.createAutocompleteResponse(interactionId, interactionToken, { choices });
+    },
+    async showModal(interactionId, interactionToken, modal) {
+      await api.interactions.createModal(
+        interactionId,
+        interactionToken,
+        modal as unknown as Parameters<typeof api.interactions.createModal>[2],
+      );
     },
   };
   return {
@@ -439,12 +601,23 @@ function body(message: ChatReplyMessage, ephemeral: boolean, buttons: 'keep' | '
   return result;
 }
 
-function isDirectMessage(interaction: Record<string, any>): boolean {
+function isDirectMessage(interaction: Record<string, unknown>): boolean {
   return (
     !interaction.guild_id &&
     interaction.user !== undefined &&
     (interaction.context === undefined || interaction.context === DISCORD_CONTEXT_BOT_DM)
   );
+}
+
+/** The interaction's user (a direct message) or its member's user (a server). */
+function interactionUser(interaction: Record<string, unknown>): Record<string, unknown> | null {
+  return asRecord(interaction.user) ?? asRecord(asRecord(interaction.member)?.user);
+}
+
+/** The user's id when it is a snowflake, else ''. */
+function interactionUserId(interaction: Record<string, unknown>): string {
+  const id = interactionUser(interaction)?.id;
+  return typeof id === 'string' && SNOWFLAKE.test(id) ? id : '';
 }
 
 /**
@@ -453,16 +626,16 @@ function isDirectMessage(interaction: Record<string, any>): boolean {
  * and the string options the command declares (cut to their maximum).
  */
 export function toChatInvocation(raw: unknown, channel: ChatChannel = 'discord'): ChatCommandInvocation | null {
-  const interaction = raw as Partial<APIInteraction> & Record<string, any>;
-  if (!interaction || typeof interaction !== 'object') return null;
+  const interaction = asRecord(raw);
+  if (!interaction) return null;
   if (interaction.type !== DISCORD_INTERACTION_APPLICATION_COMMAND) return null;
-  const data = interaction.data as Record<string, any> | undefined;
+  const data = asRecord(interaction.data);
   if (!data || data.type !== DISCORD_COMMAND_DATA_CHAT_INPUT || typeof data.name !== 'string') return null;
   if (typeof interaction.id !== 'string' || typeof interaction.token !== 'string') return null;
   if (typeof interaction.application_id !== 'string') return null;
 
-  const user = (interaction.user ?? interaction.member?.user) as Record<string, any> | undefined;
-  const externalUserId = typeof user?.id === 'string' && SNOWFLAKE.test(user.id) ? user.id : '';
+  const user = interactionUser(interaction);
+  const externalUserId = interactionUserId(interaction);
   const directMessage = isDirectMessage(interaction);
   const displayName =
     typeof user?.global_name === 'string'
@@ -514,18 +687,16 @@ export function toChatInvocation(raw: unknown, channel: ChatChannel = 'discord')
  * the custom id (at most 100 characters; longer is not a press).
  */
 export function toChatComponentPress(raw: unknown, channel: ChatChannel = 'discord'): ChatComponentPress | null {
-  const interaction = raw as Record<string, any>;
-  if (!interaction || typeof interaction !== 'object') return null;
+  const interaction = asRecord(raw);
+  if (!interaction) return null;
   if (interaction.type !== DISCORD_INTERACTION_MESSAGE_COMPONENT) return null;
-  const data = interaction.data as Record<string, any> | undefined;
+  const data = asRecord(interaction.data);
   if (!data || data.component_type !== DISCORD_COMPONENT_BUTTON) return null;
   if (typeof data.custom_id !== 'string' || data.custom_id.length === 0 || data.custom_id.length > DISCORD_CUSTOM_ID_MAX) {
     return null;
   }
   if (typeof interaction.id !== 'string' || typeof interaction.token !== 'string') return null;
   if (typeof interaction.application_id !== 'string') return null;
-  const user = (interaction.user ?? interaction.member?.user) as Record<string, any> | undefined;
-  const externalUserId = typeof user?.id === 'string' && SNOWFLAKE.test(user.id) ? user.id : '';
   const ref: DiscordRef = {
     interactionId: interaction.id,
     interactionToken: interaction.token,
@@ -535,10 +706,122 @@ export function toChatComponentPress(raw: unknown, channel: ChatChannel = 'disco
   return {
     channel,
     customId: data.custom_id,
-    externalUserId,
+    externalUserId: interactionUserId(interaction),
     locale: typeof interaction.locale === 'string' ? interaction.locale : null,
     directMessage: isDirectMessage(interaction),
     ref,
+  };
+}
+
+/**
+ * CHAT-TIDY-01: the typed values of a form submit, by field custom id: text
+ * fields only (type 4, in an action row or a Label), the first value of a
+ * custom id wins, each cut to 4000 characters. Nothing else is read.
+ */
+function modalFieldValues(components: unknown): Record<string, string> {
+  const values = new Map<string, string>();
+  const add = (component: unknown): void => {
+    const field = asRecord(component);
+    if (
+      !field ||
+      field.type !== DISCORD_COMPONENT_TEXT_INPUT ||
+      typeof field.custom_id !== 'string' ||
+      field.custom_id.length === 0 ||
+      field.custom_id.length > DISCORD_CUSTOM_ID_MAX ||
+      typeof field.value !== 'string' ||
+      values.has(field.custom_id)
+    ) {
+      return;
+    }
+    values.set(field.custom_id, cutText(field.value, DISCORD_FIELD_VALUE_MAX));
+  };
+  for (const top of Array.isArray(components) ? components.slice(0, 5) : []) {
+    const row = asRecord(top);
+    if (row?.type === DISCORD_COMPONENT_ACTION_ROW && Array.isArray(row.components)) {
+      row.components.slice(0, 5).forEach(add);
+    } else if (row?.type === DISCORD_COMPONENT_LABEL) {
+      add(row.component);
+    }
+  }
+  return Object.fromEntries(values);
+}
+
+/**
+ * CHAT-TIDY-01: turns a raw form submit (interaction type 5) into a press
+ * with modalValues, or null. Reads only: ids, token, locale, the user, the
+ * form's custom id (at most 100 characters) and the typed text fields.
+ */
+export function toChatModalSubmit(raw: unknown, channel: ChatChannel = 'discord'): ChatComponentPress | null {
+  const interaction = asRecord(raw);
+  if (!interaction || interaction.type !== DISCORD_INTERACTION_MODAL_SUBMIT) return null;
+  const data = asRecord(interaction.data);
+  if (!data) return null;
+  if (typeof data.custom_id !== 'string' || data.custom_id.length === 0 || data.custom_id.length > DISCORD_CUSTOM_ID_MAX) {
+    return null;
+  }
+  if (typeof interaction.id !== 'string' || typeof interaction.token !== 'string') return null;
+  if (typeof interaction.application_id !== 'string') return null;
+  const ref: DiscordRef = {
+    interactionId: interaction.id,
+    interactionToken: interaction.token,
+    applicationId: interaction.application_id,
+    deferred: false,
+  };
+  return {
+    channel,
+    customId: data.custom_id,
+    externalUserId: interactionUserId(interaction),
+    locale: typeof interaction.locale === 'string' ? interaction.locale : null,
+    directMessage: isDirectMessage(interaction),
+    ref,
+    modalValues: modalFieldValues(data.components),
+  };
+}
+
+/** CHAT-TIDY-01: an autocomplete interaction, read: the request and the ids to answer with. */
+export interface DiscordAutocomplete {
+  request: ChatAutocompleteRequest;
+  interactionId: string;
+  interactionToken: string;
+}
+
+/**
+ * CHAT-TIDY-01: turns a raw autocomplete interaction (type 4) into a request,
+ * or null. Reads only: ids, token, locale, the user, the command name and the
+ * focused option when it is a string option the command declares (its typed
+ * text cut to the option's maximum).
+ */
+export function toChatAutocomplete(raw: unknown, channel: ChatChannel = 'discord'): DiscordAutocomplete | null {
+  const interaction = asRecord(raw);
+  if (!interaction || interaction.type !== DISCORD_INTERACTION_AUTOCOMPLETE) return null;
+  const data = asRecord(interaction.data);
+  if (!data || data.type !== DISCORD_COMMAND_DATA_CHAT_INPUT || !isChatCommandName(data.name)) return null;
+  if (typeof interaction.id !== 'string' || typeof interaction.token !== 'string') return null;
+  const command = data.name;
+  const focused = (Array.isArray(data.options) ? data.options : [])
+    .map((option) => asRecord(option))
+    .find((option) => option?.focused === true);
+  if (
+    !focused ||
+    focused.type !== DISCORD_OPTION_TYPE_STRING ||
+    typeof focused.name !== 'string' ||
+    !chatCommandOptionNames(command).includes(focused.name)
+  ) {
+    return null;
+  }
+  const typed = typeof focused.value === 'string' ? focused.value : '';
+  return {
+    request: {
+      channel,
+      command,
+      option: focused.name,
+      value: cutText(typed, chatCommandOptionMax(command, focused.name)),
+      externalUserId: interactionUserId(interaction),
+      locale: typeof interaction.locale === 'string' ? interaction.locale : null,
+      directMessage: isDirectMessage(interaction),
+    },
+    interactionId: interaction.id,
+    interactionToken: interaction.token,
   };
 }
 
@@ -566,13 +849,13 @@ export function toChatPlainMessage(
   botUserId: string | null,
   channel: ChatChannel = 'discord',
 ): ChatPlainMessage | null {
-  const message = raw as Record<string, any> | null;
-  if (!message || typeof message !== 'object') return null;
+  const message = asRecord(raw);
+  if (!message) return null;
   if (isPresent(message.guild_id) || isPresent(message.member)) return null;
   if (message.type !== DISCORD_MESSAGE_TYPE_DEFAULT && message.type !== DISCORD_MESSAGE_TYPE_REPLY) return null;
   if (isPresent(message.webhook_id)) return null;
-  const author = message.author as Record<string, any> | undefined;
-  if (!author || typeof author !== 'object') return null;
+  const author = asRecord(message.author);
+  if (!author) return null;
   if (author.bot || author.system) return null;
   if (typeof author.id !== 'string' || !SNOWFLAKE.test(author.id)) return null;
   if (typeof botUserId !== 'string' || !SNOWFLAKE.test(botUserId) || author.id === botUserId) return null;
@@ -604,6 +887,12 @@ export class DiscordTransport implements ChatTransport {
   private componentHandler: ChatComponentHandler | null = null;
   /** CHAT-DISCORD-DM-01: the plain-message handler; without it plain messages are ignored. */
   private messageHandler: ChatMessageHandler | null = null;
+  /** CHAT-TIDY-01: the suggestion handler; without it no suggestion is answered. */
+  private autocompleteHandler: ChatAutocompleteHandler | null = null;
+  /** CHAT-TIDY-01: raw plain messages received while connecting (at most 50). Memory only; never logged. */
+  private pendingMessages: unknown[] = [];
+  /** CHAT-TIDY-01: plain messages dropped because the queue was full (a count for one log line). */
+  private droppedMessages = 0;
   private applicationId: string | null = null;
   private botUserId: string | null = null;
   private sessionUp = false;
@@ -628,6 +917,11 @@ export class DiscordTransport implements ChatTransport {
     return this.references.size;
   }
 
+  /** CHAT-TIDY-01: the plain messages waiting for the session (for tests; never their content). */
+  get pendingMessageCount(): number {
+    return this.pendingMessages.length;
+  }
+
   /** CHAT-USER-INSTALL-01: the install and bot links while ready and both ids are known. */
   installLinks(): ChatInstallLinks | null {
     if (this.currentState !== 'ready' || !this.connection) {
@@ -640,6 +934,7 @@ export class DiscordTransport implements ChatTransport {
     handler: ChatCommandHandler,
     onComponent?: ChatComponentHandler,
     onMessage?: ChatMessageHandler,
+    onAutocomplete?: ChatAutocompleteHandler,
   ): Promise<boolean> {
     if (this.currentState !== 'off') {
       return false;
@@ -662,6 +957,7 @@ export class DiscordTransport implements ChatTransport {
     this.handler = handler;
     this.componentHandler = onComponent ?? null;
     this.messageHandler = onMessage ?? null;
+    this.autocompleteHandler = onAutocomplete ?? null;
     let connection: DiscordConnection;
     try {
       connection = await this.factory(token, DISCORD_GATEWAY_INTENTS);
@@ -670,6 +966,7 @@ export class DiscordTransport implements ChatTransport {
       this.handler = null;
       this.componentHandler = null;
       this.messageHandler = null;
+      this.autocompleteHandler = null;
       this.logger.warn(`chat discord connect failed reason=${errorName(error)}`);
       return false;
     }
@@ -690,8 +987,10 @@ export class DiscordTransport implements ChatTransport {
     this.handler = null;
     this.componentHandler = null;
     this.messageHandler = null;
+    this.autocompleteHandler = null;
     this.sessionUp = false;
     this.references.clear();
+    this.clearPendingMessages();
     if (this.currentState !== 'off') {
       this.currentState = 'stopped';
     }
@@ -742,11 +1041,16 @@ export class DiscordTransport implements ChatTransport {
    * message and forgets the reference. A refused direct message throws
    * ChatDirectMessageRefusedError. CHAT-STATE-PERSIST-01: with a dedupe key
    * the direct message carries the nonce and enforce_nonce (the follow-up
-   * cannot).
+   * cannot). CHAT-TIDY-01: not ready, or the connection went away while
+   * sending, throws ChatTransportNotReadyError (the delivery does not count
+   * it as an attempt).
    */
   async sendToUser(externalUserId: string, message: ChatReplyMessage, options?: ChatSendOptions): Promise<void> {
     const connection = this.connection;
-    if (!connection || this.currentState !== 'ready' || !SNOWFLAKE.test(externalUserId)) {
+    if (!connection || this.currentState !== 'ready') {
+      throw new ChatTransportNotReadyError();
+    }
+    if (!SNOWFLAKE.test(externalUserId)) {
       return;
     }
     const outgoing = body(message, false);
@@ -762,6 +1066,9 @@ export class DiscordTransport implements ChatTransport {
         }
         this.logger.warn(`chat discord follow-up failed reason=${errorName(error)}${errorStatus(error)}`);
       }
+      if (!this.stillReady(connection)) {
+        throw new ChatTransportNotReadyError();
+      }
     }
     const dedupeKey = typeof options?.dedupeKey === 'string' && options.dedupeKey.length > 0 ? options.dedupeKey : null;
     const direct: DiscordMessageBody = dedupeKey
@@ -773,8 +1080,16 @@ export class DiscordTransport implements ChatTransport {
       if (isDiscordDirectMessageRefused(error)) {
         throw new ChatDirectMessageRefusedError();
       }
+      if (!this.stillReady(connection)) {
+        throw new ChatTransportNotReadyError();
+      }
       throw error;
     }
+  }
+
+  /** CHAT-TIDY-01: true while this connection is still the ready one. */
+  private stillReady(connection: DiscordConnection): boolean {
+    return this.connection === connection && this.currentState === 'ready';
   }
 
   /** The user's latest reference while younger than 14 minutes; an older one is forgotten. */
@@ -834,12 +1149,13 @@ export class DiscordTransport implements ChatTransport {
   }
 
   private listen(gateway: DiscordGateway): void {
-    gateway.on(DISCORD_GATEWAY_EVENTS.ready, (data: GatewayReadyDispatchData) => {
-      this.onReady(data);
+    gateway.on(DISCORD_GATEWAY_EVENTS.ready, (data: unknown) => {
+      this.onReady(data as GatewayReadyDispatchData);
     });
     gateway.on(DISCORD_GATEWAY_EVENTS.resumed, () => {
       this.sessionUp = true;
       if (this.currentState === 'connecting') this.currentState = 'ready';
+      this.drainPendingMessages();
     });
     gateway.on(DISCORD_GATEWAY_EVENTS.closed, (code: unknown) => {
       this.onClosed(code);
@@ -847,7 +1163,8 @@ export class DiscordTransport implements ChatTransport {
     gateway.on(DISCORD_GATEWAY_EVENTS.error, (error: unknown) => {
       this.logger.warn(`chat discord error reason=${errorName(error)}`);
     });
-    gateway.on(DISCORD_GATEWAY_EVENTS.dispatch, (payload: GatewayDispatchPayload) => {
+    gateway.on(DISCORD_GATEWAY_EVENTS.dispatch, (raw: unknown) => {
+      const payload = raw as GatewayDispatchPayload | null | undefined;
       const event = payload ? (payload as { t?: unknown }).t : undefined;
       if (event === DISCORD_DISPATCH_INTERACTION_CREATE) {
         void this.onInteraction((payload as { d?: unknown }).d);
@@ -872,6 +1189,33 @@ export class DiscordTransport implements ChatTransport {
     if (!this.commandsRegistered) {
       void this.registerCommands();
     }
+    this.drainPendingMessages();
+  }
+
+  /**
+   * CHAT-TIDY-01: once ready, the plain messages kept while connecting are
+   * handled as if they had just arrived. One counts-only log line.
+   */
+  private drainPendingMessages(): void {
+    if (this.currentState !== 'ready') {
+      return;
+    }
+    const queued = this.pendingMessages;
+    const dropped = this.droppedMessages;
+    this.pendingMessages = [];
+    this.droppedMessages = 0;
+    if (queued.length === 0 && dropped === 0) {
+      return;
+    }
+    this.logger.log(`chat discord queued messages handled count=${queued.length} dropped=${dropped}`);
+    for (const raw of queued) {
+      void this.onMessage(raw);
+    }
+  }
+
+  private clearPendingMessages(): void {
+    this.pendingMessages = [];
+    this.droppedMessages = 0;
   }
 
   private onClosed(code: unknown): void {
@@ -902,7 +1246,9 @@ export class DiscordTransport implements ChatTransport {
     this.handler = null;
     this.componentHandler = null;
     this.messageHandler = null;
+    this.autocompleteHandler = null;
     this.references.clear();
+    this.clearPendingMessages();
     this.logger.warn(`chat discord stopped ${reason}`);
     const connection = this.connection;
     this.connection = null;
@@ -925,8 +1271,14 @@ export class DiscordTransport implements ChatTransport {
   }
 
   private async onInteraction(raw: unknown): Promise<void> {
-    if ((raw as { type?: unknown } | null)?.type === DISCORD_INTERACTION_MESSAGE_COMPONENT) {
+    const type = asRecord(raw)?.type;
+    // CHAT-TIDY-01: a form submit is answered like a button press.
+    if (type === DISCORD_INTERACTION_MESSAGE_COMPONENT || type === DISCORD_INTERACTION_MODAL_SUBMIT) {
       await this.onComponent(raw);
+      return;
+    }
+    if (type === DISCORD_INTERACTION_AUTOCOMPLETE) {
+      await this.onAutocomplete(raw);
       return;
     }
     const handler = this.handler;
@@ -968,13 +1320,55 @@ export class DiscordTransport implements ChatTransport {
     }
   }
 
-  /** Slice C2: a button press, answered within Discord's 3 seconds (a deferred update when the handler is slow). */
+  /**
+   * CHAT-TIDY-01: suggestions while an option is typed. Answered within the
+   * defer time with what the handler gave (an empty list when it failed or
+   * was late). Nothing is logged per keystroke and no reference is kept.
+   */
+  private async onAutocomplete(raw: unknown): Promise<void> {
+    const handler = this.autocompleteHandler;
+    const connection = this.connection;
+    if (!handler || !connection || this.currentState !== 'ready' || !connection.calls.autocomplete) {
+      return;
+    }
+    const parsed = toChatAutocomplete(raw, this.channel);
+    if (!parsed) {
+      return;
+    }
+    let choices: DiscordChoice[] = [];
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const late = new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), this.deferAfterMs);
+        timer.unref?.();
+      });
+      const answered = handler(parsed.request).then(
+        (list) => list,
+        () => null,
+      );
+      choices = discordChoices((await Promise.race([answered, late])) ?? []);
+    } catch {
+      choices = [];
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+    try {
+      await connection.calls.autocomplete(parsed.interactionId, parsed.interactionToken, choices);
+    } catch {
+      // Nothing is logged per keystroke; the user just sees no suggestions.
+    }
+  }
+
+  /**
+   * Slice C2: a button press, answered within Discord's 3 seconds (a deferred
+   * update when the handler is slow). CHAT-TIDY-01: a form submit too.
+   */
   private async onComponent(raw: unknown): Promise<void> {
     const handler = this.componentHandler;
     if (!handler || this.currentState !== 'ready') {
       return;
     }
-    const press = toChatComponentPress(raw, this.channel);
+    const press = toChatComponentPress(raw, this.channel) ?? toChatModalSubmit(raw, this.channel);
     if (!press) {
       return;
     }
@@ -1014,7 +1408,19 @@ export class DiscordTransport implements ChatTransport {
    */
   private async onMessage(raw: unknown): Promise<void> {
     const handler = this.messageHandler;
-    if (!handler || this.currentState !== 'ready') {
+    if (!handler) {
+      return;
+    }
+    if (this.currentState === 'connecting' && this.connection) {
+      // CHAT-TIDY-01: a resume replays missed events before it is done; keep them until ready.
+      if (this.pendingMessages.length < DISCORD_PENDING_MESSAGES_MAX) {
+        this.pendingMessages.push(raw);
+      } else {
+        this.droppedMessages += 1;
+      }
+      return;
+    }
+    if (this.currentState !== 'ready') {
       return;
     }
     const message = toChatPlainMessage(raw, this.botUserId, this.channel);
@@ -1044,11 +1450,25 @@ export class DiscordTransport implements ChatTransport {
     }
   }
 
-  /** update: edit the pressed message and remove its buttons. ephemeral: an answer only the presser sees. */
+  /**
+   * update: edit the pressed message and remove its buttons. ephemeral: an
+   * answer only the presser sees. modal (CHAT-TIDY-01): open the form; only
+   * as the first answer to a button press (never after a deferral or to a
+   * form submit), else nothing is shown and one line is logged.
+   */
   private async respond(press: ChatComponentPress, response: ChatComponentResponse): Promise<void> {
     const connection = this.connection;
     const ref = press.ref as DiscordRef;
     if (!connection || !ref || typeof ref.interactionToken !== 'string') {
+      return;
+    }
+    if (response.kind === 'modal') {
+      const modal = discordModalBody(response.modal);
+      if (!modal || ref.deferred || press.modalValues !== undefined || !connection.calls.showModal) {
+        this.logger.warn('chat discord form not shown reason=not_allowed');
+        return;
+      }
+      await connection.calls.showModal(ref.interactionId, ref.interactionToken, modal);
       return;
     }
     if (response.kind === 'update') {

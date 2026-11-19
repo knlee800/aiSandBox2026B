@@ -13,8 +13,11 @@ import { TESTS_NOT_PASSED_CODE } from '../orchestration/collaboration-tests-gate
 import {
   CHAT_APPROVAL_CUSTOM_ID,
   CHAT_APPROVAL_LIMITS,
+  CHAT_APPROVAL_REASON_FIELD,
+  CHAT_APPROVAL_REASON_FORM_ID,
   ChatApprovalService,
   chatApprovalRefusalOf,
+  chatRejectReason,
   chatStepIsReadOnly,
   cutApprovalRequest,
   hashApprovalToken,
@@ -33,7 +36,6 @@ const REFERRAL_ID = '55555555-5555-4555-8555-555555555555';
 const WORKFLOW_ID = '66666666-6666-4666-8666-666666666666';
 const MARKER = 'MARKER-c2-request-text-do-not-log';
 const T0 = Date.parse('2026-11-14T10:00:00.000Z');
-const DAY = 24 * 60 * 60 * 1000;
 
 interface Step {
   referralId: string;
@@ -190,6 +192,11 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
     };
   }
 
+  /** CHAT-TIDY-01: the submit of the reason form a Reject button opens (same token, form custom id). */
+  function submit(rejectId: string, reason = '', overrides: Partial<ChatComponentPress> = {}): ChatComponentPress {
+    return press(`ap1:f:${rejectId.slice(6)}`, { modalValues: { reason }, ...overrides });
+  }
+
   async function buttons(link = LINK): Promise<{ approve: string; reject: string }> {
     const msg = await message(link);
     expect(msg.buttons).toHaveLength(2);
@@ -234,7 +241,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
     expect(all).not.toContain(MARKER);
     expect(all).not.toContain(DISCORD_ID);
     expect(all).not.toContain(STRANGER);
-    expect(all).not.toMatch(/ap1:[ar]:/);
+    expect(all).not.toMatch(/ap1:[arf]:/);
     if (original === undefined) delete process.env.CHAT_DISCORD_ENABLED;
     else process.env.CHAT_DISCORD_ENABLED = original;
   });
@@ -366,7 +373,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       expect(tokens.rows).toEqual([]);
       // The first instance sees the token spent too.
       steps.get(REFERRAL_ID)!.status = 'pending_approval';
-      expect((await service.handlePress(press(ids.reject))).kind).toBe('ephemeral');
+      expect((await service.handlePress(submit(ids.reject))).kind).toBe('ephemeral');
       expect(rejectReferral).not.toHaveBeenCalled();
     });
 
@@ -504,21 +511,23 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
         kind: 'ephemeral',
         message: { text: chatReply('en', 'approval.unavailable') },
       });
-      expect(await service.handlePress(press(ids.reject))).toMatchObject({ kind: 'ephemeral' });
+      expect(await service.handlePress(submit(ids.reject))).toMatchObject({ kind: 'ephemeral' });
       expect(approveReferral).toHaveBeenCalledTimes(1);
       expect(rejectReferral).not.toHaveBeenCalled();
     });
 
-    it('Reject: rejectReferral as the owner with the page omitted-reason token; the message shows the decision', async () => {
+    it('CHAT-TIDY-01: Reject and its form sent empty: rejectReferral as the owner with "Rejected in Discord" in the link language; the message shows the decision', async () => {
       linksByDiscord.get(DISCORD_ID)!.locale = 'zh-CN';
       const ids = await buttons({ ...LINK, locale: 'zh-CN' });
-      const response = await service.handlePress(press(ids.reject));
+      expect((await service.handlePress(press(ids.reject))).kind).toBe('modal');
+      const response = await service.handlePress(submit(ids.reject, '   '));
       expect(rejectReferral).toHaveBeenCalledWith({
         collaborationRunId: RUN_ID,
         referralId: REFERRAL_ID,
         decidedBy: OWNER,
-        reason: 'omitted',
+        reason: chatReply('zh-CN', 'approval.rejectDefaultReason'),
       });
+      expect(chatReply('zh-CN', 'approval.rejectDefaultReason')).toBe('已在 Discord 拒绝');
       expect(approveReferral).not.toHaveBeenCalled();
       expect(response).toEqual({
         kind: 'update',
@@ -527,7 +536,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       expect(audit).toEqual([
         expect.objectContaining({
           eventType: 'approval_decided',
-          payload: expect.objectContaining({ decision: 'rejected', reason: 'omitted', referralId: REFERRAL_ID }),
+          payload: expect.objectContaining({ decision: 'rejected', reason: 'default', referralId: REFERRAL_ID }),
         }),
       ]);
     });
@@ -586,7 +595,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       expectNothing(await service.handlePress(press(ids.approve, { externalUserId: STRANGER })));
       linksByDiscord.set(STRANGER, { linkId: OTHER_LINK_ID, userId: OTHER_OWNER, locale: 'en' });
       expectNothing(await service.handlePress(press(ids.approve, { externalUserId: STRANGER })));
-      expectNothing(await service.handlePress(press(ids.reject, { externalUserId: STRANGER })));
+      expectNothing(await service.handlePress(submit(ids.reject, MARKER, { externalUserId: STRANGER })));
       expect((await service.handlePress(press(ids.approve))).kind).toBe('update');
     });
 
@@ -615,7 +624,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       const third = await buttons();
       runs.set(RUN_ID, { userId: OWNER, status: 'active' });
       deliveryRows[0].status = 'dropped';
-      expectNothing(await service.handlePress(press(third.reject)));
+      expectNothing(await service.handlePress(submit(third.reject, MARKER)));
     });
 
     it('an expired button (24 hours) does nothing', async () => {
@@ -653,7 +662,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       expectNothing(await service.handlePress(press(ids.approve)), 'notEntitled');
       entitled.add(OWNER);
       active.delete(OWNER);
-      expectNothing(await service.handlePress(press(ids.reject)), 'notEntitled');
+      expectNothing(await service.handlePress(submit(ids.reject, MARKER)), 'notEntitled');
     });
 
     it('the switch off, or a press outside the direct message, does nothing', async () => {
@@ -671,6 +680,157 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       });
       expectNothing(await service.handlePress(press(ids.approve)), 'error');
       expect(logs).toContain('chat approval failed reason=TypeError');
+    });
+  });
+
+  describe('CHAT-TIDY-01: Reject with a reason (a form) and one decision per token', () => {
+    it('Reject opens the form (same token, one optional field of at most 500, translated); nothing is read, decided or spent', async () => {
+      const ids = await buttons();
+      useLink.mockClear();
+      referralReads.mockClear();
+      const response = await service.handlePress(press(ids.reject, { locale: 'zh-TW' }));
+      expect(response).toEqual({
+        kind: 'modal',
+        modal: {
+          customId: `ap1:f:${ids.reject.slice(6)}`,
+          title: chatReply('zh-TW', 'approval.rejectFormTitle'),
+          field: { customId: CHAT_APPROVAL_REASON_FIELD, label: chatReply('zh-TW', 'approval.rejectReasonLabel'), maxLength: 500 },
+        },
+      });
+      expect((response as { modal: { customId: string } }).modal.customId).toMatch(CHAT_APPROVAL_REASON_FORM_ID);
+      expect(useLink).not.toHaveBeenCalled();
+      expect(referralReads).not.toHaveBeenCalled();
+      expect(rejectReferral).not.toHaveBeenCalled();
+      expect(tokens.rows).toHaveLength(1);
+      expect(audit).toEqual([]);
+      // The form closed without sending: the step still waits and Approve still works.
+      expect(steps.get(REFERRAL_ID)!.status).toBe('pending_approval');
+      expect((await service.handlePress(press(ids.approve))).kind).toBe('update');
+      expect(approveReferral).toHaveBeenCalledTimes(1);
+    });
+
+    it('the sent form rejects with the typed reason, trimmed and cut to 500; the reason is never logged or audited', async () => {
+      const ids = await buttons();
+      const typed = `  Not now: ${MARKER} ${'z'.repeat(600)}  `;
+      const response = await service.handlePress(submit(ids.reject, typed));
+      const expected = Array.from(typed.trim()).slice(0, 500).join('');
+      expect(rejectReferral).toHaveBeenCalledWith({
+        collaborationRunId: RUN_ID,
+        referralId: REFERRAL_ID,
+        decidedBy: OWNER,
+        reason: expected,
+      });
+      expect(Array.from(rejectReferral.mock.calls[0][0].reason as string)).toHaveLength(500);
+      expect(response).toEqual({
+        kind: 'update',
+        message: { text: chatReply('en', 'approval.rejected', { step: '2', agent: 'Product Strategy' }) },
+      });
+      expect(audit).toEqual([
+        expect.objectContaining({
+          eventType: 'approval_decided',
+          payload: expect.objectContaining({ decision: 'rejected', reason: 'typed' }),
+        }),
+      ]);
+      expect(tokens.rows).toEqual([]);
+      // The token is spent: the form sent again, or Approve, does nothing.
+      expect((await service.handlePress(submit(ids.reject, 'again'))).kind).toBe('ephemeral');
+      expect((await service.handlePress(press(ids.approve))).kind).toBe('ephemeral');
+      expect(rejectReferral).toHaveBeenCalledTimes(1);
+      expect(approveReferral).not.toHaveBeenCalled();
+    });
+
+    it('chatRejectReason: trimmed, cut to 500 code points, empty or missing is null', () => {
+      expect(chatRejectReason({ reason: '  why  ' })).toBe('why');
+      expect(chatRejectReason({ reason: '   ' })).toBeNull();
+      expect(chatRejectReason({})).toBeNull();
+      expect(chatRejectReason(undefined)).toBeNull();
+      expect(chatRejectReason({ other: 'x' })).toBeNull();
+      expect(Array.from(chatRejectReason({ reason: '😀'.repeat(600) })!)).toHaveLength(500);
+    });
+
+    it('the sent form runs every check a press runs: switch, direct message, token, presser, owner, step', async () => {
+      const ids = await buttons();
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      expect((await service.handlePress(submit(ids.reject, 'x'))).kind).toBe('ephemeral');
+      process.env.CHAT_DISCORD_ENABLED = 'true';
+      expect((await service.handlePress(submit(ids.reject, 'x', { directMessage: false }))).kind).toBe('ephemeral');
+      expect((await service.handlePress(submit(`ap1:r:${'A'.repeat(22)}`, 'x'))).kind).toBe('ephemeral');
+      expect((await service.handlePress(submit(ids.reject, 'x', { externalUserId: STRANGER }))).kind).toBe('ephemeral');
+      entitled.delete(OWNER);
+      expect(await service.handlePress(submit(ids.reject, 'x'))).toEqual({
+        kind: 'ephemeral',
+        message: { text: chatReply('en', 'notEntitled') },
+      });
+      entitled.add(OWNER);
+      steps.get(REFERRAL_ID)!.status = 'approved';
+      expect((await service.handlePress(submit(ids.reject, 'x'))).kind).toBe('ephemeral');
+      expect(rejectReferral).not.toHaveBeenCalled();
+      // Expired.
+      steps.get(REFERRAL_ID)!.status = 'pending_approval';
+      const fresh = await buttons();
+      now += CHAT_APPROVAL_LIMITS.tokenLifetimeMs;
+      expect((await service.handlePress(submit(fresh.reject, 'x'))).kind).toBe('ephemeral');
+      expect(rejectReferral).not.toHaveBeenCalled();
+      expect(audit).toEqual([]);
+    });
+
+    it('a form custom id from a button press, or a button custom id from a form submit, does nothing', async () => {
+      const ids = await buttons();
+      const token = ids.approve.slice(6);
+      expect((await service.handlePress(press(`ap1:f:${token}`))).kind).toBe('ephemeral');
+      expect((await service.handlePress(press(ids.approve, { modalValues: {} }))).kind).toBe('ephemeral');
+      expect((await service.handlePress(press(ids.reject, { modalValues: { reason: 'x' } }))).kind).toBe('ephemeral');
+      expect(approveReferral).not.toHaveBeenCalled();
+      expect(rejectReferral).not.toHaveBeenCalled();
+      expect(tokens.rows).toHaveLength(1);
+    });
+
+    it('two presses of one button at once: the token delete removes one row once, so exactly one decision', async () => {
+      const ids = await buttons();
+      const [first, second] = await Promise.all([
+        service.handlePress(press(ids.approve)),
+        service.handlePress(press(ids.approve)),
+      ]);
+      expect([first.kind, second.kind].sort()).toEqual(['ephemeral', 'update']);
+      expect(approveReferral).toHaveBeenCalledTimes(1);
+      expect(audit.filter((row) => row.eventType === 'approval_decided')).toHaveLength(1);
+      expect(logs.filter((line) => line.startsWith('chat approval refused reason=unavailable detail=already_spent'))).toHaveLength(1);
+    });
+
+    it('Approve and the Reject form sent at once: exactly one decision', async () => {
+      const ids = await buttons();
+      const responses = await Promise.all([
+        service.handlePress(press(ids.approve)),
+        service.handlePress(submit(ids.reject, 'no')),
+      ]);
+      expect(responses.map((response) => response.kind).sort()).toEqual(['ephemeral', 'update']);
+      expect(approveReferral.mock.calls.length + rejectReferral.mock.calls.length).toBe(1);
+    });
+
+    it('a refused decision puts the token back (the buttons keep working); a newer message for the step wins', async () => {
+      const ids = await buttons();
+      rejectReferral.mockImplementationOnce(async () => {
+        throw new ServiceUnavailableException('AI execution temporarily disabled for maintenance');
+      });
+      expect(await service.handlePress(submit(ids.reject, 'x'))).toEqual({
+        kind: 'ephemeral',
+        message: { text: chatReply('en', 'approval.refused') },
+      });
+      expect(tokens.rows).toHaveLength(1);
+      expect(tokens.rows[0].tokenHash).toBe(hashApprovalToken(ids.reject.slice(6)));
+      expect((await service.handlePress(submit(ids.reject, 'x'))).kind).toBe('update');
+
+      steps.get(REFERRAL_ID)!.status = 'pending_approval';
+      const older = await buttons();
+      approveReferral.mockImplementationOnce(async () => {
+        // A newer message for the step is issued while the decision runs.
+        await message();
+        throw new ServiceUnavailableException('AI execution temporarily disabled for maintenance');
+      });
+      expect((await service.handlePress(press(older.approve))).kind).toBe('ephemeral');
+      expect(tokens.rows).toHaveLength(1);
+      expect(tokens.rows[0].tokenHash).not.toBe(hashApprovalToken(older.approve.slice(6)));
+      expect(logs).toContain('chat approval token not restored reason=Error');
     });
   });
 

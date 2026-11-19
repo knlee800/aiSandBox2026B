@@ -7,7 +7,12 @@ import { CHAT_DELIVERY_LIMITS, ChatDeliveryService, chatResultMessages } from '.
 import { ChatLimits, MemoryChatLimitStore } from './chat-limits';
 import { chatReply } from './chat-replies';
 import { ChatRunService } from './chat-run.service';
-import { ChatActivityNotifier, ChatDirectMessageRefusedError, FakeChatTransport } from './chat-transport';
+import {
+  ChatActivityNotifier,
+  ChatDirectMessageRefusedError,
+  ChatTransportNotReadyError,
+  FakeChatTransport,
+} from './chat-transport';
 import { DiscordCalls, DiscordConnection, DiscordTransport } from './discord/discord-transport';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -186,13 +191,22 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
   let logs: string[];
   let restoreLogs: () => void;
 
-  /** chat_links: by id (the pass) or by channel and outside user id (resume). */
+  /** Every chat_links read (CHAT-TIDY-01: resume reads at most what it must). */
+  let linkReads: string[] = [];
+
+  /** chat_links: by id (the pass) or by channel and outside user id (resume); CHAT-TIDY-01: find by ids (the held users). */
   function linkRepo() {
     return {
-      findOne: async ({ where }: { where: { id?: string; channel?: string; externalUserId?: string } }) =>
-        where.id !== undefined
+      findOne: async ({ where }: { where: { id?: string; channel?: string; externalUserId?: string } }) => {
+        linkReads.push('findOne');
+        return where.id !== undefined
           ? (links.get(where.id) ?? null)
-          : ([...links.values()].find((row) => where.channel === 'discord' && row.externalUserId === where.externalUserId) ?? null),
+          : ([...links.values()].find((row) => where.channel === 'discord' && row.externalUserId === where.externalUserId) ?? null);
+      },
+      find: async ({ where }: { where: { id: FindOperator<string[]> } }) => {
+        linkReads.push('find');
+        return [...links.values()].filter((row) => satisfies(row.id, where.id as FindOperator<unknown>));
+      },
     };
   }
 
@@ -205,7 +219,6 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     target: { sendToUser: unknown; state: unknown } = transport,
     options: Record<string, unknown> = {},
     activity?: ChatActivityNotifier,
-    limits?: ChatLimits,
   ) {
     return new ChatDeliveryService(
       target as never,
@@ -223,7 +236,6 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         ...options,
       },
       undefined,
-      limits,
       activity,
     );
   }
@@ -256,6 +268,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     process.env.CHAT_DISCORD_ENABLED = 'true';
     now = T0 + 60 * 1000;
     sleeps = [];
+    linkReads = [];
     deliveries = new DeliveryRepo();
     links = new Map([[LINK_ID, { id: LINK_ID, userId: OWNER, externalUserId: DISCORD_ID, locale: 'en' }]]);
     audit = [];
@@ -526,7 +539,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       expect(failing.sendToUser).toHaveBeenCalledTimes(2);
     });
 
-    it('CHAT-STATE-PERSIST-01: every pass deletes expired approval tokens and limit rows older than an hour', async () => {
+    it('CHAT-TIDY-01: a pass no longer prunes limit rows, expired tokens or old deliveries (ChatPruneService does, hourly)', async () => {
       const limitRows = new MemoryChatLimitStore();
       limitRows.rows.push(
         { bucket: 'command', subjectKey: OWNER, at: now - 60 * 60 * 1000 - 1 },
@@ -546,13 +559,19 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         { insert: async () => ({}) } as never,
         { allowUnderJest: true, now: () => now, sleep: async () => undefined },
         approvals,
-        ChatLimits.inMemory(limitRows),
       );
+      const oldDelivery = { ...newRowDefaults(), collaborationRunId: 'd-old', linkId: LINK_ID, status: 'delivered', notifiedReferralIds: [], createdAt: new Date(now - 31 * DAY), deliveredAt: null };
+      deliveries.rows.push(oldDelivery);
+      const deletes = jest.spyOn(deliveries, 'delete');
       await service.tick();
-      expect(limitRows.rows.map((row) => row.bucket)).toEqual(['code_create']);
-      expect(tokens.rows.map((row) => row.referralId)).toEqual(['live']);
-      expect(logs).toContain('chat limit hits pruned count=2');
-      expect(logs).toContain('chat approval tokens pruned count=1');
+      expect(limitRows.rows.map((row) => row.bucket)).toEqual(['command', 'link_pause', 'code_create']);
+      expect(tokens.rows.map((row) => row.referralId)).toEqual(['old', 'live']);
+      expect(deliveries.rows.map((row) => row.collaborationRunId)).toEqual(['d-old']);
+      expect(deletes).not.toHaveBeenCalled();
+      expect(logs.some((line) => line.includes('pruned'))).toBe(false);
+      // The delivery takes no limits store any more; the hourly prune service calls prune() and the others.
+      const params = Reflect.getMetadata('design:paramtypes', ChatDeliveryService) as unknown[];
+      expect(params).not.toContain(ChatLimits);
     });
 
     it('a read-only step gets its request (cut to 1000 characters) with Approve and Reject; another step the Team page line', async () => {
@@ -648,6 +667,33 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       await service.tick();
       expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
       expect(tokens.rows.length).toBe(1);
+    });
+
+    it('CHAT-TIDY-01: a transport not ready for the approval message: not an attempt; the button is forgotten, the step not marked, nothing held', async () => {
+      waiting();
+      step('r2', 'chief-of-staff', 'Report back');
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      const notReady = {
+        state: 'ready',
+        sendToUser: jest.fn(async (): Promise<void> => {
+          throw new ChatTransportNotReadyError();
+        }),
+      };
+      service.onModuleDestroy();
+      service = withApprovals(notReady);
+      await service.tick();
+      expect(notReady.sendToUser).toHaveBeenCalledTimes(1);
+      expect(tokens.rows).toEqual([]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'waiting', notifiedReferralIds: [], heldAt: null, sendFailures: 0 });
+      expect(logs).toContain(`chat delivery notice not sent runId=${RUN_ID} linkId=${LINK_ID} reason=not_ready`);
+      expect(logs.some((line) => line.startsWith('chat delivery notice failed'))).toBe(false);
+      notReady.sendToUser.mockImplementation(async () => undefined);
+      await service.tick();
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
+      expect(tokens.rows).toHaveLength(1);
     });
 
     it('CHAT-USER-INSTALL-01: a refused approval message is held: its button is forgotten, the step not marked; the next command sends it', async () => {
@@ -1355,6 +1401,222 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       expect(await service.tick()).toBe(20);
       expect(reads).toHaveBeenCalledTimes(20);
       expect(reads.mock.calls[0][0]).toBe('run-00');
+    });
+  });
+  describe('CHAT-TIDY-01', () => {
+    it('a transport that turns not ready in the middle: no failure, no part counted, the row waits; a later pass sends the rest', async () => {
+      const sent: string[] = [];
+      let dropped = false;
+      const flaky = {
+        state: 'ready',
+        sendToUser: jest.fn(async (_id: string, message: { text: string }) => {
+          if (sent.length === 1 && !dropped) {
+            dropped = true;
+            flaky.state = 'connecting';
+            throw new ChatTransportNotReadyError();
+          }
+          sent.push(message.text);
+        }),
+      };
+      service.onModuleDestroy();
+      service = build(flaky);
+      waiting();
+      ended('completed', `${'a'.repeat(1800)}\n\n${'b'.repeat(1800)} ${MARKER}`);
+      await service.tick();
+      expect(sent).toEqual(['a'.repeat(1800)]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'waiting', partsSent: 1, sendFailures: 0, nextAttemptAt: null, heldAt: null });
+      expect(audit).toEqual([]);
+      expect(logs).toContain(`chat delivery not sent runId=${RUN_ID} linkId=${LINK_ID} reason=not_ready partsSent=1`);
+      expect(logs.some((line) => line.includes('send failed'))).toBe(false);
+      // While not ready the pass sends nothing; once ready the rest goes out.
+      await service.tick();
+      expect(flaky.sendToUser).toHaveBeenCalledTimes(2);
+      flaky.state = 'ready';
+      await service.tick();
+      expect(sent).toEqual(['a'.repeat(1800), `${'b'.repeat(1800)} ${MARKER}`]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'delivered', partsSent: 2, sendFailures: 0 });
+    });
+
+    it('the Discord transport throws the typed not-ready error while connecting (nothing is sent)', async () => {
+      const discord = new DiscordTransport({ env: {} });
+      await expect(discord.sendToUser(DISCORD_ID, { text: MARKER })).rejects.toBeInstanceOf(ChatTransportNotReadyError);
+      // The fake transport does the same.
+      const idle = new FakeChatTransport();
+      await expect(idle.sendToUser(DISCORD_ID, { text: MARKER })).rejects.toBeInstanceOf(ChatTransportNotReadyError);
+      expect(idle.directMessages).toEqual([]);
+    });
+
+    describe('resume: at most one query per command, none for a user with no held row', () => {
+      let activity: ChatActivityNotifier;
+
+      beforeEach(() => {
+        service.onModuleDestroy();
+        activity = new ChatActivityNotifier();
+        service = build(transport, {}, activity);
+      });
+
+      function queries(): number {
+        return deliveries.updates.length + linkReads.length;
+      }
+
+      it('after a pass that found no held row: no query at all, with or without the link id', async () => {
+        await service.tick();
+        const before = queries();
+        expect(await service.resume('discord', DISCORD_ID, LINK_ID)).toBe(0);
+        expect(await service.resume('discord', DISCORD_ID)).toBe(0);
+        activity.notify('discord', DISCORD_ID, LINK_ID);
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(queries()).toBe(before);
+      });
+
+      it('a held user with the link the command read: exactly one UPDATE by link id, no link read', async () => {
+        transport.refusedUsers.add(DISCORD_ID);
+        waiting();
+        ended('completed', `The answer ${MARKER}`);
+        await service.tick();
+        expect(held()).toBe(1);
+        transport.refusedUsers.delete(DISCORD_ID);
+        const updates = deliveries.updates.length;
+        linkReads = [];
+        // Stop the pass the release starts, to count the release alone.
+        const tick = jest.spyOn(service, 'tick').mockResolvedValue(0);
+        expect(await service.resume('discord', DISCORD_ID, LINK_ID)).toBe(1);
+        expect(deliveries.updates.slice(updates)).toEqual([
+          { where: { linkId: LINK_ID, status: 'waiting', heldAt: expect.anything() }, patch: { heldAt: null } },
+        ]);
+        expect(linkReads).toEqual([]);
+        // Released: the next command costs nothing.
+        expect(await service.resume('discord', DISCORD_ID, LINK_ID)).toBe(0);
+        expect(deliveries.updates.length).toBe(updates + 1);
+        tick.mockRestore();
+      });
+
+      it('another user with held rows does not make this user query; without the link id a held user is read once', async () => {
+        links.set('33333333-3333-4333-8333-333333333333', {
+          id: '33333333-3333-4333-8333-333333333333',
+          userId: OWNER,
+          externalUserId: '123456789012345678',
+          locale: 'en',
+        });
+        transport.refusedUsers.add('123456789012345678');
+        deliveries.rows.push({
+          ...newRowDefaults(),
+          collaborationRunId: 'other-run',
+          linkId: '33333333-3333-4333-8333-333333333333',
+          status: 'waiting',
+          notifiedReferralIds: [],
+          createdAt: new Date(T0),
+          deliveredAt: null,
+        });
+        ended('completed', MARKER, 'other-run');
+        await service.tick();
+        expect(held()).toBe(1);
+        const before = queries();
+        expect(await service.resume('discord', DISCORD_ID, LINK_ID)).toBe(0);
+        expect(queries()).toBe(before);
+        const tick = jest.spyOn(service, 'tick').mockResolvedValue(0);
+        linkReads = [];
+        expect(await service.resume('discord', '123456789012345678')).toBe(1);
+        expect(linkReads).toEqual(['findOne']);
+        tick.mockRestore();
+      });
+
+      it('after a restart (before the first pass) who is held is unknown: resume reads as before', async () => {
+        transport.refusedUsers.add(DISCORD_ID);
+        waiting();
+        ended('completed', MARKER);
+        await service.tick();
+        service.onModuleDestroy();
+        service = build(transport, {}, activity);
+        transport.refusedUsers.delete(DISCORD_ID);
+        const tick = jest.spyOn(service, 'tick').mockResolvedValue(0);
+        expect(await service.resume('discord', DISCORD_ID, LINK_ID)).toBe(1);
+        tick.mockRestore();
+      });
+    });
+
+    describe('the /ask first step is never announced by a delivery pass, in either order', () => {
+      const REFERRAL = 'r1';
+      const originalRuns = process.env.GLOBAL_EXECUTION_ENABLED;
+      let notifier: CollaborationRunStartedNotifier;
+      let starts: { readStartBody: jest.Mock; start: jest.Mock; approveStep: jest.Mock };
+      let runsService: ChatRunService;
+      const link = { linkId: LINK_ID, userId: OWNER, locale: 'en' as const };
+
+      beforeEach(() => {
+        process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+        notifier = new CollaborationRunStartedNotifier();
+        starts = {
+          readStartBody: jest.fn((body: { task: string }) => ({ task: body.task, teamId: 'chief-of-staff' })),
+          start: jest.fn(),
+          approveStep: jest.fn(),
+        };
+        runsService = new ChatRunService(
+          starts as never,
+          {} as never,
+          { wake: jest.fn() } as never,
+          deliveries as never,
+          { insert: async () => ({}), find: async () => [] } as never,
+          { findOne: async ({ where }: { where: { userId: string } }) => [...links.values()].find((row) => row.userId === where.userId) ?? null } as never,
+          { findOne: async () => ({ id: OWNER, isActive: true }) } as never,
+          notifier,
+        );
+        // The run and its first hand-off, waiting for approval, as the start leaves them.
+        runs.set(RUN_ID, {
+          run: { userId: OWNER, status: 'active' },
+          referrals: [{ referralId: REFERRAL, status: 'pending_approval', result: null }],
+        });
+      });
+
+      afterEach(() => {
+        runsService.onModuleDestroy();
+        if (originalRuns === undefined) delete process.env.GLOBAL_EXECUTION_ENABLED;
+        else process.env.GLOBAL_EXECUTION_ENABLED = originalRuns;
+      });
+
+      function approved(): void {
+        runs.get(RUN_ID)!.referrals[0].status = 'running';
+      }
+
+      it('a pass that runs after the start (its listener fired) and before /ask approves: no row, nothing announced', async () => {
+        starts.start.mockImplementation(async () => {
+          // The start's listener fires inside the start (never awaited), as CollaborationStartService does.
+          notifier.notify({ collaborationRunId: RUN_ID, userId: OWNER });
+          return { collaborationRunId: RUN_ID, referralId: REFERRAL };
+        });
+        starts.approveStep.mockImplementation(async () => {
+          // The race: a delivery pass right before the approval lands.
+          for (let i = 0; i < 5; i += 1) await new Promise((resolve) => setImmediate(resolve));
+          await service.tick();
+          approved();
+          return { referral: { referralId: REFERRAL }, executionId: 'x' };
+        });
+        expect(await runsService.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+        for (let i = 0; i < 5; i += 1) await new Promise((resolve) => setImmediate(resolve));
+        await service.tick();
+        expect(transport.directMessages).toEqual([]);
+        expect(deliveries.rows).toEqual([
+          expect.objectContaining({ collaborationRunId: RUN_ID, status: 'waiting', origin: 'chat', notifiedReferralIds: [] }),
+        ]);
+      });
+
+      it('/ask approves first and the start’s listener lands late: its insert is ignored and nothing is announced', async () => {
+        starts.start.mockResolvedValue({ collaborationRunId: RUN_ID, referralId: REFERRAL });
+        starts.approveStep.mockImplementation(async () => {
+          approved();
+          return { referral: { referralId: REFERRAL }, executionId: 'x' };
+        });
+        expect(await runsService.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+        expect(await runsService.onRunStarted({ collaborationRunId: RUN_ID, userId: OWNER })).toBe(true);
+        await service.tick();
+        expect(transport.directMessages).toEqual([]);
+        expect(deliveries.rows).toEqual([expect.objectContaining({ collaborationRunId: RUN_ID, status: 'waiting', origin: 'chat' })]);
+        // The run's later steps are still announced as before.
+        runs.get(RUN_ID)!.referrals.push({ referralId: 'r2', status: 'pending_approval', result: null });
+        await service.tick();
+        expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([chatReply('en', 'result.waitingApproval')]);
+        expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
+      });
     });
   });
 });

@@ -1708,7 +1708,7 @@
         "link": "In the bot's direct message, type / and choose link from the menu, then paste the code.",
         "confirm": "Come back here and press Confirm."
       },
-      "heldNote": "If Discord does not let the bot message you, your results arrive the next time you use a command. They are always on the Results page.",
+      "heldNote": "If Discord does not let the bot message you, your results arrive the next time you use a slash command (a plain message is not enough). They are always on the Results page.",
       "newTab": "(opens in a new tab)",
       "loading": "Loading chat link…",
       "retry": "Try again",

@@ -79,6 +79,10 @@ export const CHAT_REPLY_KEYS = [
   'approval.overCap',
   'approval.workflow',
   'approval.refused',
+  // CHAT-TIDY-01: the reject form and the reason stored when none is typed.
+  'approval.rejectFormTitle',
+  'approval.rejectReasonLabel',
+  'approval.rejectDefaultReason',
   // CHAT-DISCORD-DM-01: plain direct messages that start nothing.
   'message.textOnly',
   'message.useSlashMenu',

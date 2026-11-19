@@ -66,6 +66,8 @@ export interface DiscordCommandOption {
   min_length?: number;
   max_length?: number;
   choices?: DiscordCommandChoice[];
+  /** CHAT-TIDY-01: Discord asks the bot for suggestions while this option is typed. */
+  autocomplete?: boolean;
 }
 
 export interface DiscordCommandDefinition {
@@ -84,6 +86,7 @@ interface OptionSpec {
   minLength?: number;
   maxLength?: number;
   languageChoices?: boolean;
+  autocomplete?: boolean;
 }
 
 const OPTION_SPECS: Readonly<Record<ChatCommandName, readonly OptionSpec[]>> = {
@@ -94,7 +97,8 @@ const OPTION_SPECS: Readonly<Record<ChatCommandName, readonly OptionSpec[]>> = {
   help: [],
   ask: [
     { name: 'text', required: true, minLength: 1, maxLength: CHAT_ASK_TEXT_MAX },
-    { name: 'agent', required: false, minLength: 1, maxLength: CHAT_ASK_AGENT_MAX },
+    // CHAT-TIDY-01: suggests the owner's workflows that /ask can run.
+    { name: 'agent', required: false, minLength: 1, maxLength: CHAT_ASK_AGENT_MAX, autocomplete: true },
   ],
   // C1: cancels the owner's latest Discord-started run in progress.
   cancel: [],
@@ -140,6 +144,7 @@ function buildOption(command: ChatCommandName, spec: OptionSpec): DiscordCommand
   };
   if (spec.minLength !== undefined) option.min_length = spec.minLength;
   if (spec.maxLength !== undefined) option.max_length = spec.maxLength;
+  if (spec.autocomplete) option.autocomplete = true;
   if (spec.languageChoices) {
     option.choices = CHAT_LINK_LOCALES.map((locale) => ({ name: chatLanguageName(locale), value: locale }));
   }

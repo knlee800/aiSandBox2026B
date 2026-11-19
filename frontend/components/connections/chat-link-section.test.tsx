@@ -307,6 +307,24 @@ describe('chat link section states', () => {
     assert.match(html, /role="status" data-testid="chat-link-recent-notice"/);
   });
 
+  test('CHAT-TIDY-01: right after Confirm only the green linked line shows; the amber notice shows on later views', () => {
+    for (const { code, messages } of LOCALES) {
+      const justLinked = render({ state: LINKED, noticeKey: 'chat.linked.notice', justLinked: true, locale: code }, messages);
+      assert.equal(justLinked.includes('data-testid="chat-link-notice"'), true, code);
+      assert.equal(has(justLinked, readMessage(messages, 'connections.chat.linked.notice') ?? '?'), true, code);
+      assert.equal(justLinked.includes('chat-link-recent-notice'), false, code);
+      // Still the linked view with its rows and test ids.
+      for (const testId of ['chat-link-linked', 'chat-link-linked-at', 'chat-link-id-ending', 'chat-link-unlink']) {
+        assert.equal(justLinked.includes(`data-testid="${testId}"`), true, `${code} ${testId}`);
+      }
+      // A later view of the same link (no Confirm on this view): the amber notice, no green line.
+      const later = render({ state: LINKED, locale: code }, messages);
+      assert.equal(later.includes('chat-link-recent-notice'), true, code);
+      assert.equal(later.includes('data-testid="chat-link-notice"'), false, code);
+    }
+    assert.equal(en('chat.linked.notice'), 'Discord is linked.');
+  });
+
   test('CHAT-LINK-NOTICE-01: the notice is hidden from 7 days on, and in every state other than linked', () => {
     const linkedAt = Date.parse(LINKED.link!.linkedAt);
     const DAY = 24 * 60 * 60 * 1000;
@@ -438,8 +456,11 @@ describe('chat link setup steps (CHAT-USER-INSTALL-01)', () => {
       assert.equal(html.includes('data-testid="chat-link-held-note"'), true);
       assert.equal(has(html, en('chat.heldNote')), true);
     }
-    assert.match(en('chat.heldNote'), /next time you use a command/);
+    // CHAT-TIDY-01: a plain message carries no interaction, so held results need a slash command.
+    assert.ok(en('chat.heldNote').includes('next time you use a slash command (a plain message is not enough)'));
     assert.match(en('chat.heldNote'), /Results page/);
+    assert.match(readMessage(zhTwMessages as Messages, 'connections.chat.heldNote') ?? '', /斜線指令/);
+    assert.match(readMessage(zhCnMessages as Messages, 'connections.chat.heldNote') ?? '', /斜杠指令/);
   });
 
   test('the current step is marked: the code is live or hidden (4) or claimed (5); none before a code', () => {
@@ -489,6 +510,15 @@ describe('chat link catalog', () => {
     ...[...logic.matchAll(/'(chat\.[A-Za-z.]+)'/g)].map((m) => m[1]),
     ...Object.values(CHAT_ERROR_KEYS),
   ]);
+
+  test('CHAT-TIDY-01: Confirm marks this view as just linked (green line only); unlink clears it; the view passes it on', () => {
+    assert.match(source, /setNoticeKey\('chat\.linked\.notice'\);\s*setJustLinked\(true\);/);
+    assert.match(source, /setConfirmUnlink\(false\);\s*setJustLinked\(false\);/);
+    assert.match(source, /justLinked=\{justLinked\}/);
+    assert.match(source, /showsRecentLinkNotice\(state\.link, now, justLinked\)/);
+    // A fresh view starts as not just linked, so later views show the notice.
+    assert.match(source, /const \[justLinked, setJustLinked\] = useState\(false\);/);
+  });
 
   test('every chat key the code uses exists in en, zh-TW and zh-CN', () => {
     assert.ok(keys.size > 8);

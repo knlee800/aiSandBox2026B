@@ -63,8 +63,10 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     process.env.CHAT_DISCORD_ENABLED = 'true';
     process.env.APP_BASE_URL = APP_ORIGIN;
     store = new MemoryStore();
-    // CHAT-USER-INSTALL-01: the app's transport token; not connected unless a test connects it.
+    // CHAT-USER-INSTALL-01: the app's transport token. CHAT-TIDY-01: ready (a fake that is not ready refuses
+    // to send); installLinks stays null until a test sets links.
     transport = new FakeChatTransport();
+    transport.state = 'ready';
     // CHAT-LINK-NOTICE-01: a fake platform mailer and the owner's address.
     mailer = { sendEmail: jest.fn(async () => undefined) };
     users = {
@@ -475,6 +477,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     });
 
     it('GET gives null links while the connection is not ready, and with the switch off', async () => {
+      transport.state = 'connecting';
       transport.links = LINKS;
       const notReady = await as('owner-token').get('/api/chat-links').expect(200);
       expect(notReady.body.discord).toMatchObject({ installUrl: null, botProfileUrl: null });

@@ -135,8 +135,13 @@ describe('Discord commands (CHAT-DISCORD-01 B)', () => {
     );
     expect(byName.ask.options).toEqual([
       expect.objectContaining({ name: 'text', required: true, max_length: CHAT_ASK_TEXT_MAX }),
-      expect.objectContaining({ name: 'agent', required: false, max_length: 100 }),
+      expect.objectContaining({ name: 'agent', required: false, max_length: 100, autocomplete: true }),
     ]);
+    // CHAT-TIDY-01: only the /ask agent option offers suggestions (Discord forbids choices with it).
+    expect(byName.ask.options?.[0]).not.toHaveProperty('autocomplete');
+    expect(byName.ask.options?.[1]).not.toHaveProperty('choices');
+    const suggesting = buildDiscordCommands().flatMap((command) => (command.options ?? []).filter((option) => option.autocomplete).map((option) => `${command.name}.${option.name}`));
+    expect(suggesting).toEqual(['ask.agent']);
     expect(CHAT_ASK_TEXT_MAX).toBe(6000);
     for (const name of ['unlink', 'status', 'help']) {
       expect(byName[name].options).toBeUndefined();

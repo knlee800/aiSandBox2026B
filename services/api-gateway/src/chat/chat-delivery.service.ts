@@ -18,7 +18,6 @@ import type { CollaborationReferral } from '../orchestration/orchestration.contr
 import { OrchestrationService } from '../orchestration/orchestration.service';
 import { ChatApprovalService } from './chat-approval.service';
 import { chunkChatText } from './chat-chunk';
-import { ChatLimits } from './chat-limits';
 import {
   CHAT_AUDIT_CATEGORY,
   CHAT_CHANNEL_DISCORD,
@@ -35,6 +34,7 @@ import {
   ChatReplyMessage,
   ChatSendOptions,
   ChatTransport,
+  ChatTransportNotReadyError,
 } from './chat-transport';
 
 /**
@@ -106,13 +106,24 @@ import {
  *   claim and extends it; the claim is released at the end of the row, and a
  *   crashed process's claim runs out by itself. Zero rows changed: another
  *   process has the row, so this one stops.
- * - Every pass also deletes chat_limit_hits rows older than an hour
- *   (ChatLimits.prune) and expired approval tokens (pruneExpired).
  * - Repair rule (approval buttons): a step that is waiting, already
  *   notified and positively read-only, with no live token row (its buttons
  *   died with an old process or a rollback), gets one fresh message with new
  *   buttons; the new token row stops a second one. Steps that only get the
  *   Team page line are never sent again.
+ *
+ * CHAT-TIDY-01:
+ * - The pass no longer prunes: ChatPruneService (CHAT-PRUNE-01) deletes old
+ *   deliveries, limit rows and expired tokens hourly whatever the switch
+ *   says, through prune() here and the limit and approval prunes.
+ * - A send that finds the transport not ready (ChatTransportNotReadyError)
+ *   is not an attempt: the row keeps waiting with no failure and no part
+ *   counted; an approval notice is not marked and its buttons are forgotten.
+ * - resume() makes at most one query per command and none for a user with
+ *   no held row: the process keeps the outside ids of users with held rows
+ *   (refreshed from the table on every pass, added on every hold; unknown
+ *   until the first pass, when resume reads as before). With the link the
+ *   command has already read, the release is one UPDATE by link id.
  */
 
 export const CHAT_RUN_AUDIT_EVENTS = {
@@ -132,6 +143,8 @@ export const CHAT_DELIVERY_LIMITS = {
   spacingMs: 1000,
   /** CHAT-STATE-PERSIST-01: a claim on a row lasts this long unless renewed (after each part) or released. */
   claimMs: 120 * 1000,
+  /** CHAT-TIDY-01: held rows read per pass to know who has held rows; more makes it unknown (resume reads). */
+  heldRead: 500,
 } as const;
 
 /** Optional provider token: tests pass options (allowUnderJest, clock, sleep). */
@@ -206,6 +219,12 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
   /** A pass was asked for while one was running: run once more after it. */
   private again = false;
   private destroyed = false;
+  /**
+   * CHAT-TIDY-01: the outside ids of users with held rows, or null while
+   * unknown (before the first pass, or too many held rows). Memory only;
+   * never logged.
+   */
+  private heldUsers: Set<string> | null = null;
 
   constructor(
     @Inject(CHAT_TRANSPORT) private readonly transport: ChatTransport,
@@ -218,8 +237,6 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     private readonly audit: Repository<AuditEventEntity>,
     @Optional() @Inject(CHAT_DELIVERY_OPTIONS) options?: ChatDeliveryOptions,
     @Optional() private readonly approvals?: ChatApprovalService,
-    // CHAT-STATE-PERSIST-01: present in ChatModule; the pass prunes its old rows.
-    @Optional() private readonly limits?: ChatLimits,
     @Optional() activity?: ChatActivityNotifier,
   ) {
     this.testEnvironment = process.env.JEST_WORKER_ID !== undefined && options?.allowUnderJest !== true;
@@ -228,8 +245,8 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     this.intervalMs = options?.intervalMs ?? CHAT_DELIVERY_LIMITS.intervalMs;
     this.spacingMs = options?.spacingMs ?? CHAT_DELIVERY_LIMITS.spacingMs;
     this.stopListening = activity
-      ? activity.onActivity((channel, externalUserId) => {
-          void this.resume(channel, externalUserId);
+      ? activity.onActivity((channel, externalUserId, linkId) => {
+          void this.resume(channel, externalUserId, linkId);
         })
       : null;
   }
@@ -261,26 +278,39 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
    * after the command's own answer. Never throws. Returns the rows released.
    * CHAT-STATE-PERSIST-01: the holds are on the rows (held_at): the user's
    * link is read and held_at is cleared on that link's waiting rows; no link
-   * or nothing held: no pass.
+   * or nothing held: no pass. CHAT-TIDY-01: a user this process knows has no
+   * held row costs no query; with knownLinkId (the link the command already
+   * read) the release is one UPDATE.
    */
-  async resume(channel: ChatChannel, externalUserId: string): Promise<number> {
+  async resume(channel: ChatChannel, externalUserId: string, knownLinkId?: string): Promise<number> {
     if (channel !== CHAT_CHANNEL_DISCORD || this.testEnvironment || this.destroyed) {
       return 0;
     }
+    if (this.heldUsers && !this.heldUsers.has(externalUserId)) {
+      return 0;
+    }
+    // Removed before the release: a hold that lands meanwhile adds the user again.
+    this.heldUsers?.delete(externalUserId);
     let released = 0;
     let linkId = '';
     try {
-      const link = await this.links.findOne({ where: { channel, externalUserId } });
-      if (!link) {
-        return 0;
+      if (typeof knownLinkId === 'string' && knownLinkId.length > 0) {
+        linkId = knownLinkId;
+      } else {
+        const link = await this.links.findOne({ where: { channel, externalUserId } });
+        if (!link) {
+          return 0;
+        }
+        linkId = link.id;
       }
       const result = await this.deliveries.update(
-        { linkId: link.id, status: 'waiting', heldAt: Not(IsNull()) },
+        { linkId, status: 'waiting', heldAt: Not(IsNull()) },
         { heldAt: null },
       );
       released = result.affected ?? 0;
-      linkId = link.id;
     } catch (error) {
+      // Unknown again, so the next command reads instead of skipping.
+      this.heldUsers?.add(externalUserId);
       this.logger.warn(`chat delivery resume failed reason=${errorName(error)}`);
       return 0;
     }
@@ -308,7 +338,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     this.timer.unref?.();
   }
 
-  /** One poll: prune, then up to 20 waiting rows. Returns the number of waiting rows read. */
+  /** One poll (CHAT-TIDY-01: no prune; ChatPruneService prunes hourly): up to 20 waiting rows. Returns the number read. */
   async tick(): Promise<number> {
     if (this.ticking) {
       return 0;
@@ -319,9 +349,9 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
         this.stopTimer();
         return 0;
       }
-      await this.prune();
-      await this.pruneSideTables();
+      // CHAT-TIDY-01: no prune here; ChatPruneService does it hourly.
       await this.dropOldHolds();
+      await this.refreshHeldUsers();
       // CHAT-USER-INSTALL-01 / CHAT-STATE-PERSIST-01: held rows, rows in
       // backoff and rows another process has claimed are left out.
       const now = new Date(this.now());
@@ -383,12 +413,44 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
   }
 
   /**
+   * CHAT-TIDY-01: who has held rows now: the outside ids of the links of the
+   * waiting held rows (two reads per pass, ids only). More than heldRead held
+   * rows, or a failed read, makes it unknown (resume then reads). Never throws.
+   */
+  private async refreshHeldUsers(): Promise<void> {
+    try {
+      const held = await this.deliveries.find({
+        where: { status: 'waiting', heldAt: Not(IsNull()) },
+        take: CHAT_DELIVERY_LIMITS.heldRead + 1,
+      });
+      if (held.length > CHAT_DELIVERY_LIMITS.heldRead) {
+        this.heldUsers = null;
+        return;
+      }
+      const linkIds = [...new Set(held.map((row) => row.linkId))];
+      const users = new Set<string>();
+      if (linkIds.length > 0) {
+        const links = await this.links.find({ where: { id: In(linkIds) } });
+        for (const link of links) {
+          users.add(link.externalUserId);
+        }
+      }
+      this.heldUsers = users;
+    } catch (error) {
+      this.heldUsers = null;
+      this.logger.warn(`chat delivery holds read failed reason=${errorName(error)}`);
+    }
+  }
+
+  /**
    * CHAT-USER-INSTALL-01: holds a row after a refused direct message; one log
    * line, ids only, no audit row. CHAT-STATE-PERSIST-01: held_at is written
    * under this process's claim; a held row is left out of every later pass
    * (in any process, after any restart) until the user is active again.
+   * CHAT-TIDY-01: the user is added to the held users at once.
    */
-  private async hold(row: ChatRunDelivery): Promise<void> {
+  private async hold(row: ChatRunDelivery, link: ChatLink): Promise<void> {
+    this.heldUsers?.add(link.externalUserId);
     await this.deliveries.update(
       { collaborationRunId: row.collaborationRunId, status: 'waiting', claimedBy: this.processId },
       { heldAt: new Date(this.now()) },
@@ -459,30 +521,6 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
       this.logger.log(`chat deliveries pruned count=${pruned}`);
     }
     return pruned;
-  }
-
-  /** CHAT-STATE-PERSIST-01: limit rows older than an hour and expired approval tokens. Failures are logged only. */
-  private async pruneSideTables(): Promise<void> {
-    if (this.limits) {
-      try {
-        const pruned = await this.limits.prune(this.now());
-        if (pruned > 0) {
-          this.logger.log(`chat limit hits pruned count=${pruned}`);
-        }
-      } catch (error) {
-        this.logger.warn(`chat limit hits prune failed reason=${errorName(error)}`);
-      }
-    }
-    if (this.approvals) {
-      try {
-        const pruned = await this.approvals.pruneExpired();
-        if (pruned > 0) {
-          this.logger.log(`chat approval tokens pruned count=${pruned}`);
-        }
-      } catch (error) {
-        this.logger.warn(`chat approval tokens prune failed reason=${errorName(error)}`);
-      }
-    }
   }
 
   private stopTimer(): void {
@@ -563,7 +601,9 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
    * A part could not be sent. A refused direct message holds the row (not a
    * failed attempt; the parts sent so far are kept). Any other error counts
    * one failure on the row (send_failures, next_attempt_at); the fourth fails
-   * the row with one delivery_failed audit row.
+   * the row with one delivery_failed audit row. CHAT-TIDY-01: a transport
+   * that is not ready is not an attempt: the row keeps waiting as it is (no
+   * failure, the parts sent so far kept) for a later pass.
    */
   private async sendFailed(
     row: ChatRunDelivery,
@@ -573,8 +613,12 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     error: unknown,
   ): Promise<void> {
     const runId = row.collaborationRunId;
+    if (error instanceof ChatTransportNotReadyError) {
+      this.logger.log(`chat delivery not sent runId=${runId} linkId=${row.linkId} reason=not_ready partsSent=${partsSent}`);
+      return;
+    }
     if (error instanceof ChatDirectMessageRefusedError) {
-      await this.hold(row);
+      await this.hold(row, link);
       return;
     }
     const failures = Math.max(0, Number(row.sendFailures ?? 0) || 0) + 1;
@@ -663,7 +707,10 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     } catch (error) {
       if (error instanceof ChatDirectMessageRefusedError) {
         // CHAT-USER-INSTALL-01: held like a result; the step is not marked, so it is sent on the user's next command.
-        await this.hold(row);
+        await this.hold(row, link);
+      } else if (error instanceof ChatTransportNotReadyError) {
+        // CHAT-TIDY-01: not an attempt; the step is not marked and is sent on a later pass.
+        this.logger.log(`chat delivery notice not sent runId=${row.collaborationRunId} linkId=${row.linkId} reason=not_ready`);
       } else {
         this.logger.warn(
           `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,

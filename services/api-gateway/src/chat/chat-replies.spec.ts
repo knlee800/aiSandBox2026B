@@ -114,25 +114,26 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
   });
 
   it('C2: the approval reply keys and the button labels exist in all three files', () => {
-    expect(CHAT_REPLY_KEYS.filter((key) => key.startsWith('approval.'))).toHaveLength(14);
+    // CHAT-TIDY-01: 14 plus the reject form title, its field label and the default reason.
+    expect(CHAT_REPLY_KEYS.filter((key) => key.startsWith('approval.'))).toHaveLength(17);
     expect([chatReply('en', 'approval.approveButton'), chatReply('en', 'approval.rejectButton')]).toEqual(['Approve', 'Reject']);
     expect([chatReply('zh-TW', 'approval.approveButton'), chatReply('zh-TW', 'approval.rejectButton')]).toEqual(['核准', '拒絕']);
     expect([chatReply('zh-CN', 'approval.approveButton'), chatReply('zh-CN', 'approval.rejectButton')]).toEqual(['批准', '拒绝']);
   });
 
-  it('CHAT-USER-INSTALL-01: /help says commands come from the / menu and that held results arrive after the next command', () => {
+  it('CHAT-USER-INSTALL-01 / CHAT-TIDY-01: /help says commands come from the / menu and that held results arrive after the next slash command', () => {
     const en = chatReply('en', 'help');
     expect(en.split('\n')[0]).toBe('Type / in this direct message and choose a command from the menu:');
     expect(en.split('\n').slice(-1)[0]).toBe(
-      "If Discord blocks the bot's messages to you, your results arrive after your next command. They are always on the Results page.",
+      "If Discord blocks the bot's messages to you, your results arrive after your next slash command (a plain message is not enough). They are always on the Results page.",
     );
     const tw = chatReply('zh-TW', 'help');
     expect(tw.split('\n')[0]).toBe('在這個私訊中輸入 /，再從選單中選擇指令：');
-    expect(tw).toContain('結果會在你下次使用指令後送達');
+    expect(tw).toContain('結果會在你下次使用斜線指令後送達（只傳一般訊息不夠）');
     expect(tw).toContain('結果頁面');
     const cn = chatReply('zh-CN', 'help');
     expect(cn.split('\n')[0]).toBe('在这个私信中输入 /，再从菜单中选择指令：');
-    expect(cn).toContain('结果会在你下次使用指令后送达');
+    expect(cn).toContain('结果会在你下次使用斜杠指令后送达（只发普通消息不够）');
     expect(cn).toContain('结果页面');
     // Every command is still listed, in every language.
     for (const text of [en, tw, cn]) {
@@ -151,12 +152,43 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
     } as const;
     for (const locale of LOCALES) {
       const help = chatReply(locale, 'help').split('\n');
-      // One line, right after /cancel and before the held-results line.
+      // One line, right after /cancel; then (CHAT-TIDY-01) the buttons line and the held-results line.
       expect(help.filter((line) => line === lines[locale])).toHaveLength(1);
       const at = help.indexOf(lines[locale]);
       expect(help[at - 1].startsWith('/cancel')).toBe(true);
-      expect(at).toBe(help.length - 2);
+      expect(at).toBe(help.length - 3);
       expect(Array.from(help.join('\n')).length).toBeLessThanOrEqual(2000);
+    }
+  });
+
+  it('CHAT-TIDY-01: /help names the Approve and Reject buttons and that a Reject can carry a reason, under 2000 characters', () => {
+    const lines = {
+      en: 'A step that can only read comes with Approve and Reject buttons. Reject asks for a reason, which you can leave empty.',
+      'zh-TW': '只能讀取的步驟會附上「核准」和「拒絕」按鈕；按下「拒絕」時可以填寫原因，也可以留空。',
+      'zh-CN': '只能读取的步骤会附带“批准”和“拒绝”按钮；按下“拒绝”时可以填写原因，也可以留空。',
+    } as const;
+    for (const locale of LOCALES) {
+      const help = chatReply(locale, 'help').split('\n');
+      // The line before the held-results line names the buttons as they are labelled.
+      expect(help[help.length - 2]).toBe(lines[locale]);
+      expect(help[help.length - 2]).toContain(chatReply(locale, 'approval.approveButton'));
+      expect(help[help.length - 2]).toContain(chatReply(locale, 'approval.rejectButton'));
+      expect(Array.from(help.join('\n')).length).toBeLessThanOrEqual(2000);
+    }
+  });
+
+  it('CHAT-TIDY-01: the reject form texts fit Discord (title and label at most 45) and the default reason is translated', () => {
+    expect(LOCALES.map((locale) => chatReply(locale, 'approval.rejectDefaultReason'))).toEqual(
+      LOCALES.map((locale) => ({ en: 'Rejected in Discord', 'zh-TW': '已在 Discord 拒絕', 'zh-CN': '已在 Discord 拒绝' })[locale]),
+    );
+    expect(chatReply('en', 'approval.rejectFormTitle')).toBe('Reject this step');
+    expect(chatReply('en', 'approval.rejectReasonLabel')).toBe('Reason (optional)');
+    for (const locale of LOCALES) {
+      for (const key of ['approval.rejectFormTitle', 'approval.rejectReasonLabel'] as const) {
+        const text = chatReply(locale, key);
+        expect(text.length).toBeGreaterThan(0);
+        expect(Array.from(text).length).toBeLessThanOrEqual(45);
+      }
     }
   });
 
@@ -198,15 +230,15 @@ describe('chat replies (CHAT-DISCORD-01 B, C1, C2)', () => {
     }
   });
 
-  it('CHAT-LINK-NOTICE-01: the confirmation after Confirm on the page, in all three languages', () => {
+  it('CHAT-LINK-NOTICE-01 / CHAT-TIDY-01: the confirmation after Confirm on the page, which also says a plain message works', () => {
     expect(chatReply('en', 'link.confirmed')).toBe(
-      "Linked. This Discord account now receives your agents' results. Type / and choose ask to start.",
+      "Linked. This Discord account now receives your agents' results. Just send a message here, or type / and choose ask, to start.",
     );
     expect(chatReply('zh-TW', 'link.confirmed')).toBe(
-      '已連結。這個 Discord 帳號現在會收到你的代理的結果。輸入 / 並選擇 ask 即可開始。',
+      '已連結。這個 Discord 帳號現在會收到你的代理的結果。直接在這裡傳送訊息，或輸入 / 並選擇 ask，即可開始。',
     );
     expect(chatReply('zh-CN', 'link.confirmed')).toBe(
-      '已关联。这个 Discord 账户现在会收到你的代理的结果。输入 / 并选择 ask 即可开始。',
+      '已关联。这个 Discord 账户现在会收到你的代理的结果。直接在这里发送消息，或输入 / 并选择 ask，即可开始。',
     );
   });
 

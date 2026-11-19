@@ -66,10 +66,14 @@ export interface ChatSendOptions {
 /** Returns the reply, or null to answer nothing (for example a silenced /link). */
 export type ChatCommandHandler = (invocation: ChatCommandInvocation) => Promise<ChatReplyMessage | null>;
 
-/** Slice C2: one button press as the transport received it. Every field is untrusted. */
+/**
+ * Slice C2: one button press as the transport received it. Every field is
+ * untrusted. CHAT-TIDY-01: the submit of a form (a Discord modal) opened by a
+ * button arrives the same way, with the form's custom id and modalValues.
+ */
 export interface ChatComponentPress {
   readonly channel: ChatChannel;
-  /** The button's custom id as the chat service sends it back (untrusted). */
+  /** The button's (or the form's) custom id as the chat service sends it back (untrusted). */
   readonly customId: string;
   /** The outside user id of the presser. */
   readonly externalUserId: string;
@@ -78,16 +82,40 @@ export interface ChatComponentPress {
   readonly directMessage: boolean;
   /** Opaque to everyone but the transport that made it. */
   readonly ref: object;
+  /**
+   * CHAT-TIDY-01: present only for a form submit: the text typed into each
+   * field, by the field's custom id (untrusted text, cut to the field's
+   * limit by the transport). Absent for a button press.
+   */
+  readonly modalValues?: Readonly<Record<string, string>>;
+}
+
+/**
+ * CHAT-TIDY-01: a small form (a Discord modal) with one optional one-line
+ * text field. customId is the server's own opaque value; every text is the
+ * bot's own translated text.
+ */
+export interface ChatModal {
+  readonly customId: string;
+  readonly title: string;
+  readonly field: {
+    readonly customId: string;
+    readonly label: string;
+    readonly maxLength: number;
+  };
 }
 
 /**
  * update: the message the button is on is edited to this text and its
  * buttons are removed. ephemeral: a reply only the presser sees; the message
- * and its buttons stay as they are.
+ * and its buttons stay as they are. modal (CHAT-TIDY-01, a button press
+ * only): the form opens; the message and its buttons stay as they are until
+ * the form is sent, and closing the form changes nothing.
  */
 export type ChatComponentResponse =
   | { readonly kind: 'update'; readonly message: ChatReplyMessage }
-  | { readonly kind: 'ephemeral'; readonly message: ChatReplyMessage };
+  | { readonly kind: 'ephemeral'; readonly message: ChatReplyMessage }
+  | { readonly kind: 'modal'; readonly modal: ChatModal };
 
 export type ChatComponentHandler = (press: ChatComponentPress) => Promise<ChatComponentResponse>;
 
@@ -115,6 +143,34 @@ export interface ChatPlainMessage {
 export type ChatMessageHandler = (message: ChatPlainMessage) => Promise<ChatReplyMessage | null>;
 
 /**
+ * CHAT-TIDY-01: the user is typing an option that offers suggestions (the
+ * /ask agent option). Every field is untrusted; the typed text is never
+ * logged.
+ */
+export interface ChatAutocompleteRequest {
+  readonly channel: ChatChannel;
+  /** The command's default (English) name. */
+  readonly command: string;
+  /** The option being typed. */
+  readonly option: string;
+  /** What has been typed so far (cut to the option's limit). */
+  readonly value: string;
+  readonly externalUserId: string;
+  readonly locale: string | null;
+  /** True only in the direct message with the bot. */
+  readonly directMessage: boolean;
+}
+
+/** One suggestion: the shown name and the value put into the option. */
+export interface ChatAutocompleteChoice {
+  readonly name: string;
+  readonly value: string;
+}
+
+/** Returns the suggestions (the transport sends at most 25); an empty list shows none. */
+export type ChatAutocompleteHandler = (request: ChatAutocompleteRequest) => Promise<readonly ChatAutocompleteChoice[]>;
+
+/**
  * off: never connected (switch off, no token, or under tests).
  * connecting: connecting or reconnecting.
  * ready: connected; commands are answered.
@@ -138,6 +194,19 @@ export class ChatDirectMessageRefusedError extends Error {
 }
 
 /**
+ * CHAT-TIDY-01: the transport is not connected (off, connecting or stopped),
+ * so nothing was sent. Not a failed attempt: the delivery keeps the row
+ * waiting, counts no failure and no part as sent, and tries again on a later
+ * pass. Carries no id and no text.
+ */
+export class ChatTransportNotReadyError extends Error {
+  constructor() {
+    super('The chat transport is not ready');
+    this.name = 'ChatTransportNotReadyError';
+  }
+}
+
+/**
  * CHAT-USER-INSTALL-01: the public links the Connections page shows (the
  * install link and the bot's profile). Built only from public ids; no secret.
  */
@@ -154,11 +223,14 @@ export interface ChatTransport {
    * network. True when a connection was started. Button presses go to
    * onComponent (slice C2); without it they are ignored. CHAT-DISCORD-DM-01:
    * plain direct messages go to onMessage; without it they are ignored.
+   * CHAT-TIDY-01: option suggestions go to onAutocomplete; without it none
+   * are offered.
    */
   connect(
     handler: ChatCommandHandler,
     onComponent?: ChatComponentHandler,
     onMessage?: ChatMessageHandler,
+    onAutocomplete?: ChatAutocompleteHandler,
   ): Promise<boolean>;
   /** Closes the connection; safe to call in any state. */
   disconnect(): Promise<void>;
@@ -173,7 +245,8 @@ export interface ChatTransport {
    * follow-up to that interaction (after its own answer); otherwise, or when
    * the follow-up fails, by direct message. A direct message the chat
    * service refuses throws ChatDirectMessageRefusedError; other failures
-   * throw as they are. CHAT-STATE-PERSIST-01: options.dedupeKey, when given,
+   * throw as they are. CHAT-TIDY-01: while the transport is not ready it
+   * sends nothing and throws ChatTransportNotReadyError. CHAT-STATE-PERSIST-01: options.dedupeKey, when given,
    * lets the chat service drop a repeat of the same direct message (follow-ups
    * cannot carry it).
    */
@@ -185,8 +258,10 @@ export interface ChatTransport {
 /**
  * A listener for ChatActivityNotifier: one outside user just used a command,
  * pressed a button or (CHAT-DISCORD-DM-01) sent a plain direct message.
+ * CHAT-TIDY-01: linkId is the user's link when the caller has already read
+ * it (so the delivery does not read it again); absent otherwise.
  */
-export type ChatActivityListener = (channel: ChatChannel, externalUserId: string) => void;
+export type ChatActivityListener = (channel: ChatChannel, externalUserId: string, linkId?: string) => void;
 
 /**
  * CHAT-USER-INSTALL-01: tells the delivery that an outside user is active
@@ -210,13 +285,14 @@ export class ChatActivityNotifier {
     };
   }
 
-  notify(channel: ChatChannel, externalUserId: string): void {
+  notify(channel: ChatChannel, externalUserId: string, linkId?: string): void {
     if (typeof externalUserId !== 'string' || externalUserId.length === 0) {
       return;
     }
+    const knownLink = typeof linkId === 'string' && linkId.length > 0 ? linkId : undefined;
     for (const listener of this.listeners) {
       try {
-        listener(channel, externalUserId);
+        listener(channel, externalUserId, knownLink);
       } catch {
         // A listener never breaks the command or the press.
       }
@@ -232,6 +308,8 @@ export class FakeChatTransport implements ChatTransport {
   componentHandler: ChatComponentHandler | null = null;
   /** CHAT-DISCORD-DM-01: the plain-message handler given to connect, if any. */
   messageHandler: ChatMessageHandler | null = null;
+  /** CHAT-TIDY-01: the suggestion handler given to connect, if any. */
+  autocompleteHandler: ChatAutocompleteHandler | null = null;
   connectCalls = 0;
   disconnectCalls = 0;
   registeredCommands = 0;
@@ -254,6 +332,7 @@ export class FakeChatTransport implements ChatTransport {
     handler: ChatCommandHandler,
     onComponent?: ChatComponentHandler,
     onMessage?: ChatMessageHandler,
+    onAutocomplete?: ChatAutocompleteHandler,
   ): Promise<boolean> {
     this.connectCalls += 1;
     if (!this.allowConnect) {
@@ -262,6 +341,7 @@ export class FakeChatTransport implements ChatTransport {
     this.handler = handler;
     this.componentHandler = onComponent ?? null;
     this.messageHandler = onMessage ?? null;
+    this.autocompleteHandler = onAutocomplete ?? null;
     this.state = 'ready';
     await this.registerCommands();
     return true;
@@ -272,6 +352,7 @@ export class FakeChatTransport implements ChatTransport {
     this.handler = null;
     this.componentHandler = null;
     this.messageHandler = null;
+    this.autocompleteHandler = null;
     this.state = this.state === 'off' ? 'off' : 'stopped';
   }
 
@@ -284,6 +365,9 @@ export class FakeChatTransport implements ChatTransport {
   }
 
   async sendToUser(externalUserId: string, message: ChatReplyMessage, options?: ChatSendOptions): Promise<void> {
+    if (this.state !== 'ready') {
+      throw new ChatTransportNotReadyError();
+    }
     if (this.refusedUsers.has(externalUserId)) {
       throw new ChatDirectMessageRefusedError();
     }
@@ -315,6 +399,14 @@ export class FakeChatTransport implements ChatTransport {
     const response = await this.componentHandler(full);
     this.componentResponses.push({ press: full, response });
     return response;
+  }
+
+  /** CHAT-TIDY-01: simulates one keystroke in an option with suggestions. */
+  async autocomplete(request: Omit<ChatAutocompleteRequest, 'channel'>): Promise<readonly ChatAutocompleteChoice[]> {
+    if (!this.autocompleteHandler) {
+      throw new Error('fake transport has no autocomplete handler');
+    }
+    return this.autocompleteHandler({ ...request, channel: this.channel });
   }
 
   /** CHAT-DISCORD-DM-01: simulates one plain direct message: the message handler answers, the reply is recorded. */

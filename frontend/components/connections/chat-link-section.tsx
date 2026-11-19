@@ -46,6 +46,8 @@ export interface ChatLinkSectionViewProps {
   errorRetryAfterSeconds: number | null;
   noticeKey: string | null;
   confirmUnlink: boolean;
+  /** CHAT-TIDY-01: the owner pressed Confirm on this page view; the recent-link notice waits for a later view. */
+  justLinked?: boolean;
   onTick: (ticked: boolean) => void;
   onCreateCode: () => void;
   onConfirm: () => void;
@@ -126,6 +128,7 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
     errorRetryAfterSeconds,
     noticeKey,
     confirmUnlink,
+    justLinked = false,
     onTick,
     onCreateCode,
     onConfirm,
@@ -398,7 +401,7 @@ export function ChatLinkSectionView(props: ChatLinkSectionViewProps): React.Reac
 
           {view === 'linked' && state?.link ? (
             <div className="mt-4 flex flex-col gap-3" data-testid="chat-link-linked">
-              {showsRecentLinkNotice(state.link, now) ? (
+              {showsRecentLinkNotice(state.link, now, justLinked) ? (
                 <div
                   className="flex max-w-3xl items-start gap-2 rounded-lg border border-amber-900/80 bg-amber-950/40 px-3 py-2"
                   role="status"
@@ -525,6 +528,8 @@ export default function ChatLinkSection({ t, locale }: ChatLinkSectionProps): Re
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [noticeKey, setNoticeKey] = useState<string | null>(null);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
+  // CHAT-TIDY-01: set by Confirm on this view, so only the green linked line shows until a later view.
+  const [justLinked, setJustLinked] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const mounted = useRef(true);
@@ -694,6 +699,7 @@ export default function ChatLinkSection({ t, locale }: ChatLinkSectionProps): Re
         pending: null,
       }));
       setNoticeKey('chat.linked.notice');
+      setJustLinked(true);
       setBusy('idle');
       return;
     }
@@ -727,6 +733,7 @@ export default function ChatLinkSection({ t, locale }: ChatLinkSectionProps): Re
     if (result.type === 'ok') {
       setCode(null);
       setConfirmUnlink(false);
+      setJustLinked(false);
       setState((current) => (current ? { ...current, link: null, pending: null } : current));
       setNoticeKey('chat.notice.unlinked');
       setBusy('idle');
@@ -750,6 +757,7 @@ export default function ChatLinkSection({ t, locale }: ChatLinkSectionProps): Re
       errorRetryAfterSeconds={retryAfter}
       noticeKey={noticeKey}
       confirmUnlink={confirmUnlink}
+      justLinked={justLinked}
       onTick={setTicked}
       onCreateCode={() => {
         void runCreate();

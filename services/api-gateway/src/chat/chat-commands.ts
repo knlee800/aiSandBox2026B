@@ -17,6 +17,8 @@ import { ChatRunService } from './chat-run.service';
 import { isChatDiscordEnabled } from './chat-switch';
 import {
   ChatActivityNotifier,
+  type ChatAutocompleteChoice,
+  type ChatAutocompleteRequest,
   type ChatCommandInvocation,
   type ChatPlainMessage,
   type ChatReplyMessage,
@@ -63,6 +65,18 @@ import { CHAT_ASK_TEXT_MAX, ChatCommandName, isChatCommandName } from './discord
  * 6000 characters each get one fixed line and start nothing. A plain message
  * also tells ChatActivityNotifier the user is active. The text is never
  * logged; log lines carry an outcome code and the link's own uuid only.
+ *
+ * CHAT-TIDY-01:
+ * - Every command and plain message of a linked owner except /link and /help
+ *   takes one of the owner's 10 a minute (ChatRunService.takeCommandLimit)
+ *   right after the link is read; over the limit answers the fixed "too
+ *   many" line (an /ask or plain message also writes the run_refused audit
+ *   row) and does nothing else; a store error answers the error line.
+ * - A plain message from an unlinked author gets "link first" at most 3
+ *   times a minute per author; beyond that it gets no reply and no log line.
+ * - ChatActivityNotifier is told only once the link is read, with its id
+ *   (an unlinked user has nothing held).
+ * - autocomplete: the /ask agent suggestions (no limit, no write, no log).
  */
 
 const CHANNEL = 'discord' as const;
@@ -104,7 +118,6 @@ export class ChatCommandService {
       if (!invocation.directMessage) {
         return this.done(command, 'not_direct_message', null, message(fallback, 'useDirectMessage'));
       }
-      this.activity?.notify(CHANNEL, invocation.externalUserId);
       if (!command) {
         return this.done(null, 'unknown_command', null, message(fallback, 'unknownCommand'));
       }
@@ -113,11 +126,26 @@ export class ChatCommandService {
       }
 
       const link = await this.links.useLinkByExternalUser(CHANNEL, invocation.externalUserId);
+      if (link) {
+        // CHAT-TIDY-01: the link is already read, so the delivery does not read it again.
+        this.activity?.notify(CHANNEL, invocation.externalUserId, link.linkId);
+      }
       if (command === 'help') {
         return this.done(command, 'ok', link, message(link?.locale ?? fallback, 'help'));
       }
       if (!link) {
         return this.done(command, 'not_linked', null, message(fallback, 'linkFirst'));
+      }
+      // CHAT-TIDY-01: every command except /link and /help counts in the 10-a-minute limit.
+      const counted = await this.runs.takeCommandLimit(link);
+      if (counted === null) {
+        return this.done(command, 'limit_store_failed', link, message(link.locale, 'error'));
+      }
+      if (!counted) {
+        if (command === 'ask') {
+          return this.done(command, 'rate_limited', link, await this.runs.refuseRateLimited(link));
+        }
+        return this.done(command, 'rate_limited', link, message(link.locale, 'ask.tooMany'));
       }
       if (command === 'unlink') {
         const removed = await this.links.unlinkByExternalUser(CHANNEL, invocation.externalUserId);
@@ -167,10 +195,27 @@ export class ChatCommandService {
       if (!isChatDiscordEnabled()) {
         return this.doneMessage('not_available', null, message('en', 'notAvailable'));
       }
-      this.activity?.notify(CHANNEL, plain.externalUserId);
       const link = await this.links.useLinkByExternalUser(CHANNEL, plain.externalUserId);
       if (!link) {
+        // CHAT-TIDY-01: at most 3 replies a minute per unlinked author; beyond that no reply and no log line.
+        const reply = await this.runs.takeUnlinkedReply(plain.externalUserId);
+        if (reply === null) {
+          this.logger.warn('chat message limit store failed');
+          return null;
+        }
+        if (!reply) {
+          return null;
+        }
         return this.doneMessage('not_linked', null, message('en', 'linkFirst'));
+      }
+      this.activity?.notify(CHANNEL, plain.externalUserId, link.linkId);
+      // CHAT-TIDY-01: a plain message counts in the same 10-a-minute limit as the commands.
+      const counted = await this.runs.takeCommandLimit(link);
+      if (counted === null) {
+        return this.doneMessage('limit_store_failed', link, message(link.locale, 'error'));
+      }
+      if (!counted) {
+        return this.doneMessage('rate_limited', link, await this.runs.refuseRateLimited(link));
       }
       const text = typeof plain.text === 'string' ? plain.text.trim() : '';
       if (text.length === 0) {
@@ -191,6 +236,30 @@ export class ChatCommandService {
       const reason = error instanceof Error && /^[A-Za-z0-9_]{1,64}$/.test(error.name) ? error.name : 'Error';
       this.logger.warn(`chat message failed reason=${reason}`);
       return message('en', 'error');
+    }
+  }
+
+  /**
+   * CHAT-TIDY-01: the transport's suggestion handler for the /ask agent
+   * option. Never throws. Answers the linked owner's workflows that /ask can
+   * run, filtered by the typed text (ChatRunService.askableAgents), only in
+   * the direct message with the switch on, for an owner who is active and
+   * harness-entitled now. Anything else, or any failure, answers none. Not
+   * counted in the command limit, nothing written, nothing logged (one call
+   * per keystroke), and no activity notice.
+   */
+  async autocomplete(request: ChatAutocompleteRequest): Promise<readonly ChatAutocompleteChoice[]> {
+    try {
+      if (!isChatDiscordEnabled() || !request.directMessage || request.command !== 'ask' || request.option !== 'agent') {
+        return [];
+      }
+      const link = await this.links.readLinkByExternalUser(CHANNEL, request.externalUserId);
+      if (!link || (await this.ownerState(link.userId)) !== 'ok') {
+        return [];
+      }
+      return await this.runs.askableAgents(link, typeof request.value === 'string' ? request.value : '');
+    } catch {
+      return [];
     }
   }
 

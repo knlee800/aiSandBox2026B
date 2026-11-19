@@ -1,5 +1,6 @@
 import { HttpException, Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { createHash } from 'crypto';
 import { In, Repository } from 'typeorm';
 import type { ApiKeyIdentity } from '../auth/api-key.config';
 import { AuditEventEntity } from '../entities/audit-event.entity';
@@ -17,6 +18,7 @@ import { OrchestrationService } from '../orchestration/orchestration.service';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { CHAT_RUN_AUDIT_EVENTS, ChatDeliveryService } from './chat-delivery.service';
 import { ChatLimits } from './chat-limits';
+import { CHAT_ASK_AGENT_MAX } from './discord/discord-commands';
 import { CHAT_AUDIT_CATEGORY, CHAT_CHANNEL_DISCORD, ChatLinkUse } from './chat-link.service';
 import { chatReply, ChatReplyKey } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
@@ -79,12 +81,35 @@ import type { ChatReplyMessage } from './chat-transport';
  * { text }) through ChatCommandService.handleMessage, the same path as /ask:
  * it counts in the same 10-a-minute limit, writes the same audit rows and
  * the same delivery row (origin 'chat'), and its text is never logged.
+ *
+ * CHAT-TIDY-01:
+ * - The 10-a-minute limit covers every command and plain message of a linked
+ *   owner except /link and /help: ChatCommandService takes it once per
+ *   command or message (takeCommandLimit) before anything else is done, so
+ *   ask() and cancel() no longer count. An /ask or plain message over the
+ *   limit still writes the run_refused audit row (refuseRateLimited).
+ * - Plain messages from an unlinked author get at most 3 replies a minute
+ *   per author (takeUnlinkedReply: bucket command, subject the SHA-256 of
+ *   "unlinked:" and the Discord id; the id itself is never stored).
+ * - The /ask first step: the delivery row of an /ask run is written only
+ *   after its first step is approved (or, when the approval is refused, as
+ *   dropped), so no delivery pass can announce the step /ask approves
+ *   itself. The start listener (onRunStarted) waits for the owner's /ask
+ *   starts in flight before its insert-or-ignore, so /ask's row (waiting or
+ *   dropped) is already there and the listener's insert is ignored; when
+ *   /ask could not write its row (the run was cancelled) the listener adds
+ *   none either.
+ * - askableAgents: the suggestions for the /ask agent option.
  */
 
 export const CHAT_RUN_LIMITS = {
-  /** /ask, plain direct messages (CHAT-DISCORD-DM-01) and /cancel per owner per minute. */
+  /** Every command and plain message of a linked owner except /link and /help (CHAT-TIDY-01), per minute. */
   commandsPerMinute: 10,
   windowMs: 60 * 1000,
+  /** CHAT-TIDY-01: replies to plain messages from one unlinked author per minute. */
+  unlinkedRepliesPerMinute: 3,
+  /** CHAT-TIDY-01: suggestions for the /ask agent option (Discord shows at most 25). */
+  agentSuggestions: 25,
   /** Discord-started runs in progress (waiting delivery rows) per link. */
   activeRuns: 3,
   /** Workflow names listed in a refusal. */
@@ -192,6 +217,17 @@ function normalizeName(value: string): string {
   return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
+/** CHAT-TIDY-01: the limit subject of an unlinked Discord author: SHA-256 hex of "unlinked:" and the id (64 characters). */
+export function chatUnlinkedReplySubject(externalUserId: string): string {
+  return createHash('sha256').update(`unlinked:${externalUserId}`).digest('hex');
+}
+
+/** CHAT-TIDY-01: one suggestion for the /ask agent option. */
+export interface ChatAgentSuggestion {
+  name: string;
+  value: string;
+}
+
 function errorName(error: unknown): string {
   const name = error instanceof Error ? error.name : 'Error';
   return /^[A-Za-z0-9_]{1,64}$/.test(name) ? name : 'Error';
@@ -203,6 +239,13 @@ export class ChatRunService implements OnModuleDestroy {
   /** CHAT-STATE-PERSIST-01: the persisted limits (in memory only when built without ChatModule's provider). */
   private readonly limits: ChatLimits;
   private readonly stopListening: (() => void) | null;
+  /**
+   * CHAT-TIDY-01: per owner, the /ask starts in flight (registered before
+   * the start, so the start's listener sees them); each settles, once /ask
+   * is done, with the id of a run /ask started but could not write a row for
+   * (that run is cancelled), or null. Memory only.
+   */
+  private readonly asksInFlight = new Map<string, Set<Promise<string | null>>>();
 
   constructor(
     private readonly starts: CollaborationStartService,
@@ -238,8 +281,14 @@ export class ChatRunService implements OnModuleDestroy {
    */
   async onRunStarted(event: CollaborationRunStartedEvent): Promise<boolean> {
     const runId = event.collaborationRunId;
+    // CHAT-TIDY-01: read before any await: the start calls this listener before it returns to /ask.
+    const asks = [...(this.asksInFlight.get(event.userId) ?? [])];
     try {
       if (!isChatDiscordEnabled() || !this.links || !this.users) {
+        return false;
+      }
+      if (asks.length > 0 && (await Promise.all(asks)).includes(runId)) {
+        // /ask started this run and could not write its row: the run is cancelled; no row.
         return false;
       }
       const link = await this.links.findOne({ where: { userId: event.userId, channel: CHAT_CHANNEL_DISCORD } });
@@ -265,17 +314,13 @@ export class ChatRunService implements OnModuleDestroy {
     }
   }
 
-  /** /ask for a linked owner who is active and harness-entitled now (checked by the caller). */
+  /**
+   * /ask for a linked owner who is active and harness-entitled now (checked
+   * by the caller). CHAT-TIDY-01: the caller has taken the 10-a-minute limit.
+   */
   async ask(link: ChatLinkUse, options: ChatAskOptions): Promise<ChatReplyMessage> {
     if (!KillSwitchConfig.GLOBAL_EXECUTION_ENABLED) {
       return this.refuse(link, 'runs_off', 'precheck');
-    }
-    const command = await this.takeCommand(link);
-    if (command === null) {
-      return { text: chatReply(link.locale, 'error') };
-    }
-    if (!command) {
-      return this.refuse(link, 'rate_limited', 'precheck');
     }
     const inProgress = (await this.discordWaitingRows(link)).length;
     if (inProgress >= CHAT_RUN_LIMITS.activeRuns) {
@@ -301,26 +346,46 @@ export class ChatRunService implements OnModuleDestroy {
       return this.refuse(link, 'refused', 'start');
     }
 
+    // CHAT-TIDY-01: registered before the start, so the start's listener waits for this /ask.
+    let settle: (runId: string | null) => void = () => undefined;
+    const inFlight = new Promise<string | null>((resolve) => {
+      settle = resolve;
+    });
+    const owned = this.asksInFlight.get(link.userId) ?? new Set<Promise<string | null>>();
+    owned.add(inFlight);
+    this.asksInFlight.set(link.userId, owned);
+    const row: { unwrittenRunId: string | null } = { unwrittenRunId: null };
+    try {
+      return await this.startAndApprove(link, input, target.workflowId, row);
+    } finally {
+      settle(row.unwrittenRunId);
+      owned.delete(inFlight);
+      if (owned.size === 0 && this.asksInFlight.get(link.userId) === owned) {
+        this.asksInFlight.delete(link.userId);
+      }
+    }
+  }
+
+  /**
+   * The start, the first step's approval and the delivery row of one /ask.
+   * CHAT-TIDY-01: the row is written only once the first step is decided:
+   * waiting after the approval, dropped when it is refused (the run is
+   * cancelled). Until then no delivery pass sees the run, so the step /ask
+   * approves itself is never announced.
+   */
+  private async startAndApprove(
+    link: ChatLinkUse,
+    input: CollaborationStartInput,
+    workflowId: string | null,
+    row: { unwrittenRunId: string | null },
+  ): Promise<ChatReplyMessage> {
     let started: { collaborationRunId: string; referralId: string };
     try {
       started = await this.starts.start(this.identityFor(link), input);
     } catch (error) {
       return this.refuse(link, chatRunRefusalOf(error), 'start');
     }
-
-    // CHAT-RESULTS-OTHER-01: insert-or-ignore; the start's listener may have written it already.
-    // CHAT-STATE-PERSIST-01: either way the row is marked as started from the chat.
-    try {
-      await this.insertDeliveryRow(started.collaborationRunId, link.linkId, 'chat');
-      await this.deliveries.update(
-        { collaborationRunId: started.collaborationRunId, linkId: link.linkId },
-        { origin: 'chat' },
-      );
-    } catch (error) {
-      await this.cancelRefused(started.collaborationRunId, link, 'delivery_row');
-      this.logger.warn(`chat run delivery row failed linkId=${link.linkId} reason=${errorName(error)}`);
-      return { text: chatReply(link.locale, 'error') };
-    }
+    row.unwrittenRunId = started.collaborationRunId;
 
     // Keith's Q7: the command is the owner's request for the first step.
     try {
@@ -333,19 +398,41 @@ export class ChatRunService implements OnModuleDestroy {
     } catch (error) {
       const reason = chatRunRefusalOf(error);
       await this.cancelRefused(started.collaborationRunId, link, reason);
+      // A dropped row, so a late start listener cannot add a waiting one for the cancelled run.
+      try {
+        await this.insertDeliveryRow(started.collaborationRunId, link.linkId, 'chat', 'dropped');
+        row.unwrittenRunId = null;
+      } catch (rowError) {
+        this.logger.warn(`chat run delivery row failed linkId=${link.linkId} reason=${errorName(rowError)}`);
+      }
       await this.markDropped(started.collaborationRunId);
       return this.refuse(link, reason, 'approve', undefined, started.collaborationRunId);
+    }
+
+    // CHAT-RESULTS-OTHER-01: insert-or-ignore on the run id.
+    // CHAT-STATE-PERSIST-01: either way the row is marked as started from the chat.
+    try {
+      await this.insertDeliveryRow(started.collaborationRunId, link.linkId, 'chat');
+      row.unwrittenRunId = null;
+      await this.deliveries.update(
+        { collaborationRunId: started.collaborationRunId, linkId: link.linkId },
+        { origin: 'chat' },
+      );
+    } catch (error) {
+      await this.cancelRefused(started.collaborationRunId, link, 'delivery_row');
+      this.logger.warn(`chat run delivery row failed linkId=${link.linkId} reason=${errorName(error)}`);
+      return { text: chatReply(link.locale, 'error') };
     }
 
     await this.writeAudit(CHAT_RUN_AUDIT_EVENTS.runStarted, link, started.collaborationRunId, {
       channel: CHAT_CHANNEL_DISCORD,
       linkId: link.linkId,
       collaborationRunId: started.collaborationRunId,
-      target: target.workflowId ? 'workflow' : 'chief-of-staff',
-      ...(target.workflowId ? { workflowId: target.workflowId } : {}),
+      target: workflowId ? 'workflow' : 'chief-of-staff',
+      ...(workflowId ? { workflowId: workflowId } : {}),
     });
     this.logger.log(
-      `chat run started linkId=${link.linkId} runId=${started.collaborationRunId} target=${target.workflowId ? 'workflow' : 'chief-of-staff'}`,
+      `chat run started linkId=${link.linkId} runId=${started.collaborationRunId} target=${workflowId ? 'workflow' : 'chief-of-staff'}`,
     );
     this.delivery.wake();
     return { text: chatReply(link.locale, 'ask.started') };
@@ -360,15 +447,9 @@ export class ChatRunService implements OnModuleDestroy {
    * /cancel: cancels the owner's latest Discord-started run that is still
    * active, through the page's cancel (cancelCollaboration, owner, omitted
    * reason). Its delivery row is dropped: the owner asked for no result.
+   * CHAT-TIDY-01: the caller has taken the 10-a-minute limit.
    */
   async cancel(link: ChatLinkUse): Promise<ChatReplyMessage> {
-    const command = await this.takeCommand(link);
-    if (command === null) {
-      return { text: chatReply(link.locale, 'error') };
-    }
-    if (!command) {
-      return { text: chatReply(link.locale, 'ask.tooMany') };
-    }
     const waiting = (await this.discordWaitingRows(link)).slice(0, CHAT_RUN_LIMITS.activeRuns * 4);
     for (const row of waiting) {
       const cancelled = await this.starts.cancelOwnedActiveRun(row.collaborationRunId, link.userId);
@@ -406,9 +487,15 @@ export class ChatRunService implements OnModuleDestroy {
    * CHAT-RESULTS-OTHER-01: one delivery row (ids only), insert-or-ignore on
    * the run id (ON CONFLICT DO NOTHING). Throws when the insert fails.
    * CHAT-STATE-PERSIST-01: /ask passes origin 'chat'; the listener passes
-   * none, so the column default ('platform') is stored.
+   * none, so the column default ('platform') is stored. CHAT-TIDY-01: /ask
+   * writes a dropped row when its first step was refused.
    */
-  private async insertDeliveryRow(collaborationRunId: string, linkId: string, origin?: 'chat'): Promise<void> {
+  private async insertDeliveryRow(
+    collaborationRunId: string,
+    linkId: string,
+    origin?: 'chat',
+    status: 'waiting' | 'dropped' = 'waiting',
+  ): Promise<void> {
     await this.deliveries
       .createQueryBuilder()
       .insert()
@@ -416,7 +503,7 @@ export class ChatRunService implements OnModuleDestroy {
       .values({
         collaborationRunId,
         linkId,
-        status: 'waiting',
+        status,
         notifiedReferralIds: [],
         createdAt: new Date(),
         deliveredAt: null,
@@ -466,11 +553,13 @@ export class ChatRunService implements OnModuleDestroy {
   }
 
   /**
-   * CHAT-STATE-PERSIST-01: one /ask or /cancel against the owner's 10 a
-   * minute. True: counted. False: over the limit (not counted). Null: the
-   * store failed (logged with a reason code only).
+   * CHAT-STATE-PERSIST-01: one command against the owner's 10 a minute.
+   * CHAT-TIDY-01: every command and plain message of a linked owner except
+   * /link and /help (ChatCommandService takes it once). True: counted. False:
+   * over the limit (not counted). Null: the store failed (logged with a
+   * reason code only).
    */
-  private async takeCommand(link: ChatLinkUse): Promise<boolean | null> {
+  async takeCommandLimit(link: ChatLinkUse): Promise<boolean | null> {
     try {
       const taken = await this.limits.take(
         'command',
@@ -483,6 +572,69 @@ export class ChatRunService implements OnModuleDestroy {
       this.logger.warn(`chat run limit store failed linkId=${link.linkId} reason=${errorName(error)}`);
       return null;
     }
+  }
+
+  /**
+   * CHAT-TIDY-01: one reply to a plain message from an unlinked author, at
+   * most 3 a minute per author (bucket command, subject the SHA-256 of
+   * "unlinked:" and the id). True: counted. False: over the limit. Null: the
+   * store failed. Nothing is logged here (the caller logs a store failure).
+   */
+  async takeUnlinkedReply(externalUserId: string): Promise<boolean | null> {
+    try {
+      const taken = await this.limits.take(
+        'command',
+        chatUnlinkedReplySubject(externalUserId),
+        { limit: CHAT_RUN_LIMITS.unlinkedRepliesPerMinute, windowMs: CHAT_RUN_LIMITS.windowMs },
+        Date.now(),
+      );
+      return taken.allowed;
+    } catch {
+      return null;
+    }
+  }
+
+  /** CHAT-TIDY-01: an /ask or plain message over the 10-a-minute limit: the run_refused audit row and the fixed line. */
+  async refuseRateLimited(link: ChatLinkUse): Promise<ChatReplyMessage> {
+    return this.refuse(link, 'rate_limited', 'precheck');
+  }
+
+  /**
+   * CHAT-TIDY-01: suggestions for the /ask agent option: the owner's
+   * workflows that /ask can run by name (switched on, a name that only one
+   * of the owner's workflows has, as resolveTarget matches it, and at most
+   * the option's 100 characters), whose name contains the typed text
+   * (case-insensitive), in the list's order, at most 25. A failing read
+   * gives none. Nothing is logged (one call per keystroke).
+   */
+  async askableAgents(link: ChatLinkUse, typed: string): Promise<ChatAgentSuggestion[]> {
+    let workflows: OwnerWorkflow[];
+    try {
+      workflows = (await this.starts.listOwnerWorkflows(link.userId)).map((item) => ({
+        id: item.id,
+        name: item.name,
+        status: item.status,
+      }));
+    } catch {
+      return [];
+    }
+    const counts = new Map<string, number>();
+    for (const workflow of workflows) {
+      const key = normalizeName(typeof workflow.name === 'string' ? workflow.name : '');
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    const wanted = normalizeName(typeof typed === 'string' ? typed : '');
+    const suggestions: ChatAgentSuggestion[] = [];
+    for (const workflow of workflows) {
+      if (suggestions.length >= CHAT_RUN_LIMITS.agentSuggestions) break;
+      if (workflow.status !== 'active' || typeof workflow.name !== 'string') continue;
+      const name = workflow.name.trim().replace(/\s+/g, ' ');
+      const key = normalizeName(name);
+      if (key.length === 0 || counts.get(key) !== 1 || Array.from(name).length > CHAT_ASK_AGENT_MAX) continue;
+      if (wanted.length > 0 && !key.includes(wanted)) continue;
+      suggestions.push({ name, value: name });
+    }
+    return suggestions;
   }
 
   /** The identity the session guard builds for the owner (D7), harness access already checked. */

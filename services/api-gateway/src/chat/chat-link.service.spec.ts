@@ -1002,6 +1002,8 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
     beforeEach(() => {
       process.env.APP_BASE_URL = BASE;
       transport = new FakeChatTransport();
+      // CHAT-TIDY-01: a connected transport (a fake that is not ready now refuses to send).
+      transport.state = 'ready';
       mailer = { sendEmail: jest.fn(async () => undefined) };
       addresses = new Map<string, string | null>([[OWNER, EMAIL]]);
       users = {
@@ -1210,6 +1212,17 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       await service.confirm(OWNER);
       expect(store.links.rows).toHaveLength(1);
       expect(logs).toContain(`chat link confirmation not sent userId=${OWNER} linkId=${linkIdOf()} reason=send_failed`);
+      expectNothingSecret(logs.join('\n'), code);
+    });
+
+    it('CHAT-TIDY-01: a transport that is not ready sends nothing; the confirm still links and logs reason=not_ready', async () => {
+      transport.state = 'connecting';
+      const code = await claimAs();
+      await service.confirm(OWNER);
+      expect(store.links.rows).toHaveLength(1);
+      expect(transport.directMessages).toEqual([]);
+      expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
+      expect(logs).toContain(`chat link confirmation not sent userId=${OWNER} linkId=${linkIdOf()} reason=not_ready`);
       expectNothingSecret(logs.join('\n'), code);
     });
 

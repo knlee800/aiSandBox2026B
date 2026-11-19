@@ -6,6 +6,8 @@ import {
   GatewayCloseCodes,
   GatewayDispatchEvents,
   GatewayIntentBits,
+  InteractionResponseType,
+  TextInputStyle,
   MessageType,
   InteractionType,
   ApplicationCommandType,
@@ -17,6 +19,8 @@ import {
 import { WebSocketShardEvents } from '@discordjs/ws';
 import {
   ChatDirectMessageRefusedError,
+  ChatTransportNotReadyError,
+  type ChatAutocompleteRequest,
   type ChatCommandInvocation,
   type ChatComponentPress,
   type ChatComponentResponse,
@@ -26,6 +30,17 @@ import {
 import * as transportModule from './discord-transport';
 import {
   DISCORD_ANSWER_WAIT_MS,
+  DISCORD_CHOICES_MAX,
+  DISCORD_COMPONENT_LABEL,
+  DISCORD_COMPONENT_TEXT_INPUT,
+  DISCORD_INTERACTION_AUTOCOMPLETE,
+  DISCORD_INTERACTION_MODAL_SUBMIT,
+  DISCORD_PENDING_MESSAGES_MAX,
+  DISCORD_TEXT_INPUT_SHORT,
+  discordChoices,
+  discordModalBody,
+  toChatAutocomplete,
+  toChatModalSubmit,
   DISCORD_DM_REFUSED_CODES,
   DISCORD_REFERENCE_MAX_AGE_MS,
   discordInstallLinks,
@@ -737,10 +752,11 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
   });
 
   describe('direct messages', () => {
-    it('sends only when ready, only to a snowflake, with mentions off', async () => {
+    it('sends only when ready (CHAT-TIDY-01: before that it throws the typed not-ready error), only to a snowflake, with mentions off', async () => {
       const h = harness(ON);
+      await expect(h.transport.sendToUser(USER_ID, { text: 'off' })).rejects.toBeInstanceOf(ChatTransportNotReadyError);
       await h.transport.connect(jest.fn());
-      await h.transport.sendToUser(USER_ID, { text: 'early' });
+      await expect(h.transport.sendToUser(USER_ID, { text: 'early' })).rejects.toBeInstanceOf(ChatTransportNotReadyError);
       h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
       await flush();
       h.calls.log.length = 0;
@@ -1275,7 +1291,7 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       expect(toChatPlainMessage(plainMessage(), 'bot')).toBeNull();
     });
 
-    it('no message handler, before ready or after disconnect: ignored', async () => {
+    it('no message handler, or after disconnect: ignored; CHAT-TIDY-01: before ready it waits for the session', async () => {
       const without = await readyWith(undefined);
       send(without, plainMessage());
       await flush();
@@ -1287,7 +1303,11 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       send(h, plainMessage());
       await flush();
       expect(onMessage).not.toHaveBeenCalled();
+      expect(h.transport.pendingMessageCount).toBe(1);
       h.gateway.emit('ready', { application: { id: APP_ID }, user: { id: BOT_USER_ID } }, 0);
+      await flush();
+      expect(onMessage).toHaveBeenCalledTimes(1);
+      onMessage.mockClear();
       await h.transport.disconnect();
       send(h, plainMessage());
       await flush();
@@ -1364,5 +1384,385 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
     }
     expect(source).not.toMatch(/\.on\(\s*['"]debug['"]/);
     expect(source).not.toMatch(/console\./);
+  });
+  describe('CHAT-TIDY-01', () => {
+    const TYPED_MARKER = 'MARKER-typed-agent-do-not-log';
+    const REASON_MARKER = 'MARKER-reject-reason-do-not-log';
+
+    it('the new numbers match the library enums', () => {
+      expect(DISCORD_INTERACTION_AUTOCOMPLETE).toBe(InteractionType.ApplicationCommandAutocomplete);
+      expect(DISCORD_INTERACTION_MODAL_SUBMIT).toBe(InteractionType.ModalSubmit);
+      expect(DISCORD_COMPONENT_TEXT_INPUT).toBe(ComponentType.TextInput);
+      expect(DISCORD_COMPONENT_LABEL).toBe(ComponentType.Label);
+      expect(DISCORD_TEXT_INPUT_SHORT).toBe(TextInputStyle.Short);
+      expect(InteractionResponseType.ApplicationCommandAutocompleteResult).toBe(8);
+      expect(InteractionResponseType.Modal).toBe(9);
+    });
+
+    describe('/ask agent suggestions (autocomplete, interaction type 4)', () => {
+      function typing(value: unknown = 'sal', overrides: Record<string, unknown> = {}, options?: unknown[]): Record<string, unknown> {
+        return {
+          id: '888888888888888888',
+          application_id: APP_ID,
+          type: InteractionType.ApplicationCommandAutocomplete,
+          token: 'autocomplete-token',
+          locale: 'en-US',
+          context: 1,
+          user: { id: USER_ID, username: 'keith_user' },
+          data: {
+            type: ApplicationCommandType.ChatInput,
+            name: 'ask',
+            options: options ?? [
+              { type: 3, name: 'text', value: 'x' },
+              { type: 3, name: 'agent', value, focused: true },
+            ],
+          },
+          ...overrides,
+        };
+      }
+
+      async function readyWithSuggestions(handler: jest.Mock): Promise<Harness & { answers: Array<{ id: string; token: string; choices: unknown }> }> {
+        const h = harness(ON);
+        const answers: Array<{ id: string; token: string; choices: unknown }> = [];
+        h.calls.autocomplete = async (id, token, choices) => {
+          answers.push({ id, token, choices });
+        };
+        await h.transport.connect(jest.fn(), undefined, undefined, handler);
+        h.gateway.emit('ready', { application: { id: APP_ID }, user: { id: '333333333333333333' } }, 0);
+        await flush();
+        logs.length = 0;
+        return { ...h, answers };
+      }
+
+      function emit(h: Harness, raw: Record<string, unknown>): void {
+        h.gateway.emit('dispatch', { t: GatewayDispatchEvents.InteractionCreate, op: 0, s: 3, d: raw }, 0);
+      }
+
+      it('reads only the focused declared option and answers callback type 8 with at most 25 suggestions of at most 100 characters; logs nothing, keeps no reference', async () => {
+        const handler = jest.fn<Promise<Array<{ name: string; value: string }>>, [ChatAutocompleteRequest]>(async () =>
+          Array.from({ length: 30 }, (_, i) => ({ name: `${i} ${'N'.repeat(120)}`, value: `${i} ${'V'.repeat(120)}` })),
+        );
+        const h = await readyWithSuggestions(handler);
+        emit(h, typing(`  ${TYPED_MARKER}  `));
+        await flush();
+        expect(handler).toHaveBeenCalledWith({
+          channel: 'discord',
+          command: 'ask',
+          option: 'agent',
+          value: `  ${TYPED_MARKER}  `,
+          externalUserId: USER_ID,
+          locale: 'en-US',
+          directMessage: true,
+        });
+        expect(h.answers).toHaveLength(1);
+        expect(h.answers[0].id).toBe('888888888888888888');
+        expect(h.answers[0].token).toBe('autocomplete-token');
+        const choices = h.answers[0].choices as Array<{ name: string; value: string }>;
+        expect(choices).toHaveLength(DISCORD_CHOICES_MAX);
+        for (const choice of choices) {
+          expect(Array.from(choice.name).length).toBeLessThanOrEqual(100);
+          expect(Array.from(choice.value).length).toBeLessThanOrEqual(100);
+        }
+        expect(logs).toEqual([]);
+        expect(h.transport.referenceCount).toBe(0);
+      });
+
+      it('a failing or late handler answers an empty list; nothing logged', async () => {
+        const failing = await readyWithSuggestions(jest.fn(async () => {
+          throw new Error(`db ${TYPED_MARKER}`);
+        }));
+        emit(failing, typing());
+        await flush();
+        expect(failing.answers.map((answer) => answer.choices)).toEqual([[]]);
+
+        const late = await readyWithSuggestions(jest.fn(() => new Promise(() => undefined)));
+        emit(late, typing());
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        await flush();
+        expect(late.answers.map((answer) => answer.choices)).toEqual([[]]);
+        expect(logs).toEqual([]);
+      });
+
+      it('no focused option, an undeclared option, another command, a non-string option, before ready or without a handler: nothing', async () => {
+        const handler = jest.fn(async () => [{ name: 'A', value: 'A' }]);
+        const h = await readyWithSuggestions(handler);
+        emit(h, typing('x', {}, [{ type: 3, name: 'agent', value: 'x' }]));
+        emit(h, typing('x', {}, [{ type: 3, name: 'code', value: 'x', focused: true }]));
+        emit(h, typing('x', { data: { type: 1, name: 'nope', options: [{ type: 3, name: 'agent', value: 'x', focused: true }] } }));
+        emit(h, typing('x', {}, [{ type: 4, name: 'agent', value: 1, focused: true }]));
+        emit(h, typing('x', { token: 7 }));
+        await flush();
+        expect(handler).not.toHaveBeenCalled();
+        expect(h.answers).toEqual([]);
+
+        const idle = harness(ON);
+        await idle.transport.connect(jest.fn(), undefined, undefined, handler);
+        emit(idle, typing());
+        await flush();
+        expect(handler).not.toHaveBeenCalled();
+
+        const none = harness(ON);
+        await none.transport.connect(jest.fn());
+        none.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+        await flush();
+        none.calls.log.length = 0;
+        emit(none, typing());
+        await flush();
+        expect(none.calls.log).toEqual([]);
+      });
+
+      it('toChatAutocomplete cuts the typed text to the option limit and reads the presser in a server too', () => {
+        const parsed = toChatAutocomplete(typing('a'.repeat(150)));
+        expect(parsed?.request.value).toHaveLength(100);
+        const inServer = toChatAutocomplete(typing('a', { user: undefined, member: { user: { id: USER_ID } }, guild_id: '1', context: 0 }));
+        expect(inServer?.request).toMatchObject({ externalUserId: USER_ID, directMessage: false });
+        expect(toChatAutocomplete({ ...typing(), type: InteractionType.ApplicationCommand })).toBeNull();
+        expect(toChatAutocomplete(null)).toBeNull();
+      });
+
+      it('discordChoices: strings only, trimmed names, empty and repeated values left out, at most 25', () => {
+        expect(
+          discordChoices([
+            { name: '  Sales  ', value: 'Sales' },
+            { name: 'again', value: 'Sales' },
+            { name: '', value: 'x' },
+            { name: 'y', value: '' },
+            { name: 1, value: 'z' } as never,
+            null as never,
+          ]),
+        ).toEqual([{ name: 'Sales', value: 'Sales' }]);
+        expect(discordChoices('nope' as never)).toEqual([]);
+      });
+    });
+
+    describe('the reject form (callback type 9) and its submit (interaction type 5)', () => {
+      const FORM = { customId: 'ap1:f:AAAAAAAAAAAAAAAAAAAAAA', title: 'Reject this step', field: { customId: 'reason', label: 'Reason (optional)', maxLength: 500 } };
+
+      function formSubmit(components: unknown[], overrides: Record<string, unknown> = {}): Record<string, unknown> {
+        return {
+          id: '999999999999999999',
+          application_id: APP_ID,
+          type: InteractionType.ModalSubmit,
+          token: 'interaction-token',
+          locale: 'zh-TW',
+          context: 1,
+          user: { id: USER_ID, username: 'keith_user' },
+          message: { id: '555555555555555555' },
+          data: { custom_id: FORM.customId, components },
+          ...overrides,
+        };
+      }
+
+      const LABELLED = [{ type: ComponentType.Label, id: 1, component: { type: ComponentType.TextInput, id: 2, custom_id: 'reason', value: ` ${REASON_MARKER} ` } }];
+
+      async function readyWithPresses(onComponent: jest.Mock): Promise<Harness & { modals: Array<{ id: string; body: unknown }> }> {
+        const h = harness(ON);
+        const modals: Array<{ id: string; body: unknown }> = [];
+        h.calls.showModal = async (id, _token, body) => {
+          h.calls.log.push(`modal ${id}`);
+          modals.push({ id, body });
+        };
+        await h.transport.connect(jest.fn(), onComponent);
+        h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+        await flush();
+        h.calls.log.length = 0;
+        h.calls.bodies.length = 0;
+        logs.length = 0;
+        return { ...h, modals };
+      }
+
+      function emit(h: Harness, raw: Record<string, unknown>): void {
+        h.gateway.emit('dispatch', { t: GatewayDispatchEvents.InteractionCreate, op: 0, s: 3, d: raw }, 0);
+      }
+
+      it('a press answered with a form opens it: one optional one-line field in a Label, its limit kept', async () => {
+        const h = await readyWithPresses(jest.fn(async (): Promise<ChatComponentResponse> => ({ kind: 'modal', modal: FORM })));
+        emit(h, buttonPress());
+        await flush();
+        expect(h.calls.log).toEqual(['modal 444444444444444444']);
+        expect(h.modals[0].body).toEqual({
+          custom_id: FORM.customId,
+          title: 'Reject this step',
+          components: [
+            {
+              type: ComponentType.Label,
+              label: 'Reason (optional)',
+              component: { type: ComponentType.TextInput, custom_id: 'reason', style: TextInputStyle.Short, max_length: 500, required: false },
+            },
+          ],
+        });
+      });
+
+      it('the submit goes to the component handler with the typed values (Label or action row); an update edits the message', async () => {
+        const onComponent = jest.fn(async (): Promise<ChatComponentResponse> => ({ kind: 'update', message: { text: 'Rejected' } }));
+        const h = await readyWithPresses(onComponent);
+        emit(h, formSubmit(LABELLED));
+        await flush();
+        const press = (onComponent.mock.calls[0] as unknown as [ChatComponentPress])[0];
+        expect(press).toMatchObject({
+          channel: 'discord',
+          customId: FORM.customId,
+          externalUserId: USER_ID,
+          locale: 'zh-TW',
+          directMessage: true,
+          modalValues: { reason: ` ${REASON_MARKER} ` },
+        });
+        expect(h.calls.log).toEqual(['update 999999999999999999']);
+        expect(h.calls.bodies).toEqual([{ content: 'Rejected', allowed_mentions: { parse: [] }, components: [] }]);
+        expect(h.transport.referenceCount).toBe(1);
+
+        const legacy = toChatModalSubmit(formSubmit([{ type: ComponentType.ActionRow, components: [{ type: ComponentType.TextInput, custom_id: 'reason', value: 'x'.repeat(5000) }] }]));
+        expect(legacy?.modalValues?.reason).toHaveLength(4000);
+        expect(logs.join('\n')).not.toContain(REASON_MARKER);
+      });
+
+      it('toChatModalSubmit reads text fields only, the first value of a custom id, and refuses a bad custom id', () => {
+        expect(
+          toChatModalSubmit(
+            formSubmit([
+              ...LABELLED,
+              { type: ComponentType.Label, component: { type: ComponentType.TextInput, custom_id: 'reason', value: 'second' } },
+              { type: ComponentType.Label, component: { type: ComponentType.StringSelect, custom_id: 'pick', values: ['a'] } },
+              { type: ComponentType.Label, component: { type: ComponentType.TextInput, custom_id: '__proto__', value: 'p' } },
+              { type: ComponentType.TextDisplay, content: 'x' },
+            ]),
+          )?.modalValues,
+        ).toEqual(Object.fromEntries([['reason', ` ${REASON_MARKER} `], ['__proto__', 'p']]));
+        expect(toChatModalSubmit(formSubmit([], { data: { custom_id: 'x'.repeat(101), components: [] } }))).toBeNull();
+        expect(toChatModalSubmit(formSubmit([], { data: { components: [] } }))).toBeNull();
+        expect(toChatModalSubmit(formSubmit(LABELLED, { type: InteractionType.MessageComponent }))).toBeNull();
+        expect(toChatModalSubmit(formSubmit(LABELLED))?.modalValues).toBeDefined();
+        expect(toChatComponentPress(formSubmit(LABELLED))).toBeNull();
+        expect(toChatModalSubmit(buttonPress())).toBeNull();
+      });
+
+      it('a form is never shown after a deferral or in answer to a submit: nothing shown, one line logged', async () => {
+        const slow = jest.fn(
+          () => new Promise<ChatComponentResponse>((resolve) => setTimeout(() => resolve({ kind: 'modal', modal: FORM }), 80)),
+        );
+        const h = await readyWithPresses(slow);
+        emit(h, buttonPress());
+        await new Promise((resolve) => setTimeout(resolve, 120));
+        await flush();
+        expect(h.calls.log).toEqual(['deferUpdate 444444444444444444']);
+        expect(logs).toContain('warn: chat discord form not shown reason=not_allowed');
+
+        const again = await readyWithPresses(jest.fn(async (): Promise<ChatComponentResponse> => ({ kind: 'modal', modal: FORM })));
+        emit(again, formSubmit(LABELLED));
+        await flush();
+        expect(again.calls.log).toEqual([]);
+        expect(logs).toContain('warn: chat discord form not shown reason=not_allowed');
+      });
+
+      it('discordModalBody: title and label cut to 45, the limit kept between 1 and 4000, unusable custom ids refused', () => {
+        const body = discordModalBody({ customId: 'f', title: 'T'.repeat(60), field: { customId: 'r', label: 'L'.repeat(60), maxLength: 9000 } });
+        expect(body?.title).toHaveLength(45);
+        expect(body?.components[0].label).toHaveLength(45);
+        expect(body?.components[0].component.max_length).toBe(4000);
+        expect(discordModalBody({ ...FORM, field: { ...FORM.field, maxLength: 0 } })?.components[0].component.max_length).toBe(1);
+        expect(discordModalBody({ ...FORM, customId: '' })).toBeNull();
+        expect(discordModalBody({ ...FORM, customId: 'x'.repeat(101) })).toBeNull();
+        expect(discordModalBody({ ...FORM, field: { ...FORM.field, customId: '' } })).toBeNull();
+        expect(discordModalBody({ ...FORM, title: '' })).toBeNull();
+      });
+    });
+
+    describe('plain messages during a reconnect', () => {
+      const BOT_ID = '333333333333333333';
+      const CHANNEL_ID = '666666666666666666';
+
+      function message(index: number): Record<string, unknown> {
+        return {
+          id: String(700000000000000000 + index),
+          channel_id: CHANNEL_ID,
+          type: MessageType.Default,
+          content: `message ${index}`,
+          author: { id: USER_ID, username: 'keith_user' },
+        };
+      }
+
+      async function connected(onMessage: jest.Mock): Promise<Harness> {
+        const h = harness(ON);
+        await h.transport.connect(jest.fn(), undefined, onMessage);
+        h.gateway.emit('ready', { application: { id: APP_ID }, user: { id: BOT_ID } }, 0);
+        await flush();
+        logs.length = 0;
+        return h;
+      }
+
+      function send(h: Harness, raw: Record<string, unknown>): void {
+        h.gateway.emit('dispatch', { t: GatewayDispatchEvents.MessageCreate, op: 0, s: 2, d: raw }, 0);
+      }
+
+      it('messages replayed while resuming are kept and handled, in order, once the session is resumed', async () => {
+        const onMessage = jest.fn(async () => null);
+        const h = await connected(onMessage);
+        h.gateway.emit('closed', 1006, 0);
+        expect(h.transport.state).toBe('connecting');
+        for (let i = 1; i <= 3; i += 1) send(h, message(i));
+        await flush();
+        expect(onMessage).not.toHaveBeenCalled();
+        expect(h.transport.pendingMessageCount).toBe(3);
+        h.gateway.emit('resumed', 0);
+        await flush();
+        expect(onMessage.mock.calls.map((call) => (call as unknown as [ChatPlainMessage])[0].text)).toEqual(['message 1', 'message 2', 'message 3']);
+        expect(h.transport.pendingMessageCount).toBe(0);
+        expect(logs).toContain('log: chat discord queued messages handled count=3 dropped=0');
+        expect(logs.join('\n')).not.toContain('message 1');
+      });
+
+      it(`at most ${DISCORD_PENDING_MESSAGES_MAX} are kept; the rest are dropped (counted in one line)`, async () => {
+        const onMessage = jest.fn(async () => null);
+        const h = await connected(onMessage);
+        h.gateway.emit('closed', 1006, 0);
+        for (let i = 1; i <= DISCORD_PENDING_MESSAGES_MAX + 5; i += 1) send(h, message(i));
+        expect(h.transport.pendingMessageCount).toBe(DISCORD_PENDING_MESSAGES_MAX);
+        h.gateway.emit('ready', { application: { id: APP_ID }, user: { id: BOT_ID } }, 0);
+        await flush();
+        expect(onMessage).toHaveBeenCalledTimes(DISCORD_PENDING_MESSAGES_MAX);
+        expect(logs).toContain(`log: chat discord queued messages handled count=${DISCORD_PENDING_MESSAGES_MAX} dropped=5`);
+      });
+
+      it('the queue is cleared on disconnect and on stop', async () => {
+        const onMessage = jest.fn(async () => null);
+        const h = await connected(onMessage);
+        h.gateway.emit('closed', 1006, 0);
+        send(h, message(1));
+        expect(h.transport.pendingMessageCount).toBe(1);
+        await h.transport.disconnect();
+        expect(h.transport.pendingMessageCount).toBe(0);
+
+        const stopped = await connected(onMessage);
+        stopped.gateway.emit('closed', 1006, 0);
+        send(stopped, message(2));
+        stopped.gateway.emit('closed', GatewayCloseCodes.AuthenticationFailed, 0);
+        expect(stopped.transport.state).toBe('stopped');
+        expect(stopped.transport.pendingMessageCount).toBe(0);
+        stopped.gateway.emit('resumed', 0);
+        await flush();
+        expect(onMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    it('sendToUser: the connection going away during the send throws the typed not-ready error', async () => {
+      const h = harness(ON);
+      h.calls.sendDirectMessage = async () => {
+        await h.transport.disconnect();
+        throw new Error('socket closed');
+      };
+      await h.transport.connect(jest.fn());
+      h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      await expect(h.transport.sendToUser(USER_ID, { text: 'result' })).rejects.toBeInstanceOf(ChatTransportNotReadyError);
+      // A plain failure while still connected is thrown as it is (a counted attempt).
+      const failing = harness(ON);
+      failing.calls.sendDirectMessage = async () => {
+        throw new Error('boom');
+      };
+      await failing.transport.connect(jest.fn());
+      failing.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      await expect(failing.transport.sendToUser(USER_ID, { text: 'result' })).rejects.toThrow('boom');
+    });
   });
 });

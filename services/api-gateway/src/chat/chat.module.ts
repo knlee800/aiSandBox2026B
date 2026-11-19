@@ -54,7 +54,8 @@ export const CHAT_TRANSPORT_PROVIDER: Provider = {
  * real library under Jest too. connect() never blocks on the network, so the
  * gateway boot never waits for Discord. Slice C2: button presses go to the
  * approval service (without it, presses are ignored). CHAT-DISCORD-DM-01:
- * plain direct messages go to ChatCommandService.handleMessage.
+ * plain direct messages go to ChatCommandService.handleMessage. CHAT-TIDY-01:
+ * option suggestions go to ChatCommandService.autocomplete.
  */
 @Injectable()
 export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestroy {
@@ -92,6 +93,8 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
         approvals ? (press) => approvals.handlePress(press) : undefined,
         // CHAT-DISCORD-DM-01: plain direct messages take the /ask path.
         (message) => this.commands.handleMessage(message),
+        // CHAT-TIDY-01: suggestions for the /ask agent option.
+        (request) => this.commands.autocomplete(request),
       );
     } catch {
       this.logger.warn('chat channel start failed');
