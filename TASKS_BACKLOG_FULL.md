@@ -90344,7 +90344,7 @@ taskId=TESTER-WINDOW-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — registered and admitted at once (GOV-OS-04); Keith said "Yes, draft it", then 7 days, 150 a day and "I'll tidy them first", then "Done".
+**Status:** COMPLETE AND LOCKED — 2026-11-19 (tester window left OPEN). LANE-DONE and LOCKED by the control plane; Lane 1 and the four mutexes released; the three authorizations false. Window OPEN since 2026-11-19T02:52:34Z on staging 8d6b499, to close 2026-11-26 or earlier when Keith says stop (TESTER-WINDOW-CLOSE-02): runs on with the stored test key (claude-opus-5-5, tool loop), schedules, event, mail, knowledge and chain triggers and the run-result tool on, MAX_DAILY_CREDITS_PER_USER=150, 4 runs a minute, write and validation tools off, basic_auth on; Keith's triggers at opening: the before-a-meeting trigger and the knlee801 mail trigger on, every schedule and the rest off; gateway, AI worker and Discord ready; window env hashes gateway.env 0c152771 and ai.env e18cc83f (copies in /root/aisb-tw2); first status check clean (no runs, no errors outside the startup route list). Checkpoint: docs/TESTER-WINDOW-02-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed (closing is TESTER-WINDOW-CLOSE-02). Was: ADMITTED — Lane 1 — 2026-11-19 — registered and admitted at once (GOV-OS-04); Keith said "Yes, draft it", then 7 days, 150 a day and "I'll tidy them first", then "Done".
 **Task ID:** TESTER-WINDOW-02
 **Title:** Open Keith's run window on staging
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
