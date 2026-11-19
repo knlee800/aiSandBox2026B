@@ -88307,6 +88307,7 @@ nature=IMPLEMENTATION
 **Scope:** From CHAT-DISCORD-01 (F1, Q5): plain messages without a slash command, which needs the DIRECT_MESSAGES gateway intent (not privileged) and more parsing of untrusted text.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+Note (CHAT-EVAL-01 LOCK, 2026-11-19): free-text messages take the /ask path; the chat-ask eval cases of CHAT-EVAL-01 cover them.
 ### CHAT-NOTIFY-ONLY-01 — A notice-only setting for Discord results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-NOTIFY-ONLY-01
@@ -88361,7 +88362,7 @@ taskId=CHAT-RESULTS-OTHER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-RESULTS-OTHER-01
 **Title:** Send results of platform-started runs to the linked chat
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88369,14 +88370,14 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, frontend/components/connections/.
-**Mutexes / resources:** set at admission.
+**Primary write scope:** EXACT (2026-11-19): services/api-gateway/src/orchestration/collaboration-start.service.ts, services/api-gateway/src/orchestration/collaboration-start.service.spec.ts, services/api-gateway/src/orchestration/orchestration.module.ts, services/api-gateway/src/chat/chat-run.service.ts, services/api-gateway/src/chat/chat-run.service.spec.ts, services/api-gateway/src/chat/chat-delivery.service.ts, services/api-gateway/src/chat/chat-delivery.service.spec.ts, services/api-gateway/src/chat/chat.module.ts, services/api-gateway/src/chat/chat-transport.ts, services/api-gateway/src/chat/chat-replies.ts, services/api-gateway/src/chat/chat-replies.spec.ts, services/api-gateway/locales/en.json, services/api-gateway/locales/zh-TW.json, services/api-gateway/locales/zh-CN.json, frontend/components/connections/chat-link-section.tsx, frontend/components/connections/chat-link-section.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Was: PROVISIONAL: services/api-gateway/src/chat/, frontend/components/connections/.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01 (F5): an opt-in to receive results of runs started on the Team page (and later triggers) in the linked Discord.
 
 Note (TRIGGER-01 LOCK, 2026-11-15, stage-start F1, Keith's Q8): include scheduled runs; they are not sent to Discord until this task.
@@ -88386,6 +88387,7 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F6): include event-trigger runs.
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+Design (Keith 2026-11-19, "Yes, all 9"; he wants to do all communication in Discord): every collaboration run starts through CollaborationStartService.start, so after a run and its first hand-off are created, a small run-started notifier exported by OrchestrationModule (no Nest cycle; ChatModule already imports OrchestrationModule) tells ChatModule the run id and owner; if the chat switch is on and the owner has an active Discord link, a chat_run_deliveries row is inserted with insert-or-ignore on the run id (the /ask path's own insert becomes insert-or-ignore too, so a Discord-started run has exactly one row); the existing delivery then sends approval notices and the result, held-DM rules included. No setting and no migration: linking already carries the statement that agent results are sent to Discord; a notice-only or opt-out setting stays CHAT-NOTIFY-ONLY-01. A failure to insert never breaks the start (logged with ids only). The Connections page's linked view and /help say results of every run arrive in Discord, in en, zh-TW and zh-CN. Tests: Team page, schedule, trigger and /ask starts each give one row; no link or switch off gives none; a throwing listener never breaks a start. Implementer: opus subagent (Opus 5.5: gateway orchestration and chat with the frontend).
 ### CHAT-SERVICE-SPLIT-01 — Move the chat transport to its own service
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-SERVICE-SPLIT-01
@@ -88416,7 +88418,7 @@ taskId=CHAT-EVAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; Lane 2 and AI-SERVICE released. a chat-ask eval request kind (the /ask text verbatim), an injected tool 'request' for pasted text (reported, no label required), a chat-ask scoring profile, and three cases (pasted instructions, a mail asking for Discord posts, a clean control); older cases score exactly as before; by a sonnet subagent (e11cd3b, fast-forwarded); control-plane gates on the branch: ai-service 1483 passed, 1 skipped, tsc and build rc 0. Live run: COS-EVAL-LIVE-05 after the tester window. Checkpoint: docs/CHAT-EVAL-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (COS-EVAL-LIVE-05) / 1 superseded (free-text messages take the same path: CHAT-DISCORD-DM-01 reuses the chat-ask cases) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-EVAL-01
 **Title:** Injection eval cases for chat-started tasks
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88511,6 +88513,7 @@ nature=IMPLEMENTATION
 **Scope:** From CHAT-DISCORD-01 (slices A1, C1, C2): the link rate limits and pause, the delivery retry state and the approval button tokens are held in memory, so a restart resets limits, may resend parts and makes old buttons stop working; waiting steps are not re-sent with fresh buttons; a multi-process gateway would break them.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): include the held-delivery marks and interaction references of CHAT-USER-INSTALL-01 (memory only today, so a restart retries the direct message and holds again, one log line per run per restart).
 ### CHAT-TIDY-01 — Small Discord chat fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-TIDY-01
@@ -88536,13 +88539,14 @@ nature=IMPLEMENTATION
 **Scope:** From CHAT-DISCORD-01: agent-name autocomplete for /ask (needs autocomplete interactions); the per-minute limit covers only /ask and /cancel; /help does not mention the approval buttons; Reject from Discord always stores the fixed 'omitted' reason; four no-explicit-any lint errors in chat/discord/discord-transport.ts.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): sendToUser returns silently when the transport is not ready (as sendDirectMessage did); a disconnect in the middle of a delivery pass could count a result as delivered. Make it throw or report not-sent.
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — registered and admitted at once (GOV-OS-04); Keith said "fix it now", then "Yes, all 9".
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. any Discord account can use the bot: commands for user installs as well as server installs; per-user interaction references in memory (14 minutes) so results go as follow-ups; a direct message Discord refuses (403, 50007 or 50278) is held, not failed, and sent after the user's next command or button press; GET /api/chat-links adds the install and bot profile links; the Connections page shows five steps with Add to Discord and Open the bot; /help explains the menu and held results; by an opus subagent (8468dd3, cherry-picked as 877669e); control-plane gates on the branch: gateway 6842 passed, only the 14 known smoke.integration failures, tsc and build rc 0; frontend 2261 of 2261, tsc and build rc 0; on main gateway tsc rc 0 and the chat tests 306 passed. Not deployed: STAGING-DEPLOY-CHATBATCH-01; live check CHAT-LIVE-02. Checkpoint: docs/CHAT-USER-INSTALL-01-CHECKPOINT.md. FOLLOWUPS: 3 registered (GATE-WORKERS-01, STAGING-DEPLOY-CHATBATCH-01, CHAT-LIVE-02) / 2 superseded (memory-only holds after a restart into CHAT-STATE-PERSIST-01; a silent send while the transport is not ready into CHAT-TIDY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — registered and admitted at once (GOV-OS-04); Keith said "fix it now", then "Yes, all 9".
 **Task ID:** CHAT-USER-INSTALL-01
 **Title:** Any Discord account can use the bot
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88561,6 +88565,102 @@ nature=IMPLEMENTATION
 **Scope:** any Discord account can use the bot: commands registered for user installs as well as server installs, an Add to Discord button and an Open the bot link on the Connections page, and results that still arrive when Discord refuses the bot's direct messages. The 2026-11-15 setup (a private bot installed only into Keith's private server, commands for server installs only) left any Discord account outside that server unable to see or use the bot; Keith hit it on 2026-11-19 switching to a second Discord account.
 
 Design (Keith 2026-11-19, "Yes, all 9", after he found the bot unusable from a second Discord account that is not in his private server): (1) the seven commands are registered with integration_types [GUILD_INSTALL, USER_INSTALL] (0 and 1, checked against the library enum in the spec) and contexts stay [BOT_DM]; interactions are still accepted only in the bot's direct message; a user-install interaction (authorizing_integration_owners with key 1) is tested. (2) The transport keeps, per outside user id, the latest interaction reference (application id, interaction token, time) in memory only: never logged, stored or returned, dropped on disconnect, used only while younger than 14 minutes. A new transport method sends to a user: a fresh reference sends an interaction follow-up (mentions off); otherwise, or when the follow-up fails, it opens the direct message and sends there; a direct message Discord refuses (HTTP 403 with code 50007 or 50278) raises a typed refused error. (3) Delivery and approval notices use that method. A refused direct message is not a failed attempt: the row stays waiting, held, with one log line (reason dm_refused, ids only) and no audit per tick; it is sent again as soon as that user uses any command or presses a button (the command and component handlers wake the delivery for the link); the 24-hour drop and the Results page are unchanged. (4) GET /api/chat-links returns, when the Discord connection is ready, an install link https://discord.com/oauth2/authorize?client_id=<application id>&integration_type=1&scope=applications.commands and a bot profile link https://discord.com/users/<bot user id> (ids from the gateway READY payload; no secret), else null. (5) The Connections page's Discord section shows numbered steps: Add the bot to your Discord (button, new tab, noopener; choose Add to my apps), Open the bot (link), tick the statement and Create code, in the bot's direct message type / and choose link from the menu and paste the code, then Confirm; a line that results arrive the next time a command is used if Discord blocks the bot's messages, and are always on the Results page; buttons hidden when the links are null; en, zh-TW and zh-CN. (6) /help says commands are chosen from the menu and explains held results. Keith's one portal step at deploy: Public Bot on and User Install on with the Discord-provided link (scope applications.commands). Implementer: opus subagent (Opus 5.5: gateway and frontend together, Discord delivery and identity paths). Write set of 29 paths.
+
+### GATE-WORKERS-01 — Gateway tests run out of memory with default Jest workers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GATE-WORKERS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
+**Task ID:** GATE-WORKERS-01
+**Title:** Gateway tests run out of memory with default Jest workers
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** CHAT-USER-INSTALL-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/package.json (the test script) or its Jest config.
+**Mutexes / resources:** GATEWAY or PACKAGE, set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (development tooling).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-USER-INSTALL-01: on this 20-core machine the gateway Jest suite crashed with 'worker ran out of memory' under default workers while another lane ran; workers use --maxWorkers=4 to 6 by hand. Set a safe worker count in the test script or config so `npm test` passes as written.
+
+### STAGING-DEPLOY-CHATBATCH-01 — Deploy the Discord production batch
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CHATBATCH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CHATBATCH-01
+**Title:** Deploy the Discord production batch
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: the batch's code tasks are LOCKED (or Keith says deploy what is done). Keith approved the batch's one deploy ("Yes, all 9").
+**Depends on:** CHAT-USER-INSTALL-01.
+**Primary write scope:** records; host state (deploy; migrations if a batch task adds one).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11, futureAuthorization AUTHORIZED (Keith 2026-11-19).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-USER-INSTALL-01: one deploy of the Discord batch with the earlier deploy checks (template aisb-preflight/STAGING-DEPLOY-EVALFAIL-01/ef-deploy.sh). The tester window is open, so it follows GOV-DEPLOY-WINDOW-01 (Keith told first; runs paused for the deploy only; the window gateway.env restored byte for byte; window hashes and runs-on checked). npm ci installs ws 8.21.3 (WS-UPGRADE-01). After the deploy the gateway log shows the Discord connection ready and 7 commands registered; Keith's portal step: Public Bot on, User Install on with the Discord-provided link.
+
+### CHAT-LIVE-02 — Live check of the Discord batch with a second account
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-LIVE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
+**Task ID:** CHAT-LIVE-02
+**Title:** Live check of the Discord batch with a second account
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHATBATCH-01 is LOCKED and Keith has done the portal step.
+**Depends on:** STAGING-DEPLOY-CHATBATCH-01.
+**Primary write scope:** records; host checks only.
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11, futureAuthorization AUTHORIZED (Keith 2026-11-19).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-USER-INSTALL-01: Keith's second Discord account, never in his private server: Add to Discord (Add to my apps), Open the bot, / shows the 7 commands, /help text, /link and Confirm, /status, /ask; whether the result arrives by direct message or is held (log reason=dm_refused) and comes after the next command; a five-part answer and an approval with buttons through follow-ups; Keith's first account still works; logs carry no Discord ids or tokens; then every other batch feature live (results of trigger runs, link notices, plain messages, restart-safe state). The record also lands the PRD.md and ARCHITECTURE.md Discord wording for user installs (GOVERNANCE).
+
+### COS-EVAL-LIVE-05 — Live run of the Discord chat-ask eval cases
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-LIVE-05
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the CHAT-EVAL-01 LOCK — not admitted.
+**Task ID:** COS-EVAL-LIVE-05
+**Title:** Live run of the Discord chat-ask eval cases
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: the tester window is closed (PROVIDER-LIVE is refused while it is open) and the batch is deployed. Keith decides.
+**Depends on:** CHAT-EVAL-01.
+**Primary write scope:** records; a new baseline file under services/ai-service/src/agent-harness/eval/baselines/briefing/ (rerun the ai-service tests after adding it).
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-EVAL-01: run the sixteen-case briefing eval live on staging (the template from COS-EVAL-LIVE-04), score the three chat-ask cases, decide from the answers whether pasted text in a /ask needs the suspicious-instruction label, and check how the model states the time zone on a /ask (which carries none).
 
 ### WS-UPGRADE-01 — Upgrade the ws package past its advisories
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
