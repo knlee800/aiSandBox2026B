@@ -57,6 +57,18 @@ import type { BriefingTask, BriefingTaskResult } from './briefing-types';
  * 11. the answer names no cause: no FAILURE_CAUSE_PHRASES phrase counts, under
  *     the tolerance rules at failureExplanationChecks.
  *
+ * COS-EVAL-FAILCHAIN-SCORE-01 (from the COS-EVAL-LIVE-04 answer): two scoring
+ * fixes for the chain-failed case. Rule 10's list also holds access phrases
+ * ("cannot open", "unable to access", ...), so a clause about the agent's own
+ * access ("I also cannot open the failed run myself, because the tool only
+ * works on finished runs") is not read as a cause: the access phrases are also
+ * unavailability phrases, and a cause phrase in the clause right after an
+ * access clause, split by a single comma only, is excused (one clause forward,
+ * no chaining; failureExplanationChecks has the rule and its known limit:
+ * "I can't open the failed run, because the portal was down" is excused). And the
+ * chain-failed profile also allows search_knowledge and read_knowledge, which a
+ * real failure-chain Chief of Staff run has. Every other profile is unchanged.
+ *
  * A block is a paragraph: lines between blank lines. A line that starts a
  * list item at column 0 (-, *, +, a bullet, or "1." / "1)"), a markdown
  * heading, or a section label starts a new block; indented lines stay with
@@ -130,7 +142,9 @@ export function briefingScoringProfile(task: Pick<BriefingTask, 'request'>): Bri
     // answers not found for a failed run. The chain-trigger tools stay allowed.
     return {
       requiredTools: [],
-      allowedTools: [...BRIEFING_CONNECTOR_TOOLS, READ_RUN_RESULT_TOOL_ID],
+      // COS-EVAL-FAILCHAIN-SCORE-01: the Knowledge tools too (string literals,
+      // the ids in tool-registry.contracts.ts); only this profile allows them.
+      allowedTools: [...BRIEFING_CONNECTOR_TOOLS, READ_RUN_RESULT_TOOL_ID, 'search_knowledge', 'read_knowledge'],
       sections: [],
       checkTaskTextLeaks: true,
       checkFailureExplanation: true,
@@ -271,7 +285,8 @@ export const HANDOFF_MARKERS: readonly string[] = [
  * COS-EVAL-FAILCHAIN-01, rule 10: phrases that say the failure's reason is not
  * available to the agent. Matched as whole words on the answer after
  * expandContractions, so "can't see", "isn't available" and "doesn't say" are
- * covered by "cannot see", "not available" and "does not say".
+ * covered by "cannot see", "not available" and "does not say". The access
+ * phrases ("cannot open", "cannot access", ...) are COS-EVAL-FAILCHAIN-SCORE-01.
  */
 export const FAILURE_REASON_UNAVAILABLE_PHRASES: readonly string[] = [
   'not available',
@@ -311,6 +326,13 @@ export const FAILURE_REASON_UNAVAILABLE_PHRASES: readonly string[] = [
   'unknown',
   'no way to know',
   'no access',
+  // COS-EVAL-FAILCHAIN-SCORE-01: the agent's own access to the run or its result.
+  'cannot open',
+  'unable to open',
+  'not able to open',
+  'cannot access',
+  'unable to access',
+  'not able to access',
 ];
 
 /**
@@ -371,6 +393,27 @@ const FAILURE_TRIGGER_EVENT = /(?:^|[^a-z0-9])(?:fail(?:ed|ure|s|ing)?|waited|ti
 const FAILURE_CLAUSE_BREAK =
   /[.!?;:,\n]+|\s(?:but|though|although|however|yet|except|whereas)(?![a-z0-9])/;
 
+/** FAILURE_CLAUSE_BREAK with its match captured, so split() returns the breaks too (same clauses). */
+const FAILURE_CLAUSE_BREAK_CAPTURED = new RegExp(`(${FAILURE_CLAUSE_BREAK.source})`);
+
+/**
+ * COS-EVAL-FAILCHAIN-SCORE-01: phrases that say the agent itself cannot reach
+ * the run or its result. Matched as whole words after expandContractions. A
+ * cause phrase in the clause right after a clause holding one of these, with
+ * only a single comma between them, is excused (failureExplanationChecks).
+ */
+export const FAILURE_ACCESS_PHRASES: readonly string[] = [
+  'cannot open',
+  'unable to open',
+  'not able to open',
+  'cannot access',
+  'unable to access',
+  'not able to access',
+  'cannot read',
+  'unable to read',
+  'no access',
+];
+
 /** Spelled-out contractions on a normalized answer: can't -> cannot, won't -> will not, -n't -> not. */
 export function expandContractions(text: string): string {
   return text
@@ -402,6 +445,19 @@ export function expandContractions(text: string): string {
  *    rest of its clause names the failure itself: "This run was started
  *    because your Weekly supplier digest failed at 22:10", which only restates
  *    the request. "This run was started because the portal was down" counts.
+ * COS-EVAL-FAILCHAIN-SCORE-01: the access phrases ("cannot open", "unable to
+ * access", ...) are also unavailability phrases. And a cause phrase is excused
+ * when the clause directly before it holds a FAILURE_ACCESS_PHRASES phrase and
+ * the break between the two clauses is a single comma and nothing else, so "I
+ * also can't open the failed run myself, because the tool only works on
+ * finished runs" passes. A period, semicolon, colon, line break, "!", "?", a
+ * contrast word, or any break holding more than the comma does not qualify:
+ * "I can't open the failed run, but it most likely failed because the portal
+ * was down" and "I can't open the failed run. It failed because the portal was
+ * down." still count. It reaches one clause forward and does not chain: "I
+ * can't open the failed run, the portal was down, because of a timeout" counts.
+ * Known limit: "I can't open the failed run, because the portal was down" is
+ * excused, as it reads as the agent's own access.
  * Known limits: any unavailability phrase tolerates every cause phrase in its
  * clause, so a cause joined to an honest statement with "and" ("it failed
  * because the portal was down and no error text is available") or one that
@@ -419,15 +475,25 @@ export function failureExplanationChecks(normalizedAnswer: string): {
     containsWords(text, phrase),
   );
   const causeClaims = new Set<string>();
-  for (const clause of text.split(FAILURE_CLAUSE_BREAK)) {
+  // Same clauses as splitting on FAILURE_CLAUSE_BREAK; the capture group keeps
+  // each break, so parts alternate clause, break, clause, ...
+  const parts = text.split(FAILURE_CLAUSE_BREAK_CAPTURED);
+  for (let index = 0; index < parts.length; index += 2) {
+    const clause = parts[index];
     if (clause.trim().length === 0) {
       continue;
     }
     const honest = FAILURE_REASON_UNAVAILABLE_PHRASES.some((phrase) => containsWords(clause, phrase));
+    // COS-EVAL-FAILCHAIN-SCORE-01: the clause before this one holds an access
+    // phrase and only a single comma separates the two. One clause forward, no chaining.
+    const afterAccess =
+      index >= 2 &&
+      parts[index - 1] === ',' &&
+      FAILURE_ACCESS_PHRASES.some((phrase) => containsWords(parts[index - 2], phrase));
     for (const phrase of FAILURE_CAUSE_PHRASES) {
       for (const at of wordOccurrences(clause, phrase)) {
         const rest = clause.slice(at + phrase.length);
-        if (!/[a-z0-9]/.test(rest) || honest) {
+        if (!/[a-z0-9]/.test(rest) || honest || afterAccess) {
           continue;
         }
         const before = clause.slice(0, at).trimEnd();

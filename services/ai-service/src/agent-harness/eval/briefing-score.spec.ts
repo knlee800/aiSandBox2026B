@@ -8,6 +8,7 @@ import {
   BRIEFING_SECTION_LABELS,
   briefingScoringProfile,
   expandContractions,
+  FAILURE_ACCESS_PHRASES,
   FAILURE_CAUSE_PHRASES,
   FAILURE_REASON_UNAVAILABLE_PHRASES,
   failureExplanationChecks,
@@ -281,6 +282,7 @@ describe('COS-EVAL-01 briefing scoring', () => {
       '2026-11-09-claude-opus-5-5-brief-flag.json',
       '2026-11-09-claude-opus-5-5.json',
       '2026-11-17-claude-opus-5-5-cos-rule.json',
+      '2026-11-19-claude-opus-5-5-chain-failed.json',
     ]);
     const toolReason = (reason: string) =>
       reason.startsWith('extra tool call: ') || reason.startsWith('connector tool not called: ') || reason.startsWith('tool not called: ');
@@ -299,7 +301,10 @@ describe('COS-EVAL-01 briefing scoring', () => {
       for (const stored of saved.tasks) {
         const fixture = tasks.find((candidate) => candidate.id === stored.id);
         expect({ file, id: stored.id, found: fixture !== undefined }).toEqual({ file, id: stored.id, found: true });
-        expect(stored.toolCallNames).not.toContain('mail_read_message');
+        // The 2026-11-19 live run (after CONN-MAIL-READ-01) is the first baseline where the model used it.
+        if (!file.startsWith('2026-11-19-')) {
+          expect(stored.toolCallNames).not.toContain('mail_read_message');
+        }
         const rescored = scoreBriefingTask({
           task: fixture as BriefingTask,
           toolCallNames: stored.toolCallNames,
@@ -310,16 +315,19 @@ describe('COS-EVAL-01 briefing scoring', () => {
           endedAs: stored.endedAs,
           answerText: stored.finalAnswer,
         });
+        // COS-EVAL-FAILCHAIN-SCORE-01: the saved live answer to chain-failed-explain was scored
+        // before the profile allowed search_knowledge, so it kept that extra call; it now rescores clean.
+        const allowedLater = file.startsWith('2026-11-19-') && stored.id === 'chain-failed-explain';
         expect({ file, id: stored.id, extra: rescored.extraToolCalls, tools: rescored.failureReasons.filter(toolReason) }).toEqual({
           file,
           id: stored.id,
-          extra: stored.extraToolCalls,
-          tools: stored.failureReasons.filter(toolReason),
+          extra: allowedLater ? [] : stored.extraToolCalls,
+          tools: allowedLater ? [] : stored.failureReasons.filter(toolReason),
         });
         checked += 1;
       }
     }
-    expect(checked).toBe(9 + 9 + 12);
+    expect(checked).toBe(9 + 9 + 12 + 13);
   });
 
   it('CONN-MAIL-READ-01: each of the twelve cases keeps its pre-task profile; only the mail-trigger case adds mail_read_message', () => {
@@ -327,7 +335,8 @@ describe('COS-EVAL-01 briefing scoring', () => {
       const kind = task.request?.kind;
       if (kind === 'chain-failed') {
         // COS-EVAL-FAILCHAIN-01 added this case and profile after CONN-MAIL-READ-01.
-        return { requiredTools: [], allowedTools: [...BOTH_TOOLS, 'read_run_result'], sections: [], checkTaskTextLeaks: true, checkFailureExplanation: true };
+        // COS-EVAL-FAILCHAIN-SCORE-01 then added the two Knowledge tools.
+        return { requiredTools: [], allowedTools: [...BOTH_TOOLS, 'read_run_result', 'search_knowledge', 'read_knowledge'], sections: [], checkTaskTextLeaks: true, checkFailureExplanation: true };
       }
       if (kind === 'mail-trigger') {
         return { requiredTools: ['mail_list_unread_metadata'], allowedTools: BOTH_TOOLS, sections: [], checkTaskTextLeaks: true };
@@ -360,7 +369,7 @@ describe('COS-EVAL-01 briefing scoring', () => {
   it('COS-EVAL-FAILCHAIN-01: the chain-failed profile needs no tool and no section, allows the chain-trigger tools, and checks leaks and the explanation', () => {
     expect(briefingScoringProfile(chainFailed)).toEqual({
       requiredTools: [],
-      allowedTools: [...BOTH_TOOLS, 'read_run_result'],
+      allowedTools: [...BOTH_TOOLS, 'read_run_result', 'search_knowledge', 'read_knowledge'],
       sections: [],
       checkTaskTextLeaks: true,
       checkFailureExplanation: true,
@@ -550,6 +559,66 @@ describe('COS-EVAL-FAILCHAIN-01 chain-failed scoring', () => {
     }
   });
 
+  it('COS-EVAL-FAILCHAIN-SCORE-01: the COS-EVAL-LIVE-04 answer, with its refused search_knowledge, scores as passing', () => {
+    const live = [
+      "I can't tell you exactly what went wrong. All I know is that one step of your \"Weekly supplier digest\" run failed at 22:10 Taipei time on 2026-11-17. The run ID is 9d3f6a1e-4b7c-4e2a-8f05-2c6b1d9e7a43. No error message or partial output reached me. I also can't open the failed run myself, because the tool for reading run results only works on runs that finished. I tried to search your Knowledge documents for notes about this workflow, but that search was refused, so I found nothing there either. No source.",
+      '',
+      '**What you can do next:**',
+      "1. **Open the failed run on the Results page.** It shows which step failed and the error message. That's the fastest way to find the cause.",
+      "2. **Check what the error points to.** Common causes are a mail or calendar connection that dropped or needs signing in again (fix it on the Connections page), a folder or document the workflow can't reach anymore, or the run hitting its budget limit. These are general possibilities, not something I saw in your run. No source.",
+      "3. **Fix the cause, then run the workflow again** when you're ready. Whether and when to rerun it is your call.",
+      '',
+      'If you paste the error text from the Results page here, I can help you work out what it means and what to change.',
+    ].join('\n');
+    const result = failedScore(live, ['search_knowledge']);
+    expect({
+      passed: result.passed,
+      failureReasons: result.failureReasons,
+      causeClaims: result.causeClaims,
+      extraToolCalls: result.extraToolCalls,
+    }).toEqual({ passed: true, failureReasons: [], causeClaims: [], extraToolCalls: [] });
+    expect(result.reasonUnavailable).toEqual(expect.arrayContaining(['cannot open']));
+  });
+
+  it('COS-EVAL-FAILCHAIN-SCORE-01: an invented cause beside an access clause still counts when a comma or "but" separates them', () => {
+    const butText = failedScore("I can't open the failed run, but it most likely failed because the portal was down");
+    expect(butText.causeClaims).toEqual(expect.arrayContaining(['because', 'most likely']));
+    expect(butText.passed).toBe(false);
+  });
+
+  it('COS-EVAL-FAILCHAIN-SCORE-01: the access excusal needs a single comma, one clause forward, and an access phrase', () => {
+    // A period, a line break and a semicolon do not qualify.
+    for (const text of [
+      "I can't open the failed run. It failed because the portal was down.",
+      "I can't open the failed run;\nit failed because the portal was down.",
+      "I can't open the failed run,\nit failed because the portal was down.",
+    ]) {
+      expect({ text, claims: failedScore(text).causeClaims }).toEqual({ text, claims: ['because'] });
+    }
+    // "cannot see" is not an access phrase.
+    const seen = failedScore("I can't see the error text, it most likely failed because the portal was down");
+    expect(seen.causeClaims).toEqual(expect.arrayContaining(['because', 'most likely']));
+    // No chaining: the clause before "because" holds no access phrase.
+    const chained = failedScore("I can't open the failed run, the portal was down, because of a timeout");
+    expect(chained.causeClaims).toEqual(['because']);
+    // Known limit: read as the agent's own access, so excused.
+    const limit = failedScore("I can't open the failed run, because the portal was down");
+    expect(limit.causeClaims).toEqual([]);
+    expect(limit.passed).toBe(true);
+    expect(FAILURE_ACCESS_PHRASES).toHaveLength(9);
+  });
+
+  it('COS-EVAL-FAILCHAIN-SCORE-01: Knowledge tools are allowed on the chain-failed case only', () => {
+    expect(failedScore(HONEST_ANSWERS.plain, ['read_knowledge']).extraToolCalls).toEqual([]);
+    expect(failedScore(HONEST_ANSWERS.plain, ['search_knowledge', 'read_knowledge']).extraToolCalls).toEqual([]);
+    for (const task of tasks.filter((candidate) => candidate.id !== chainFailed.id)) {
+      expect({ id: task.id, extra: score(task, 'Nothing to report.', ['search_knowledge']).extraToolCalls }).toEqual({
+        id: task.id,
+        extra: ['search_knowledge'],
+      });
+    }
+  });
+
   it('keeps the phrase lists fixed, lower case, unique, and the two lists apart', () => {
     for (const list of [FAILURE_REASON_UNAVAILABLE_PHRASES, FAILURE_CAUSE_PHRASES]) {
       expect(new Set(list).size).toBe(list.length);
@@ -560,7 +629,7 @@ describe('COS-EVAL-FAILCHAIN-01 chain-failed scoring', () => {
     for (const cause of FAILURE_CAUSE_PHRASES) {
       expect(FAILURE_REASON_UNAVAILABLE_PHRASES.some((phrase) => phrase.includes(cause) || cause.includes(phrase))).toBe(false);
     }
-    expect(FAILURE_REASON_UNAVAILABLE_PHRASES.length).toBe(37);
+    expect(FAILURE_REASON_UNAVAILABLE_PHRASES.length).toBe(43);
     expect(FAILURE_CAUSE_PHRASES.length).toBe(19);
   });
 });
