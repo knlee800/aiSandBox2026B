@@ -90222,7 +90222,7 @@ taskId=COS-EVAL-FAILCHAIN-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "yes admit". Was: READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. The chain-failed eval tidy-up: chainFailedOwnerRequest, chainFailedWorkflowLabel and the CHAIN_FAILED_ constants moved unchanged from briefing-prompt.ts into briefing-instructions.ts; briefingTaskOwnerRequest returns the failure request for a chain-failed case (an explicit branch per kind, any other kind throws) and briefingCaseOwnerRequest is removed; the field keeps the gateway's name completedAt; the live console report prints reasonUnavailable and causeClaims per case and causeClaims in the totals; the token-cap comment says thirteen cases. By a sonnet subagent (a7f658f, fast-forwarded; 10 of the 11 write-set paths; the worker skipped the CLAUDE.md section reads and read the board by search, recorded). Control-plane gates on the branch: ai-service tsc rc 0, 1468 passed, 1 skipped, build rc 0; tests rerun on main 1468 passed. Not deployed; STAGING-DEPLOY-EVALFAIL-01 carries it. Checkpoint: docs/COS-EVAL-FAILCHAIN-TIDY-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "yes admit". Was: READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-FAILCHAIN-TIDY-01
 **Title:** Tidy the chain-failed eval case's request and live report
 **Workstream:** AGENT (taxonomy only; zero admission weight)
