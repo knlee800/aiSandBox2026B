@@ -88294,7 +88294,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (Q5: not for now).
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides (Q5: not for now).
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
 **Mutexes / resources:** set at admission (GATEWAY expected).
@@ -88306,6 +88306,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F1, Q5): plain messages without a slash command, which needs the DIRECT_MESSAGES gateway intent (not privileged) and more parsing of untrusted text.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 ### CHAT-NOTIFY-ONLY-01 — A notice-only setting for Discord results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-NOTIFY-ONLY-01
@@ -88366,7 +88367,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, frontend/components/connections/.
 **Mutexes / resources:** set at admission.
@@ -88384,6 +88385,7 @@ Note (TRIGGER-EVENT-01 LOCK, 2026-11-15, F6): include event-trigger runs.
 
 Note (TRIGGER-MAIL-01 LOCK, 2026-11-16, F5): include mail-trigger runs.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 ### CHAT-SERVICE-SPLIT-01 — Move the chat transport to its own service
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-SERVICE-SPLIT-01
@@ -88420,7 +88422,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/.
 **Mutexes / resources:** set at admission (AI-SERVICE expected).
@@ -88432,6 +88434,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F7): fixed prompt-injection cases for tasks that arrive from Discord, beyond the one live probe in CHAT-LIVE-01.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 ### CHAT-LINK-NOTICE-01 — Notices when a chat account is linked or unlinked
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-LINK-NOTICE-01
@@ -88444,7 +88447,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides; before a second user links.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides; before a second user links.
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, the mailer, frontend/components/connections/, the three message files.
 **Mutexes / resources:** set at admission.
@@ -88456,6 +88459,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F9 and slice A2): an e-mail to the owner through the platform mailer at link and unlink, and a notice of each new link on the Connections page, as a takeover signal.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 ### CHAT-PRUNE-01 — Prune chat codes and delivery rows with the switch off
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-PRUNE-01
@@ -88468,7 +88472,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
 **Mutexes / resources:** set at admission (GATEWAY expected).
@@ -88480,6 +88484,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (F10 and slice A1): expired chat_link_codes rows, including the claimed display name, are deleted only on the next link call, and the delivery prune runs only while the switch is on; a prune that runs regardless.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 ### CHAT-STATE-PERSIST-01 — Keep chat limits, retries and button tokens across restarts
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-STATE-PERSIST-01
@@ -88492,7 +88497,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides; before more than one gateway process.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides; before more than one gateway process.
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, a migration.
 **Mutexes / resources:** set at admission (GATEWAY, MIGRATION expected).
@@ -88504,6 +88509,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01 (slices A1, C1, C2): the link rate limits and pause, the delivery retry state and the approval button tokens are held in memory, so a restart resets limits, may resend parts and makes old buttons stop working; waiting steps are not re-sent with fresh buttons; a multi-process gateway would break them.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 ### CHAT-TIDY-01 — Small Discord chat fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-TIDY-01
@@ -88516,7 +88522,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides. Optional.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides. Optional.
 **Depends on:** CHAT-DISCORD-01.
 **Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, the gateway locale files.
 **Mutexes / resources:** set at admission (GATEWAY expected).
@@ -88528,30 +88534,58 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-DISCORD-01: agent-name autocomplete for /ask (needs autocomplete interactions); the per-minute limit covers only /ask and /cancel; /help does not mention the approval buttons; Reject from Discord always stores the fixed 'omitted' reason; four no-explicit-any lint errors in chat/discord/discord-transport.ts.
 
+Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-USER-INSTALL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — registered and admitted at once (GOV-OS-04); Keith said "fix it now", then "Yes, all 9".
+**Task ID:** CHAT-USER-INSTALL-01
+**Title:** Any Discord account can use the bot
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (Keith, 2026-11-19).
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** EXACT: services/api-gateway/src/chat/discord/discord-commands.ts, services/api-gateway/src/chat/discord/discord-commands.spec.ts, services/api-gateway/src/chat/discord/discord-transport.ts, services/api-gateway/src/chat/discord/discord-transport.spec.ts, services/api-gateway/src/chat/chat-transport.ts, services/api-gateway/src/chat/chat-delivery.service.ts, services/api-gateway/src/chat/chat-delivery.service.spec.ts, services/api-gateway/src/chat/chat-commands.ts, services/api-gateway/src/chat/chat-commands.spec.ts, services/api-gateway/src/chat/chat-approval.service.ts, services/api-gateway/src/chat/chat-approval.service.spec.ts, services/api-gateway/src/chat/chat-link.controller.ts, services/api-gateway/src/chat/chat-link.controller.spec.ts, services/api-gateway/src/chat/chat-link.service.ts, services/api-gateway/src/chat/chat-link.service.spec.ts, services/api-gateway/src/chat/chat-replies.ts, services/api-gateway/src/chat/chat-replies.spec.ts, services/api-gateway/src/chat/chat.module.ts, services/api-gateway/locales/en.json, services/api-gateway/locales/zh-TW.json, services/api-gateway/locales/zh-CN.json, frontend/components/connections/chat-link-api.ts, frontend/components/connections/chat-link-section.tsx, frontend/components/connections/chat-link-section.test.tsx, frontend/components/connections/chat-link.logic.ts, frontend/components/connections/chat-link.logic.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11, futureAuthorization AUTHORIZED (Keith 2026-11-19).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** any Discord account can use the bot: commands registered for user installs as well as server installs, an Add to Discord button and an Open the bot link on the Connections page, and results that still arrive when Discord refuses the bot's direct messages. The 2026-11-15 setup (a private bot installed only into Keith's private server, commands for server installs only) left any Discord account outside that server unable to see or use the bot; Keith hit it on 2026-11-19 switching to a second Discord account.
+
+Design (Keith 2026-11-19, "Yes, all 9", after he found the bot unusable from a second Discord account that is not in his private server): (1) the seven commands are registered with integration_types [GUILD_INSTALL, USER_INSTALL] (0 and 1, checked against the library enum in the spec) and contexts stay [BOT_DM]; interactions are still accepted only in the bot's direct message; a user-install interaction (authorizing_integration_owners with key 1) is tested. (2) The transport keeps, per outside user id, the latest interaction reference (application id, interaction token, time) in memory only: never logged, stored or returned, dropped on disconnect, used only while younger than 14 minutes. A new transport method sends to a user: a fresh reference sends an interaction follow-up (mentions off); otherwise, or when the follow-up fails, it opens the direct message and sends there; a direct message Discord refuses (HTTP 403 with code 50007 or 50278) raises a typed refused error. (3) Delivery and approval notices use that method. A refused direct message is not a failed attempt: the row stays waiting, held, with one log line (reason dm_refused, ids only) and no audit per tick; it is sent again as soon as that user uses any command or presses a button (the command and component handlers wake the delivery for the link); the 24-hour drop and the Results page are unchanged. (4) GET /api/chat-links returns, when the Discord connection is ready, an install link https://discord.com/oauth2/authorize?client_id=<application id>&integration_type=1&scope=applications.commands and a bot profile link https://discord.com/users/<bot user id> (ids from the gateway READY payload; no secret), else null. (5) The Connections page's Discord section shows numbered steps: Add the bot to your Discord (button, new tab, noopener; choose Add to my apps), Open the bot (link), tick the statement and Create code, in the bot's direct message type / and choose link from the menu and paste the code, then Confirm; a line that results arrive the next time a command is used if Discord blocks the bot's messages, and are always on the Results page; buttons hidden when the links are null; en, zh-TW and zh-CN. (6) /help says commands are chosen from the menu and explains held results. Keith's one portal step at deploy: Public Bot on and User Install on with the Discord-provided link (scope applications.commands). Implementer: opus subagent (Opus 5.5: gateway and frontend together, Discord delivery and identity paths). Write set of 29 paths.
+
 ### WS-UPGRADE-01 — Upgrade the ws package past its advisories
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=WS-UPGRADE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** WS-UPGRADE-01
 **Title:** Upgrade the ws package past its advisories
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: package.json files and package-lock.json.
+**Primary write scope:** EXACT (2026-11-19): package.json, package-lock.json. Was: PROVISIONAL: package.json files and package-lock.json.
 **Mutexes / resources:** PACKAGE (expected).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01 (slice B): the root lockfile's ws 8.18.3 has two high advisories (GHSA-58qx-3vcg-4xpx, GHSA-96hv-2xvq-fx4p; fixed in 8.20.2 and later); the Discord connection now uses it too. npm audit --omit=dev counts 34 findings in total, unchanged by CHAT-DISCORD-01. No npm command through linked node_modules.
 
+Design (Keith 2026-11-19, "Yes, all 9"): raise ws in the root lockfile to a release with both advisories fixed (8.20.2 or later, same major). engine.io, engine.io-client and socket.io-adapter pin ~8.18.3: if a newer socket.io / engine.io release in the same major allows the fixed ws, raise those; else add a root package.json overrides entry for ws. The lockfile is updated in the worktree with its own install (no npm command through linked node_modules); npm audit --omit=dev counts before and after; the gateway, ai-service, container-manager and frontend tests and builds pass. Implementer: sonnet subagent (Sonnet 5.5: a bounded lockfile change, no source). Write set: package.json, package-lock.json.
 ### GW-I18N-LOADER-01 — Check the gateway translation loader
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GW-I18N-LOADER-01
