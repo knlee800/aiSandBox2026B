@@ -35,9 +35,15 @@ const PERSON_FIELDS = ['name', 'address'];
 const MAIL_FIELDS: readonly BriefingInjectedField[] = ['subject', 'from.name', 'bodyText'];
 const CALENDAR_FIELDS: readonly BriefingInjectedField[] = ['title', 'organizer.name'];
 const RUN_RESULT_INJECTED_FIELDS: readonly BriefingInjectedField[] = ['answer'];
+/** CHAT-EVAL-01: the /ask text of a chat-ask case. */
+const REQUEST_INJECTED_FIELDS: readonly BriefingInjectedField[] = ['text'];
 /** COS-MAIL-BODY-RULE-01: request fields by kind. */
 const MAIL_TRIGGER_REQUEST_FIELDS = ['kind', 'savedTask', 'arrivedAt', 'messageUid'];
 const CHAIN_TRIGGER_REQUEST_FIELDS = ['kind', 'savedTask', 'completedAt', 'sourceRunId'];
+/** CHAT-EVAL-01: both fields are required. */
+const CHAT_ASK_REQUEST_FIELDS = ['kind', 'text'];
+/** Discord's /ask text option limit (services/api-gateway/src/chat/discord/discord-commands.ts CHAT_ASK_TEXT_MAX). */
+export const CHAT_ASK_TEXT_MAX = 6000;
 /** COS-EVAL-FAILCHAIN-01: every field is required; workflowName is null for none. */
 const CHAIN_FAILED_REQUEST_FIELDS = [
   'kind',
@@ -115,10 +121,10 @@ export function parseBriefingTask(value: unknown, fileLabel: string): BriefingTa
       fail('runResult.runId must equal request.sourceRunId');
     }
   } else if (runResult !== undefined) {
-    // A chain-failed request has none either: a failed run has no readable answer.
+    // A chain-failed or chat-ask request has none either: a failed run has no readable answer.
     fail('runResult is only allowed with a chain-trigger request');
   }
-  const injected = readInjected(record.injected, mail, calendar, runResult, fail);
+  const injected = readInjected(record.injected, mail, calendar, runResult, request, fail);
   let maxToolIterations: number | undefined;
   if (record.maxToolIterations !== undefined) {
     const raw = record.maxToolIterations;
@@ -218,7 +224,24 @@ function readRequest(
       category: category as BriefingChainFailureCategory,
     };
   }
-  return fail('request.kind must be "mail-trigger", "chain-trigger" or "chain-failed"');
+  if (kind === 'chat-ask') {
+    // CHAT-EVAL-01: a Discord /ask; no runResult (checked by the caller).
+    assertOnlyKeys(record, CHAT_ASK_REQUEST_FIELDS, 'request', fail);
+    const text = readString(record.text, 'request.text', fail);
+    if (Array.from(text).length > CHAT_ASK_TEXT_MAX) {
+      fail(`request.text must be at most ${CHAT_ASK_TEXT_MAX} characters`);
+    }
+    if (text !== text.trim()) {
+      fail('request.text must have no leading or trailing white space (the gateway trims the task)');
+    }
+    if (text.startsWith('@')) {
+      fail('request.text must not start with @ (the gateway reads a leading @name as a workflow name)');
+    }
+    return { kind, text };
+  }
+  return fail(
+    'request.kind must be "mail-trigger", "chain-trigger", "chain-failed" or "chat-ask"',
+  );
 }
 
 /** COS-MAIL-BODY-RULE-01: the finished run read_run_result returns. */
@@ -362,6 +385,7 @@ function readInjected(
   mail: BriefingMailResult,
   calendar: BriefingCalendarResult,
   runResult: BriefingRunResultFixture | undefined,
+  request: BriefingOwnerRequest | undefined,
   fail: (message: string) => never,
 ): readonly BriefingInjectedItem[] {
   if (!Array.isArray(value)) {
@@ -380,11 +404,14 @@ function readInjected(
     }
     ids.add(id);
     const tool = record.tool;
-    if (tool !== 'mail' && tool !== 'calendar' && tool !== 'run_result') {
-      fail(`${label}.tool must be "mail", "calendar" or "run_result"`);
+    if (tool !== 'mail' && tool !== 'calendar' && tool !== 'run_result' && tool !== 'request') {
+      fail(`${label}.tool must be "mail", "calendar", "run_result" or "request"`);
     }
     if (tool === 'run_result' && runResult === undefined) {
       fail(`${label}.tool run_result needs the case's runResult`);
+    }
+    if (tool === 'request' && request?.kind !== 'chat-ask') {
+      fail(`${label}.tool request needs a chat-ask request`);
     }
     const itemIndex = record.index;
     if (typeof itemIndex !== 'number' || !Number.isInteger(itemIndex) || itemIndex < 0) {
@@ -395,14 +422,24 @@ function readInjected(
         ? mail.messages[itemIndex as number]
         : tool === 'calendar'
           ? calendar.events[itemIndex as number]
-          : itemIndex === 0
-            ? runResult
-            : undefined;
+          : tool === 'request'
+            ? itemIndex === 0
+              ? request
+              : undefined
+            : itemIndex === 0
+              ? runResult
+              : undefined;
     if (source === undefined) {
       fail(`${label}.index has no ${tool} item`);
     }
     const allowedFields =
-      tool === 'mail' ? MAIL_FIELDS : tool === 'calendar' ? CALENDAR_FIELDS : RUN_RESULT_INJECTED_FIELDS;
+      tool === 'mail'
+        ? MAIL_FIELDS
+        : tool === 'calendar'
+          ? CALENDAR_FIELDS
+          : tool === 'request'
+            ? REQUEST_INJECTED_FIELDS
+            : RUN_RESULT_INJECTED_FIELDS;
     const field = record.field as BriefingInjectedField;
     if (!allowedFields.includes(field)) {
       fail(`${label}.field must be one of ${allowedFields.join(', ')} for ${tool}`);
@@ -421,10 +458,14 @@ function readInjected(
       fail(`${label}.markers must be a non-empty array`);
     }
     const itemText = JSON.stringify(source).toLowerCase();
+    // CHAT-EVAL-01: on a chat-ask case the /ask text is an item too, so a
+    // marker of a mail or event item must not be in it either (and the other
+    // way round). Existing request kinds are not checked, as before.
     const otherTexts = [
       ...mail.messages,
       ...calendar.events,
       ...(runResult !== undefined ? [runResult] : []),
+      ...(request?.kind === 'chat-ask' ? [request] : []),
     ]
       .filter((other) => other !== source)
       .map((other) => JSON.stringify(other).toLowerCase());

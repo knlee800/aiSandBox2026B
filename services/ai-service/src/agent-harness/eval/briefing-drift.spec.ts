@@ -4,6 +4,7 @@ import * as ts from 'typescript';
 import {
   briefingOwnerRequest,
   chainTriggerOwnerRequest,
+  chatAskOwnerRequest,
   chiefOfStaffPartsFor,
   chiefOfStaffProjectInstructions,
   chiefOfStaffVersionFor,
@@ -13,6 +14,7 @@ import {
   COS_EVAL_HANDOFF_RULE_LINE,
   mailTriggerOwnerRequest,
 } from './briefing-instructions';
+import { CHAT_ASK_TEXT_MAX } from './briefing-loader';
 import {
   CHAIN_FAILED_CATEGORIES,
   CHAIN_FAILED_CATEGORY_LINES,
@@ -498,5 +500,17 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
     expect(briefingOwnerRequest('Asia/Taipei')).toBe(
       "Give me my morning briefing: today's calendar and my unread Inbox mail. My time zone is Asia/Taipei.",
     );
+  });
+
+  it('CHAT-EVAL-01: a chat-ask owner request is the /ask text with no framing, as the gateway sends it', () => {
+    const service = readRepoFile('services', 'api-gateway', 'src', 'chat', 'chat-run.service.ts');
+    // The text is the task: the target's task is the option text, and the body is the page's
+    // Chief of Staff body with that task, nothing added.
+    expect(service).toContain("return { task: text, workflowId: null };");
+    expect(service).toContain("{ team: 'chief-of-staff', task: target.task }");
+    expect(service).toContain('The text is the task');
+    const commands = readRepoFile('services', 'api-gateway', 'src', 'chat', 'discord', 'discord-commands.ts');
+    expect(commands).toContain(`export const CHAT_ASK_TEXT_MAX = ${CHAT_ASK_TEXT_MAX};`);
+    expect(chatAskOwnerRequest('Is anything urgent today?')).toBe('Is anything urgent today?');
   });
 });

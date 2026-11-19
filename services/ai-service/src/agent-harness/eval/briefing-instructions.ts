@@ -280,9 +280,20 @@ export function chainFailedOwnerRequest(
 }
 
 /**
+ * CHAT-EVAL-01: the task a Discord /ask sends, a copy of the gateway's
+ * behaviour in services/api-gateway/src/chat/chat-run.service.ts ("The text
+ * is the task"; body { team: 'chief-of-staff', task }): the text exactly, with
+ * no framing. The gateway's page parser trims it; a case's text is stored
+ * already trimmed (the loader checks).
+ */
+export function chatAskOwnerRequest(text: string): string {
+  return text;
+}
+
+/**
  * The owner request a case sends: its trigger's request when it has one
  * (mail trigger, chain trigger, or the failure trigger of a chain-failed
- * case), otherwise the Morning briefing preset. The field name completedAt on
+ * case), a chat-ask case's /ask text, otherwise the Morning briefing preset. The field name completedAt on
  * a chain-failed request is the gateway's chainTriggerTask input name; there
  * it holds the failure time.
  */
@@ -315,6 +326,9 @@ export function briefingTaskOwnerRequest(
       timeZone: task.timeZone,
       sourceRunId: request.sourceRunId,
     });
+  }
+  if (request.kind === 'chat-ask') {
+    return chatAskOwnerRequest(request.text);
   }
   return assertNever(request);
 }

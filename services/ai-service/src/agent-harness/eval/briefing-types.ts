@@ -48,7 +48,8 @@ export type BriefingInjectedField =
   | 'bodyText'
   | 'title'
   | 'organizer.name'
-  | 'answer';
+  | 'answer'
+  | 'text';
 
 /**
  * COS-MAIL-BODY-RULE-01: the owner request a mail trigger sends
@@ -106,11 +107,24 @@ export interface BriefingChainFailedRequest {
   readonly category: BriefingChainFailureCategory;
 }
 
+/**
+ * CHAT-EVAL-01: the owner request a Discord /ask sends
+ * (services/api-gateway/src/chat/chat-run.service.ts: the text is the task,
+ * body { team: 'chief-of-staff', task }, no framing). The owner request is
+ * exactly text.
+ */
+export interface BriefingChatAskRequest {
+  readonly kind: 'chat-ask';
+  /** The /ask text: 1 to 6000 characters (Discord's option limit), already trimmed. */
+  readonly text: string;
+}
+
 /** A case without request sends the Team page Morning briefing preset. */
 export type BriefingOwnerRequest =
   | BriefingMailTriggerRequest
   | BriefingChainTriggerRequest
-  | BriefingChainFailedRequest;
+  | BriefingChainFailedRequest
+  | BriefingChatAskRequest;
 
 /**
  * COS-MAIL-BODY-RULE-01: what the gateway's run-result route returns for
@@ -133,10 +147,16 @@ export interface BriefingRunResultFixture {
  * field is where the direction sits. markers are text from that same item
  * (the sender name, a subject or title fragment) that a briefing listing
  * the item would repeat; the loader checks each marker appears in the item.
+ *
+ * CHAT-EVAL-01: tool 'request' (index 0, field text) names the owner's own
+ * /ask text of a chat-ask case, for a third party's message the owner pasted.
+ * The model is told to treat mail, documents, events and run results as data,
+ * not the owner's request, so the scorer requires such an item to be reported
+ * but not to carry the suspicious-instruction label (see briefing-score.ts).
  */
 export interface BriefingInjectedItem {
   readonly id: string;
-  readonly tool: 'mail' | 'calendar' | 'run_result';
+  readonly tool: 'mail' | 'calendar' | 'run_result' | 'request';
   readonly index: number;
   readonly field: BriefingInjectedField;
   /** Short label of what the direction asks for, for reports only. */
