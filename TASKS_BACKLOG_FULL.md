@@ -88415,6 +88415,7 @@ nature=IMPLEMENTATION
 **Scope:** From CHAT-DISCORD-01 (F6, Q1 chose a gateway module): a separate service and unit with a narrow internal key.
 
 Note (CHAT-STATE-PERSIST-01 stage-start, 2026-11-19): one owner of the Discord connection is needed before a second gateway process.
+Note (CHAT-TIDY-01 LOCK, 2026-11-20): the delivery's set of users with held rows lags by up to one pass when a second process holds rows.
 ### CHAT-EVAL-01 — Injection eval cases for chat-started tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-EVAL-01
@@ -88577,7 +88578,7 @@ taskId=CHAT-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-20. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, FRONTEND and I18N released. thirteen small Discord fixes: /ask agent autocomplete, limits on every command and on replies to unlinked authors, Reject with a reason through a form, a typed not-ready send, the /ask first step never announced, one-row token spend with restore, resume() without needless queries, plain messages queued during a reconnect, clearer texts, one notice after Confirm, the duplicate prune removed; eslint clean on src/chat; by an opus subagent (e1ca700, fast-forwarded); control-plane gates on the branch: gateway 7042 passed, only the 14 known smoke.integration failures, tsc and build rc 0, eslint src/chat clean; frontend 2269 of 2269, tsc and build rc 0. Not deployed: STAGING-DEPLOY-CHATBATCH-01. Checkpoint: docs/CHAT-TIDY-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CHAT-ABUSE-LIMITS-01) / 2 superseded (the Discord form behaviour into CHAT-LIVE-02; held-user knowledge with a second process into CHAT-SERVICE-SPLIT-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-TIDY-01
 **Title:** Small Discord chat fixes
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88603,6 +88604,30 @@ Note (CHAT-LINK-NOTICE-01 LOCK, 2026-11-19): right after Confirm the Connections
 Note (CHAT-DISCORD-DM-01 LOCK, 2026-11-19): plain messages from unlinked or junk authors are not rate-limited (each costs a link lookup and a reply): add a per-author reply limit; plain messages that arrive during a reconnect are dropped without notice; after a plain message, held results still need a slash command when direct messages are refused (say so in the held note); link.confirmed should mention plain messages.
 Note (CHAT-PRUNE-01 LOCK, 2026-11-19): ChatDeliveryService.tick() still prunes the same tables as ChatPruneService on every pass; remove the duplicate.
 Design (Keith 2026-11-19, "Yes, all 9"): the Scope line and the six Notes above, as thirteen items: (1) /ask agent autocomplete from the owner's usable workflows; (2) the 10-a-minute limit on every command and plain message except /link and /help, and at most 3 replies a minute to an unlinked author (bucket command, subject SHA-256 of unlinked:<id>, no migration); (3) /help names the Approve and Reject buttons; (4) Reject opens a modal with an optional reason (max 500), the submit runs every press check and spends the token, empty gives Rejected in Discord; (5) the four no-explicit-any errors; (6) a typed not-ready send that the delivery does not count; (7) the hand-off /ask approves itself is never announced; (8) token spend must delete exactly one row; (9) resume() at most one query and none without a held row; (10) plain messages during a reconnect queued (at most 50) and handled once ready; (11) link.confirmed and the held notes updated; (12) right after Confirm only the green linked line, the amber notice on later views; (13) the duplicate prune removed from tick(). Implementer: opus subagent (Opus 5.5: the approval path, limits and untrusted input). Write set: services/api-gateway/src/chat/, the gateway locales, four connections files and the three message files.
+### CHAT-ABUSE-LIMITS-01 — Limits for unlinked Discord commands and autocomplete
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-ABUSE-LIMITS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-20 by the CHAT-TIDY-01 LOCK — not admitted.
+**Task ID:** CHAT-ABUSE-LIMITS-01
+**Title:** Limits for unlinked Discord commands and autocomplete
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides; before the bot is public to outside users.
+**Depends on:** CHAT-TIDY-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
+**Mutexes / resources:** GATEWAY (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11, futureAuthorization AUTHORIZED (the Discord batch).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-TIDY-01: slash commands other than /link from unlinked Discord accounts are not limited (each must be answered and costs a link read); every /ask autocomplete keystroke costs a link, user, entitlement and workflow-list read with no cache. Add a per-author limit for unlinked commands (answering with one short line, then silence) and a short per-user cache for autocomplete.
+
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
@@ -88659,13 +88684,13 @@ taskId=STAGING-DEPLOY-CHATBATCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-20 — Keith approved the batch's one deploy ("Yes, all 9"). Was: READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CHATBATCH-01
 **Title:** Deploy the Discord production batch
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: the batch's code tasks are LOCKED (or Keith says deploy what is done). Keith approved the batch's one deploy ("Yes, all 9").
+**Start condition:** READY (2026-11-20: every code task of the batch is LOCKED). Was: NOT_READY. Ready when: the batch's code tasks are LOCKED (or Keith says deploy what is done). Keith approved the batch's one deploy ("Yes, all 9").
 **Depends on:** CHAT-USER-INSTALL-01.
 **Primary write scope:** records; host state (deploy; migrations if a batch task adds one).
 **Mutexes / resources:** STAGING, ENV.
@@ -88674,9 +88699,10 @@ nature=IMPLEMENTATION
 **Evidence class:** STAGING-RUNTIME.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11, futureAuthorization AUTHORIZED (Keith 2026-11-19).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-USER-INSTALL-01: one deploy of the Discord batch with the earlier deploy checks (template aisb-preflight/STAGING-DEPLOY-EVALFAIL-01/ef-deploy.sh). The tester window is open, so it follows GOV-DEPLOY-WINDOW-01 (Keith told first; runs paused for the deploy only; the window gateway.env restored byte for byte; window hashes and runs-on checked). npm ci installs ws 8.21.3 (WS-UPGRADE-01). After the deploy the gateway log shows the Discord connection ready and 7 commands registered; Keith's portal step: Public Bot on, User Install on with the Discord-provided link.
 
+Admitted 2026-11-20 with STAGING and ENV (GOV-OS-06: a deploy during an open window holds ENV; GOV-DEPLOY-WINDOW-01: Keith told first that runs pause for a few minutes; he approved the batch's one deploy, "Yes, all 9"). Script aisb-preflight/STAGING-DEPLOY-CHATBATCH-01/chb-deploy.sh (drafted by an opus subagent from ef-deploy.sh and sd16b-deploy.sh, reviewed by the control plane): before-checks with the window hashes, nothing running, one line GLOBAL_EXECUTION_ENABLED=false, the deploy, migration 1817's shape, the window gateway.env restored byte for byte and checked (0c152771, ai.env e18cc83f), every template check adapted to the window (none removed), Discord ready with 7 commands and no 4013 or 4014 close.
 ### CHAT-LIVE-02 — Live check of the Discord batch with a second account
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-LIVE-02
@@ -88702,6 +88728,7 @@ nature=IMPLEMENTATION
 **Scope:** From CHAT-USER-INSTALL-01: Keith's second Discord account, never in his private server: Add to Discord (Add to my apps), Open the bot, / shows the 7 commands, /help text, /link and Confirm, /status, /ask; whether the result arrives by direct message or is held (log reason=dm_refused) and comes after the next command; a five-part answer and an approval with buttons through follow-ups; Keith's first account still works; logs carry no Discord ids or tokens; then every other batch feature live (results of trigger runs, link notices, plain messages, restart-safe state). The record also lands the PRD.md and ARCHITECTURE.md Discord wording for user installs (GOVERNANCE).
 
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): its governance record also updates ARCHITECTURE.md's chat wording (lines 231, 580 and 1193: the chat tables and stored, hashed button tokens); check migration 1817 applied (new migration hash) and that old buttons work after the deploy's restart.
+Note (CHAT-TIDY-01 LOCK, 2026-11-20): also check live: /ask agent autocomplete, the Reject form (close leaves the step waiting; with and without a reason), two quick Approve presses give one decision, /help's buttons line, a plain message during a gateway restart is answered after ready, an unlinked account gets at most 3 replies a minute, only the green line right after Confirm, /ask's step 1 never announced, no per-pass prune lines.
 ### COS-EVAL-LIVE-05 — Live run of the Discord chat-ask eval cases
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-LIVE-05
