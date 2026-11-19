@@ -88288,7 +88288,7 @@ taskId=CHAT-DISCORD-DM-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; GATEWAY passed to CHAT-PRUNE-01. plain direct messages to the bot run the /ask path (Chief of Staff, or @Name for a workflow) with the DIRECT_MESSAGES intent (no privileged intent), a strict filter, replies with mentions off, and nothing of the text or Discord ids logged; by an opus subagent (3e9b9b6, fast-forwarded); control-plane gates on the branch: gateway 6984 passed, only the 14 known smoke.integration failures, tsc and build rc 0. Not deployed: STAGING-DEPLOY-CHATBATCH-01. Checkpoint: docs/CHAT-DISCORD-DM-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 4 superseded into CHAT-TIDY-01 / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-DISCORD-DM-01
 **Title:** Free-text direct messages to the bot
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88521,7 +88521,7 @@ taskId=CHAT-PRUNE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-PRUNE-01
 **Title:** Prune chat codes and delivery rows with the switch off
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88529,18 +88529,19 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
-**Mutexes / resources:** set at admission (GATEWAY expected).
+**Primary write scope:** EXACT (2026-11-19): services/api-gateway/src/chat/chat-prune.service.ts, services/api-gateway/src/chat/chat-prune.service.spec.ts, services/api-gateway/src/chat/chat.module.ts, services/api-gateway/src/chat/chat-link.service.ts, services/api-gateway/src/chat/chat-link.service.spec.ts, services/api-gateway/src/chat/chat-delivery.service.ts, services/api-gateway/src/chat/chat-delivery.service.spec.ts, services/api-gateway/src/chat/chat-commands.spec.ts, services/api-gateway/src/chat/chat-link.controller.spec.ts. Was: PROVISIONAL: services/api-gateway/src/chat/.
+**Mutexes / resources:** GATEWAY (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01 (F10 and slice A1): expired chat_link_codes rows, including the claimed display name, are deleted only on the next link call, and the delivery prune runs only while the switch is on; a prune that runs regardless.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 Note (CHAT-STATE-PERSIST-01 stage-start, 2026-11-19): include chat_limit_hits and expired chat_approval_tokens rows.
+Design (Keith 2026-11-19, "Yes, all 9"): a ChatPruneService in ChatModule runs at bootstrap and hourly (unref'd, no overlap, not under Jest unless allowed, stopped on destroy) whatever the switch says, reusing the existing prune functions for expired chat_link_codes, finished chat_run_deliveries older than 30 days, chat_limit_hits older than an hour and expired chat_approval_tokens; each step independent, failures logged with a reason code, one counts-only line per pass. Implementer: sonnet subagent (Sonnet 5.5: bounded, one service, no migration). Write set of 9 paths.
 ### CHAT-STATE-PERSIST-01 — Keep chat limits, retries and button tokens across restarts
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-STATE-PERSIST-01
@@ -88599,6 +88600,7 @@ Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): sendToUser returns silently when t
 Note (CHAT-RESULTS-OTHER-01 LOCK, 2026-11-19): a pre-existing race: a delivery poll can announce /ask's first step just before /ask approves it.
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): resume() reads the link on every command (harmless today); two presses of one button can both pass the token lookup before either spends it (approveStep's status check decides today): make spend a delete that must remove exactly one row.
 Note (CHAT-LINK-NOTICE-01 LOCK, 2026-11-19): right after Confirm the Connections page shows both the green "Discord is linked." line and the amber recent-link notice; show one.
+Note (CHAT-DISCORD-DM-01 LOCK, 2026-11-19): plain messages from unlinked or junk authors are not rate-limited (each costs a link lookup and a reply): add a per-author reply limit; plain messages that arrive during a reconnect are dropped without notice; after a plain message, held results still need a slash command when direct messages are refused (say so in the held note); link.confirmed should mention plain messages.
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
