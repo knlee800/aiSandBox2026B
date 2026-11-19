@@ -90271,15 +90271,15 @@ taskId=COS-EVAL-LIVE-04
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, run it"; the three authorizations true. Was: READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-01 LOCK — not admitted.
 **Task ID:** COS-EVAL-LIVE-04
 **Title:** Fourth real-model run of the briefing eval, with the chain-failed case
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-EVALFAIL-01 (or a deploy that carries COS-EVAL-FAILCHAIN-01) is locked and Keith opens a run window. Keith decides.
+**Start condition:** READY (STAGING-DEPLOY-EVALFAIL-01 locked; Keith, 2026-11-19). Was: NOT_READY. Ready when: STAGING-DEPLOY-EVALFAIL-01 (or a deploy that carries COS-EVAL-FAILCHAIN-01) is locked and Keith opens a run window. Keith decides.
 **Depends on:** STAGING-DEPLOY-EVALFAIL-01.
-**Primary write scope:** records; services/ai-service/src/agent-harness/eval/baselines/briefing/ (the new baseline file); host state during the window, restored afterwards.
+**Primary write scope:** records; services/ai-service/src/agent-harness/eval/baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json (the new baseline file); host state during the window (a run folder only; no env file change). Was: records; services/ai-service/src/agent-harness/eval/baselines/briefing/ (the new baseline file); host state during the window, restored afterwards.
 **Mutexes / resources:** AI-SERVICE, STAGING, ENV, PROVIDER-LIVE, CREDIT.
 **Hot-file leases:** none.
 **Shared contracts:** none.

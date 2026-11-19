@@ -7,17 +7,27 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COS-EVAL-LIVE-04",
+      "mutexes": [
+        "AI-SERVICE",
+        "STAGING",
+        "ENV",
+        "PROVIDER-LIVE",
+        "CREDIT"
+      ],
+      "writePaths": ["services/ai-service/src/agent-harness/eval/baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json"],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": [
+        "STAGING",
+        "PROVIDER-LIVE",
+        "CREDIT"
+      ]
     },
     "lane2": {
       "state": "EMPTY",
@@ -7603,8 +7613,8 @@
       "taskId": "COS-EVAL-LIVE-04",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
@@ -7616,7 +7626,7 @@
         "PROVIDER-LIVE",
         "CREDIT"
       ],
-      "writePaths": [],
+      "writePaths": ["services/ai-service/src/agent-harness/eval/baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json"],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -11317,9 +11327,9 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
-    "providerLiveAuthorized": false,
-    "creditAuthorized": false,
+    "stagingAuthorized": true,
+    "providerLiveAuthorized": true,
+    "creditAuthorized": true,
     "testerWindowOpen": false
   }
 }
