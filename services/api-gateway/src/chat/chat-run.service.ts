@@ -61,6 +61,13 @@ import type { ChatReplyMessage } from './chat-transport';
  * a reason code only. The /ask limit of 3 runs in progress, /cancel and
  * /status still count only runs started from Discord: a waiting row whose run
  * has this owner's run_started chat audit row (written by /ask only).
+ *
+ * CHAT-STATE-PERSIST-01: the row says where it came from (origin): /ask
+ * writes 'chat' (and sets it when the listener's row came first); the
+ * listener names no origin, so the column default 'platform' is stored. The
+ * /ask limit, /cancel and /status count rows whose origin is 'chat'; rows
+ * from before migration 1817 (origin NULL) are still read through the
+ * run_started audit rows.
  */
 
 export const CHAT_RUN_LIMITS = {
@@ -299,8 +306,13 @@ export class ChatRunService implements OnModuleDestroy {
     }
 
     // CHAT-RESULTS-OTHER-01: insert-or-ignore; the start's listener may have written it already.
+    // CHAT-STATE-PERSIST-01: either way the row is marked as started from the chat.
     try {
-      await this.insertDeliveryRow(started.collaborationRunId, link.linkId);
+      await this.insertDeliveryRow(started.collaborationRunId, link.linkId, 'chat');
+      await this.deliveries.update(
+        { collaborationRunId: started.collaborationRunId, linkId: link.linkId },
+        { origin: 'chat' },
+      );
     } catch (error) {
       await this.cancelRefused(started.collaborationRunId, link, 'delivery_row');
       this.logger.warn(`chat run delivery row failed linkId=${link.linkId} reason=${errorName(error)}`);
@@ -386,8 +398,10 @@ export class ChatRunService implements OnModuleDestroy {
   /**
    * CHAT-RESULTS-OTHER-01: one delivery row (ids only), insert-or-ignore on
    * the run id (ON CONFLICT DO NOTHING). Throws when the insert fails.
+   * CHAT-STATE-PERSIST-01: /ask passes origin 'chat'; the listener passes
+   * none, so the column default ('platform') is stored.
    */
-  private async insertDeliveryRow(collaborationRunId: string, linkId: string): Promise<void> {
+  private async insertDeliveryRow(collaborationRunId: string, linkId: string, origin?: 'chat'): Promise<void> {
     await this.deliveries
       .createQueryBuilder()
       .insert()
@@ -399,6 +413,7 @@ export class ChatRunService implements OnModuleDestroy {
         notifiedReferralIds: [],
         createdAt: new Date(),
         deliveredAt: null,
+        ...(origin ? { origin } : {}),
       })
       .orIgnore()
       .execute();
@@ -406,9 +421,11 @@ export class ChatRunService implements OnModuleDestroy {
 
   /**
    * CHAT-RESULTS-OTHER-01: the link's waiting rows of runs started from
-   * Discord, newest first. Rows of runs started elsewhere also wait now, so a
-   * row counts only when the owner has the run's run_started chat audit row
-   * (/ask writes it after the first step is approved).
+   * Discord, newest first. Rows of runs started elsewhere also wait now.
+   * CHAT-STATE-PERSIST-01: a row counts when its origin is 'chat'; a row
+   * with origin 'platform' does not; a row from before migration 1817
+   * (origin NULL) counts only when the owner has the run's run_started chat
+   * audit row (/ask writes it after the first step is approved), as before.
    */
   private async discordWaitingRows(link: ChatLinkUse): Promise<ChatRunDelivery[]> {
     const rows = await this.deliveries.find({
@@ -419,18 +436,26 @@ export class ChatRunService implements OnModuleDestroy {
     if (rows.length === 0) {
       return [];
     }
+    const unmarked = rows.filter((row) => row.origin === null || row.origin === undefined);
+    if (unmarked.length === 0) {
+      return rows.filter((row) => row.origin === 'chat');
+    }
     const started = await this.audit.find({
       where: {
         category: CHAT_AUDIT_CATEGORY,
         eventType: CHAT_RUN_AUDIT_EVENTS.runStarted,
         subjectType: 'collaboration_run',
-        subjectId: In(rows.map((row) => row.collaborationRunId)),
+        subjectId: In(unmarked.map((row) => row.collaborationRunId)),
         userId: link.userId,
       },
       select: ['subjectId'],
     });
     const fromDiscord = new Set(started.map((row) => row.subjectId));
-    return rows.filter((row) => fromDiscord.has(row.collaborationRunId));
+    return rows.filter(
+      (row) =>
+        row.origin === 'chat' ||
+        ((row.origin === null || row.origin === undefined) && fromDiscord.has(row.collaborationRunId)),
+    );
   }
 
   /** The identity the session guard builds for the owner (D7), harness access already checked. */

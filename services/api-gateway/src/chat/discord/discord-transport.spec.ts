@@ -40,6 +40,8 @@ import {
   DISCORD_INTERACTION_APPLICATION_COMMAND,
   DISCORD_INTERACTION_MESSAGE_COMPONENT,
   DISCORD_MAX_FAILED_IDENTIFIES,
+  DISCORD_NONCE_MAX,
+  discordNonceOf,
   DiscordCalls,
   DiscordConnection,
   DiscordIdentifyGuard,
@@ -763,6 +765,42 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       await h.transport.sendToUser(USER_ID, { text: 'plain', buttons: [] });
       expect(h.calls.bodies[1]).toEqual({ content: 'plain', allowed_mentions: { parse: [] } });
     });
+
+    it('CHAT-STATE-PERSIST-01: a dedupe key gives the direct message Discord’s nonce (25 characters) with enforce_nonce', async () => {
+      const h = harness(ON);
+      await h.transport.connect(jest.fn());
+      h.gateway.emit('ready', { application: { id: APP_ID } }, 0);
+      await flush();
+      h.calls.bodies.length = 0;
+      await h.transport.sendToUser(USER_ID, { text: 'part 3' }, { dedupeKey: 'chat-result:collab-run-1:3' });
+      await h.transport.sendToUser(USER_ID, { text: 'part 3 again' }, { dedupeKey: 'chat-result:collab-run-1:3' });
+      await h.transport.sendToUser(USER_ID, { text: 'part 4' }, { dedupeKey: 'chat-result:collab-run-1:4' });
+      await h.transport.sendToUser(USER_ID, { text: 'no key' });
+      await h.transport.sendToUser(USER_ID, { text: 'empty key' }, { dedupeKey: '' });
+      const bodies = h.calls.bodies as Array<Record<string, unknown>>;
+      const nonce = discordNonceOf('chat-result:collab-run-1:3');
+      expect(nonce).toMatch(/^[0-9a-f]{25}$/);
+      expect(DISCORD_NONCE_MAX).toBe(25);
+      expect(bodies[0]).toEqual({ content: 'part 3', allowed_mentions: { parse: [] }, nonce, enforce_nonce: true });
+      // The same part re-sent carries the same nonce, so Discord returns the earlier message.
+      expect(bodies[1].nonce).toBe(nonce);
+      expect(bodies[2].nonce).toBe(discordNonceOf('chat-result:collab-run-1:4'));
+      expect(bodies[2].nonce).not.toBe(nonce);
+      // The nonce holds no id: it is a hash.
+      expect(String(nonce)).not.toContain('collab-run-1');
+      expect(bodies[3]).toEqual({ content: 'no key', allowed_mentions: { parse: [] } });
+      expect(bodies[4]).toEqual({ content: 'empty key', allowed_mentions: { parse: [] } });
+    });
+
+    it('CHAT-STATE-PERSIST-01: Discord’s message body type knows nonce and enforce_nonce', () => {
+      // Compile-time check against discord-api-types (the Create Message JSON params).
+      const body: import('@discordjs/core').RESTPostAPIChannelMessageJSONBody = {
+        content: 'x',
+        nonce: discordNonceOf('k'),
+        enforce_nonce: true,
+      };
+      expect(body.enforce_nonce).toBe(true);
+    });
   });
 
   describe('any Discord account: user installs, follow-ups and refused direct messages (CHAT-USER-INSTALL-01)', () => {
@@ -965,6 +1003,23 @@ describe('DiscordTransport (CHAT-DISCORD-01 B)', () => {
       expect(logs).toContain('warn: chat discord follow-up failed reason=DiscordAPIError status=404');
       expect(logs.join('\n')).not.toContain('interaction-token');
       expect(logs.join('\n')).not.toContain(USER_ID);
+    });
+
+    it('CHAT-STATE-PERSIST-01: a follow-up never carries the nonce; the direct message it falls back to does', async () => {
+      const h = await readyWith();
+      dispatch(h, userInstall());
+      await flush();
+      h.calls.log.length = 0;
+      await h.transport.sendToUser(USER_ID, { text: 'part 1' }, { dedupeKey: 'chat-result:run-9:1' });
+      expect(followUps.map((entry) => entry.body)).toEqual([{ content: 'part 1', allowed_mentions: { parse: [] } }]);
+      h.calls.followUp = async () => {
+        throw Object.assign(new Error('Unknown Webhook'), { status: 404, name: 'DiscordAPIError' });
+      };
+      await h.transport.sendToUser(USER_ID, { text: 'part 2' }, { dedupeKey: 'chat-result:run-9:2' });
+      expect(h.calls.log).toEqual([`followUp ${APP_ID}`, `dm ${USER_ID}`]);
+      expect(h.calls.bodies.slice(-1)).toEqual([
+        { content: 'part 2', allowed_mentions: { parse: [] }, nonce: discordNonceOf('chat-result:run-9:2'), enforce_nonce: true },
+      ]);
     });
 
     it.each([50007, 50278])('a direct message refused with HTTP 403 and code %i throws ChatDirectMessageRefusedError', async (code) => {

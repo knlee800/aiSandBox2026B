@@ -57,8 +57,11 @@ export type {
 } from './user-agent.entity';
 export { ChatLink } from './chat-link.entity';
 export { ChatLinkCode } from './chat-link-code.entity';
-export { ChatRunDelivery, CHAT_RUN_DELIVERY_STATUSES } from './chat-run-delivery.entity';
-export type { ChatRunDeliveryStatus } from './chat-run-delivery.entity';
+export { ChatRunDelivery, CHAT_RUN_DELIVERY_STATUSES, CHAT_RUN_DELIVERY_ORIGINS } from './chat-run-delivery.entity';
+export type { ChatRunDeliveryStatus, ChatRunDeliveryOrigin } from './chat-run-delivery.entity';
+export { ChatLimitHit, CHAT_LIMIT_BUCKETS } from './chat-limit-hit.entity';
+export type { ChatLimitBucket } from './chat-limit-hit.entity';
+export { ChatApprovalToken } from './chat-approval-token.entity';
 export { AgentSchedule, AGENT_SCHEDULE_TARGET_KINDS } from './agent-schedule.entity';
 export type { AgentScheduleTargetKind } from './agent-schedule.entity';
 export { AgentScheduleRun, AGENT_SCHEDULE_RUN_OUTCOMES } from './agent-schedule-run.entity';

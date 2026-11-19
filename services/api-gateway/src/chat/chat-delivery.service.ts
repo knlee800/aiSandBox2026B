@@ -7,7 +7,8 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, Not, Repository } from 'typeorm';
+import { randomUUID } from 'crypto';
+import { In, IsNull, LessThan, LessThanOrEqual, Not, Repository } from 'typeorm';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
@@ -31,6 +32,7 @@ import {
   ChatActivityNotifier,
   ChatDirectMessageRefusedError,
   ChatReplyMessage,
+  ChatSendOptions,
   ChatTransport,
 } from './chat-transport';
 
@@ -72,7 +74,7 @@ import {
  * follow-up to the user's latest interaction while it is fresh, else the
  * direct message). A direct message Discord refuses
  * (ChatDirectMessageRefusedError) is not a failed attempt: the row stays
- * waiting and is held in memory, with one log line (`chat delivery held
+ * waiting and is held (held_at on the row), with one log line (`chat delivery held
  * runId=... linkId=... reason=dm_refused`) and no audit row. The poller skips
  * held rows (apart from the 24-hour drop) until that user's next command or
  * button press (ChatActivityNotifier), which releases the user's held rows
@@ -80,8 +82,29 @@ import {
  * the command's own answer. Approval notices are held the same way and are
  * marked notified only once sent. The 24-hour drop, the retries for other
  * errors, the part limits, the one-message-a-second spacing and the Results
- * page are unchanged. Holds are lost on a restart: the boot pass tries again
- * and holds again if Discord still refuses.
+ * page are unchanged.
+ *
+ * CHAT-STATE-PERSIST-01 (stage-start sections 3.1, 4, 5): the delivery state
+ * lives on the row, so a restart continues where it stopped:
+ * - parts_sent: each part's success is written before the next part is sent;
+ *   a new pass continues at part parts_sent + 1 (parts are cut again from the
+ *   same stored answer, so they are the same parts). Each result part goes
+ *   with a dedupe key (run id and part number), which the Discord transport
+ *   turns into the direct message's nonce, so a part re-sent after a crash
+ *   between Discord's "sent" and the database write is dropped by Discord.
+ * - send_failures and next_attempt_at: the retries and their backoff; the
+ *   fourth failure still fails the row with one audit row. Rows in backoff
+ *   are left out of the pass's query.
+ * - held_at: a held row is left out of the pass's query (no direct-message
+ *   retry, no log line per restart); the user's next command or press clears
+ *   held_at for that link's waiting rows and runs a pass. The 24-hour drop
+ *   still applies to held rows.
+ * - claimed_by and claimed_until: before working on a row the process claims
+ *   it for 120 seconds (one UPDATE that succeeds only when no live claim
+ *   exists); each part's write is a compare-and-set on parts_sent under the
+ *   claim and extends it; the claim is released at the end of the row, and a
+ *   crashed process's claim runs out by itself. Zero rows changed: another
+ *   process has the row, so this one stops.
  */
 
 export const CHAT_RUN_AUDIT_EVENTS = {
@@ -99,6 +122,8 @@ export const CHAT_DELIVERY_LIMITS = {
   retries: 3,
   backoffMs: [10 * 1000, 30 * 1000, 90 * 1000] as readonly number[],
   spacingMs: 1000,
+  /** CHAT-STATE-PERSIST-01: a claim on a row lasts this long unless renewed (after each part) or released. */
+  claimMs: 120 * 1000,
 } as const;
 
 /** Optional provider token: tests pass options (allowUnderJest, clock, sleep). */
@@ -113,20 +138,6 @@ export interface ChatDeliveryOptions {
 }
 
 export type ChatDeliveryOutcome = 'completed' | 'no_answer' | 'failed' | 'timed_out' | 'cancelled';
-
-interface AttemptState {
-  failures: number;
-  nextAt: number;
-  partsSent: number;
-}
-
-/** CHAT-USER-INSTALL-01: a row whose direct message Discord refused, held until the user is active. Memory only. */
-interface HeldDelivery {
-  linkId: string;
-  /** The link's outside user id, to match the user's next command or press. Never logged. */
-  externalUserId: string;
-  createdAt: number;
-}
 
 const END_LINES: Readonly<Record<Exclude<ChatDeliveryOutcome, 'completed'>, ChatReplyKey>> = {
   no_answer: 'result.noAnswer',
@@ -178,10 +189,9 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly intervalMs: number;
   private readonly spacingMs: number;
-  private readonly attempts = new Map<string, AttemptState>();
+  /** CHAT-STATE-PERSIST-01: this process's claim id (claimed_by), made at boot. */
+  private readonly processId = randomUUID();
   private readonly lastSentAt = new Map<string, number>();
-  /** CHAT-USER-INSTALL-01: rows held after a refused direct message, by run id. Memory only. */
-  private readonly holds = new Map<string, HeldDelivery>();
   private readonly stopListening: (() => void) | null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private ticking = false;
@@ -229,17 +239,19 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     return this.timer !== null;
   }
 
-  /** CHAT-USER-INSTALL-01: the number of rows held after a refused direct message. */
-  get heldCount(): number {
-    return this.holds.size;
+  /** CHAT-STATE-PERSIST-01: this process's claim id (what it writes to claimed_by). */
+  get claimId(): string {
+    return this.processId;
   }
 
   /**
    * CHAT-USER-INSTALL-01: the outside user used a command or pressed a
    * button. Their held rows are released and a pass runs at once (or right
    * after the one running); the transport sends the messages as follow-ups
-   * after the command's own answer. Nothing held for that user: nothing
-   * happens and nothing is read. Never throws. Returns the rows released.
+   * after the command's own answer. Never throws. Returns the rows released.
+   * CHAT-STATE-PERSIST-01: the holds are on the rows (held_at): the user's
+   * link is read and held_at is cleared on that link's waiting rows; no link
+   * or nothing held: no pass.
    */
   async resume(channel: ChatChannel, externalUserId: string): Promise<number> {
     if (channel !== CHAT_CHANNEL_DISCORD || this.testEnvironment || this.destroyed) {
@@ -247,12 +259,20 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     }
     let released = 0;
     let linkId = '';
-    for (const [runId, hold] of this.holds) {
-      if (hold.externalUserId === externalUserId) {
-        this.holds.delete(runId);
-        released += 1;
-        linkId = hold.linkId;
+    try {
+      const link = await this.links.findOne({ where: { channel, externalUserId } });
+      if (!link) {
+        return 0;
       }
+      const result = await this.deliveries.update(
+        { linkId: link.id, status: 'waiting', heldAt: Not(IsNull()) },
+        { heldAt: null },
+      );
+      released = result.affected ?? 0;
+      linkId = link.id;
+    } catch (error) {
+      this.logger.warn(`chat delivery resume failed reason=${errorName(error)}`);
+      return 0;
     }
     if (released === 0) {
       return 0;
@@ -291,23 +311,31 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
       }
       await this.prune();
       await this.dropOldHolds();
-      // CHAT-USER-INSTALL-01: held rows are skipped until their user is active again.
-      const held = [...this.holds.keys()];
+      // CHAT-USER-INSTALL-01 / CHAT-STATE-PERSIST-01: held rows, rows in
+      // backoff and rows another process has claimed are left out.
+      const now = new Date(this.now());
+      const ready = { status: 'waiting' as const, heldAt: IsNull() };
       const rows = await this.deliveries.find({
-        where: held.length > 0 ? { status: 'waiting', collaborationRunId: Not(In(held)) } : { status: 'waiting' },
+        where: [
+          { ...ready, nextAttemptAt: IsNull(), claimedUntil: IsNull() },
+          { ...ready, nextAttemptAt: LessThanOrEqual(now), claimedUntil: IsNull() },
+          { ...ready, nextAttemptAt: IsNull(), claimedUntil: LessThan(now) },
+          { ...ready, nextAttemptAt: LessThanOrEqual(now), claimedUntil: LessThan(now) },
+        ],
         order: { createdAt: 'ASC' },
         take: CHAT_DELIVERY_LIMITS.batch,
       });
       if (rows.length === 0) {
-        // Held rows still wait: keep polling so they are dropped at 24 hours.
-        if (this.holds.size === 0) {
+        // Held, backing-off or claimed rows still wait: keep polling (held rows are dropped at 24 hours).
+        const waiting = await this.deliveries.find({ where: { status: 'waiting' }, take: 1 });
+        if (waiting.length === 0) {
           this.stopTimer();
         }
         return 0;
       }
       for (const row of rows) {
         try {
-          await this.deliverOne(row);
+          await this.deliverClaimed(row);
         } catch (error) {
           this.logger.warn(`chat delivery read failed runId=${row.collaborationRunId} reason=${errorName(error)}`);
         }
@@ -327,33 +355,85 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     }
   }
 
-  /** CHAT-USER-INSTALL-01: a held row older than 24 hours is dropped (the Results page keeps the result). */
+  /**
+   * CHAT-USER-INSTALL-01: a held row older than 24 hours is dropped (the
+   * Results page keeps the result). CHAT-STATE-PERSIST-01: read from held_at.
+   */
   private async dropOldHolds(): Promise<void> {
-    const now = this.now();
-    for (const [runId, hold] of this.holds) {
-      if (now - hold.createdAt <= CHAT_DELIVERY_LIMITS.maxAgeMs) {
-        continue;
-      }
-      this.holds.delete(runId);
-      this.attempts.delete(runId);
-      const result = await this.deliveries.update({ collaborationRunId: runId, status: 'waiting' }, { status: 'dropped' });
-      if ((result.affected ?? 0) > 0) {
-        this.logger.log(`chat delivery dropped runId=${runId} linkId=${hold.linkId} reason=too_old`);
-      }
+    const cutoff = new Date(this.now() - CHAT_DELIVERY_LIMITS.maxAgeMs);
+    const old = await this.deliveries.find({
+      where: { status: 'waiting', heldAt: Not(IsNull()), createdAt: LessThan(cutoff) },
+      order: { createdAt: 'ASC' },
+      take: CHAT_DELIVERY_LIMITS.batch,
+    });
+    for (const row of old) {
+      await this.finish(row, 'dropped', 'too_old');
     }
   }
 
-  /** CHAT-USER-INSTALL-01: holds a row after a refused direct message; one log line, ids only, no audit row. */
-  private hold(row: ChatRunDelivery, link: ChatLink): void {
-    if (this.holds.has(row.collaborationRunId)) {
+  /**
+   * CHAT-USER-INSTALL-01: holds a row after a refused direct message; one log
+   * line, ids only, no audit row. CHAT-STATE-PERSIST-01: held_at is written
+   * under this process's claim; a held row is left out of every later pass
+   * (in any process, after any restart) until the user is active again.
+   */
+  private async hold(row: ChatRunDelivery): Promise<void> {
+    await this.deliveries.update(
+      { collaborationRunId: row.collaborationRunId, status: 'waiting', claimedBy: this.processId },
+      { heldAt: new Date(this.now()) },
+    );
+    this.logger.log(`chat delivery held runId=${row.collaborationRunId} linkId=${row.linkId} reason=dm_refused`);
+  }
+
+  /**
+   * CHAT-STATE-PERSIST-01: claims the row (one UPDATE: waiting and no live
+   * claim), reads it again under the claim (another process may have moved
+   * it on), works on it and releases the claim. Not claimed: skipped.
+   */
+  private async deliverClaimed(candidate: ChatRunDelivery): Promise<void> {
+    const runId = candidate.collaborationRunId;
+    if (!(await this.claim(runId))) {
       return;
     }
-    this.holds.set(row.collaborationRunId, {
-      linkId: row.linkId,
-      externalUserId: link.externalUserId,
-      createdAt: new Date(row.createdAt).getTime(),
-    });
-    this.logger.log(`chat delivery held runId=${row.collaborationRunId} linkId=${row.linkId} reason=dm_refused`);
+    try {
+      const row = await this.deliveries.findOne({
+        where: { collaborationRunId: runId, status: 'waiting', claimedBy: this.processId },
+      });
+      if (!row || row.heldAt) {
+        return;
+      }
+      if (row.nextAttemptAt && new Date(row.nextAttemptAt).getTime() > this.now()) {
+        return;
+      }
+      await this.deliverOne(row);
+    } finally {
+      await this.release(runId);
+    }
+  }
+
+  /** True when this process now holds the row's claim (no claim, or an expired one). */
+  private async claim(collaborationRunId: string): Promise<boolean> {
+    const now = this.now();
+    const result = await this.deliveries.update(
+      [
+        { collaborationRunId, status: 'waiting', claimedUntil: IsNull() },
+        { collaborationRunId, status: 'waiting', claimedUntil: LessThan(new Date(now)) },
+      ],
+      { claimedBy: this.processId, claimedUntil: new Date(now + CHAT_DELIVERY_LIMITS.claimMs) },
+    );
+    return (result.affected ?? 0) === 1;
+  }
+
+  /** Releases this process's claim on the row; a failure is logged and the claim runs out by itself. */
+  private async release(collaborationRunId: string): Promise<void> {
+    try {
+      await this.deliveries.update(
+        { collaborationRunId, claimedBy: this.processId },
+        { claimedBy: null, claimedUntil: null },
+      );
+    } catch (error) {
+      this.logger.warn(`chat delivery release failed runId=${collaborationRunId} reason=${errorName(error)}`);
+    }
   }
 
   /** Deletes delivered, failed and dropped rows older than 30 days. */
@@ -380,10 +460,6 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
   private async deliverOne(row: ChatRunDelivery): Promise<void> {
     const runId = row.collaborationRunId;
     const now = this.now();
-    const state = this.attempts.get(runId);
-    if (state && state.nextAt > now) {
-      return;
-    }
     if (now - new Date(row.createdAt).getTime() > CHAT_DELIVERY_LIMITS.maxAgeMs) {
       await this.finish(row, 'dropped', 'too_old');
       return;
@@ -413,41 +489,30 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
       return;
     }
 
-    const attempt = state ?? { failures: 0, nextAt: 0, partsSent: 0 };
-    try {
-      while (attempt.partsSent < result.parts.length) {
-        await this.send(link, { text: result.parts[attempt.partsSent] });
-        attempt.partsSent += 1;
-      }
-    } catch (error) {
-      if (error instanceof ChatDirectMessageRefusedError) {
-        // Not a failed attempt: the parts sent so far are kept; the rest waits for the user.
-        this.attempts.set(runId, attempt);
-        this.hold(row, link);
+    // CHAT-STATE-PERSIST-01: continue at part parts_sent + 1; each part's
+    // success is written (compare-and-set under the claim) before the next.
+    let partsSent = Math.max(0, Number(row.partsSent ?? 0) || 0);
+    while (partsSent < result.parts.length) {
+      try {
+        await this.send(
+          link,
+          { text: result.parts[partsSent] },
+          { dedupeKey: `chat-result:${runId}:${partsSent + 1}` },
+        );
+      } catch (error) {
+        await this.sendFailed(row, link, partsSent, now, error);
         return;
       }
-      attempt.failures += 1;
-      if (attempt.failures > CHAT_DELIVERY_LIMITS.retries) {
-        this.attempts.delete(runId);
-        await this.finish(row, 'failed', 'send_failed');
-        await this.writeAudit(CHAT_RUN_AUDIT_EVENTS.deliveryFailed, link.userId, runId, {
-          channel: CHAT_CHANNEL_DISCORD,
-          linkId: row.linkId,
-          collaborationRunId: runId,
-          attempts: attempt.failures,
-          partsSent: attempt.partsSent,
-          reason: errorName(error),
-        });
-        return;
-      }
-      attempt.nextAt = now + CHAT_DELIVERY_LIMITS.backoffMs[attempt.failures - 1];
-      this.attempts.set(runId, attempt);
-      this.logger.warn(
-        `chat delivery send failed runId=${runId} linkId=${row.linkId} attempt=${attempt.failures} reason=${errorName(error)}`,
+      const advanced = await this.deliveries.update(
+        { collaborationRunId: runId, status: 'waiting', partsSent, claimedBy: this.processId },
+        { partsSent: partsSent + 1, claimedUntil: new Date(this.now() + CHAT_DELIVERY_LIMITS.claimMs) },
       );
-      return;
+      if ((advanced.affected ?? 0) !== 1) {
+        this.logger.warn(`chat delivery claim lost runId=${runId} linkId=${row.linkId} partsSent=${partsSent + 1}`);
+        return;
+      }
+      partsSent += 1;
     }
-    this.attempts.delete(runId);
     await this.finish(row, 'delivered', result.outcome);
     await this.writeAudit(CHAT_RUN_AUDIT_EVENTS.resultDelivered, link.userId, runId, {
       channel: CHAT_CHANNEL_DISCORD,
@@ -457,6 +522,46 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
       parts: result.parts.length,
       cut: result.cut ? 1 : 0,
     });
+  }
+
+  /**
+   * A part could not be sent. A refused direct message holds the row (not a
+   * failed attempt; the parts sent so far are kept). Any other error counts
+   * one failure on the row (send_failures, next_attempt_at); the fourth fails
+   * the row with one delivery_failed audit row.
+   */
+  private async sendFailed(
+    row: ChatRunDelivery,
+    link: ChatLink,
+    partsSent: number,
+    now: number,
+    error: unknown,
+  ): Promise<void> {
+    const runId = row.collaborationRunId;
+    if (error instanceof ChatDirectMessageRefusedError) {
+      await this.hold(row);
+      return;
+    }
+    const failures = Math.max(0, Number(row.sendFailures ?? 0) || 0) + 1;
+    if (failures > CHAT_DELIVERY_LIMITS.retries) {
+      await this.finish(row, 'failed', 'send_failed');
+      await this.writeAudit(CHAT_RUN_AUDIT_EVENTS.deliveryFailed, link.userId, runId, {
+        channel: CHAT_CHANNEL_DISCORD,
+        linkId: row.linkId,
+        collaborationRunId: runId,
+        attempts: failures,
+        partsSent,
+        reason: errorName(error),
+      });
+      return;
+    }
+    await this.deliveries.update(
+      { collaborationRunId: runId, status: 'waiting', claimedBy: this.processId },
+      { sendFailures: failures, nextAttemptAt: new Date(now + CHAT_DELIVERY_LIMITS.backoffMs[failures - 1]) },
+    );
+    this.logger.warn(
+      `chat delivery send failed runId=${runId} linkId=${row.linkId} attempt=${failures} reason=${errorName(error)}`,
+    );
   }
 
   /**
@@ -502,7 +607,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     } catch (error) {
       if (error instanceof ChatDirectMessageRefusedError) {
         // CHAT-USER-INSTALL-01: held like a result; the step is not marked, so it is sent on the user's next command.
-        this.hold(row, link);
+        await this.hold(row);
       } else {
         this.logger.warn(
           `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,
@@ -524,13 +629,13 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
    * mentions off: a follow-up to the user's latest interaction when it is
    * fresh, else the direct message (CHAT-USER-INSTALL-01).
    */
-  private async send(link: ChatLink, message: ChatReplyMessage): Promise<void> {
+  private async send(link: ChatLink, message: ChatReplyMessage, options?: ChatSendOptions): Promise<void> {
     const last = this.lastSentAt.get(link.id);
     const now = this.now();
     if (last !== undefined && now - last < this.spacingMs) {
       await this.sleep(this.spacingMs - (now - last));
     }
-    await this.transport.sendToUser(link.externalUserId, message);
+    await this.transport.sendToUser(link.externalUserId, message, options);
     this.lastSentAt.set(link.id, this.now());
   }
 
@@ -539,7 +644,6 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     status: 'delivered' | 'failed' | 'dropped',
     reason: string,
   ): Promise<void> {
-    this.holds.delete(row.collaborationRunId);
     await this.deliveries.update(
       { collaborationRunId: row.collaborationRunId, status: 'waiting' },
       status === 'delivered' ? { status, deliveredAt: new Date(this.now()) } : { status },

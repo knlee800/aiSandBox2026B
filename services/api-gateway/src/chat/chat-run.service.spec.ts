@@ -27,6 +27,8 @@ type DeliveryRow = {
   notifiedReferralIds: string[];
   createdAt: Date;
   deliveredAt: Date | null;
+  /** CHAT-STATE-PERSIST-01: 'chat' from /ask; the database default 'platform' is not simulated (absent here). */
+  origin?: string | null;
 };
 
 type AuditRow = {
@@ -215,6 +217,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       );
       // CHAT-RESULTS-OTHER-01: insert-or-ignore into chat_run_deliveries.
       expect(builderCalls).toEqual(['into:ChatRunDelivery']);
+      // CHAT-STATE-PERSIST-01: /ask marks its row as started from the chat.
       expect(rows).toEqual([
         {
           collaborationRunId: RUN_ID,
@@ -223,6 +226,7 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
           notifiedReferralIds: [],
           createdAt: expect.any(Date),
           deliveredAt: null,
+          origin: 'chat',
         },
       ]);
       expect(audit).toEqual([
@@ -510,7 +514,12 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       });
       expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
       expect(deliveries.insertOrIgnore).toHaveBeenCalledTimes(2);
-      expect(rows).toEqual([expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting' })]);
+      // CHAT-STATE-PERSIST-01: the listener's insert names no origin; /ask then marks the row 'chat'.
+      expect(deliveries.insertOrIgnore.mock.calls[0][0]).not.toHaveProperty('origin');
+      expect(deliveries.insertOrIgnore.mock.calls[1][0]).toMatchObject({ origin: 'chat' });
+      expect(rows).toEqual([
+        expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting', origin: 'chat' }),
+      ]);
       expect(starts.approveStep).toHaveBeenCalledTimes(1);
       expect(orchestration.cancelCollaboration).not.toHaveBeenCalled();
     });
@@ -543,6 +552,56 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       orchestration.getCollaborationRun.mockResolvedValue({ userId: OWNER, status: 'active', referralIds: [] });
       expect(await listening.statusCounts(link)).toEqual({ running: 0, waiting: 0 });
       expect(await listening.cancel(link)).toEqual({ text: chatReply('en', 'cancel.nothing') });
+    });
+
+    it('CHAT-STATE-PERSIST-01: the listener names no origin, so the database default (platform) is stored', async () => {
+      await startedElsewhere();
+      expect(deliveries.insertOrIgnore).toHaveBeenCalledTimes(1);
+      expect(deliveries.insertOrIgnore.mock.calls[0][0]).not.toHaveProperty('origin');
+      expect(deliveries.update).not.toHaveBeenCalled();
+    });
+
+    it('CHAT-STATE-PERSIST-01: the /ask limit, /cancel and /status read origin; only rows without one use the audit rows', async () => {
+      const at = (minutes: number) => new Date(Date.parse('2026-11-19T10:00:00.000Z') + minutes * 60 * 1000);
+      const row = (collaborationRunId: string, origin: string | null, minutes: number): DeliveryRow => ({
+        collaborationRunId,
+        linkId: LINK_ID,
+        status: 'waiting',
+        notifiedReferralIds: [],
+        createdAt: at(minutes),
+        deliveredAt: null,
+        origin,
+      });
+      // Rows of runs started elsewhere (the column default), a /ask row, and two rows from before migration 1817.
+      rows.push(row('p1', 'platform', 1), row('p2', 'platform', 2), row('p3', 'platform', 3));
+      rows.push(row('chat-new', 'chat', 4), row('legacy-ask', null, 5), row('legacy-page', null, 6));
+      // Only the legacy /ask run has its run_started audit row.
+      audit.push({
+        category: 'chat',
+        eventType: 'run_started',
+        subjectType: 'collaboration_run',
+        subjectId: 'legacy-ask',
+        userId: OWNER,
+        payload: {},
+      });
+      orchestration.getCollaborationRun.mockResolvedValue({ userId: OWNER, status: 'active', referralIds: [] });
+      expect(await listening.statusCounts(link)).toEqual({ running: 2, waiting: 0 });
+      expect(orchestration.getCollaborationRun.mock.calls.map((call) => call[0])).toEqual(['legacy-ask', 'chat-new']);
+      // The audit read covers the rows without an origin only.
+      const read = auditRepo.find.mock.calls[0][0] as { where: { subjectId: { value: string[] } } };
+      expect(read.where.subjectId.value).toEqual(['legacy-page', 'legacy-ask']);
+
+      // Two Discord runs in progress plus one more makes three: the next /ask is refused.
+      expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.started') });
+      expect(await listening.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooManyRuns') });
+
+      // With only marked rows nothing is read from the audit rows.
+      rows.splice(0, rows.length, row('p1', 'platform', 1), row('chat-new', 'chat', 2));
+      auditRepo.find.mockClear();
+      starts.cancelOwnedActiveRun.mockImplementation(async (runId: string) => ({ collaborationRunId: runId, status: 'cancelled' }));
+      expect(await listening.cancel(link)).toEqual({ text: chatReply('en', 'cancel.done') });
+      expect(starts.cancelOwnedActiveRun.mock.calls.map((call) => call[0])).toEqual(['chat-new']);
+      expect(auditRepo.find).not.toHaveBeenCalled();
     });
 
     it('stops listening on module destroy', async () => {

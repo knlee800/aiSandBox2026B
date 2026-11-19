@@ -87,7 +87,13 @@ describe('CreateChatRunDeliveries1809000000000 (CHAT-DISCORD-01 C1, mocked)', ()
     const table = storage.tables.find((entry) => entry.target === ChatRunDelivery);
     expect(table?.name).toBe('chat_run_deliveries');
     expect(table?.schema).toBe('public');
-    const columns = storage.columns.filter((entry) => entry.target === ChatRunDelivery);
+    // CHAT-STATE-PERSIST-01: the seven columns of migration 1817 are checked by its own spec.
+    const added1817 = ['partsSent', 'sendFailures', 'nextAttemptAt', 'heldAt', 'claimedBy', 'claimedUntil', 'origin'];
+    const all = storage.columns.filter((entry) => entry.target === ChatRunDelivery);
+    expect(all.filter((entry) => added1817.includes(entry.propertyName)).map((entry) => entry.propertyName).sort()).toEqual(
+      [...added1817].sort(),
+    );
+    const columns = all.filter((entry) => !added1817.includes(entry.propertyName));
     const names = Object.fromEntries(
       columns.map((column) => [column.propertyName, column.options.name ?? column.propertyName]),
     );

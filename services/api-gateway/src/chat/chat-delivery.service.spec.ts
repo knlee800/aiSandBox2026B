@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { FindOperator } from 'typeorm';
 import { CollaborationRunStartedNotifier } from '../orchestration/collaboration-start.service';
 import { CHAT_APPROVAL_CUSTOM_ID, ChatApprovalService } from './chat-approval.service';
-import { CHAT_DELIVERY_LIMITS, ChatDeliveryService } from './chat-delivery.service';
+import { CHAT_DELIVERY_LIMITS, ChatDeliveryService, chatResultMessages } from './chat-delivery.service';
 import { chatReply } from './chat-replies';
 import { ChatRunService } from './chat-run.service';
 import { ChatActivityNotifier, ChatDirectMessageRefusedError, FakeChatTransport } from './chat-transport';
@@ -25,6 +25,14 @@ type Row = {
   notifiedReferralIds: string[];
   createdAt: Date;
   deliveredAt: Date | null;
+  /** CHAT-STATE-PERSIST-01: the persisted delivery state (migration 1817). */
+  partsSent: number;
+  sendFailures: number;
+  nextAttemptAt: Date | null;
+  heldAt: Date | null;
+  claimedBy: string | null;
+  claimedUntil: Date | null;
+  origin: string | null;
 };
 
 function asNumber(value: unknown): number {
@@ -37,11 +45,18 @@ function satisfies(actual: unknown, expected: FindOperator<unknown>): boolean {
     return child ? !satisfies(actual, child) : actual !== expected.value;
   }
   if (expected.type === 'in') return (expected.value as unknown[]).includes(actual);
+  if (expected.type === 'isNull') return actual === null || actual === undefined;
+  if (actual === null || actual === undefined) return false;
   if (expected.type === 'lessThan') return asNumber(actual) < asNumber(expected.value);
+  if (expected.type === 'lessThanOrEqual') return asNumber(actual) <= asNumber(expected.value);
   throw new Error(`unsupported operator ${expected.type}`);
 }
 
-function matches(row: Record<string, unknown>, where: Record<string, unknown>): boolean {
+/** A where object, or an array of them (OR), as TypeORM reads it. */
+function matches(row: Record<string, unknown>, where: Record<string, unknown> | Array<Record<string, unknown>>): boolean {
+  if (Array.isArray(where)) {
+    return where.some((one) => matches(row, one));
+  }
   return Object.entries(where).every(([key, expected]) => {
     const actual = row[key];
     if (expected instanceof FindOperator) {
@@ -51,16 +66,25 @@ function matches(row: Record<string, unknown>, where: Record<string, unknown>): 
   });
 }
 
+type Where = Record<string, unknown> | Array<Record<string, unknown>>;
+
+/** chat_run_deliveries in memory: one store shared by every service instance (a restart is a new instance). */
 class DeliveryRepo {
   rows: Row[] = [];
-  async find(options: { where: Record<string, unknown>; take?: number }): Promise<Row[]> {
+  /** Every update's where, for the claim and compare-and-set checks. */
+  readonly updates: Array<{ where: Where; patch: Partial<Row> }> = [];
+  async find(options: { where: Where; take?: number }): Promise<Row[]> {
     return this.rows
       .filter((row) => matches(row, options.where))
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .slice(0, options.take ?? Infinity)
       .map((row) => ({ ...row, notifiedReferralIds: [...row.notifiedReferralIds] }));
   }
-  async update(where: Record<string, unknown>, patch: Partial<Row>): Promise<{ affected: number }> {
+  async findOne(options: { where: Where }): Promise<Row | null> {
+    return (await this.find({ where: options.where, take: 1 }))[0] ?? null;
+  }
+  async update(where: Where, patch: Partial<Row>): Promise<{ affected: number }> {
+    this.updates.push({ where, patch });
     let affected = 0;
     for (const row of this.rows) {
       if (matches(row, where)) {
@@ -94,13 +118,29 @@ class DeliveryRepo {
         if (!ignore || !values) throw new Error('insert without orIgnore');
         const row = values as Row;
         if (!this.rows.some((existing) => existing.collaborationRunId === row.collaborationRunId)) {
-          this.rows.push({ ...row, notifiedReferralIds: [...row.notifiedReferralIds] });
+          // The column defaults of migration 1817 (origin defaults to platform).
+          this.rows.push({ ...newRowDefaults(), ...row, notifiedReferralIds: [...row.notifiedReferralIds] });
         }
         return { identifiers: [], raw: [] };
       },
     };
     return chain;
   }
+}
+
+function newRowDefaults(): Pick<
+  Row,
+  'partsSent' | 'sendFailures' | 'nextAttemptAt' | 'heldAt' | 'claimedBy' | 'claimedUntil' | 'origin'
+> {
+  return {
+    partsSent: 0,
+    sendFailures: 0,
+    nextAttemptAt: null,
+    heldAt: null,
+    claimedBy: null,
+    claimedUntil: null,
+    origin: 'platform',
+  };
 }
 
 interface FakeReferral {
@@ -123,6 +163,21 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
   let logs: string[];
   let restoreLogs: () => void;
 
+  /** chat_links: by id (the pass) or by channel and outside user id (resume). */
+  function linkRepo() {
+    return {
+      findOne: async ({ where }: { where: { id?: string; channel?: string; externalUserId?: string } }) =>
+        where.id !== undefined
+          ? (links.get(where.id) ?? null)
+          : ([...links.values()].find((row) => where.channel === 'discord' && row.externalUserId === where.externalUserId) ?? null),
+    };
+  }
+
+  /** CHAT-STATE-PERSIST-01: the rows held now (held_at set). */
+  function held(): number {
+    return deliveries.rows.filter((row) => row.status === 'waiting' && row.heldAt !== null).length;
+  }
+
   function build(
     target: { sendToUser: unknown; state: unknown } = transport,
     options: Record<string, unknown> = {},
@@ -132,7 +187,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       target as never,
       { getCollaborationRunWithReferrals: reads } as never,
       deliveries as never,
-      { findOne: async ({ where }: { where: { id: string } }) => links.get(where.id) ?? null } as never,
+      linkRepo() as never,
       { insert: async (row: (typeof audit)[number]) => audit.push(row) } as never,
       {
         allowUnderJest: true,
@@ -148,14 +203,17 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     );
   }
 
-  function waiting(runId = RUN_ID, createdAt = new Date(T0)): void {
+  function waiting(runId = RUN_ID, createdAt = new Date(T0), extra: Partial<Row> = {}): void {
     deliveries.rows.push({
+      ...newRowDefaults(),
       collaborationRunId: runId,
       linkId: LINK_ID,
       status: 'waiting',
       notifiedReferralIds: [],
       createdAt,
       deliveredAt: null,
+      origin: 'chat',
+      ...extra,
     });
   }
 
@@ -349,7 +407,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         target as never,
         { getCollaborationRunWithReferrals: reads } as never,
         deliveries as never,
-        { findOne: async ({ where }: { where: { id: string } }) => links.get(where.id) ?? null } as never,
+        linkRepo() as never,
         { insert: async (row: (typeof audit)[number]) => audit.push(row) } as never,
         { allowUnderJest: true, now: () => now, sleep: async (ms: number) => void (now += ms) },
         approvals,
@@ -410,7 +468,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       // What CollaborationStartService.start does for a page start: ids only.
       expect(await runsService.onRunStarted({ collaborationRunId: RUN_ID, userId: OWNER })).toBe(true);
       expect(deliveries.rows).toEqual([
-        expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting', notifiedReferralIds: [] }),
+        expect.objectContaining({ collaborationRunId: RUN_ID, linkId: LINK_ID, status: 'waiting', notifiedReferralIds: [], origin: 'platform' }),
       ]);
       step('r1', 'chief-of-staff', `plan my week ${MARKER}`);
       const referrals: FakeReferral[] = [{ referralId: 'r1', status: 'pending_approval', result: null }];
@@ -468,7 +526,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       await service.tick();
       expect(approvals.liveTokens).toBe(0);
       expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
       expect(logs).toContain(`chat delivery held runId=${RUN_ID} linkId=${LINK_ID} reason=dm_refused`);
       await service.tick();
       expect(transport.directMessages).toEqual([]);
@@ -620,7 +678,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       ['d-new', 'delivered', recent],
       ['w-old', 'waiting', old],
     ] as const) {
-      deliveries.rows.push({ collaborationRunId: id, linkId: LINK_ID, status, notifiedReferralIds: [], createdAt, deliveredAt: null });
+      deliveries.rows.push({ ...newRowDefaults(), collaborationRunId: id, linkId: LINK_ID, status, notifiedReferralIds: [], createdAt, deliveredAt: null });
     }
     expect(await service.prune()).toBe(3);
     expect(deliveries.rows.map((row) => row.collaborationRunId)).toEqual(['d-new', 'w-old']);
@@ -652,7 +710,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       expect(await service.tick()).toBe(1);
       expect(transport.directMessages).toEqual([]);
       expect(deliveries.rows[0].status).toBe('waiting');
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
       expect(logs.filter((line) => line.startsWith('chat delivery held'))).toEqual([HELD_LINE]);
 
       // The poller skips the held row: nothing read, nothing sent, no retry counted, no audit, no new line.
@@ -673,12 +731,12 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       waiting();
       ended('completed', `The answer ${MARKER}`);
       await service.tick();
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
 
       // Another user, or another channel: nothing happens.
       activity.notify('discord', OTHER_DISCORD);
       expect(await service.resume('line' as never, DISCORD_ID)).toBe(0);
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
 
       // The user runs a command: the transport can now answer them (a follow-up in Discord).
       transport.refusedUsers.delete(DISCORD_ID);
@@ -686,7 +744,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       await settle(() => deliveries.rows[0].status === 'delivered');
       expect(transport.directMessages).toEqual([{ externalUserId: DISCORD_ID, message: { text: `The answer ${MARKER}` } }]);
       expect(deliveries.rows[0].status).toBe('delivered');
-      expect(service.heldCount).toBe(0);
+      expect(held()).toBe(0);
       expect(logs).toContain(`chat delivery resumed linkId=${LINK_ID} runs=1`);
       expect(audit).toEqual([
         expect.objectContaining({
@@ -708,7 +766,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       ended('completed', `${'a'.repeat(1800)}\n\n${'b'.repeat(1800)}`);
       await service.tick();
       expect(sent).toEqual(['a'.repeat(1800)]);
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
       blocked = false;
       transport.sendToUser = async (_id, message) => void sent.push(message.text);
       expect(await service.resume('discord', DISCORD_ID)).toBe(1);
@@ -728,7 +786,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       now = T0 + DAY + 1;
       await service.tick();
       expect(deliveries.rows[0].status).toBe('dropped');
-      expect(service.heldCount).toBe(0);
+      expect(held()).toBe(0);
       expect(logs).toContain(`chat delivery dropped runId=${RUN_ID} linkId=${LINK_ID} reason=too_old`);
       await service.tick();
       expect(service.polling).toBe(false);
@@ -745,7 +803,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       });
       await service.tick();
       expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
       expect(logs).toContain(HELD_LINE);
       expect(logs.some((line) => line.startsWith('chat delivery notice failed'))).toBe(false);
       transport.refusedUsers.delete(DISCORD_ID);
@@ -764,8 +822,9 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         ended('completed', MARKER, runId);
       }
       await service.tick();
-      expect(service.heldCount).toBe(CHAT_DELIVERY_LIMITS.batch);
+      expect(held()).toBe(CHAT_DELIVERY_LIMITS.batch);
       deliveries.rows.push({
+        ...newRowDefaults(),
         collaborationRunId: 'other-run',
         linkId: LINK_2,
         status: 'waiting',
@@ -835,7 +894,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       ended('completed', `The answer @everyone ${MARKER}`);
       await service.tick();
       expect(order).toEqual(['dm']);
-      expect(service.heldCount).toBe(1);
+      expect(held()).toBe(1);
       expect(deliveries.rows[0].status).toBe('waiting');
 
       gateway.emit(
@@ -866,6 +925,235 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       expect(deliveries.rows[0].status).toBe('delivered');
       expect(audit.map((row) => row.eventType)).toEqual(['result_delivered']);
       await discord.disconnect();
+    });
+  });
+
+  describe('CHAT-STATE-PERSIST-01: a restart (a new service instance over the same rows) continues where it stopped', () => {
+    const LONG = Array.from({ length: 200 }, (_, i) => `${i} ${MARKER} ${'word '.repeat(60)}`).join('\n\n');
+
+    function expectedParts(): string[] {
+      const result = chatResultMessages('en', 'completed', runs.get(RUN_ID)!.referrals as never);
+      expect(result?.parts).toHaveLength(5);
+      return result!.parts;
+    }
+
+    function restart(activity?: ChatActivityNotifier): ChatDeliveryService {
+      service.onModuleDestroy();
+      service = build(transport, {}, activity);
+      return service;
+    }
+
+    it('a crashed process left part 2 of 5 sent and its claim ran out: the new instance takes the row over and sends parts 3 to 5 only', async () => {
+      ended('completed', LONG);
+      waiting(RUN_ID, new Date(T0), { partsSent: 2, claimedBy: 'dead-process-0000-0000-000000000000', claimedUntil: new Date(now - 1) });
+      const parts = expectedParts();
+      restart();
+      expect(await service.tick()).toBe(1);
+      expect(transport.directMessages.map((entry) => entry.message.text)).toEqual(parts.slice(2));
+      // Each part carries its dedupe key (run id and part number), the Discord nonce's source.
+      expect(transport.dedupeKeys).toEqual([`chat-result:${RUN_ID}:3`, `chat-result:${RUN_ID}:4`, `chat-result:${RUN_ID}:5`]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'delivered', partsSent: 5, claimedBy: null, claimedUntil: null });
+      expect(audit[0].payload).toMatchObject({ outcome: 'completed', parts: 5 });
+    });
+
+    it('each part is written (compare-and-set on parts_sent under the claim) before the next part is sent', async () => {
+      ended('completed', LONG);
+      waiting();
+      const seen: Array<{ part: number; partsSent: number; claimedBy: string | null; claimedUntil: number | null }> = [];
+      transport.sendToUser = async (_id, message, options) => {
+        const row = deliveries.rows[0];
+        seen.push({
+          part: Number(options?.dedupeKey?.split(':').pop()),
+          partsSent: row.partsSent,
+          claimedBy: row.claimedBy,
+          claimedUntil: row.claimedUntil ? row.claimedUntil.getTime() : null,
+        });
+        transport.directMessages.push({ externalUserId: DISCORD_ID, message });
+      };
+      await service.tick();
+      expect(seen.map((entry) => [entry.part, entry.partsSent])).toEqual([[1, 0], [2, 1], [3, 2], [4, 3], [5, 4]]);
+      for (const entry of seen) {
+        expect(entry.claimedBy).toBe(service.claimId);
+        expect(entry.claimedBy).toMatch(/^[0-9a-f-]{36}$/);
+        expect(entry.claimedUntil).toBeGreaterThan(now - 5 * 1000);
+      }
+      const advances = deliveries.updates.filter((entry) => 'partsSent' in entry.patch);
+      expect(advances.map((entry) => [(entry.where as Record<string, unknown>).partsSent, entry.patch.partsSent])).toEqual([
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+        [4, 5],
+      ]);
+      for (const entry of advances) {
+        expect(entry.where).toMatchObject({ collaborationRunId: RUN_ID, status: 'waiting', claimedBy: service.claimId });
+      }
+      expect(deliveries.rows[0]).toMatchObject({ status: 'delivered', claimedBy: null, claimedUntil: null });
+    });
+
+    it('failures and backoff carry over a restart; the fourth failure fails the row with one audit row', async () => {
+      ended('completed', LONG);
+      waiting();
+      let sends = 0;
+      const failAfterTwo = async (_id: string, message: { text: string }) => {
+        sends += 1;
+        if (sends > 2) throw new Error(`discord said ${MARKER}`);
+        transport.directMessages.push({ externalUserId: DISCORD_ID, message });
+      };
+      transport.sendToUser = failAfterTwo;
+      // The backoff counts from the start of the pass (the one-second spacing moves the test clock on).
+      const passStart = now;
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(2);
+      expect(deliveries.rows[0]).toMatchObject({ partsSent: 2, sendFailures: 1, nextAttemptAt: new Date(passStart + 10 * 1000) });
+
+      // A restart inside the backoff: nothing is tried early.
+      restart();
+      transport.sendToUser = failAfterTwo;
+      now += 5 * 1000;
+      expect(await service.tick()).toBe(0);
+      expect(sends).toBe(3);
+
+      for (const [index, wait] of CHAT_DELIVERY_LIMITS.backoffMs.entries()) {
+        now += wait;
+        restart();
+        transport.sendToUser = failAfterTwo;
+        await service.tick();
+        expect(sends).toBe(4 + index);
+      }
+      expect(deliveries.rows[0].status).toBe('failed');
+      expect(audit).toEqual([
+        expect.objectContaining({
+          eventType: 'delivery_failed',
+          payload: { channel: 'discord', linkId: LINK_ID, collaborationRunId: RUN_ID, attempts: 4, partsSent: 2, reason: 'Error' },
+        }),
+      ]);
+      expect(transport.directMessages).toHaveLength(2);
+    });
+
+    it('a held row stays held after a restart: no send and no log line; the next command clears the hold and the rest goes out', async () => {
+      ended('completed', LONG);
+      waiting();
+      let sends = 0;
+      transport.sendToUser = async (_id, message) => {
+        sends += 1;
+        if (sends > 1) throw new ChatDirectMessageRefusedError();
+        transport.directMessages.push({ externalUserId: DISCORD_ID, message });
+      };
+      await service.tick();
+      expect(held()).toBe(1);
+      expect(deliveries.rows[0]).toMatchObject({ partsSent: 1, sendFailures: 0, heldAt: new Date(now) });
+      expect(logs.filter((line) => line.startsWith('chat delivery held'))).toHaveLength(1);
+
+      const activity = new ChatActivityNotifier();
+      restart(activity);
+      service.wake();
+      reads.mockClear();
+      for (let i = 0; i < 3; i += 1) {
+        now += 60 * 1000;
+        expect(await service.tick()).toBe(0);
+      }
+      expect(reads).not.toHaveBeenCalled();
+      expect(sends).toBe(2);
+      expect(logs.filter((line) => line.startsWith('chat delivery held'))).toHaveLength(1);
+      // The poller keeps running while a held row waits (it is dropped at 24 hours).
+      expect(service.polling).toBe(true);
+
+      transport.sendToUser = async (_id, message) => void transport.directMessages.push({ externalUserId: DISCORD_ID, message });
+      expect(await service.resume('discord', DISCORD_ID)).toBe(1);
+      expect(transport.directMessages.map((entry) => entry.message.text)).toEqual(expectedParts());
+      expect(deliveries.rows[0]).toMatchObject({ status: 'delivered', heldAt: null, partsSent: 5 });
+      expect(logs).toContain(`chat delivery resumed linkId=${LINK_ID} runs=1`);
+    });
+
+    it('a held row is dropped at 24 hours by another instance', async () => {
+      transport.refusedUsers.add(DISCORD_ID);
+      ended('completed', MARKER);
+      waiting();
+      await service.tick();
+      expect(held()).toBe(1);
+      restart();
+      now = T0 + DAY + 1;
+      await service.tick();
+      expect(deliveries.rows[0].status).toBe('dropped');
+      expect(logs).toContain(`chat delivery dropped runId=${RUN_ID} linkId=${LINK_ID} reason=too_old`);
+      expect(transport.directMessages).toEqual([]);
+    });
+
+    it('a row another process has claimed is skipped (no read, no send); once its claim runs out it is taken over', async () => {
+      ended('completed', `The answer ${MARKER}`);
+      waiting(RUN_ID, new Date(T0), { claimedBy: 'other-process-0000-0000-000000000000', claimedUntil: new Date(now + 30 * 1000) });
+      expect(await service.tick()).toBe(0);
+      expect(reads).not.toHaveBeenCalled();
+      expect(transport.directMessages).toEqual([]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'waiting', claimedBy: 'other-process-0000-0000-000000000000' });
+
+      now += 30 * 1000 + 1;
+      expect(await service.tick()).toBe(1);
+      expect(transport.directMessages.map((entry) => entry.message.text)).toEqual([`The answer ${MARKER}`]);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'delivered', claimedBy: null });
+    });
+
+    it('the claim is one UPDATE that succeeds only without a live claim', async () => {
+      ended('completed', MARKER);
+      waiting();
+      await service.tick();
+      const claim = deliveries.updates.find((entry) => 'claimedBy' in entry.patch && entry.patch.claimedBy !== null)!;
+      expect(Array.isArray(claim.where)).toBe(true);
+      const [noClaim, expired] = claim.where as Array<Record<string, FindOperator<unknown> | string>>;
+      expect(noClaim).toMatchObject({ collaborationRunId: RUN_ID, status: 'waiting' });
+      expect((noClaim.claimedUntil as FindOperator<unknown>).type).toBe('isNull');
+      expect((expired.claimedUntil as FindOperator<unknown>).type).toBe('lessThan');
+      expect(claim.patch.claimedUntil).toEqual(new Date(T0 + 60 * 1000 + CHAT_DELIVERY_LIMITS.claimMs));
+    });
+
+    it('two processes over the same rows: each part goes out once', async () => {
+      ended('completed', LONG);
+      waiting();
+      const other = build();
+      await Promise.all([service.tick(), other.tick()]);
+      await Promise.all([service.tick(), other.tick()]);
+      expect(transport.directMessages.map((entry) => entry.message.text)).toEqual(expectedParts());
+      expect(audit.filter((row) => row.eventType === 'result_delivered')).toHaveLength(1);
+      other.onModuleDestroy();
+    });
+
+    it('a lost compare-and-set (another process moved the row on) stops sending at once', async () => {
+      ended('completed', LONG);
+      waiting();
+      transport.sendToUser = async (_id, message) => {
+        transport.directMessages.push({ externalUserId: DISCORD_ID, message });
+        // While the first part is in flight the claim runs out and another process takes the row.
+        deliveries.rows[0].claimedBy = 'other-process-0000-0000-000000000000';
+      };
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      expect(deliveries.rows[0]).toMatchObject({ status: 'waiting', partsSent: 0, claimedBy: 'other-process-0000-0000-000000000000' });
+      expect(logs).toContain(`chat delivery claim lost runId=${RUN_ID} linkId=${LINK_ID} partsSent=1`);
+      expect(audit).toEqual([]);
+    });
+
+    it('a row in backoff does not take a place in the batch', async () => {
+      for (let i = 0; i < CHAT_DELIVERY_LIMITS.batch; i += 1) {
+        const runId = `backoff-${String(i).padStart(2, '0')}`;
+        waiting(runId, new Date(T0 + i), { sendFailures: 1, nextAttemptAt: new Date(now + 10 * 1000) });
+        ended('completed', MARKER, runId);
+      }
+      waiting('ready-run', new Date(T0 + 100));
+      ended('completed', 'Ready answer', 'ready-run');
+      expect(await service.tick()).toBe(1);
+      expect(transport.directMessages.map((entry) => entry.message.text)).toEqual(['Ready answer']);
+    });
+
+    it('approval notices carry no dedupe key (only result parts do)', async () => {
+      waiting();
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      expect(transport.dedupeKeys).toEqual([undefined]);
     });
   });
 

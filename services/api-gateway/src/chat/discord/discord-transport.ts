@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { createHash } from 'crypto';
 import type { APIInteraction, GatewayDispatchPayload, GatewayReadyDispatchData } from '@discordjs/core';
 import type { ChatChannel } from '../chat-link.service';
 import { isChatDiscordEnabled } from '../chat-switch';
@@ -11,6 +12,7 @@ import {
   type ChatComponentResponse,
   type ChatInstallLinks,
   type ChatReplyMessage,
+  type ChatSendOptions,
   type ChatTransport,
   type ChatTransportState,
 } from '../chat-transport';
@@ -73,6 +75,15 @@ import {
  * direct message throws ChatDirectMessageRefusedError (no id, no text).
  * installLinks gives the page the install link and the bot's profile link,
  * built from the application id and the bot user id of the READY payload.
+ *
+ * CHAT-STATE-PERSIST-01: a message sent with a dedupe key (a result part:
+ * run id and part number) carries, on the direct message only, Discord's
+ * nonce (the first 25 hex characters of the SHA-256 of the key; Discord
+ * allows up to 25 characters) with enforce_nonce true: Discord then returns
+ * the earlier message instead of creating a second one with the same nonce
+ * within a few minutes, so a part re-sent after a crash between Discord's
+ * "sent" and the database write is not shown twice. Follow-ups cannot carry
+ * a nonce, so they go without it.
  */
 
 export const DISCORD_BOT_TOKEN_ENV = 'DISCORD_BOT_TOKEN';
@@ -122,6 +133,9 @@ export const DISCORD_ANSWER_WAIT_MS = 5000;
 export const DISCORD_DM_REFUSED_CODES: readonly number[] = [50007, 50278];
 export const DISCORD_DM_REFUSED_STATUS = 403;
 
+/** CHAT-STATE-PERSIST-01: Discord's nonce is at most 25 characters. */
+export const DISCORD_NONCE_MAX = 25;
+
 /** WebSocketShardEvents names used here. Debug is deliberately not among them. */
 export const DISCORD_GATEWAY_EVENTS = {
   closed: 'closed',
@@ -151,6 +165,15 @@ export interface DiscordMessageBody {
   flags?: number;
   /** Slice C2: one row of buttons, or [] to remove the buttons of the message being edited. */
   components?: DiscordActionRow[];
+  /** CHAT-STATE-PERSIST-01: direct messages only; see discordNonceOf. */
+  nonce?: string;
+  /** CHAT-STATE-PERSIST-01: with nonce, Discord drops a repeat of the same nonce within a few minutes. */
+  enforce_nonce?: boolean;
+}
+
+/** CHAT-STATE-PERSIST-01: the nonce for a dedupe key: 25 hex characters of its SHA-256 (no id is readable from it). */
+export function discordNonceOf(dedupeKey: string): string {
+  return createHash('sha256').update(`aisb-chat:${dedupeKey}`).digest('hex').slice(0, DISCORD_NONCE_MAX);
 }
 
 /** The REST calls the transport makes, so tests can fake them without the library. */
@@ -612,9 +635,11 @@ export class DiscordTransport implements ChatTransport {
    * it is younger than 14 minutes (after that interaction's own answer),
    * else the direct message. A follow-up that fails falls back to the direct
    * message and forgets the reference. A refused direct message throws
-   * ChatDirectMessageRefusedError.
+   * ChatDirectMessageRefusedError. CHAT-STATE-PERSIST-01: with a dedupe key
+   * the direct message carries the nonce and enforce_nonce (the follow-up
+   * cannot).
    */
-  async sendToUser(externalUserId: string, message: ChatReplyMessage): Promise<void> {
+  async sendToUser(externalUserId: string, message: ChatReplyMessage, options?: ChatSendOptions): Promise<void> {
     const connection = this.connection;
     if (!connection || this.currentState !== 'ready' || !SNOWFLAKE.test(externalUserId)) {
       return;
@@ -633,8 +658,12 @@ export class DiscordTransport implements ChatTransport {
         this.logger.warn(`chat discord follow-up failed reason=${errorName(error)}${errorStatus(error)}`);
       }
     }
+    const dedupeKey = typeof options?.dedupeKey === 'string' && options.dedupeKey.length > 0 ? options.dedupeKey : null;
+    const direct: DiscordMessageBody = dedupeKey
+      ? { ...outgoing, nonce: discordNonceOf(dedupeKey), enforce_nonce: true }
+      : outgoing;
     try {
-      await connection.calls.sendDirectMessage(externalUserId, outgoing);
+      await connection.calls.sendDirectMessage(externalUserId, direct);
     } catch (error) {
       if (isDiscordDirectMessageRefused(error)) {
         throw new ChatDirectMessageRefusedError();

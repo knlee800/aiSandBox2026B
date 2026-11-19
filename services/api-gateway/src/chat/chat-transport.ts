@@ -52,6 +52,17 @@ export interface ChatReplyMessage {
   readonly buttons?: readonly ChatButton[];
 }
 
+/**
+ * CHAT-STATE-PERSIST-01: options for sendToUser. dedupeKey is a stable key
+ * for one message (the delivery uses the run id and the part number): the
+ * chat service may use it to drop a repeat of the same message sent again
+ * after a crash (Discord: the direct message's nonce with enforce_nonce).
+ * Made only of ids; never text.
+ */
+export interface ChatSendOptions {
+  readonly dedupeKey?: string;
+}
+
 /** Returns the reply, or null to answer nothing (for example a silenced /link). */
 export type ChatCommandHandler = (invocation: ChatCommandInvocation) => Promise<ChatReplyMessage | null>;
 
@@ -134,9 +145,11 @@ export interface ChatTransport {
    * follow-up to that interaction (after its own answer); otherwise, or when
    * the follow-up fails, by direct message. A direct message the chat
    * service refuses throws ChatDirectMessageRefusedError; other failures
-   * throw as they are.
+   * throw as they are. CHAT-STATE-PERSIST-01: options.dedupeKey, when given,
+   * lets the chat service drop a repeat of the same direct message (follow-ups
+   * cannot carry it).
    */
-  sendToUser(externalUserId: string, message: ChatReplyMessage): Promise<void>;
+  sendToUser(externalUserId: string, message: ChatReplyMessage, options?: ChatSendOptions): Promise<void>;
   /** CHAT-USER-INSTALL-01: the install and bot links while connected and known, else null. */
   installLinks(): ChatInstallLinks | null;
 }
@@ -190,6 +203,8 @@ export class FakeChatTransport implements ChatTransport {
   readonly replies: Array<{ invocation: ChatCommandInvocation; message: ChatReplyMessage | null }> = [];
   /** Every message sent to a user (sendToUser). */
   readonly directMessages: Array<{ externalUserId: string; message: ChatReplyMessage }> = [];
+  /** CHAT-STATE-PERSIST-01: the dedupe key of each message sent (same order as directMessages). */
+  readonly dedupeKeys: Array<string | undefined> = [];
   readonly componentResponses: Array<{ press: ChatComponentPress; response: ChatComponentResponse }> = [];
   /** Users whose messages are refused (sendToUser throws ChatDirectMessageRefusedError). */
   readonly refusedUsers = new Set<string>();
@@ -225,11 +240,12 @@ export class FakeChatTransport implements ChatTransport {
     this.replies.push({ invocation, message });
   }
 
-  async sendToUser(externalUserId: string, message: ChatReplyMessage): Promise<void> {
+  async sendToUser(externalUserId: string, message: ChatReplyMessage, options?: ChatSendOptions): Promise<void> {
     if (this.refusedUsers.has(externalUserId)) {
       throw new ChatDirectMessageRefusedError();
     }
     this.directMessages.push({ externalUserId, message });
+    this.dedupeKeys.push(options?.dedupeKey);
   }
 
   installLinks(): ChatInstallLinks | null {
