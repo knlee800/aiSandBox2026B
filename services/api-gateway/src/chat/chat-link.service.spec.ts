@@ -143,6 +143,17 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       expect(store.codes.rows).toHaveLength(0);
     });
 
+    it('CHAT-PRUNE-01: pruneExpiredCodes deletes expired codes without a link call, with the switch off, and returns the count', async () => {
+      await service.createCode(OWNER, 'en');
+      advance(5 * MINUTE);
+      await service.createCode(OTHER, 'en');
+      advance(5 * MINUTE);
+      process.env.CHAT_DISCORD_ENABLED = 'false';
+      expect(await service.pruneExpiredCodes(Date.now())).toBe(1);
+      expect(store.codes.rows.map((row) => row.userId)).toEqual([OTHER]);
+      expect(await service.pruneExpiredCodes()).toBe(0);
+    });
+
     it('generates only alphabet characters, 8 of them, without look-alikes', () => {
       expect(CHAT_LINK_CODE_ALPHABET).toHaveLength(32);
       expect(new Set(CHAT_LINK_CODE_ALPHABET).size).toBe(32);

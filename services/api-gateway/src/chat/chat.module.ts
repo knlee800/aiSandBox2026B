@@ -26,6 +26,7 @@ import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatLimits } from './chat-limits';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
+import { ChatPruneService } from './chat-prune.service';
 import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT, ChatActivityNotifier, ChatTransport } from './chat-transport';
 import { DiscordTransport } from './discord/discord-transport';
@@ -133,6 +134,8 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * CHAT-LINK-NOTICE-01: EmailModule gives ChatLinkService the platform mailer
  * (EMAIL_PROVIDER) for the link and unlink e-mails (the same module instance
  * AuthModule imports).
+ * CHAT-PRUNE-01: ChatPruneService deletes old rows of the four chat tables at
+ * boot and hourly, whatever the Discord switch says.
  * Only ChatLinkService is exported.
  */
 @Module({
@@ -162,6 +165,7 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     ChatApprovalService,
     ChatActivityNotifier,
     ChatLimits,
+    ChatPruneService,
   ],
   exports: [ChatLinkService],
 })

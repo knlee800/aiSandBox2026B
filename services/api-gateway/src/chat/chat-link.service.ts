@@ -954,8 +954,14 @@ export class ChatLinkService {
     return rows.filter((row) => row.expiresAt.getTime() > now);
   }
 
-  private async deleteExpiredCodes(now: number): Promise<void> {
-    await this.codes.delete({ expiresAt: LessThanOrEqual(new Date(now)) });
+  private async deleteExpiredCodes(now: number): Promise<number> {
+    const result = await this.codes.delete({ expiresAt: LessThanOrEqual(new Date(now)) });
+    return result.affected ?? 0;
+  }
+
+  /** CHAT-PRUNE-01: the hourly prune deletes expired codes too, whatever the switch says. Returns the rows deleted. */
+  pruneExpiredCodes(now: number = Date.now()): Promise<number> {
+    return this.deleteExpiredCodes(now);
   }
 
   private linkView(link: ChatLink): ChatLinkView {

@@ -803,6 +803,15 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     expect(transport.directMessages).toEqual([]);
   });
 
+  it('CHAT-PRUNE-01: prune() needs no switch and no poll (the hourly prune service calls it with Discord off)', async () => {
+    process.env.CHAT_DISCORD_ENABLED = 'false';
+    const old = new Date(now - 30 * DAY - 1);
+    deliveries.rows.push({ ...newRowDefaults(), collaborationRunId: 'd-old', linkId: LINK_ID, status: 'delivered', notifiedReferralIds: [], createdAt: old, deliveredAt: null });
+    expect(service.polling).toBe(false);
+    expect(await service.prune()).toBe(1);
+    expect(deliveries.rows).toEqual([]);
+  });
+
   it('acceptance 7: delivered, failed and dropped rows older than 30 days are pruned; waiting and newer rows stay', async () => {
     const old = new Date(now - 30 * DAY - 1);
     const recent = new Date(now - 29 * DAY);

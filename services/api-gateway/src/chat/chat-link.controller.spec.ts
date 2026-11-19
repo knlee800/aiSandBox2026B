@@ -27,6 +27,7 @@ import { ChatLinkService } from './chat-link.service';
 import { ChatCommandService } from './chat-commands';
 import { ChatApprovalService } from './chat-approval.service';
 import { ChatDeliveryService } from './chat-delivery.service';
+import { ChatPruneService } from './chat-prune.service';
 import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT_PROVIDER, ChatChannelRunner, ChatModule } from './chat.module';
 import { ChatLimits } from './chat-limits';
@@ -506,6 +507,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       ChatApprovalService,
       ChatActivityNotifier,
       ChatLimits,
+      ChatPruneService,
     ]);
     expect(exportsList).toEqual([ChatLinkService]);
 
