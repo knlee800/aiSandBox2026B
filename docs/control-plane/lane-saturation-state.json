@@ -7,13 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COS-EVAL-FAILCHAIN-SCORE-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/briefing-score.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-score.spec.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -7635,14 +7639,18 @@
       "taskId": "COS-EVAL-FAILCHAIN-SCORE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["COS-EVAL-LIVE-04"],
       "mutexes": ["AI-SERVICE"],
-      "writePaths": [],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/briefing-score.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-score.spec.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -7650,8 +7658,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "RUN-FINISH-EVENT-01",

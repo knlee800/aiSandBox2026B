@@ -90295,24 +90295,25 @@ taskId=COS-EVAL-FAILCHAIN-SCORE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the COS-EVAL-LIVE-04 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, admit". Was: READY — registered 2026-11-19 by the COS-EVAL-LIVE-04 LOCK — not admitted.
 **Task ID:** COS-EVAL-FAILCHAIN-SCORE-01
 **Title:** Score the chain-failed eval case as the live run answered
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith picks it. Keith decides.
+**Start condition:** READY (Keith, 2026-11-19). Was: NOT_READY. Ready when: Keith picks it. Keith decides.
 **Depends on:** COS-EVAL-LIVE-04.
-**Primary write scope:** PROVISIONAL: services/ai-service/src/agent-harness/eval/briefing-score.ts, briefing-score.spec.ts, briefing-runner.spec.ts, and the chain-failed tool offer in briefing-prompt.ts if Knowledge search must also be advertised.
-**Mutexes / resources:** set at admission (AI-SERVICE expected).
+**Primary write scope:** EXACT (2026-11-19): services/ai-service/src/agent-harness/eval/briefing-score.ts, services/ai-service/src/agent-harness/eval/briefing-score.spec.ts, services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts. Was: PROVISIONAL: services/ai-service/src/agent-harness/eval/briefing-score.ts, briefing-score.spec.ts, briefing-runner.spec.ts, and the chain-failed tool offer in briefing-prompt.ts if Knowledge search must also be advertised.
+**Mutexes / resources:** AI-SERVICE (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From COS-EVAL-LIVE-04: the real model's chain-failed answer was correct but scored as failing. (1) A clause that explains a tool limit ("I can't open the failed run myself, because the tool for reading run results only works on runs that finished") is counted as a cause: excuse cause phrases in a clause about the run's own access or tools, or add such phrases (for example "can't open", "cannot open") to the unavailable list, with tests from the live answer. (2) search_knowledge counts as an extra tool call: allow Knowledge search in the chain-failed profile, as a real failure-chain Chief of Staff run has it, with a test. Keep the check that no cause is named for this run; general causes labelled as general stay allowed. The live answer is in services/ai-service/src/agent-harness/eval/baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json.
 
+Design (Keith approved 2026-11-19, "Yes, admit"): in briefing-score.ts, add access phrases to FAILURE_REASON_UNAVAILABLE_PHRASES (cannot open, unable to open, not able to open, cannot access, unable to access, not able to access), so a clause about the agent's own access is honest and its because is excused; allow search_knowledge and read_knowledge in the chain-failed profile only; update the doc comments; tests: the COS-EVAL-LIVE-04 answer (from baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json) with tool call search_knowledge scores as passing, an invented cause next to an access clause separated by a comma or but still counts, and the other profiles still count search_knowledge as extra. The cause list, the trigger lead-ins, cases, baselines and the Chief of Staff instruction copy are unchanged.
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-WEBHOOK-01
