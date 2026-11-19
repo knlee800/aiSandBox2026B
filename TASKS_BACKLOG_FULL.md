@@ -88684,7 +88684,7 @@ taskId=STAGING-DEPLOY-CHATBATCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-20 — Keith approved the batch's one deploy ("Yes, all 9"). Was: READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-20. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. staging runs 0976d52 (from 8d6b499) with the whole Discord production batch and migration 1817 (hash c32f099c -> 5b4f65af); deployed during the open tester window with runs off only for the deploy (about 16:39 to 16:45Z 2026-11-19), the window gateway.env restored byte for byte (0c152771), ai.env unchanged (e18cc83f), every window switch as before; Discord ready with 7 commands and the DirectMessages intent accepted; every adapted check passed; RC=0; also carried COS-EVAL-FAILCHAIN-SCORE-01, closing STAGING-DEPLOY-EVALSCORE-01. Live check next: CHAT-LIVE-02 after Keith's portal step. Checkpoint: docs/STAGING-DEPLOY-CHATBATCH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-20 — Keith approved the batch's one deploy ("Yes, all 9"). Was: READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CHATBATCH-01
 **Title:** Deploy the Discord production batch
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88729,6 +88729,7 @@ nature=IMPLEMENTATION
 
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): its governance record also updates ARCHITECTURE.md's chat wording (lines 231, 580 and 1193: the chat tables and stored, hashed button tokens); check migration 1817 applied (new migration hash) and that old buttons work after the deploy's restart.
 Note (CHAT-TIDY-01 LOCK, 2026-11-20): also check live: /ask agent autocomplete, the Reject form (close leaves the step waiting; with and without a reason), two quick Approve presses give one decision, /help's buttons line, a plain message during a gateway restart is answered after ready, an unlinked account gets at most 3 replies a minute, only the green line right after Confirm, /ask's step 1 never announced, no per-pass prune lines.
+Note (STAGING-DEPLOY-CHATBATCH-01 LOCK, 2026-11-20): deployed; staging runs 0976d52, migration hash 5b4f65af. Ready once Keith has turned on Public Bot and User Install in the Discord portal.
 ### COS-EVAL-LIVE-05 — Live run of the Discord chat-ask eval cases
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-LIVE-05
@@ -90570,7 +90571,7 @@ taskId=STAGING-DEPLOY-EVALSCORE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-SCORE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-20 — carried by STAGING-DEPLOY-CHATBATCH-01 (0976d52 includes COS-EVAL-FAILCHAIN-SCORE-01), as this task's scope says ("If another deploy comes first, that deploy carries this change and closes this task"); never admitted on its own. Was: READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-SCORE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-EVALSCORE-01
 **Title:** Deploy the chain-failed scoring fix
 **Workstream:** AGENT (taxonomy only; zero admission weight)
