@@ -88521,7 +88521,7 @@ taskId=CHAT-PRUNE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; GATEWAY passed to CHAT-TIDY-01. old Discord chat rows (expired link codes, finished deliveries after 30 days, limit rows after an hour, expired approval tokens) pruned at boot and hourly whatever the switch says, each step contained, counts-only logging; by a sonnet subagent (a8702ba, fast-forwarded); control-plane gates on the branch: gateway 6994 passed, only the 14 known smoke.integration failures, tsc and build rc 0. Not deployed: STAGING-DEPLOY-CHATBATCH-01. Checkpoint: docs/CHAT-PRUNE-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the duplicate prune in ChatDeliveryService.tick(), into CHAT-TIDY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-PRUNE-01
 **Title:** Prune chat codes and delivery rows with the switch off
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88577,7 +88577,7 @@ taskId=CHAT-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-TIDY-01
 **Title:** Small Discord chat fixes
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88585,14 +88585,14 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides. Optional.
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, the gateway locale files.
-**Mutexes / resources:** set at admission (GATEWAY expected).
+**Primary write scope:** EXACT (2026-11-19): services/api-gateway/src/chat/, services/api-gateway/locales/en.json, services/api-gateway/locales/zh-TW.json, services/api-gateway/locales/zh-CN.json, frontend/components/connections/chat-link-section.tsx, frontend/components/connections/chat-link-section.test.tsx, frontend/components/connections/chat-link.logic.ts, frontend/components/connections/chat-link.logic.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Was: PROVISIONAL: services/api-gateway/src/chat/.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01: agent-name autocomplete for /ask (needs autocomplete interactions); the per-minute limit covers only /ask and /cancel; /help does not mention the approval buttons; Reject from Discord always stores the fixed 'omitted' reason; four no-explicit-any lint errors in chat/discord/discord-transport.ts.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
@@ -88601,6 +88601,8 @@ Note (CHAT-RESULTS-OTHER-01 LOCK, 2026-11-19): a pre-existing race: a delivery p
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): resume() reads the link on every command (harmless today); two presses of one button can both pass the token lookup before either spends it (approveStep's status check decides today): make spend a delete that must remove exactly one row.
 Note (CHAT-LINK-NOTICE-01 LOCK, 2026-11-19): right after Confirm the Connections page shows both the green "Discord is linked." line and the amber recent-link notice; show one.
 Note (CHAT-DISCORD-DM-01 LOCK, 2026-11-19): plain messages from unlinked or junk authors are not rate-limited (each costs a link lookup and a reply): add a per-author reply limit; plain messages that arrive during a reconnect are dropped without notice; after a plain message, held results still need a slash command when direct messages are refused (say so in the held note); link.confirmed should mention plain messages.
+Note (CHAT-PRUNE-01 LOCK, 2026-11-19): ChatDeliveryService.tick() still prunes the same tables as ChatPruneService on every pass; remove the duplicate.
+Design (Keith 2026-11-19, "Yes, all 9"): the Scope line and the six Notes above, as thirteen items: (1) /ask agent autocomplete from the owner's usable workflows; (2) the 10-a-minute limit on every command and plain message except /link and /help, and at most 3 replies a minute to an unlinked author (bucket command, subject SHA-256 of unlinked:<id>, no migration); (3) /help names the Approve and Reject buttons; (4) Reject opens a modal with an optional reason (max 500), the submit runs every press check and spends the token, empty gives Rejected in Discord; (5) the four no-explicit-any errors; (6) a typed not-ready send that the delivery does not count; (7) the hand-off /ask approves itself is never announced; (8) token spend must delete exactly one row; (9) resume() at most one query and none without a held row; (10) plain messages during a reconnect queued (at most 50) and handled once ready; (11) link.confirmed and the held notes updated; (12) right after Confirm only the green linked line, the amber notice on later views; (13) the duplicate prune removed from tick(). Implementer: opus subagent (Opus 5.5: the approval path, limits and untrusted input). Write set: services/api-gateway/src/chat/, the gateway locales, four connections files and the three message files.
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
