@@ -135,6 +135,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 80 | Review the two archival snapshots of the deleted old host (aisandbox-staging-archive-20261026 and aisandbox-staging-archive-stopped-20261026): delete them (Keith 2026-11-13, 30-day rule; plan S3; OLD-HOST-RETIRE-01 deleted the instance and the rest on 2026-11-09) | 2027-01-24 |
 | 80a | Keith's small open decisions: answered 2026-11-12 ("1 all yes"): saturationClass OPTIONAL confirmed for OFFICE-SCENE-01, OFFICE-BUILD-01, OFFICE-SHOP-01, OFFICE-PLAYER-01 and OFFICE-VOICE-01; PRD.md's Deeper RPG row reworded by GOV-PRD-SYNC-02; PAGE-ERROR-POLISH-01 kept as optional. Bigger ones are in their rows: the first PixelLab test character and test set (21), voice provider and audio storage (23); privacy (46) started with the data inventory | Done 2026-11-12 |
 | 80b | Leftover files and folders outside the repository: all deleted by Keith; the control plane checked on 2026-11-12 that none remains (the CM-CLEANUP-01B, CM-CLEANUP-02, CM-DEPS-01 and CSRF-AUDIT-01 folders, scratch-build.log, app-setup.bak, addmsgs.js) and that no lane branch is left | Done 2026-11-12 |
+| 80c | TESTER-WINDOW-02, TESTER-WINDOW-CLOSE-02 | Keith's own 7-day run window on staging (runs and triggers on, 150 credits a day; Keith 2026-11-19): TESTER-WINDOW-02 admitted 2026-11-19; TESTER-WINDOW-CLOSE-02 on 2026-11-26 or when Keith says stop; its report is the evidence for BRIEF-WIDE-01 and SKILL-01 |
 
 **Stage 12 — old tasks from before the clean rebuild; Keith decides whether to drop each**
 

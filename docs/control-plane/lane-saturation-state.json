@@ -7,17 +7,26 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
+      "state": "ACTIVE",
+      "taskId": "TESTER-WINDOW-02",
+      "mutexes": [
+        "STAGING",
+        "ENV",
+        "PROVIDER-LIVE",
+        "CREDIT"
+      ],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": [
+        "STAGING",
+        "PROVIDER-LIVE",
+        "CREDIT"
+      ]
     },
     "lane2": {
       "state": "EMPTY",
@@ -7680,6 +7689,59 @@
       "writeSetPrecision": "EXACT"
     },
     {
+      "taskId": "TESTER-WINDOW-02",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": ["STAGING-DEPLOY-EVALFAIL-01"],
+      "mutexes": [
+        "STAGING",
+        "ENV",
+        "PROVIDER-LIVE",
+        "CREDIT"
+      ],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "PROVIDER-LIVE",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [
+        "STAGING",
+        "PROVIDER-LIVE",
+        "CREDIT"
+      ],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "TESTER-WINDOW-CLOSE-02",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "READY",
+      "startCondition": "NOT_READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": ["TESTER-WINDOW-02"],
+      "mutexes": ["STAGING", "ENV"],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "STAGING-RUNTIME",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": ["STAGING"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
       "taskId": "RUN-FINISH-EVENT-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
@@ -11365,9 +11427,9 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
-    "providerLiveAuthorized": false,
-    "creditAuthorized": false,
+    "stagingAuthorized": true,
+    "providerLiveAuthorized": true,
+    "creditAuthorized": true,
     "testerWindowOpen": false
   }
 }

@@ -90338,6 +90338,54 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From COS-EVAL-FAILCHAIN-SCORE-01: deploy main with the earlier deploy checks (template aisb-preflight/STAGING-DEPLOY-EVALFAIL-01/ef-deploy.sh), so a later live eval on staging scores with FAILURE_ACCESS_PHRASES and the Knowledge tools in the chain-failed profile. If another deploy comes first, that deploy carries this change and closes this task.
 
+### TESTER-WINDOW-02 — Open Keith's run window on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TESTER-WINDOW-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — registered and admitted at once (GOV-OS-04); Keith said "Yes, draft it", then 7 days, 150 a day and "I'll tidy them first", then "Done".
+**Task ID:** TESTER-WINDOW-02
+**Title:** Open Keith's run window on staging
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (Keith, 2026-11-19).
+**Depends on:** STAGING-DEPLOY-EVALFAIL-01.
+**Primary write scope:** records; host state (the staging env files; window copies in /root/aisb-tw2).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** the saved env files restore the baselines byte for byte.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (staging use by a trusted person, GOV-OS-06).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** GOV-OS-06 window opener: Keith's own run window on staging 8d6b499 for 7 days, to close 2026-11-26 or earlier when Keith says stop: runs on with the stored Anthropic test key (claude-opus-5-5, tool loop), schedules, event, mail, knowledge and chain triggers and the run-result tool on, MAX_DAILY_CREDITS_PER_USER=150, 4 runs a minute, write and validation tools off, basic_auth on; Keith tidied his triggers first (on at opening: one before-a-meeting trigger and one mail trigger; every schedule off); the switch-on saves both env files and records the window hashes; the window evidence (runs by trigger type, credits per run and per day, failures) is for BRIEF-WIDE-01 and SKILL-01. Steps: tw2-on.sh phase a (pre-checks: DEPLOYED 8d6b499, env files at the baselines gateway.env 616841ca and ai.env 721f4772, every switch off, nothing running; saves both files to /root/aisb-tw2) and phase b (the stored key, never shown; the settings above; restart; gateway, AI worker and Discord ready; window hashes recorded); a host status check; LOCK with the window left OPEN and testerWindowOpen true. Evidence in aisb-preflight/TESTER-WINDOW-02.
+
+### TESTER-WINDOW-CLOSE-02 — Close Keith's run window on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TESTER-WINDOW-CLOSE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 with TESTER-WINDOW-02 — not admitted.
+**Task ID:** TESTER-WINDOW-CLOSE-02
+**Title:** Close Keith's run window on staging
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: 2026-11-26 (the window's planned end), or earlier when Keith says stop. Keith decides.
+**Depends on:** TESTER-WINDOW-02.
+**Primary write scope:** records; host state (the staging env files; window copies in /root/aisb-tw2).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** the saved env files restore the baselines byte for byte.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (staging use by a trusted person, GOV-OS-06).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** GOV-OS-06 window closer: tw2-off.sh restores /root/aisb-tw2/gateway.env.before and ai.env.before byte for byte (616841ca, 721f4772), restarts the gateway and AI service, checks every switch off and the units active; testerWindowOpen false. The closing record reports the window: runs by trigger type and by chat, credits per run and per day, failures and refusals, and any trigger Keith changed, as evidence for BRIEF-WIDE-01 and SKILL-01.
+
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-WEBHOOK-01
