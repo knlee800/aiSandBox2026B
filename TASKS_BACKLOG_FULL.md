@@ -88446,7 +88446,7 @@ taskId=CHAT-LINK-NOTICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-LINK-NOTICE-01
 **Title:** Notices when a chat account is linked or unlinked
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88454,17 +88454,18 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides; before a second user links.
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/, the mailer, frontend/components/connections/, the three message files.
-**Mutexes / resources:** set at admission.
+**Primary write scope:** EXACT (2026-11-19): services/api-gateway/src/chat/chat-link-mail.ts, services/api-gateway/src/chat/chat-link-mail.spec.ts, services/api-gateway/src/chat/chat-link.service.ts, services/api-gateway/src/chat/chat-link.service.spec.ts, services/api-gateway/src/chat/chat-link.controller.spec.ts, services/api-gateway/src/chat/chat-commands.spec.ts, services/api-gateway/src/chat/chat.module.ts, services/api-gateway/src/chat/chat-replies.ts, services/api-gateway/src/chat/chat-replies.spec.ts, services/api-gateway/locales/en.json, services/api-gateway/locales/zh-TW.json, services/api-gateway/locales/zh-CN.json, frontend/components/connections/chat-link-section.tsx, frontend/components/connections/chat-link-section.test.tsx, frontend/components/connections/chat-link.logic.ts, frontend/components/connections/chat-link.logic.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Was: PROVISIONAL: services/api-gateway/src/chat/, the mailer, frontend/components/connections/, the three message files.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01 (F9 and slice A2): an e-mail to the owner through the platform mailer at link and unlink, and a notice of each new link on the Connections page, as a takeover signal.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
+Design (Keith 2026-11-19, "Yes, all 9"): after a successful confirm and after each successful unlink (page or /unlink), one e-mail through EMAIL_PROVIDER in the link's language (gateway locales): a Discord account (id ending XXXX) was linked or unlinked at <UTC time>, a link to the Connections page, and what to do if it was not the owner; no display name, full id, code or token; a send failure is logged with ids and never fails or undoes the link. After Confirm the newly linked Discord account gets one confirmation through sendToUser (a refused direct message is ignored). The Connections page shows a 7-day notice after a link. en, zh-TW, zh-CN. Staging's EMAIL_PROVIDER is stub, so e-mails are built and logged but not sent until a real provider is set (follow-up at LOCK). Implementer: opus subagent (Opus 5.5: the account-link path, the mailer and the frontend). Write set of 19 paths.
 ### CHAT-PRUNE-01 — Prune chat codes and delivery rows with the switch off
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-PRUNE-01
@@ -88497,7 +88498,7 @@ taskId=CHAT-STATE-PERSIST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — stage-start approved by Keith ("Yes, approve it"). Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; MIGRATION released, GATEWAY passed to CHAT-LINK-NOTICE-01. chat limits, delivery progress, holds and approval buttons survive restarts: migration 1817 AddChatPersistedState (seven delivery columns incl. origin, chat_limit_hits, chat_approval_tokens), a row lease with compare-and-set on parts_sent, Discord's nonce on result direct messages, limits under an advisory transaction lock with hashed Discord ids, approval tokens stored as SHA-256 with one repair message; by an opus subagent (S1 b997976, S2 e5e94a4, cherry-picked as a74c361 and e21972c); control-plane gates on the branch: gateway 6936 passed, only the 14 known smoke.integration failures, tsc and build rc 0. Not deployed: STAGING-DEPLOY-CHATBATCH-01 runs migration 1817. Checkpoint: docs/CHAT-STATE-PERSIST-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 4 superseded (one Discord connection owner into CHAT-SERVICE-SPLIT-01; chat_limit_hits and expired tokens into CHAT-PRUNE-01; resume()'s link read per command and the two-press race between lookup and spend into CHAT-TIDY-01; the ARCHITECTURE.md chat wording into CHAT-LIVE-02) / 1 dropped (Keith 2026-11-19, Q5) / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — stage-start approved by Keith ("Yes, approve it"). Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-STATE-PERSIST-01
 **Title:** Keep chat limits, retries and button tokens across restarts
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88547,6 +88548,7 @@ nature=IMPLEMENTATION
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): sendToUser returns silently when the transport is not ready (as sendDirectMessage did); a disconnect in the middle of a delivery pass could count a result as delivered. Make it throw or report not-sent.
 Note (CHAT-RESULTS-OTHER-01 LOCK, 2026-11-19): a pre-existing race: a delivery poll can announce /ask's first step just before /ask approves it.
+Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): resume() reads the link on every command (harmless today); two presses of one button can both pass the token lookup before either spends it (approveStep's status check decides today): make spend a delete that must remove exactly one row.
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
@@ -88645,6 +88647,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CHAT-USER-INSTALL-01: Keith's second Discord account, never in his private server: Add to Discord (Add to my apps), Open the bot, / shows the 7 commands, /help text, /link and Confirm, /status, /ask; whether the result arrives by direct message or is held (log reason=dm_refused) and comes after the next command; a five-part answer and an approval with buttons through follow-ups; Keith's first account still works; logs carry no Discord ids or tokens; then every other batch feature live (results of trigger runs, link notices, plain messages, restart-safe state). The record also lands the PRD.md and ARCHITECTURE.md Discord wording for user installs (GOVERNANCE).
 
+Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): its governance record also updates ARCHITECTURE.md's chat wording (lines 231, 580 and 1193: the chat tables and stored, hashed button tokens); check migration 1817 applied (new migration hash) and that old buttons work after the deploy's restart.
 ### COS-EVAL-LIVE-05 — Live run of the Discord chat-ask eval cases
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-LIVE-05
