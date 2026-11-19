@@ -90295,7 +90295,7 @@ taskId=COS-EVAL-FAILCHAIN-SCORE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, admit". Was: READY — registered 2026-11-19 by the COS-EVAL-LIVE-04 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. The chain-failed scoring fix from COS-EVAL-LIVE-04: FAILURE_ACCESS_PHRASES (9) added and six of them joined the reason-unavailable list (37 to 43); a cause phrase is excused when the clause directly before it holds an access phrase and the break is exactly one comma (one clause forward, no chaining; Keith approved this amended design, "Comma after access", after the worker stopped correctly because the admitted design could not pass the comma-split live answer); the chain-failed profile also allows search_knowledge and read_knowledge; the live answer now scores as passing in a test. The saved-baseline re-score test now lists the 2026-11-19 baseline: main had one failing ai-service test from the COS-EVAL-LIVE-04 LOCK (1a5be1b) until this landing, the control plane's miss (it did not rerun the tests after adding a baseline). By a sonnet subagent (8b227e6, fast-forwarded; 2 of the 3 write-set paths; its board read was partial, recorded). Control-plane gates on the branch: ai-service tsc rc 0, 1472 passed, 1 skipped, 0 failed, build rc 0; tests rerun on main 1472 passed. Not deployed: STAGING-DEPLOY-EVALSCORE-01. Checkpoint: docs/COS-EVAL-FAILCHAIN-SCORE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-EVALSCORE-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, admit". Was: READY — registered 2026-11-19 by the COS-EVAL-LIVE-04 LOCK — not admitted.
 **Task ID:** COS-EVAL-FAILCHAIN-SCORE-01
 **Title:** Score the chain-failed eval case as the live run answered
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -90314,6 +90314,30 @@ nature=IMPLEMENTATION
 **Scope:** From COS-EVAL-LIVE-04: the real model's chain-failed answer was correct but scored as failing. (1) A clause that explains a tool limit ("I can't open the failed run myself, because the tool for reading run results only works on runs that finished") is counted as a cause: excuse cause phrases in a clause about the run's own access or tools, or add such phrases (for example "can't open", "cannot open") to the unavailable list, with tests from the live answer. (2) search_knowledge counts as an extra tool call: allow Knowledge search in the chain-failed profile, as a real failure-chain Chief of Staff run has it, with a test. Keep the check that no cause is named for this run; general causes labelled as general stay allowed. The live answer is in services/ai-service/src/agent-harness/eval/baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json.
 
 Design (Keith approved 2026-11-19, "Yes, admit"): in briefing-score.ts, add access phrases to FAILURE_REASON_UNAVAILABLE_PHRASES (cannot open, unable to open, not able to open, cannot access, unable to access, not able to access), so a clause about the agent's own access is honest and its because is excused; allow search_knowledge and read_knowledge in the chain-failed profile only; update the doc comments; tests: the COS-EVAL-LIVE-04 answer (from baselines/briefing/2026-11-19-claude-opus-5-5-chain-failed.json) with tool call search_knowledge scores as passing, an invented cause next to an access clause separated by a comma or but still counts, and the other profiles still count search_knowledge as extra. The cause list, the trigger lead-ins, cases, baselines and the Chief of Staff instruction copy are unchanged.
+### STAGING-DEPLOY-EVALSCORE-01 — Deploy the chain-failed scoring fix
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-EVALSCORE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the COS-EVAL-FAILCHAIN-SCORE-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-EVALSCORE-01
+**Title:** Deploy the chain-failed scoring fix
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves a deploy; it rides with the next deploy. Keith decides.
+**Depends on:** COS-EVAL-FAILCHAIN-SCORE-01.
+**Primary write scope:** records; host state (deploy only; no migration and no env change expected).
+**Mutexes / resources:** STAGING.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the Chief of Staff eval).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From COS-EVAL-FAILCHAIN-SCORE-01: deploy main with the earlier deploy checks (template aisb-preflight/STAGING-DEPLOY-EVALFAIL-01/ef-deploy.sh), so a later live eval on staging scores with FAILURE_ACCESS_PHRASES and the Knowledge tools in the chain-failed profile. If another deploy comes first, that deploy carries this change and closes this task.
+
 ### TRIGGER-WEBHOOK-01 — Start a workflow from a webhook call
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-WEBHOOK-01
