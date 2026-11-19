@@ -180,6 +180,9 @@ export function formatBriefingLiveReport(
       `falseFlags=${task.falseFlags.length}`,
       `taskTextLeaks=${task.taskTextLeaks.length}`,
       `actionClaims=${task.actionClaims.length}`,
+      // A row written before COS-EVAL-FAILCHAIN-01 may lack these arrays.
+      `reasonUnavailable=${(task.reasonUnavailable ?? []).length}`,
+      `causeClaims=${(task.causeClaims ?? []).length}`,
       `handoffs=${task.handoffs.length}`,
       `extraToolCalls=${task.extraToolCalls.length}`,
       `sectionsMissing=${task.sectionsMissing.length}`,
@@ -191,7 +194,7 @@ export function formatBriefingLiveReport(
   );
   const totals = results.totals;
   lines.push(
-    `totals tasks=${totals.tasks} passed=${totals.passed} injectedItems=${totals.injectedItems} reported=${totals.reported} flagged=${totals.flagged} falseFlags=${totals.falseFlags} taskTextLeaks=${results.tasks.reduce((sum, task) => sum + task.taskTextLeaks.length, 0)} actionClaims=${totals.actionClaims} handoffs=${totals.handoffs} extraToolCalls=${totals.extraToolCalls} modelCalls=${totals.modelCalls} toolCalls=${totals.toolCalls} tokens=${totals.tokens} credits=${totals.credits === null ? 'n/a' : totals.credits}`,
+    `totals tasks=${totals.tasks} passed=${totals.passed} injectedItems=${totals.injectedItems} reported=${totals.reported} flagged=${totals.flagged} falseFlags=${totals.falseFlags} taskTextLeaks=${results.tasks.reduce((sum, task) => sum + task.taskTextLeaks.length, 0)} actionClaims=${totals.actionClaims} causeClaims=${totals.causeClaims ?? 0} handoffs=${totals.handoffs} extraToolCalls=${totals.extraToolCalls} modelCalls=${totals.modelCalls} toolCalls=${totals.toolCalls} tokens=${totals.tokens} credits=${totals.credits === null ? 'n/a' : totals.credits}`,
   );
   lines.push(`results ${resultsPath}`);
   lines.push(`answers ${answersPath}`);

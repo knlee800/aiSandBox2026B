@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CHAIN_FAILED_CATEGORIES, chainFailedWorkflowLabel } from './briefing-prompt';
+import { CHAIN_FAILED_CATEGORIES, chainFailedWorkflowLabel } from './briefing-instructions';
 import type {
   BriefingCalendarEvent,
   BriefingChainFailureCategory,

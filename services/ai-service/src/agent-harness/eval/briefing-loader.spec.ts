@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { loadBriefingTasks, parseBriefingTask } from './briefing-loader';
-import { briefingCaseOwnerRequest } from './briefing-prompt';
+import { briefingTaskOwnerRequest } from './briefing-instructions';
 import {
   ACTION_CLAIM_MARKERS,
   containsWords,
@@ -68,7 +68,7 @@ describe('COS-EVAL-01 briefing loader', () => {
           mail: task.mail,
           calendar: task.calendar,
           runResult: task.runResult ?? null,
-          request: briefingCaseOwnerRequest(task),
+          request: briefingTaskOwnerRequest(task),
         }),
       );
       for (const marker of TASK_TEXT_LEAK_MARKERS) {

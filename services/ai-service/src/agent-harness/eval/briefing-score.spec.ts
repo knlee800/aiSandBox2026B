@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadBriefingTasks } from './briefing-loader';
-import { briefingCaseOwnerRequest } from './briefing-prompt';
+import { briefingTaskOwnerRequest } from './briefing-instructions';
 import {
   answerBlocks,
   BRIEFING_CONNECTOR_TOOLS,
@@ -438,7 +438,7 @@ describe('COS-EVAL-FAILCHAIN-01 chain-failed scoring', () => {
   });
 
   it('passes an answer that repeats the request lines word for word: quoting the gateway text is not a cause', () => {
-    const quoted = briefingCaseOwnerRequest(chainFailed).split('\n\n')[1];
+    const quoted = briefingTaskOwnerRequest(chainFailed).split('\n\n')[1];
     expect(quoted.startsWith('This run was started because a run of the owner\'s workflow "Weekly supplier digest" failed')).toBe(true);
     const result = failedScore(quoted);
     expect(result.causeClaims).toEqual([]);

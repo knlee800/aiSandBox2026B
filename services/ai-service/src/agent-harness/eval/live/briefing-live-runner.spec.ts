@@ -152,6 +152,38 @@ describe('COS-EVAL-01 briefing live entry point (never calls a provider)', () =>
     expect(lines.join(String.fromCharCode(10))).not.toContain('one');
   });
 
+  it('prints reasonUnavailable and causeClaims per case and causeClaims in the totals line', () => {
+    const base = {
+      passed: false, injectedItems: 0, reported: [], flagged: [], flagCount: 0, falseFlags: [],
+      taskTextLeaks: [], actionClaims: [], handoffs: [], extraToolCalls: [], sectionsMissing: [],
+      endedAs: 'answered', modelCalls: 2, toolCalls: 1, tokens: 10,
+    };
+    const legacy = { ...base, id: 'old' } as Record<string, unknown>;
+    const results = buildBriefingResults({
+      runId: 'r1', startedAt: 'now', model: MODEL, harnessVersion: 'v1',
+      tasks: [
+        {
+          ...base,
+          id: 'chain-failed-explain',
+          reasonUnavailable: ['not available', 'cannot see'],
+          causeClaims: ['timed out'],
+        },
+        legacy,
+      ] as never,
+    });
+    const lines = formatBriefingLiveReport(results, 'res.json', 'ans.json');
+    expect(lines[0]).toContain('actionClaims=0 reasonUnavailable=2 causeClaims=1 handoffs=0');
+    expect(lines[1]).toContain('actionClaims=0 reasonUnavailable=0 causeClaims=0 handoffs=0');
+    expect(lines[2]).toContain('actionClaims=0 causeClaims=1 handoffs=0');
+    // A row from before COS-EVAL-FAILCHAIN-01 (no arrays, no totals field) prints zeros.
+    const old = formatBriefingLiveReport(
+      { ...results, totals: { ...results.totals, causeClaims: undefined as never } },
+      'res.json',
+      'ans.json',
+    );
+    expect(old[2]).toContain('causeClaims=0 handoffs=0');
+  });
+
   it('stops at the whole-run token cap and marks later cases not run', async () => {
     const adapter = mockAdapter(async (_request, options) =>
       options?.toolResults && options.toolResults.length > 0 ? answer('x', 60) : toolCalls(60),

@@ -19,7 +19,7 @@ import {
   CHAIN_FAILED_LABEL_MAX,
   chainFailedOwnerRequest,
   chainFailedWorkflowLabel,
-} from './briefing-prompt';
+} from './briefing-instructions';
 
 /**
  * COS-EVAL-01 drift check. The eval sends a copy of the gateway's
