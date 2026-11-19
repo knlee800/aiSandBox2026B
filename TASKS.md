@@ -1177,7 +1177,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## CHAT-STATE-PERSIST-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-19
 
-**Current status:** ADMITTED, Lane 1, 4-step (stage-start approved, "Yes, approve it"), with GATEWAY and MIGRATION. chat limits, delivery progress, holds and approval buttons survive restarts: migration 1817 AddChatPersistedState (delivery columns incl. origin, chat_limit_hits, chat_approval_tokens), in two slices. Implementer: opus subagent in worktree lane/CHAT-STATE-PERSIST-01; write set of 22 paths. Scope in TASKS_BACKLOG_FULL.md and docs/CHAT-STATE-PERSIST-01-STAGE-START.md.
+**Current status:** ADMITTED, Lane 1, 4-step (stage-start approved, "Yes, approve it"), with GATEWAY and MIGRATION. chat limits, delivery progress, holds and approval buttons survive restarts: migration 1817 AddChatPersistedState (delivery columns incl. origin, chat_limit_hits, chat_approval_tokens), in two slices. Implementer: opus subagent in worktree lane/CHAT-STATE-PERSIST-01; write set of 23 paths (the 1809 migration spec added 2026-11-19, test-only). Scope in TASKS_BACKLOG_FULL.md and docs/CHAT-STATE-PERSIST-01-STAGE-START.md.
 
 ## CHAT-RESULTS-OTHER-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-19
 

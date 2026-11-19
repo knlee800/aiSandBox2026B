@@ -32,7 +32,8 @@
         "services/api-gateway/src/chat/discord/discord-transport.spec.ts",
         "services/api-gateway/src/chat/chat.module.ts",
         "services/api-gateway/src/chat/chat-link.controller.spec.ts",
-        "services/api-gateway/src/chat/chat-commands.spec.ts"
+        "services/api-gateway/src/chat/chat-commands.spec.ts",
+        "services/api-gateway/src/migrations/__tests__/1809000000000-CreateChatRunDeliveries.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -6307,7 +6308,8 @@
         "services/api-gateway/src/chat/discord/discord-transport.spec.ts",
         "services/api-gateway/src/chat/chat.module.ts",
         "services/api-gateway/src/chat/chat-link.controller.spec.ts",
-        "services/api-gateway/src/chat/chat-commands.spec.ts"
+        "services/api-gateway/src/chat/chat-commands.spec.ts",
+        "services/api-gateway/src/migrations/__tests__/1809000000000-CreateChatRunDeliveries.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
