@@ -16,6 +16,7 @@ import { WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow'
 import { OrchestrationService } from '../orchestration/orchestration.service';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { CHAT_RUN_AUDIT_EVENTS, ChatDeliveryService } from './chat-delivery.service';
+import { ChatLimits } from './chat-limits';
 import { CHAT_AUDIT_CATEGORY, CHAT_CHANNEL_DISCORD, ChatLinkUse } from './chat-link.service';
 import { chatReply, ChatReplyKey } from './chat-replies';
 import { isChatDiscordEnabled } from './chat-switch';
@@ -68,6 +69,11 @@ import type { ChatReplyMessage } from './chat-transport';
  * /ask limit, /cancel and /status count rows whose origin is 'chat'; rows
  * from before migration 1817 (origin NULL) are still read through the
  * run_started audit rows.
+ *
+ * CHAT-STATE-PERSIST-01: the 10-a-minute /ask and /cancel limit is counted
+ * in chat_limit_hits (ChatLimits, bucket command, the owner id), so a restart
+ * does not reset it; a store error answers the fixed error line and starts or
+ * cancels nothing.
  */
 
 export const CHAT_RUN_LIMITS = {
@@ -177,22 +183,6 @@ interface OwnerWorkflow {
   status: string;
 }
 
-class MinuteCounter {
-  private readonly hits = new Map<string, number[]>();
-
-  /** Records one hit; false when the key is over the limit (the hit is not recorded). */
-  take(key: string, limit: number, now: number): boolean {
-    const recent = (this.hits.get(key) ?? []).filter((at) => at > now - CHAT_RUN_LIMITS.windowMs);
-    if (recent.length >= limit) {
-      this.hits.set(key, recent);
-      return false;
-    }
-    recent.push(now);
-    this.hits.set(key, recent);
-    return true;
-  }
-}
-
 function normalizeName(value: string): string {
   return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
@@ -205,7 +195,8 @@ function errorName(error: unknown): string {
 @Injectable()
 export class ChatRunService implements OnModuleDestroy {
   private readonly logger = new Logger('ChatRuns');
-  private readonly commands = new MinuteCounter();
+  /** CHAT-STATE-PERSIST-01: the persisted limits (in memory only when built without ChatModule's provider). */
+  private readonly limits: ChatLimits;
   private readonly stopListening: (() => void) | null;
 
   constructor(
@@ -221,7 +212,10 @@ export class ChatRunService implements OnModuleDestroy {
     @Optional() @InjectRepository(User)
     private readonly users?: Repository<User>,
     @Optional() startedRuns?: CollaborationRunStartedNotifier,
+    // CHAT-STATE-PERSIST-01: present in ChatModule.
+    @Optional() limits?: ChatLimits,
   ) {
+    this.limits = limits ?? ChatLimits.inMemory();
     // CHAT-RESULTS-OTHER-01: start never waits for this; onRunStarted never throws.
     this.stopListening = startedRuns ? startedRuns.onStarted((event) => this.onRunStarted(event)) : null;
   }
@@ -271,7 +265,11 @@ export class ChatRunService implements OnModuleDestroy {
     if (!KillSwitchConfig.GLOBAL_EXECUTION_ENABLED) {
       return this.refuse(link, 'runs_off', 'precheck');
     }
-    if (!this.commands.take(link.userId, CHAT_RUN_LIMITS.commandsPerMinute, Date.now())) {
+    const command = await this.takeCommand(link);
+    if (command === null) {
+      return { text: chatReply(link.locale, 'error') };
+    }
+    if (!command) {
       return this.refuse(link, 'rate_limited', 'precheck');
     }
     const inProgress = (await this.discordWaitingRows(link)).length;
@@ -359,7 +357,11 @@ export class ChatRunService implements OnModuleDestroy {
    * reason). Its delivery row is dropped: the owner asked for no result.
    */
   async cancel(link: ChatLinkUse): Promise<ChatReplyMessage> {
-    if (!this.commands.take(link.userId, CHAT_RUN_LIMITS.commandsPerMinute, Date.now())) {
+    const command = await this.takeCommand(link);
+    if (command === null) {
+      return { text: chatReply(link.locale, 'error') };
+    }
+    if (!command) {
       return { text: chatReply(link.locale, 'ask.tooMany') };
     }
     const waiting = (await this.discordWaitingRows(link)).slice(0, CHAT_RUN_LIMITS.activeRuns * 4);
@@ -456,6 +458,26 @@ export class ChatRunService implements OnModuleDestroy {
         row.origin === 'chat' ||
         ((row.origin === null || row.origin === undefined) && fromDiscord.has(row.collaborationRunId)),
     );
+  }
+
+  /**
+   * CHAT-STATE-PERSIST-01: one /ask or /cancel against the owner's 10 a
+   * minute. True: counted. False: over the limit (not counted). Null: the
+   * store failed (logged with a reason code only).
+   */
+  private async takeCommand(link: ChatLinkUse): Promise<boolean | null> {
+    try {
+      const taken = await this.limits.take(
+        'command',
+        link.userId,
+        { limit: CHAT_RUN_LIMITS.commandsPerMinute, windowMs: CHAT_RUN_LIMITS.windowMs },
+        Date.now(),
+      );
+      return taken.allowed;
+    } catch (error) {
+      this.logger.warn(`chat run limit store failed linkId=${link.linkId} reason=${errorName(error)}`);
+      return null;
+    }
   }
 
   /** The identity the session guard builds for the owner (D7), harness access already checked. */

@@ -16,6 +16,7 @@ import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
+import { ChatLimits, chatLimitSubjectOfExternalUser } from './chat-limits';
 import { isChatDiscordEnabled } from './chat-switch';
 import { CHAT_TRANSPORT, type ChatTransport } from './chat-transport';
 
@@ -31,10 +32,14 @@ import { CHAT_TRANSPORT, type ChatTransport } from './chat-transport';
  *   XXXX-XXXX. Only its SHA-256 hex is stored. 10 minutes, single use; one live
  *   code per owner per channel, a new one replaces the old.
  * - Claim: the same answer for a wrong, used, expired or replaced code.
- * - Limits (in memory; one gateway process): 5 code creations per owner per
- *   hour; 5 claim attempts per outside user per hour, then silence; more than
- *   100 failed claims platform-wide in an hour pauses linking for an hour and
- *   writes one audit row.
+ * - Limits: 5 code creations per owner per hour; 5 claim attempts per
+ *   outside user per hour, then silence; more than 100 failed claims
+ *   platform-wide in an hour pauses linking for an hour and writes one audit
+ *   row. CHAT-STATE-PERSIST-01: counted in chat_limit_hits (ChatLimits), so
+ *   a restart does not reset them and processes share them; the claim limit's
+ *   key is the SHA-256 of the outside user id, never the id; a store error
+ *   refuses the action (503 chat_link_unavailable, or the claim answers
+ *   unavailable).
  * - One outside account per owner per channel, one owner per outside account
  *   (two unique indexes; checked here first).
  * - Audit rows (category chat) hold ids, reason codes and counts only: never
@@ -270,43 +275,6 @@ function isUniqueViolation(error: unknown): boolean {
   return candidate?.code === '23505' || candidate?.driverError?.code === '23505';
 }
 
-/** Sliding one-hour counters keyed by owner id or outside user id. Memory only. */
-class WindowCounter {
-  private readonly hits = new Map<string, number[]>();
-
-  constructor(private readonly windowMs: number) {}
-
-  count(key: string, now: number): number {
-    this.prune(now);
-    return this.hits.get(key)?.length ?? 0;
-  }
-
-  add(key: string, now: number): void {
-    const list = this.hits.get(key) ?? [];
-    list.push(now);
-    this.hits.set(key, list);
-  }
-
-  retryAfterSeconds(key: string, now: number): number {
-    const oldest = this.hits.get(key)?.[0];
-    if (oldest === undefined) {
-      return 0;
-    }
-    return Math.max(1, Math.ceil((oldest + this.windowMs - now) / 1000));
-  }
-
-  private prune(now: number): void {
-    for (const [key, list] of this.hits) {
-      const kept = list.filter((at) => at > now - this.windowMs);
-      if (kept.length === 0) {
-        this.hits.delete(key);
-      } else if (kept.length !== list.length) {
-        this.hits.set(key, kept);
-      }
-    }
-  }
-}
-
 function chatLinkError(
   status: HttpStatus,
   error: string,
@@ -335,10 +303,8 @@ function chatLinkError(
 @Injectable()
 export class ChatLinkService {
   private readonly logger = new Logger(ChatLinkService.name);
-  private readonly codeCreations = new WindowCounter(CHAT_LINK_LIMITS.windowMs);
-  private readonly claimAttempts = new WindowCounter(CHAT_LINK_LIMITS.windowMs);
-  private failedClaims: number[] = [];
-  private pausedUntil = 0;
+  /** CHAT-STATE-PERSIST-01: the persisted limits (in memory only when built without ChatModule's provider). */
+  private readonly limits: ChatLimits;
 
   constructor(
     @InjectRepository(ChatLink)
@@ -354,7 +320,11 @@ export class ChatLinkService {
     @Optional()
     @Inject(CHAT_TRANSPORT)
     private readonly transport?: ChatTransport,
-  ) {}
+    // CHAT-STATE-PERSIST-01: present in ChatModule.
+    @Optional() limits?: ChatLimits,
+  ) {
+    this.limits = limits ?? ChatLimits.inMemory();
+  }
 
   /** GET /api/chat-links. Switch off: nothing is read. */
   async getState(userId: string): Promise<ChatLinkState> {
@@ -389,7 +359,7 @@ export class ChatLinkService {
     const links = this.installLinks();
     return {
       enabled: true,
-      paused: this.isPaused(now),
+      paused: await this.isPaused(now),
       discord: {
         link: link ? this.linkView(link) : null,
         pending,
@@ -412,21 +382,30 @@ export class ChatLinkService {
   async createCode(userId: string, locale: unknown): Promise<ChatLinkCodeCreated> {
     this.assertEnabled();
     const now = Date.now();
-    if (this.isPaused(now)) {
-      throw chatLinkError(HttpStatus.SERVICE_UNAVAILABLE, 'Service Unavailable', 'paused');
-    }
+    await this.assertNotPaused(now);
     const existing = await this.links.findOne({
       where: { userId, channel: CHAT_CHANNEL_DISCORD },
     });
     if (existing) {
       throw chatLinkError(HttpStatus.CONFLICT, 'Conflict', 'exists');
     }
-    if (this.codeCreations.count(userId, now) >= CHAT_LINK_LIMITS.codesPerOwner) {
+    let taken: Awaited<ReturnType<ChatLimits['take']>>;
+    try {
+      taken = await this.limits.take(
+        'code_create',
+        userId,
+        { limit: CHAT_LINK_LIMITS.codesPerOwner, windowMs: CHAT_LINK_LIMITS.windowMs },
+        now,
+      );
+    } catch {
+      this.logger.warn('chat link limit store failed action=code');
+      throw chatLinkError(HttpStatus.SERVICE_UNAVAILABLE, 'Service Unavailable', 'unavailable');
+    }
+    if (taken.allowed === false) {
       throw chatLinkError(HttpStatus.TOO_MANY_REQUESTS, 'Too Many Requests', 'rateLimited', {
-        retryAfterSeconds: this.codeCreations.retryAfterSeconds(userId, now),
+        retryAfterSeconds: taken.retryAfterSeconds,
       });
     }
-    this.codeCreations.add(userId, now);
     await this.deleteExpiredCodes(now);
 
     const expiresAt = new Date(now + CHAT_LINK_CODE_TTL_MS);
@@ -488,16 +467,31 @@ export class ChatLinkService {
       return { outcome: 'unavailable', locale: replyLocale };
     }
     const now = Date.now();
-    if (this.isPaused(now)) {
-      return { outcome: 'paused', locale: replyLocale };
+    try {
+      if (await this.isPaused(now)) {
+        return { outcome: 'paused', locale: replyLocale };
+      }
+    } catch {
+      this.logger.warn('chat link limit store failed action=claim');
+      return { outcome: 'unavailable', locale: replyLocale };
     }
     if (typeof externalUserId !== 'string' || !EXTERNAL_USER_ID_PATTERN.test(externalUserId)) {
       return { outcome: 'invalid', locale: replyLocale };
     }
-    if (this.claimAttempts.count(externalUserId, now) >= CHAT_LINK_LIMITS.claimsPerExternalUser) {
-      return { outcome: 'silenced', locale: replyLocale };
+    try {
+      const taken = await this.limits.take(
+        'claim_attempt',
+        chatLimitSubjectOfExternalUser(externalUserId),
+        { limit: CHAT_LINK_LIMITS.claimsPerExternalUser, windowMs: CHAT_LINK_LIMITS.windowMs },
+        now,
+      );
+      if (!taken.allowed) {
+        return { outcome: 'silenced', locale: replyLocale };
+      }
+    } catch {
+      this.logger.warn('chat link limit store failed action=claim');
+      return { outcome: 'unavailable', locale: replyLocale };
     }
-    this.claimAttempts.add(externalUserId, now);
 
     const linked = await this.links.findOne({
       where: { channel: CHAT_CHANNEL_DISCORD, externalUserId },
@@ -552,9 +546,7 @@ export class ChatLinkService {
   async confirm(userId: string): Promise<ChatLinkView> {
     this.assertEnabled();
     const now = Date.now();
-    if (this.isPaused(now)) {
-      throw chatLinkError(HttpStatus.SERVICE_UNAVAILABLE, 'Service Unavailable', 'paused');
-    }
+    await this.assertNotPaused(now);
     await this.deleteExpiredCodes(now);
     const claim = (await this.liveCodesFor(userId, now)).find(
       (row) => row.claimedExternalUserId !== null && row.claimedAt !== null,
@@ -745,17 +737,51 @@ export class ChatLinkService {
     }
   }
 
-  private isPaused(now: number): boolean {
-    return now < this.pausedUntil;
+  /** CHAT-STATE-PERSIST-01: linking is paused while a link_pause row is younger than an hour. Throws on a store error. */
+  private isPaused(now: number): Promise<boolean> {
+    return this.limits.isPaused('link_pause', CHAT_CHANNEL_DISCORD, CHAT_LINK_LIMITS.pauseMs, now);
   }
 
+  /** Paused: 503 chat_link_paused. A store error: 503 chat_link_unavailable. */
+  private async assertNotPaused(now: number): Promise<void> {
+    let paused: boolean;
+    try {
+      paused = await this.isPaused(now);
+    } catch {
+      this.logger.warn('chat link limit store failed action=pause_check');
+      throw chatLinkError(HttpStatus.SERVICE_UNAVAILABLE, 'Service Unavailable', 'unavailable');
+    }
+    if (paused) {
+      throw chatLinkError(HttpStatus.SERVICE_UNAVAILABLE, 'Service Unavailable', 'paused');
+    }
+  }
+
+  /**
+   * One failed claim, counted platform-wide. CHAT-STATE-PERSIST-01: past
+   * 100 in an hour, ChatLimits writes the pause row under its lock; only the
+   * caller that wrote it logs the pause and writes the one audit row. A store
+   * error is logged; the claim has failed anyway.
+   */
   private async failedClaim(now: number, locale: ChatLinkLocale): Promise<ChatLinkClaimResult> {
-    this.failedClaims = this.failedClaims.filter((at) => at > now - CHAT_LINK_LIMITS.windowMs);
-    this.failedClaims.push(now);
-    if (this.failedClaims.length > CHAT_LINK_LIMITS.failedClaimsBeforePause) {
-      const failedAttempts = this.failedClaims.length;
-      this.failedClaims = [];
-      this.pausedUntil = now + CHAT_LINK_LIMITS.pauseMs;
+    let result: { paused: boolean; failedAttempts: number };
+    try {
+      result = await this.limits.recordFailure(
+        'claim_failed',
+        CHAT_CHANNEL_DISCORD,
+        {
+          threshold: CHAT_LINK_LIMITS.failedClaimsBeforePause,
+          windowMs: CHAT_LINK_LIMITS.windowMs,
+          pauseBucket: 'link_pause',
+          pauseMs: CHAT_LINK_LIMITS.pauseMs,
+        },
+        now,
+      );
+    } catch {
+      this.logger.warn('chat link limit store failed action=failed_claim');
+      return { outcome: 'invalid', locale };
+    }
+    if (result.paused) {
+      const failedAttempts = result.failedAttempts;
       this.logger.warn(`chat link attempts paused failedAttempts=${failedAttempts}`);
       try {
         await this.audit(this.codes.manager, CHAT_AUDIT_EVENTS.attemptsPaused, 'chat_channel', CHAT_CHANNEL_DISCORD, null, {

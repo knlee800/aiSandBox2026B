@@ -11,6 +11,8 @@ import {
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { AuditEventEntity } from '../entities/audit-event.entity';
+import { ChatApprovalToken } from '../entities/chat-approval-token.entity';
+import { ChatLimitHit } from '../entities/chat-limit-hit.entity';
 import { ChatLink } from '../entities/chat-link.entity';
 import { ChatLinkCode } from '../entities/chat-link-code.entity';
 import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
@@ -20,6 +22,7 @@ import { OrchestrationModule } from '../orchestration/orchestration.module';
 import { ChatApprovalService } from './chat-approval.service';
 import { ChatCommandService } from './chat-commands';
 import { ChatDeliveryService } from './chat-delivery.service';
+import { ChatLimits } from './chat-limits';
 import { ChatLinkController } from './chat-link.controller';
 import { ChatLinkService } from './chat-link.service';
 import { ChatRunService } from './chat-run.service';
@@ -119,6 +122,9 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
  * CHAT-RESULTS-OTHER-01: ChatRunService listens on OrchestrationModule's
  * exported CollaborationRunStartedNotifier, so every run the owner starts
  * gets a delivery row (orchestration never imports chat code).
+ * CHAT-STATE-PERSIST-01: ChatLimits counts the link, claim, pause and
+ * command limits in chat_limit_hits; ChatApprovalService keeps button tokens
+ * (hashed) in chat_approval_tokens; both tables come from migration 1817.
  * Only ChatLinkService is exported.
  */
 @Module({
@@ -130,6 +136,8 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
       AuditEventEntity,
       User,
       CollaborationReferralEntity,
+      ChatLimitHit,
+      ChatApprovalToken,
     ]),
     AuthModule,
     OrchestrationModule,
@@ -144,6 +152,7 @@ export class ChatChannelRunner implements OnApplicationBootstrap, OnModuleDestro
     ChatDeliveryService,
     ChatApprovalService,
     ChatActivityNotifier,
+    ChatLimits,
   ],
   exports: [ChatLinkService],
 })

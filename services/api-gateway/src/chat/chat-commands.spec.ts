@@ -13,6 +13,7 @@ import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { ChatLinkService } from './chat-link.service';
 import { chatReply } from './chat-replies';
+import { ChatLimits } from './chat-limits';
 import { CHAT_TRANSPORT, ChatActivityNotifier, ChatCommandInvocation, FakeChatTransport } from './chat-transport';
 import {
   CHAT_RUNNER_ALLOW_UNDER_JEST,
@@ -155,6 +156,7 @@ describe('ChatCommandService (CHAT-DISCORD-01 B, C1)', () => {
         ChatDeliveryService,
         ChatApprovalService,
         ChatActivityNotifier,
+        ChatLimits,
       ]);
       expect(Reflect.getMetadata('exports', ChatModule)).toEqual([ChatLinkService]);
       expect(CHAT_TRANSPORT_PROVIDER).toEqual({ provide: CHAT_TRANSPORT, useFactory: createChatTransport });

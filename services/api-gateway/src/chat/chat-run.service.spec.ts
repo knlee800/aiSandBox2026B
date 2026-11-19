@@ -10,6 +10,7 @@ import { ChatRunDelivery } from '../entities/chat-run-delivery.entity';
 import { CollaborationRunStartedNotifier } from '../orchestration/collaboration-start.service';
 import { workflowRefusal, WORKFLOW_REFUSAL_CODES } from '../orchestration/collaboration-workflow';
 import { chatReply } from './chat-replies';
+import { ChatLimits, MemoryChatLimitStore } from './chat-limits';
 import { CHAT_RUN_LIMITS, ChatRunService, chatRunRefusalOf } from './chat-run.service';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -320,6 +321,63 @@ describe('ChatRunService (CHAT-DISCORD-01 C1)', () => {
       expect(await service.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooMany') });
       expect(starts.start).not.toHaveBeenCalled();
       expect(audit[audit.length - 1].payload.reason).toBe('rate_limited');
+    });
+
+    it('CHAT-STATE-PERSIST-01: the 10-a-minute limit survives a restart (a new service over the same limit rows)', async () => {
+      const limitRows = new MemoryChatLimitStore();
+      const instance = () =>
+        new ChatRunService(
+          starts as never,
+          orchestration as never,
+          delivery as never,
+          deliveries as never,
+          auditRepo as never,
+          undefined,
+          undefined,
+          undefined,
+          ChatLimits.inMemory(limitRows),
+        );
+      let current = instance();
+      for (let i = 0; i < CHAT_RUN_LIMITS.commandsPerMinute; i += 1) {
+        rows.length = 0;
+        if (i === 5) current = instance();
+        await (i % 2 === 0 ? current.ask(link, { text: MARKER }) : current.cancel(link));
+      }
+      current = instance();
+      rows.length = 0;
+      starts.start.mockClear();
+      expect(await current.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(await current.cancel(link)).toEqual({ text: chatReply('en', 'ask.tooMany') });
+      expect(starts.start).not.toHaveBeenCalled();
+      expect(limitRows.rows.map((row) => [row.bucket, row.subjectKey])).toEqual(
+        Array.from({ length: CHAT_RUN_LIMITS.commandsPerMinute }, () => ['command', OWNER]),
+      );
+    });
+
+    it('CHAT-STATE-PERSIST-01: a limit store error answers the error line and starts or cancels nothing', async () => {
+      const broken = {
+        locked: async () => {
+          throw new Error(`db down ${MARKER}`);
+        },
+        times: async () => [],
+        pruneUpTo: async () => 0,
+      };
+      const failing = new ChatRunService(
+        starts as never,
+        orchestration as never,
+        delivery as never,
+        deliveries as never,
+        auditRepo as never,
+        undefined,
+        undefined,
+        undefined,
+        ChatLimits.inMemory(broken),
+      );
+      expect(await failing.ask(link, { text: MARKER })).toEqual({ text: chatReply('en', 'error') });
+      expect(await failing.cancel(link)).toEqual({ text: chatReply('en', 'error') });
+      expectNothingCreated();
+      expect(starts.cancelOwnedActiveRun).not.toHaveBeenCalled();
+      expect(logs).toContain(`chat run limit store failed linkId=${LINK_ID} reason=Error`);
     });
 
     it('3 Discord runs already in progress', async () => {

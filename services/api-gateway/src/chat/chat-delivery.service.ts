@@ -18,6 +18,7 @@ import type { CollaborationReferral } from '../orchestration/orchestration.contr
 import { OrchestrationService } from '../orchestration/orchestration.service';
 import { ChatApprovalService } from './chat-approval.service';
 import { chunkChatText } from './chat-chunk';
+import { ChatLimits } from './chat-limits';
 import {
   CHAT_AUDIT_CATEGORY,
   CHAT_CHANNEL_DISCORD,
@@ -105,6 +106,13 @@ import {
  *   claim and extends it; the claim is released at the end of the row, and a
  *   crashed process's claim runs out by itself. Zero rows changed: another
  *   process has the row, so this one stops.
+ * - Every pass also deletes chat_limit_hits rows older than an hour
+ *   (ChatLimits.prune) and expired approval tokens (pruneExpired).
+ * - Repair rule (approval buttons): a step that is waiting, already
+ *   notified and positively read-only, with no live token row (its buttons
+ *   died with an old process or a rollback), gets one fresh message with new
+ *   buttons; the new token row stops a second one. Steps that only get the
+ *   Team page line are never sent again.
  */
 
 export const CHAT_RUN_AUDIT_EVENTS = {
@@ -210,6 +218,8 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     private readonly audit: Repository<AuditEventEntity>,
     @Optional() @Inject(CHAT_DELIVERY_OPTIONS) options?: ChatDeliveryOptions,
     @Optional() private readonly approvals?: ChatApprovalService,
+    // CHAT-STATE-PERSIST-01: present in ChatModule; the pass prunes its old rows.
+    @Optional() private readonly limits?: ChatLimits,
     @Optional() activity?: ChatActivityNotifier,
   ) {
     this.testEnvironment = process.env.JEST_WORKER_ID !== undefined && options?.allowUnderJest !== true;
@@ -310,6 +320,7 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
         return 0;
       }
       await this.prune();
+      await this.pruneSideTables();
       await this.dropOldHolds();
       // CHAT-USER-INSTALL-01 / CHAT-STATE-PERSIST-01: held rows, rows in
       // backoff and rows another process has claimed are left out.
@@ -450,6 +461,30 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     return pruned;
   }
 
+  /** CHAT-STATE-PERSIST-01: limit rows older than an hour and expired approval tokens. Failures are logged only. */
+  private async pruneSideTables(): Promise<void> {
+    if (this.limits) {
+      try {
+        const pruned = await this.limits.prune(this.now());
+        if (pruned > 0) {
+          this.logger.log(`chat limit hits pruned count=${pruned}`);
+        }
+      } catch (error) {
+        this.logger.warn(`chat limit hits prune failed reason=${errorName(error)}`);
+      }
+    }
+    if (this.approvals) {
+      try {
+        const pruned = await this.approvals.pruneExpired();
+        if (pruned > 0) {
+          this.logger.log(`chat approval tokens pruned count=${pruned}`);
+        }
+      } catch (error) {
+        this.logger.warn(`chat approval tokens prune failed reason=${errorName(error)}`);
+      }
+    }
+  }
+
   private stopTimer(): void {
     if (this.timer) {
       clearInterval(this.timer);
@@ -577,31 +612,52 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
     referrals: readonly CollaborationReferral[],
   ): Promise<void> {
     const notified = Array.isArray(row.notifiedReferralIds) ? row.notifiedReferralIds : [];
-    const fresh = referrals.filter(
-      (referral) => referral.status === 'pending_approval' && !notified.includes(referral.referralId),
-    );
-    if (fresh.length === 0 || this.transport.state !== 'ready') {
+    const waiting = referrals.filter((referral) => referral.status === 'pending_approval');
+    const fresh = waiting.filter((referral) => !notified.includes(referral.referralId));
+    const approvals = this.approvals;
+    if (this.transport.state !== 'ready' || (fresh.length === 0 && (!approvals || waiting.length === 0))) {
+      return;
+    }
+    // CHAT-STATE-PERSIST-01, the repair rule: notified read-only steps with no live token.
+    const repairs: CollaborationReferral[] = [];
+    if (approvals) {
+      for (const referral of waiting) {
+        if (notified.includes(referral.referralId) && (await approvals.needsFreshButtons(row.collaborationRunId, referral.referralId))) {
+          repairs.push(referral);
+        }
+      }
+    }
+    if (fresh.length === 0 && repairs.length === 0) {
       return;
     }
     const sent: string[] = [];
+    let repaired = 0;
     let buttons = 0;
-    const approvals = this.approvals;
     try {
       if (!approvals) {
         await this.send(link, { text: chatReply(locale, 'result.waitingApproval') });
         sent.push(...fresh.map((referral) => referral.referralId));
       } else {
-        for (const referral of fresh) {
+        for (const referral of [...fresh, ...repairs]) {
+          const repair = !fresh.includes(referral);
           const step = referrals.indexOf(referral) + 1;
           const message = await approvals.approvalMessage(link, row.collaborationRunId, referral.referralId, step);
+          if (repair && !(message.buttons && message.buttons.length > 0)) {
+            // No longer read-only or waiting: the Team page line was already sent once.
+            continue;
+          }
           try {
             await this.send(link, message);
           } catch (error) {
-            approvals.revoke(message);
+            await approvals.revoke(message);
             throw error;
           }
-          sent.push(referral.referralId);
-          if (message.buttons && message.buttons.length > 0) buttons += 1;
+          if (repair) {
+            repaired += 1;
+          } else {
+            sent.push(referral.referralId);
+            if (message.buttons && message.buttons.length > 0) buttons += 1;
+          }
         }
       }
     } catch (error) {
@@ -613,6 +669,9 @@ export class ChatDeliveryService implements OnApplicationBootstrap, OnModuleDest
           `chat delivery notice failed runId=${row.collaborationRunId} linkId=${row.linkId} reason=${errorName(error)}`,
         );
       }
+    }
+    if (repaired > 0) {
+      this.logger.log(`chat delivery approval repaired runId=${row.collaborationRunId} linkId=${row.linkId} steps=${repaired}`);
     }
     if (sent.length === 0) {
       return;

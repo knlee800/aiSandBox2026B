@@ -4,6 +4,7 @@ import { FindOperator } from 'typeorm';
 import { CollaborationRunStartedNotifier } from '../orchestration/collaboration-start.service';
 import { CHAT_APPROVAL_CUSTOM_ID, ChatApprovalService } from './chat-approval.service';
 import { CHAT_DELIVERY_LIMITS, ChatDeliveryService, chatResultMessages } from './chat-delivery.service';
+import { ChatLimits, MemoryChatLimitStore } from './chat-limits';
 import { chatReply } from './chat-replies';
 import { ChatRunService } from './chat-run.service';
 import { ChatActivityNotifier, ChatDirectMessageRefusedError, FakeChatTransport } from './chat-transport';
@@ -49,6 +50,7 @@ function satisfies(actual: unknown, expected: FindOperator<unknown>): boolean {
   if (actual === null || actual === undefined) return false;
   if (expected.type === 'lessThan') return asNumber(actual) < asNumber(expected.value);
   if (expected.type === 'lessThanOrEqual') return asNumber(actual) <= asNumber(expected.value);
+  if (expected.type === 'moreThan') return asNumber(actual) > asNumber(expected.value);
   throw new Error(`unsupported operator ${expected.type}`);
 }
 
@@ -143,6 +145,27 @@ function newRowDefaults(): Pick<
   };
 }
 
+/** CHAT-STATE-PERSIST-01: chat_approval_tokens in memory (unique referral_id), shared by every instance. */
+class TokenRepo {
+  rows: Array<Record<string, unknown>> = [];
+  async insert(row: Record<string, unknown>): Promise<object> {
+    if (this.rows.some((existing) => existing.tokenHash === row.tokenHash || existing.referralId === row.referralId)) {
+      throw Object.assign(new Error('duplicate key'), { code: '23505' });
+    }
+    this.rows.push({ ...row });
+    return {};
+  }
+  async delete(where: Record<string, unknown>): Promise<{ affected: number }> {
+    const before = this.rows.length;
+    this.rows = this.rows.filter((row) => !matches(row, where));
+    return { affected: before - this.rows.length };
+  }
+  async findOne({ where }: { where: Record<string, unknown> }): Promise<Record<string, unknown> | null> {
+    const row = this.rows.find((candidate) => matches(candidate, where));
+    return row ? { ...row } : null;
+  }
+}
+
 interface FakeReferral {
   referralId: string;
   status: string;
@@ -182,6 +205,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
     target: { sendToUser: unknown; state: unknown } = transport,
     options: Record<string, unknown> = {},
     activity?: ChatActivityNotifier,
+    limits?: ChatLimits,
   ) {
     return new ChatDeliveryService(
       target as never,
@@ -199,6 +223,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         ...options,
       },
       undefined,
+      limits,
       activity,
     );
   }
@@ -378,6 +403,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
   describe('C2: approval messages', () => {
     let steps: Map<string, Record<string, unknown>>;
     let approvals: ChatApprovalService;
+    let tokens: TokenRepo;
 
     function step(referralId: string, target: string, prompt: string): void {
       steps.set(referralId, {
@@ -401,6 +427,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
         {} as never,
         { findOne: async ({ where }: { where: { referralId: string } }) => steps.get(where.referralId) ?? null } as never,
         {} as never,
+        tokens as never,
         { now: () => now },
       );
       return new ChatDeliveryService(
@@ -416,8 +443,116 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
 
     beforeEach(() => {
       steps = new Map();
+      tokens = new TokenRepo();
       service.onModuleDestroy();
       service = withApprovals();
+    });
+
+    /** A waiting run whose step r2 (read-only) was already announced, as before a restart. */
+    function notifiedReadOnlyStep(target = 'chief-of-staff'): void {
+      waiting(RUN_ID, new Date(T0), { notifiedReferralIds: ['r2'] });
+      step('r2', target, `Report back ${MARKER}`);
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+    }
+
+    it('CHAT-STATE-PERSIST-01: buttons sent before a restart still work, so the new instance sends nothing again', async () => {
+      waiting();
+      step('r2', 'chief-of-staff', 'Report back');
+      runs.set(RUN_ID, {
+        run: { userId: OWNER, status: 'active' },
+        referrals: [{ referralId: 'r2', status: 'pending_approval', result: null }],
+      });
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      expect(tokens.rows).toHaveLength(1);
+      service.onModuleDestroy();
+      service = withApprovals();
+      await service.tick();
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      expect(logs.some((line) => line.startsWith('chat delivery approval repaired'))).toBe(false);
+    });
+
+    it('CHAT-STATE-PERSIST-01 repair rule: a notified read-only step without a live token gets exactly one fresh message; none on the next pass', async () => {
+      notifiedReadOnlyStep();
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      const sent = transport.directMessages[0].message;
+      expect(sent.text.startsWith(chatReply('en', 'approval.request', { step: '1', agent: 'Chief of Staff' }))).toBe(true);
+      expect(sent.buttons?.map((button) => button.style)).toEqual(['approve', 'reject']);
+      expect(tokens.rows).toHaveLength(1);
+      expect(tokens.rows[0]).toMatchObject({ referralId: 'r2', collaborationRunId: RUN_ID, linkId: LINK_ID });
+      // The step stays marked once; no new notice line.
+      expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
+      expect(logs).toContain(`chat delivery approval repaired runId=${RUN_ID} linkId=${LINK_ID} steps=1`);
+      expect(logs.some((line) => line.startsWith('chat delivery approval notice'))).toBe(false);
+      await service.tick();
+      service.onModuleDestroy();
+      service = withApprovals();
+      await service.tick();
+      expect(transport.directMessages).toHaveLength(1);
+      expect(audit).toEqual([]);
+    });
+
+    it('CHAT-STATE-PERSIST-01 repair rule: a step that only got the Team page line is not sent again', async () => {
+      notifiedReadOnlyStep('writer');
+      await service.tick();
+      await service.tick();
+      expect(transport.directMessages).toEqual([]);
+      expect(tokens.rows).toEqual([]);
+    });
+
+    it('CHAT-STATE-PERSIST-01 repair rule: a repair that cannot be sent is revoked and tried again on the next pass', async () => {
+      notifiedReadOnlyStep();
+      const failing = {
+        state: 'ready',
+        sendToUser: jest.fn(async (): Promise<void> => {
+          throw new Error('network');
+        }),
+      };
+      service.onModuleDestroy();
+      service = withApprovals(failing);
+      await service.tick();
+      expect(failing.sendToUser).toHaveBeenCalledTimes(1);
+      expect(tokens.rows).toEqual([]);
+      failing.sendToUser.mockImplementation(async () => undefined);
+      await service.tick();
+      expect(failing.sendToUser).toHaveBeenCalledTimes(2);
+      expect(tokens.rows).toHaveLength(1);
+      await service.tick();
+      expect(failing.sendToUser).toHaveBeenCalledTimes(2);
+    });
+
+    it('CHAT-STATE-PERSIST-01: every pass deletes expired approval tokens and limit rows older than an hour', async () => {
+      const limitRows = new MemoryChatLimitStore();
+      limitRows.rows.push(
+        { bucket: 'command', subjectKey: OWNER, at: now - 60 * 60 * 1000 - 1 },
+        { bucket: 'link_pause', subjectKey: 'discord', at: now - 60 * 60 * 1000 },
+        { bucket: 'code_create', subjectKey: OWNER, at: now - 60 * 1000 },
+      );
+      tokens.rows.push(
+        { tokenHash: 'a'.repeat(64), referralId: 'old', expiresAt: new Date(now - 1) },
+        { tokenHash: 'b'.repeat(64), referralId: 'live', expiresAt: new Date(now + 1000) },
+      );
+      service.onModuleDestroy();
+      service = new ChatDeliveryService(
+        transport as never,
+        { getCollaborationRunWithReferrals: reads } as never,
+        deliveries as never,
+        linkRepo() as never,
+        { insert: async () => ({}) } as never,
+        { allowUnderJest: true, now: () => now, sleep: async () => undefined },
+        approvals,
+        ChatLimits.inMemory(limitRows),
+      );
+      await service.tick();
+      expect(limitRows.rows.map((row) => row.bucket)).toEqual(['code_create']);
+      expect(tokens.rows.map((row) => row.referralId)).toEqual(['live']);
+      expect(logs).toContain('chat limit hits pruned count=2');
+      expect(logs).toContain('chat approval tokens pruned count=1');
     });
 
     it('a read-only step gets its request (cut to 1000 characters) with Approve and Reject; another step the Team page line', async () => {
@@ -449,7 +584,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       await service.tick();
       expect(transport.directMessages[1].message).toEqual({ text: chatReply('en', 'result.waitingApproval') });
       expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2', 'r3']);
-      expect(approvals.liveTokens).toBe(1);
+      expect(tokens.rows.length).toBe(1);
       expect(audit).toEqual([]);
     });
 
@@ -506,13 +641,13 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       service = withApprovals(failing);
       await service.tick();
       expect(failing.sendToUser).toHaveBeenCalledTimes(1);
-      expect(approvals.liveTokens).toBe(0);
+      expect(tokens.rows.length).toBe(0);
       expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
       expect(logs).toContain(`chat delivery notice failed runId=${RUN_ID} linkId=${LINK_ID} reason=Error`);
       failing.sendToUser.mockImplementation(async () => undefined);
       await service.tick();
       expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
-      expect(approvals.liveTokens).toBe(1);
+      expect(tokens.rows.length).toBe(1);
     });
 
     it('CHAT-USER-INSTALL-01: a refused approval message is held: its button is forgotten, the step not marked; the next command sends it', async () => {
@@ -524,7 +659,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       });
       transport.refusedUsers.add(DISCORD_ID);
       await service.tick();
-      expect(approvals.liveTokens).toBe(0);
+      expect(tokens.rows.length).toBe(0);
       expect(deliveries.rows[0].notifiedReferralIds).toEqual([]);
       expect(held()).toBe(1);
       expect(logs).toContain(`chat delivery held runId=${RUN_ID} linkId=${LINK_ID} reason=dm_refused`);
@@ -535,7 +670,7 @@ describe('ChatDeliveryService (CHAT-DISCORD-01 C1)', () => {
       expect(transport.directMessages).toHaveLength(1);
       expect(transport.directMessages[0].message.buttons?.map((button) => button.style)).toEqual(['approve', 'reject']);
       expect(deliveries.rows[0].notifiedReferralIds).toEqual(['r2']);
-      expect(approvals.liveTokens).toBe(1);
+      expect(tokens.rows.length).toBe(1);
       expect(audit).toEqual([]);
     });
 

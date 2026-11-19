@@ -5,6 +5,8 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
+import { FindOperator } from 'typeorm';
 import { MAIL_TOOL_ID } from '../connectors/connector-servers';
 import { CollaborationStartService } from '../orchestration/collaboration-start.service';
 import { TESTS_NOT_PASSED_CODE } from '../orchestration/collaboration-tests-gate';
@@ -15,6 +17,7 @@ import {
   chatApprovalRefusalOf,
   chatStepIsReadOnly,
   cutApprovalRequest,
+  hashApprovalToken,
 } from './chat-approval.service';
 import { chatReply } from './chat-replies';
 import { ChatActivityNotifier, type ChatComponentPress, type ChatReplyMessage } from './chat-transport';
@@ -69,6 +72,55 @@ function workflowSnapshot(connectorToolIds: string[], id = WORKFLOW_ID, name = '
   };
 }
 
+type TokenRow = {
+  tokenHash: string;
+  collaborationRunId: string;
+  linkId: string;
+  userId: string;
+  referralId: string;
+  step: number;
+  expiresAt: Date;
+  createdAt: Date;
+};
+
+function tokenValue(value: unknown): number | unknown {
+  return value instanceof Date ? value.getTime() : value;
+}
+
+function tokenMatches(row: TokenRow, where: Record<string, unknown>): boolean {
+  return Object.entries(where).every(([key, expected]) => {
+    const actual = (row as Record<string, unknown>)[key];
+    if (expected instanceof FindOperator) {
+      if (expected.type === 'in') return (expected.value as unknown[]).includes(actual);
+      if (expected.type === 'lessThanOrEqual') return (tokenValue(actual) as number) <= (tokenValue(expected.value) as number);
+      if (expected.type === 'moreThan') return (tokenValue(actual) as number) > (tokenValue(expected.value) as number);
+      throw new Error(`unsupported operator ${expected.type}`);
+    }
+    return actual === expected;
+  });
+}
+
+/** CHAT-STATE-PERSIST-01: chat_approval_tokens in memory (primary key token_hash, unique referral_id). Shared across instances. */
+class TokenRepo {
+  rows: TokenRow[] = [];
+  async insert(row: TokenRow): Promise<object> {
+    if (this.rows.some((existing) => existing.tokenHash === row.tokenHash || existing.referralId === row.referralId)) {
+      throw Object.assign(new Error('duplicate key'), { code: '23505' });
+    }
+    this.rows.push({ ...row });
+    return {};
+  }
+  async delete(where: Record<string, unknown>): Promise<{ affected: number }> {
+    const before = this.rows.length;
+    this.rows = this.rows.filter((row) => !tokenMatches(row, where));
+    return { affected: before - this.rows.length };
+  }
+  async findOne({ where }: { where: Record<string, unknown> }): Promise<TokenRow | null> {
+    const row = this.rows.find((candidate) => tokenMatches(candidate, where));
+    return row ? { ...row } : null;
+  }
+}
+
 describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
   const original = process.env.CHAT_DISCORD_ENABLED;
   let now: number;
@@ -83,6 +135,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
   let rejectReferral: jest.Mock;
   let useLink: jest.Mock;
   let referralReads: jest.Mock;
+  let tokens: TokenRepo;
   let service: ChatApprovalService;
   let logs: string[];
   let restoreLogs: () => void;
@@ -113,6 +166,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       } as never,
       { findOne: referralReads } as never,
       { insert: async (row: (typeof audit)[number]) => audit.push(row) } as never,
+      tokens as never,
       { now: () => now },
       activity,
     );
@@ -167,6 +221,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       const row = steps.get(where.referralId);
       return row ? { ...row } : null;
     });
+    tokens = new TokenRepo();
     service = build();
     logs = [];
     restoreLogs = watchLogs(logs);
@@ -194,7 +249,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
         { customId: expect.stringMatching(CHAT_APPROVAL_CUSTOM_ID), label: 'Approve', style: 'approve' },
         { customId: expect.stringMatching(CHAT_APPROVAL_CUSTOM_ID), label: 'Reject', style: 'reject' },
       ]);
-      expect(service.liveTokens).toBe(1);
+      expect(tokens.rows.length).toBe(1);
     });
 
     it('custom ids are opaque: no run, step, link or user id, at most 100 characters, one random token per message', async () => {
@@ -248,7 +303,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
     ])('%s: the plain Team page line, no buttons, no token', async (_name, overrides) => {
       steps.set(REFERRAL_ID, step(overrides as Partial<Step>));
       expect(await message()).toEqual({ text: chatReply('en', 'result.waitingApproval') });
-      expect(service.liveTokens).toBe(0);
+      expect(tokens.rows.length).toBe(0);
     });
 
     it('a step that is gone: the plain line', async () => {
@@ -256,23 +311,106 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       expect(await message()).toEqual({ text: chatReply('en', 'result.waitingApproval') });
     });
 
-    it('keeps at most 2000 live buttons, oldest dropped first, and drops expired ones', async () => {
+    it('CHAT-STATE-PERSIST-01: a new message for the same step replaces its token: only the newest buttons work', async () => {
       const first = await buttons();
-      for (let i = 0; i < CHAT_APPROVAL_LIMITS.maxTokens; i += 1) {
-        await message();
-      }
-      expect(service.liveTokens).toBe(CHAT_APPROVAL_LIMITS.maxTokens);
-      expect((await service.handlePress(press(first.approve))).kind).toBe('ephemeral');
+      const second = await buttons();
+      expect(tokens.rows).toHaveLength(1);
+      expect(tokens.rows[0].tokenHash).toBe(hashApprovalToken(second.approve.slice(6)));
+      expect(await service.handlePress(press(first.approve))).toEqual({
+        kind: 'ephemeral',
+        message: { text: chatReply('en', 'approval.unavailable') },
+      });
       expect(approveReferral).not.toHaveBeenCalled();
-      now += DAY;
+      expect((await service.handlePress(press(second.approve))).kind).toBe('update');
+    });
+
+    it('CHAT-STATE-PERSIST-01: expired rows of other steps are deleted on every issue; pruneExpired deletes them for the pass', async () => {
       await message();
-      expect(service.liveTokens).toBe(1);
+      tokens.rows.push({ ...tokens.rows[0], tokenHash: 'f'.repeat(64), referralId: 'other-step', expiresAt: new Date(now + 1000) });
+      now += 1000;
+      steps.set('third-step', step({ referralId: 'third-step' }));
+      await service.approvalMessage(LINK, RUN_ID, 'third-step', 3);
+      expect(tokens.rows.map((row) => row.referralId).sort()).toEqual([REFERRAL_ID, 'third-step'].sort());
+      now += CHAT_APPROVAL_LIMITS.tokenLifetimeMs;
+      expect(await service.pruneExpired()).toBe(2);
+      expect(tokens.rows).toEqual([]);
+    });
+
+    it('CHAT-STATE-PERSIST-01: only the SHA-256 of the token is stored, with the ids and the expiry; never the token or a custom id', async () => {
+      const ids = await buttons();
+      const token = ids.approve.slice(6);
+      expect(tokens.rows).toEqual([
+        {
+          tokenHash: createHash('sha256').update(token).digest('hex'),
+          collaborationRunId: RUN_ID,
+          linkId: LINK_ID,
+          userId: OWNER,
+          referralId: REFERRAL_ID,
+          step: 2,
+          expiresAt: new Date(now + CHAT_APPROVAL_LIMITS.tokenLifetimeMs),
+          createdAt: new Date(now),
+        },
+      ]);
+      expect(JSON.stringify(tokens.rows)).not.toContain(token);
+      expect(JSON.stringify(tokens.rows)).not.toMatch(/ap1:/);
+    });
+
+    it('CHAT-STATE-PERSIST-01: a button made by one instance is honoured by another (a restart or a second process)', async () => {
+      const ids = await buttons();
+      const restarted = build();
+      expect(await restarted.handlePress(press(ids.approve))).toEqual({
+        kind: 'update',
+        message: { text: chatReply('en', 'approval.approved', { step: '2', agent: 'Product Strategy' }) },
+      });
+      expect(approveReferral).toHaveBeenCalledTimes(1);
+      expect(tokens.rows).toEqual([]);
+      // The first instance sees the token spent too.
+      steps.get(REFERRAL_ID)!.status = 'pending_approval';
+      expect((await service.handlePress(press(ids.reject))).kind).toBe('ephemeral');
+      expect(rejectReferral).not.toHaveBeenCalled();
+    });
+
+    it('CHAT-STATE-PERSIST-01: a spent token does nothing and reads no link', async () => {
+      const ids = await buttons();
+      expect((await service.handlePress(press(ids.approve))).kind).toBe('update');
+      useLink.mockClear();
+      expect(await service.handlePress(press(ids.approve))).toEqual({
+        kind: 'ephemeral',
+        message: { text: chatReply('en', 'approval.unavailable') },
+      });
+      expect(useLink).not.toHaveBeenCalled();
+      expect(approveReferral).toHaveBeenCalledTimes(1);
+    });
+
+    it('CHAT-STATE-PERSIST-01: a token store failure at a press answers the error line and decides nothing', async () => {
+      const ids = await buttons();
+      tokens.findOne = async () => {
+        throw new TypeError(`db ${MARKER}`);
+      };
+      expect(await service.handlePress(press(ids.approve))).toEqual({ kind: 'ephemeral', message: { text: chatReply('en', 'error') } });
+      expect(approveReferral).not.toHaveBeenCalled();
+      expect(logs).toContain('chat approval failed reason=TypeError');
+    });
+
+    it('CHAT-STATE-PERSIST-01: needsFreshButtons is true only for a waiting read-only step of that run without a live token', async () => {
+      expect(await service.needsFreshButtons(RUN_ID, REFERRAL_ID)).toBe(true);
+      await message();
+      expect(await service.needsFreshButtons(RUN_ID, REFERRAL_ID)).toBe(false);
+      now += CHAT_APPROVAL_LIMITS.tokenLifetimeMs;
+      expect(await service.needsFreshButtons(RUN_ID, REFERRAL_ID)).toBe(true);
+      expect(await service.needsFreshButtons('another-run', REFERRAL_ID)).toBe(false);
+      steps.set(REFERRAL_ID, step({ targetBuilderProfileId: 'writer' }));
+      expect(await service.needsFreshButtons(RUN_ID, REFERRAL_ID)).toBe(false);
+      steps.set(REFERRAL_ID, step({ status: 'approved' }));
+      expect(await service.needsFreshButtons(RUN_ID, REFERRAL_ID)).toBe(false);
+      steps.clear();
+      expect(await service.needsFreshButtons(RUN_ID, REFERRAL_ID)).toBe(false);
     });
 
     it('revoke forgets the buttons of a message that was not sent', async () => {
       const msg = await message();
-      service.revoke(msg);
-      expect(service.liveTokens).toBe(0);
+      await service.revoke(msg);
+      expect(tokens.rows.length).toBe(0);
       expect(await service.handlePress(press(msg.buttons![0].customId))).toEqual({
         kind: 'ephemeral',
         message: { text: chatReply('en', 'approval.unavailable') },
@@ -424,7 +562,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
         kind: 'ephemeral',
         message: { text: chatReply('en', 'approval.unavailable') },
       });
-      expect(service.liveTokens).toBe(0);
+      expect(tokens.rows.length).toBe(0);
       expect(audit).toEqual([]);
     });
 
@@ -464,7 +602,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       const ids = await buttons();
       steps.get(REFERRAL_ID)!.status = 'rejected';
       expectNothing(await service.handlePress(press(ids.approve)));
-      expect(service.liveTokens).toBe(0);
+      expect(tokens.rows.length).toBe(0);
     });
 
     it('a run that ended, is not the owner’s, or is no longer a waiting Discord delivery does nothing', async () => {
@@ -484,7 +622,7 @@ describe('ChatApprovalService (CHAT-DISCORD-01 C2)', () => {
       const ids = await buttons();
       now += CHAT_APPROVAL_LIMITS.tokenLifetimeMs;
       expectNothing(await service.handlePress(press(ids.approve)));
-      expect(service.liveTokens).toBe(0);
+      expect(tokens.rows.length).toBe(0);
     });
 
     it('forged custom ids do nothing and read nothing', async () => {

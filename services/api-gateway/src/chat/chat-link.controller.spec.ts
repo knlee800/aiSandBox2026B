@@ -25,6 +25,9 @@ import { ChatApprovalService } from './chat-approval.service';
 import { ChatDeliveryService } from './chat-delivery.service';
 import { ChatRunService } from './chat-run.service';
 import { CHAT_TRANSPORT_PROVIDER, ChatChannelRunner, ChatModule } from './chat.module';
+import { ChatLimits } from './chat-limits';
+import { ChatApprovalToken } from '../entities/chat-approval-token.entity';
+import { ChatLimitHit } from '../entities/chat-limit-hit.entity';
 import { CHAT_TRANSPORT, ChatActivityNotifier, FakeChatTransport } from './chat-transport';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -437,6 +440,7 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
       ChatDeliveryService,
       ChatApprovalService,
       ChatActivityNotifier,
+      ChatLimits,
     ]);
     expect(exportsList).toEqual([ChatLinkService]);
 
@@ -447,6 +451,16 @@ describe('ChatLinkController (CHAT-DISCORD-01 A1)', () => {
     const entities = readFileSync(join(__dirname, '..', 'entities', 'index.ts'), 'utf8');
     expect(entities).toContain("export { ChatLink } from './chat-link.entity';");
     expect(entities).toContain("export { ChatLinkCode } from './chat-link-code.entity';");
+    // CHAT-STATE-PERSIST-01: the two tables of migration 1817 are exported and registered for the module.
+    expect(entities).toContain("export { ChatLimitHit, CHAT_LIMIT_BUCKETS } from './chat-limit-hit.entity';");
+    expect(entities).toContain("export { ChatApprovalToken } from './chat-approval-token.entity';");
+    const imports = Reflect.getMetadata('imports', ChatModule) as Array<{ providers?: Array<{ provide?: unknown }> }>;
+    for (const entity of [ChatLimitHit, ChatApprovalToken]) {
+      const token = getRepositoryToken(entity);
+      expect(
+        imports.some((entry) => Array.isArray(entry?.providers) && entry.providers.some((provider) => provider?.provide === token)),
+      ).toBe(true);
+    }
 
     const source = readFileSync(join(__dirname, 'chat-link.controller.ts'), 'utf8');
     expect(source).not.toMatch(/internal/i);

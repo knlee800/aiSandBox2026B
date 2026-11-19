@@ -15,6 +15,7 @@ import {
   normalizeChatLinkCode,
   normalizeChatLocale,
 } from './chat-link.service';
+import { ChatLimits, chatLimitSubjectOfExternalUser, MemoryChatLimitStore } from './chat-limits';
 import { CHAT_TRANSPORT, FakeChatTransport } from './chat-transport';
 import { ChatModule } from './chat.module';
 
@@ -664,6 +665,115 @@ describe('ChatLinkService (CHAT-DISCORD-01 A1)', () => {
       expect((await service.claim(fresh, DISCORD_ID, DISPLAY_NAME, 'en')).outcome).toBe('claimed');
       await service.confirm(OWNER);
       expect(store.links.rows).toHaveLength(1);
+    });
+
+    describe('CHAT-STATE-PERSIST-01: the limits are rows, so a restart (a new service over the same rows) keeps them', () => {
+      let limitRows: MemoryChatLimitStore;
+
+      function instance(): ChatLinkService {
+        return new ChatLinkService(store.links as never, store.codes as never, undefined, undefined, ChatLimits.inMemory(limitRows));
+      }
+
+      beforeEach(() => {
+        limitRows = new MemoryChatLimitStore();
+        service = instance();
+      });
+
+      it('the fifth code this hour is still the fifth after a restart; the sixth is refused with the time from the oldest row', async () => {
+        for (let i = 0; i < 5; i += 1) {
+          await service.createCode(OWNER, 'en');
+          advance(MINUTE);
+        }
+        service = instance();
+        try {
+          await service.createCode(OWNER, 'en');
+          throw new Error('expected 429');
+        } catch (error) {
+          expect((error as HttpException).getStatus()).toBe(429);
+          expect((error as HttpException).getResponse()).toMatchObject({
+            code: CHAT_LINK_ERROR_CODES.rateLimited,
+            retryAfterSeconds: (HOUR - 5 * MINUTE) / 1000,
+          });
+        }
+        advance(HOUR - 5 * MINUTE + 1);
+        service = instance();
+        await service.createCode(OWNER, 'en');
+        // Rows older than the window are deleted on the write.
+        expect(limitRows.rows.filter((row) => row.bucket === 'code_create')).toHaveLength(5);
+      });
+
+      it('the sixth claim attempt is silenced after a restart; the limit key is the SHA-256 of the Discord id, never the id', async () => {
+        for (let i = 0; i < 5; i += 1) {
+          expect((await service.claim('ZZZZ-ZZZZ', DISCORD_OTHER, DISPLAY_NAME, 'en')).outcome).toBe('invalid');
+        }
+        service = instance();
+        const { code } = await service.createCode(OWNER, 'en');
+        expect((await service.claim(code, DISCORD_OTHER, DISPLAY_NAME, 'en')).outcome).toBe('silenced');
+        const attempts = limitRows.rows.filter((row) => row.bucket === 'claim_attempt');
+        expect(attempts).toHaveLength(5);
+        expect(new Set(attempts.map((row) => row.subjectKey))).toEqual(new Set([chatLimitSubjectOfExternalUser(DISCORD_OTHER)]));
+        expect(chatLimitSubjectOfExternalUser(DISCORD_OTHER)).toBe(createHash('sha256').update(DISCORD_OTHER).digest('hex'));
+        expect(JSON.stringify(limitRows.rows)).not.toContain(DISCORD_OTHER);
+      });
+
+      it('failure 101 pauses once with one audit row; the pause survives a restart and lasts its full hour', async () => {
+        let user = 0;
+        for (let i = 0; i < 100; i += 1) {
+          if (i % 5 === 0) user += 1;
+          await service.claim('ZZZZ-ZZZZ', outsideId('4', user), DISPLAY_NAME, 'en');
+          // A restart in the middle of the count changes nothing.
+          if (i === 50) service = instance();
+        }
+        expect((await service.getState(OWNER)).paused).toBe(false);
+        await service.claim('ZZZZ-ZZZZ', '499999999999999999', DISPLAY_NAME, 'en');
+        expect(store.audit.rows.filter((row) => row.eventType === 'link_attempts_paused')).toHaveLength(1);
+        expect(limitRows.rows.filter((row) => row.bucket === 'link_pause')).toHaveLength(1);
+        // The failures are cleared with the pause, as the in-memory counter was.
+        expect(limitRows.rows.filter((row) => row.bucket === 'claim_failed')).toHaveLength(0);
+
+        service = instance();
+        expect((await service.getState(OWNER)).paused).toBe(true);
+        expect((await service.claim('ZZZZ-ZZZZ', '499999999999999998', DISPLAY_NAME, 'en')).outcome).toBe('paused');
+        await expectRefusal(service.createCode(OTHER, 'en'), 503, CHAT_LINK_ERROR_CODES.paused);
+        advance(HOUR - 1);
+        service = instance();
+        expect((await service.getState(OWNER)).paused).toBe(true);
+        advance(1);
+        expect((await service.getState(OWNER)).paused).toBe(false);
+        expect(store.audit.rows.filter((row) => row.eventType === 'link_attempts_paused')).toHaveLength(1);
+      });
+
+      it('two services over the same rows (two processes): failure 101 pauses once, with one audit row', async () => {
+        const other = instance();
+        let user = 0;
+        const claims: Array<Promise<unknown>> = [];
+        for (let i = 0; i < 104; i += 1) {
+          if (i % 5 === 0) user += 1;
+          claims.push((i % 2 === 0 ? service : other).claim('ZZZZ-ZZZZ', outsideId('5', user), DISPLAY_NAME, 'en'));
+        }
+        await Promise.all(claims);
+        expect(store.audit.rows.filter((row) => row.eventType === 'link_attempts_paused')).toHaveLength(1);
+        expect(limitRows.rows.filter((row) => row.bucket === 'link_pause')).toHaveLength(1);
+      });
+
+      it('a store error refuses the action and writes nothing', async () => {
+        const broken = {
+          locked: async () => {
+            throw new Error('db down');
+          },
+          times: async () => {
+            throw new Error('db down');
+          },
+          pruneUpTo: async () => 0,
+        };
+        service = new ChatLinkService(store.links as never, store.codes as never, undefined, undefined, ChatLimits.inMemory(broken));
+        await expectRefusal(service.createCode(OWNER, 'en'), 503, CHAT_LINK_ERROR_CODES.unavailable);
+        await expectRefusal(service.confirm(OWNER), 503, CHAT_LINK_ERROR_CODES.unavailable);
+        expect(await service.claim('ZZZZ-ZZZZ', DISCORD_ID, DISPLAY_NAME, 'zh-CN')).toEqual({ outcome: 'unavailable', locale: 'zh-CN' });
+        expect(store.codes.rows).toEqual([]);
+        expect(store.audit.rows).toEqual([]);
+        expect(logs).toContain('chat link limit store failed action=pause_check');
+      });
     });
 
     it('failures older than an hour do not count toward the pause', async () => {
