@@ -88288,7 +88288,7 @@ taskId=CHAT-DISCORD-DM-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-DISCORD-DM-01
 **Title:** Free-text direct messages to the bot
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88296,18 +88296,19 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith, 2026-11-19, "Yes, all 9", the Discord production batch). Was: NOT_READY. Ready when: Keith decides (Q5: not for now).
 **Depends on:** CHAT-DISCORD-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/chat/.
-**Mutexes / resources:** set at admission (GATEWAY expected).
+**Primary write scope:** EXACT (2026-11-19): services/api-gateway/src/chat/discord/discord-transport.ts, services/api-gateway/src/chat/discord/discord-transport.spec.ts, services/api-gateway/src/chat/chat-transport.ts, services/api-gateway/src/chat/chat-commands.ts, services/api-gateway/src/chat/chat-commands.spec.ts, services/api-gateway/src/chat/chat-run.service.ts, services/api-gateway/src/chat/chat-run.service.spec.ts, services/api-gateway/src/chat/chat.module.ts, services/api-gateway/src/chat/chat-replies.ts, services/api-gateway/src/chat/chat-replies.spec.ts, services/api-gateway/locales/en.json, services/api-gateway/locales/zh-TW.json, services/api-gateway/locales/zh-CN.json. Was: PROVISIONAL: services/api-gateway/src/chat/.
+**Mutexes / resources:** GATEWAY (2026-11-19).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11 (not current until CHAT-LIVE-01).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-DISCORD-01 (F1, Q5): plain messages without a slash command, which needs the DIRECT_MESSAGES gateway intent (not privileged) and more parsing of untrusted text.
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 Note (CHAT-EVAL-01 LOCK, 2026-11-19): free-text messages take the /ask path; the chat-ask eval cases of CHAT-EVAL-01 cover them.
+Design (Keith 2026-11-19, "Yes, all 9"; he wants to do all communication in Discord): the gateway intent becomes DIRECT_MESSAGES (1 << 12, not privileged; direct-message content needs no privileged intent); MESSAGE_CREATE is accepted only in a direct message, from a human author other than the bot, message type 0 or 19, snowflake author; the text runs exactly the /ask path (ChatRunService, @Name for a workflow, limits, refusals, audit, origin chat); replies in the DM with mentions off; empty, too-long and slash-leading text get one line each; unlinked gets link first; a refused reply is logged once and ignored; message text, author and channel ids are never logged. /help says plain messages work. The chat-ask eval cases of CHAT-EVAL-01 cover the path. Implementer: opus subagent (Opus 5.5: untrusted free text from a new gateway event). Write set of 13 paths.
 ### CHAT-NOTIFY-ONLY-01 — A notice-only setting for Discord results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-NOTIFY-ONLY-01
@@ -88446,7 +88447,7 @@ taskId=CHAT-LINK-NOTICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-19. LANE-DONE and LOCKED by the control plane; FRONTEND and I18N released, GATEWAY passed to CHAT-DISCORD-DM-01. an e-mail to the owner at every Discord link and unlink (in the link's language, id ending and UTC time only, escaped html), a Discord confirmation after Confirm, a 7-day amber notice on the Connections page; each notice capped at 5 seconds and never failing the link; by an opus subagent (b99b0a0, fast-forwarded); control-plane gates on the branch: gateway 6960 passed, only the 14 known smoke.integration failures, tsc and build rc 0; frontend 2266 of 2266, tsc and build rc 0. Staging's EMAIL_PROVIDER is stub (MAIL-PROVIDER-01). Not deployed: STAGING-DEPLOY-CHATBATCH-01. Checkpoint: docs/CHAT-LINK-NOTICE-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (MAIL-PROVIDER-01, AUTH-MAIL-I18N-01) / 1 superseded (the linked line and the amber notice both right after Confirm, into CHAT-TIDY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-19 — Keith said "Yes, all 9". Was: READY — registered 2026-11-14 by the CHAT-DISCORD-01 LOCK — not admitted.
 **Task ID:** CHAT-LINK-NOTICE-01
 **Title:** Notices when a chat account is linked or unlinked
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88466,6 +88467,54 @@ nature=IMPLEMENTATION
 
 Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT-USER-INSTALL-01, CHAT-RESULTS-OTHER-01, CHAT-LINK-NOTICE-01, CHAT-DISCORD-DM-01, CHAT-STATE-PERSIST-01, CHAT-EVAL-01, WS-UPGRADE-01, CHAT-PRUNE-01, CHAT-TIDY-01, built one at a time per mutex and deployed once; productClass APPROVED_FUTURE with futureAuthorization AUTHORIZED.
 Design (Keith 2026-11-19, "Yes, all 9"): after a successful confirm and after each successful unlink (page or /unlink), one e-mail through EMAIL_PROVIDER in the link's language (gateway locales): a Discord account (id ending XXXX) was linked or unlinked at <UTC time>, a link to the Connections page, and what to do if it was not the owner; no display name, full id, code or token; a send failure is logged with ids and never fails or undoes the link. After Confirm the newly linked Discord account gets one confirmation through sendToUser (a refused direct message is ignored). The Connections page shows a 7-day notice after a link. en, zh-TW, zh-CN. Staging's EMAIL_PROVIDER is stub, so e-mails are built and logged but not sent until a real provider is set (follow-up at LOCK). Implementer: opus subagent (Opus 5.5: the account-link path, the mailer and the frontend). Write set of 19 paths.
+### MAIL-PROVIDER-01 — A real e-mail provider on staging and before production
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=MAIL-PROVIDER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the CHAT-LINK-NOTICE-01 LOCK — not admitted.
+**Task ID:** MAIL-PROVIDER-01
+**Title:** A real e-mail provider on staging and before production
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides and has a provider account (Resend is built in); he types the key at a hidden prompt on the host.
+**Depends on:** CHAT-LINK-NOTICE-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/email/resend-email.provider.ts (a send timeout); host state (gateway.env EMAIL_PROVIDER and the provider key).
+**Mutexes / resources:** ENV, STAGING (and GATEWAY for the timeout).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (sign-up, password reset and account notices).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-LINK-NOTICE-01: staging's EMAIL_PROVIDER is stub, so sign-up verification, password reset and the Discord link notices are built but never delivered. Set a real provider (Resend), give ResendEmailProvider a send timeout (it has none; the link notices cap their own wait at 5 s, the auth e-mails do not), check sender domain records, and prove one delivered e-mail of each kind. Needed before any outside user.
+
+### AUTH-MAIL-I18N-01 — Translate the sign-up and password-reset e-mails
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AUTH-MAIL-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-19 by the CHAT-LINK-NOTICE-01 LOCK — not admitted.
+**Task ID:** AUTH-MAIL-I18N-01
+**Title:** Translate the sign-up and password-reset e-mails
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (before outside users).
+**Depends on:** CHAT-LINK-NOTICE-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/auth/auth.service.ts, the gateway locale files.
+**Mutexes / resources:** GATEWAY (expected).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (multilingual-first).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CHAT-LINK-NOTICE-01: auth.service.ts sendVerificationEmail and sendPasswordResetEmail send English-only hardcoded subjects and bodies whatever the user's language, against the multilingual-first rule; build them from the gateway locales in en, zh-TW and zh-CN like the link notices, with tests.
+
 ### CHAT-PRUNE-01 — Prune chat codes and delivery rows with the switch off
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-PRUNE-01
@@ -88549,6 +88598,7 @@ Note (2026-11-19): Keith chose the Discord production batch ("Yes, all 9"): CHAT
 Note (CHAT-USER-INSTALL-01 LOCK, 2026-11-19): sendToUser returns silently when the transport is not ready (as sendDirectMessage did); a disconnect in the middle of a delivery pass could count a result as delivered. Make it throw or report not-sent.
 Note (CHAT-RESULTS-OTHER-01 LOCK, 2026-11-19): a pre-existing race: a delivery poll can announce /ask's first step just before /ask approves it.
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): resume() reads the link on every command (harmless today); two presses of one button can both pass the token lookup before either spends it (approveStep's status check decides today): make spend a delete that must remove exactly one row.
+Note (CHAT-LINK-NOTICE-01 LOCK, 2026-11-19): right after Confirm the Connections page shows both the green "Discord is linked." line and the amber recent-link notice; show one.
 ### CHAT-USER-INSTALL-01 — Any Discord account can use the bot
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=CHAT-USER-INSTALL-01
