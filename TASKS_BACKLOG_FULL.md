@@ -88709,13 +88709,13 @@ taskId=CHAT-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-20 — Keith did the portal step and said "Done, start the check". Was: READY — registered 2026-11-19 by the CHAT-USER-INSTALL-01 LOCK — not admitted.
 **Task ID:** CHAT-LIVE-02
 **Title:** Live check of the Discord batch with a second account
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHATBATCH-01 is LOCKED and Keith has done the portal step.
+**Start condition:** READY (2026-11-20: the deploy is LOCKED and Keith turned on Public Bot and User Install). Was: NOT_READY. Ready when: STAGING-DEPLOY-CHATBATCH-01 is LOCKED and Keith has done the portal step.
 **Depends on:** STAGING-DEPLOY-CHATBATCH-01.
 **Primary write scope:** records; host checks only.
 **Mutexes / resources:** STAGING.
@@ -88724,7 +88724,7 @@ nature=IMPLEMENTATION
 **Evidence class:** STAGING-RUNTIME.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE per PRD.md section 11, futureAuthorization AUTHORIZED (Keith 2026-11-19).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From CHAT-USER-INSTALL-01: Keith's second Discord account, never in his private server: Add to Discord (Add to my apps), Open the bot, / shows the 7 commands, /help text, /link and Confirm, /status, /ask; whether the result arrives by direct message or is held (log reason=dm_refused) and comes after the next command; a five-part answer and an approval with buttons through follow-ups; Keith's first account still works; logs carry no Discord ids or tokens; then every other batch feature live (results of trigger runs, link notices, plain messages, restart-safe state). The record also lands the PRD.md and ARCHITECTURE.md Discord wording for user installs (GOVERNANCE).
 
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): its governance record also updates ARCHITECTURE.md's chat wording (lines 231, 580 and 1193: the chat tables and stored, hashed button tokens); check migration 1817 applied (new migration hash) and that old buttons work after the deploy's restart.
