@@ -88730,6 +88730,32 @@ nature=IMPLEMENTATION
 Note (CHAT-STATE-PERSIST-01 LOCK, 2026-11-19): its governance record also updates ARCHITECTURE.md's chat wording (lines 231, 580 and 1193: the chat tables and stored, hashed button tokens); check migration 1817 applied (new migration hash) and that old buttons work after the deploy's restart.
 Note (CHAT-TIDY-01 LOCK, 2026-11-20): also check live: /ask agent autocomplete, the Reject form (close leaves the step waiting; with and without a reason), two quick Approve presses give one decision, /help's buttons line, a plain message during a gateway restart is answered after ready, an unlinked account gets at most 3 replies a minute, only the green line right after Confirm, /ask's step 1 never announced, no per-pass prune lines.
 Note (STAGING-DEPLOY-CHATBATCH-01 LOCK, 2026-11-20): deployed; staging runs 0976d52, migration hash 5b4f65af. Ready once Keith has turned on Public Bot and User Install in the Discord portal.
+### ACCESS-DEFAULT-ON-01 — Agent access on by default
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-DEFAULT-ON-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-20; Keith said "On by default", then "Yes, register it"; not admitted yet: CHAT-LIVE-02 holds a live staging lane, and a LOCAL-TESTS lane runs beside it only while that lane is paused (GOV-OS-04), which would stop the host log reads during Keith's live test; admitted when CHAT-LIVE-02 ends.
+**Task ID:** ACCESS-DEFAULT-ON-01
+**Title:** Agent access on by default
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (Keith, 2026-11-20).
+**Depends on:** none (ACCESS-01B is LOCKED).
+**Primary write scope:** EXACT: services/api-gateway/src/auth/entitlement.service.ts, services/api-gateway/src/auth/entitlement.service.spec.ts, services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts, services/api-gateway/src/auth/auth.controller.spec.ts, services/api-gateway/src/ai/ai-execution.controller.spec.ts.
+**Mutexes / resources:** GATEWAY.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (reaches staging with the next deploy).
+**Revert isolation:** one service's default; reverting restores access off for accounts with no row.
+**saturationClass:** FORCING (Keith 2026-11-20). **productClass:** CURRENT (Keith's decision moves these GATED features to every account; PRD.md reworded at LOCK).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Agent access on by default: an account with no entitlement row gets harness access (Team, Results, Knowledge, Connections, Schedules and triggers, Discord, Agent mode) and Agent file changes; a row an admin wrote still decides, so an admin can switch an account off.
+
+Design (Keith 2026-11-20, "On by default", then "Yes, register it", after the new-user walk-through found that every new account sees a 'not turned on for this account' refusal on Team, Results, Knowledge, Connections, Schedules and Discord with no way forward and no admin screen to switch it on): (1) EntitlementService.resolveHarnessEntitled and resolveAgentWriteEnabled return true when the user has no user_entitlements row; a row still decides (harness_enabled or agent_write_enabled false stays false); a repository error stays false (fail closed). (2) setEntitlements: a field the patch leaves out, on a user with no row, takes the new default true (an admin who sets only a daily token limit does not switch access off); changedFieldNames compares against true for a user with no row. (3) No migration and no entity change: the column defaults stay false and are never used (every insert sets both columns); the service comment says so. No change to the callers, the guards, the frontend or the admin route. (4) Tests: no row gives true for both; a false row gives false; a true row gives true; a repository error gives false; a patch on a user with no row keeps the unspecified field true and records no change for it; existing guard and controller specs that assumed the old no-row false are updated. Effect on staging after the next deploy: the one account with no row (7159d377) gets access; Keith's two accounts already have rows with access on. PRD.md (Agent Harness, Chief of Staff, advisors, Knowledge, connectors, Discord: gated accounts only) and ARCHITECTURE.md (entitlement default) are reworded at LOCK by the control plane (GOVERNANCE). Implementer: opus subagent (Opus 5.5: the access check behind guards). Write set of 5 paths.
+
 ### COS-EVAL-LIVE-05 — Live run of the Discord chat-ask eval cases
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-EVAL-LIVE-05
